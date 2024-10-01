@@ -4,7 +4,7 @@ public record CreateLeagueRequest(string Name, string Sport, string Description,
 
 public record CreateLeagueResponse(Guid Id);
 
-public class CreateLegaueEndpoint : ICarterModule
+public class CreateLeagueEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {

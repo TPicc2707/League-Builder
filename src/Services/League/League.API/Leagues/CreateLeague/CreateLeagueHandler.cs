@@ -5,6 +5,17 @@ public record CreateLeagueCommand(string Name, string Sport, string Description,
 
 public record CreateLeagueResult(Guid Id);
 
+public class CreateLeagueCommandValidator : AbstractValidator<CreateLeagueCommand>
+{
+    public CreateLeagueCommandValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required")
+            .Length(2, 150).WithMessage("Name must be between 2 and 150 characters");
+        RuleFor(x => x.Sport).NotEmpty().WithMessage("Sport is required");
+        RuleFor(x => x.ImageFile).NotEmpty().WithMessage("ImageFile is required");
+    }
+}
+
 internal class CreateLeagueCommandHandler
     (IDocumentSession documentSession)
     : ICommandHandler<CreateLeagueCommand, CreateLeagueResult>

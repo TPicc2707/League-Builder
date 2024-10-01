@@ -3,6 +3,14 @@
 public record DeleteLeagueCommand(Guid Id) : ICommand<DeleteLeagueResult>;
 public record DeleteLeagueResult(bool IsSuccess);
 
+public class DeleteLeagueCommandValidator : AbstractValidator<DeleteLeagueCommand>
+{
+    public DeleteLeagueCommandValidator()
+    {
+        RuleFor(x => x.Id).NotEmpty().WithMessage("League Id is required");
+    }
+}
+
 public class DeleteLeagueCommandHandler
     (IDocumentSession documentSession)
     : ICommandHandler<DeleteLeagueCommand, DeleteLeagueResult>

@@ -1,6 +1,6 @@
 ﻿namespace League.API.Leagues.DeleteLeague;
 
-//public record DeleteProductRequest(Guid Id);
+//public record DeleteLeagueRequest(Guid Id);
 public record DeleteLeagueResponse(bool IsSuccess);
 
 public class DeleteLeagueEndpoint : ICarterModule

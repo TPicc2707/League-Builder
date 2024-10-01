@@ -1,9 +1,23 @@
-﻿namespace League.API.Leagues.UpdateLeague;
+﻿using League.API.Leagues.CreateLeague;
+
+namespace League.API.Leagues.UpdateLeague;
 
 public record UpdateLeagueCommand(Guid Id, string Name, string Sport, string Description, string ImageFile)
     : ICommand<UpdateLeagueResult>;
 
 public record UpdateLeagueResult(bool IsSuccess);
+
+public class UpdateLeagueCommandValidator : AbstractValidator<UpdateLeagueCommand>
+{
+    public UpdateLeagueCommandValidator()
+    {
+        RuleFor(x => x.Id).NotEmpty().WithMessage("League Id is required");
+        RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required")
+            .Length(2, 150).WithMessage("Name must be between 2 and 150 characters");
+        RuleFor(x => x.Sport).NotEmpty().WithMessage("Sport is required");
+        RuleFor(x => x.ImageFile).NotEmpty().WithMessage("ImageFile is required");
+    }
+}
 
 public class UpdateLeagueCommandHandler
     (IDocumentSession documentSession)
