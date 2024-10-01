@@ -29,7 +29,7 @@ public class LeagueInitialData : IInitialData
         },
         new()
         {
-            Id = new Guid("5334c996-8457-4cf0-815c-ed2b77c4ff61"),
+            Id = new Guid("05d80a72-d2dd-43c1-8ca0-ef1c0585db3b"),
             Name = "Dummy Football League",
             Sport = "Football",
             Description = "This league is made experienced players.",

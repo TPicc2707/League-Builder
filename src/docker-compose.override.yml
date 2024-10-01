@@ -1,0 +1,30 @@
+services:
+  leaguedb:
+    container_name: leaguedb
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=LeagueDb
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_league:/var/lib/postgresql/data/
+
+  league.api:
+    container_name: league.api
+    environment:
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=some.long.password.fllkwefiwejf23049uwlekjf.sEFWEFGR98^&$
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__Database=Server=leaguedb;Port=5432;Database=LeagueDb;User Id=postgres;Password=postgres;Include Error Detail=true
+    depends_on:
+      - leaguedb
+    ports:
+      - "6000:8080"
+      - "6060:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

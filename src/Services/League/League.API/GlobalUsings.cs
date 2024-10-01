@@ -1,6 +1,10 @@
-﻿global using BuildingBlocks.CQRS;
+﻿global using BuildingBlocks.Behaviors;
+global using BuildingBlocks.CQRS;
 global using BuildingBlocks.Exceptions;
+global using BuildingBlocks.Exceptions.Handler;
 global using Carter;
+global using FluentValidation;
+global using HealthChecks.UI.Client;
 global using League.API.Data;
 global using League.API.Exceptions;
 global using Mapster;
@@ -8,5 +12,4 @@ global using Marten;
 global using Marten.Pagination;
 global using Marten.Schema;
 global using MediatR;
-global using BuildingBlocks.Behaviors;
-global using FluentValidation;
+global using Microsoft.AspNetCore.Diagnostics.HealthChecks;

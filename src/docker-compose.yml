@@ -1,0 +1,13 @@
+services:
+  leaguedb:
+    image: postgres
+
+  league.api:
+   image: ${DOCKER_REGISTRY-}leagueapi
+   build:
+     context: .
+     dockerfile: Services/League/League.API/Dockerfile
+
+
+volumes:
+  postgres_league:

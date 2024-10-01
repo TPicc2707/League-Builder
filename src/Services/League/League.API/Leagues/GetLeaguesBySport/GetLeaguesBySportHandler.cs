@@ -11,7 +11,7 @@ public class GetLeaguesBySportQueryHandler
     public async Task<GetLeaguesBySportResult> Handle(GetLeaguesBySportQuery query, CancellationToken cancellationToken)
     {
         var leagues = await documentSession.Query<Models.League>()
-            .Where(p => p.Sport == query.Sport)
+            .Where(p => p.Sport.ToLower() == query.Sport.ToLower())
             .ToListAsync();
 
         return new GetLeaguesBySportResult(leagues);
