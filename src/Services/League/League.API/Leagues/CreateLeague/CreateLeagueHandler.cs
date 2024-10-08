@@ -1,6 +1,6 @@
 ﻿namespace League.API.Leagues.CreateLeague;
 
-public record CreateLeagueCommand(string Name, string Sport, string Description, string ImageFile)
+public record CreateLeagueCommand(string Name, string Sport, string Description, string EmailAddress, string ImageFile)
     : ICommand<CreateLeagueResult>;
 
 public record CreateLeagueResult(Guid Id);
@@ -12,12 +12,13 @@ public class CreateLeagueCommandValidator : AbstractValidator<CreateLeagueComman
         RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required")
             .Length(2, 150).WithMessage("Name must be between 2 and 150 characters");
         RuleFor(x => x.Sport).NotEmpty().WithMessage("Sport is required");
+        RuleFor(x => x.EmailAddress).NotEmpty().WithMessage("Email Address is required");
         RuleFor(x => x.ImageFile).NotEmpty().WithMessage("ImageFile is required");
     }
 }
 
 internal class CreateLeagueCommandHandler
-    (IDocumentSession documentSession)
+    (IDocumentSession documentSession, IPublishEndpoint publishEndpoint)
     : ICommandHandler<CreateLeagueCommand, CreateLeagueResult>
 {
     public async Task<CreateLeagueResult> Handle(CreateLeagueCommand command, CancellationToken cancellationToken)
@@ -31,6 +32,7 @@ internal class CreateLeagueCommandHandler
             Name = command.Name,
             Sport = command.Sport,
             Description = command.Description,
+            EmailAddress = command.EmailAddress,
             ImageFile = command.ImageFile,
             Created_DateTime = DateTime.Now,
             Created_User = "tony.pic",
@@ -42,6 +44,10 @@ internal class CreateLeagueCommandHandler
         // save to database
         documentSession.Store(league);
         await documentSession.SaveChangesAsync();
+
+        var eventMessage = league.Adapt<LeagueCreationEvent>();
+
+        await publishEndpoint.Publish(eventMessage, cancellationToken);
 
         // return CreateLeagueResult result
 

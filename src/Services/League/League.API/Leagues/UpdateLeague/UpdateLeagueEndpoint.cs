@@ -1,6 +1,6 @@
 ﻿namespace League.API.Leagues.UpdateLeague;
 
-public record UpdateLeagueRequest(Guid Id, string Name, string Sport, string Description, string ImageFile);
+public record UpdateLeagueRequest(Guid Id, string Name, string Sport, string Description, string EmailAddress, string ImageFile);
 
 public record UpdateLeagueResponse(bool IsSuccess);
 

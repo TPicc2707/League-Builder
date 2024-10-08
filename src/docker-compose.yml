@@ -2,12 +2,23 @@ services:
   leaguedb:
     image: postgres
 
+  teamdb:
+    image: mcr.microsoft.com/mssql/server
+
+  messagebroker:
+    image: rabbitmq:management
+
   league.api:
    image: ${DOCKER_REGISTRY-}leagueapi
    build:
      context: .
      dockerfile: Services/League/League.API/Dockerfile
 
+  team.api:
+    image: ${DOCKER_REGISTRY-}teamapi
+    build:
+      context: .
+      dockerfile: Services/Team/Team.API/Dockerfile
 
 volumes:
   postgres_league:

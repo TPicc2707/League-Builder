@@ -12,13 +12,20 @@ public class DeleteLeagueCommandValidator : AbstractValidator<DeleteLeagueComman
 }
 
 public class DeleteLeagueCommandHandler
-    (IDocumentSession documentSession)
+    (IDocumentSession documentSession, IPublishEndpoint publishEndpoint)
     : ICommandHandler<DeleteLeagueCommand, DeleteLeagueResult>
 {
     public async Task<DeleteLeagueResult> Handle(DeleteLeagueCommand command, CancellationToken cancellationToken)
     {
         documentSession.Delete<Models.League>(command.Id);
         await documentSession.SaveChangesAsync(cancellationToken);
+
+        var eventMessage = new LeagueDeletedEvent()
+        {
+            Id = command.Id
+        };
+
+        await publishEndpoint.Publish(eventMessage, cancellationToken);
 
         return new DeleteLeagueResult(true);
     }

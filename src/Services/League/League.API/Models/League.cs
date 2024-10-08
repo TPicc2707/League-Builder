@@ -6,6 +6,7 @@ public class League
     public string Sport { get; set; } = default!;
     public string Description { get; set; } = default!;
     public string ImageFile { get; set; } = default!;
+    public string EmailAddress { get; set; } = default!;
     public DateTime Created_DateTime { get; set; } = default!;
     public string Created_User { get; set; } = default!;
     public DateTime Modified_DateTime { get; set; } = default!;

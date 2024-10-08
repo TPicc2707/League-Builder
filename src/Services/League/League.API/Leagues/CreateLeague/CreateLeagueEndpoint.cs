@@ -1,6 +1,6 @@
 ﻿namespace League.API.Leagues.CreateLeague;
 
-public record CreateLeagueRequest(string Name, string Sport, string Description, string ImageFile);
+public record CreateLeagueRequest(string Name, string Sport, string Description, string EmailAddress, string ImageFile);
 
 public record CreateLeagueResponse(Guid Id);
 
