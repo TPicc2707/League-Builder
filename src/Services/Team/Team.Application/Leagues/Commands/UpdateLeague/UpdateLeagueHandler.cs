@@ -4,7 +4,7 @@ public class UpdateLeagueHandler(IApplicationDbContext dbcontext)
 {
     public async Task<UpdateLeagueResult> Handle(UpdateLeagueCommand command, CancellationToken cancellationToken)
     {
-        //Update Order entity from command object
+        //Update League entity from command object
         //save to database
         //return result
 

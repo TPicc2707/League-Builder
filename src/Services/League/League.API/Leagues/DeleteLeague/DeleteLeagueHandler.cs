@@ -20,7 +20,7 @@ public class DeleteLeagueCommandHandler
         documentSession.Delete<Models.League>(command.Id);
         await documentSession.SaveChangesAsync(cancellationToken);
 
-        var eventMessage = new LeagueDeletedEvent()
+        var eventMessage = new LeagueDeletionEvent()
         {
             Id = command.Id
         };

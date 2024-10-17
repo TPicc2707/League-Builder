@@ -12,6 +12,8 @@ public class DeleteLeagueHandler(IApplicationDbContext dbContext)
         var league = await dbContext.Leagues
             .FindAsync([leagueId], cancellationToken: cancellationToken);
 
+        var teams = await dbContext.Teams.Where(t => t.LeagueId == leagueId).ToListAsync();
+
         if (league == null)
         {
             throw new LeagueNotFoundException(command.LeagueId);

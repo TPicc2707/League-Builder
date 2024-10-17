@@ -17,7 +17,7 @@ public class League : Aggregate<LeagueId>
             Description = description
         };
 
-        league.AddDomainEvent(new LeagueCreatedEvent(league));
+        league.AddDomainEvent(new LeagueCreateEvent(league));
 
         return league;
     }

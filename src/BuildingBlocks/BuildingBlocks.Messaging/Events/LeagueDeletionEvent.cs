@@ -1,5 +1,5 @@
 ﻿namespace BuildingBlocks.Messaging.Events;
-public record LeagueDeletedEvent : IntegrationEvent
+public record LeagueDeletionEvent : IntegrationEvent
 {
     public Guid Id { get; set; }
 }

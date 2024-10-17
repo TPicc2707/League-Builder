@@ -7,12 +7,12 @@ public class GetTeamsByNameHandler(IApplicationDbContext dbContext)
         //get teams by name using dbContext
         //return result
 
-        var orders = await dbContext.Teams
+        var teams = await dbContext.Teams
                 .AsNoTracking()
                 .Where(o => o.TeamName.Value.Contains(query.Name))
                 .OrderBy(o => o.TeamName.Value)
                 .ToListAsync(cancellationToken);
 
-        return new GetTeamsByNameResult(orders.ToTeamDtoList());
+        return new GetTeamsByNameResult(teams.ToTeamDtoList());
     }
 }

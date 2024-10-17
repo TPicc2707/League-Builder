@@ -5,14 +5,17 @@ services:
   teamdb:
     image: mcr.microsoft.com/mssql/server
 
+  playerdb:
+    image: mcr.microsoft.com/mssql/server
+
   messagebroker:
     image: rabbitmq:management
 
   league.api:
-   image: ${DOCKER_REGISTRY-}leagueapi
-   build:
-     context: .
-     dockerfile: Services/League/League.API/Dockerfile
+    image: ${DOCKER_REGISTRY-}leagueapi
+    build:
+      context: .
+      dockerfile: Services/League/League.API/Dockerfile
 
   team.api:
     image: ${DOCKER_REGISTRY-}teamapi
@@ -20,5 +23,12 @@ services:
       context: .
       dockerfile: Services/Team/Team.API/Dockerfile
 
+  player.api:
+    image: ${DOCKER_REGISTRY-}playerapi
+    build:
+      context: .
+      dockerfile: Services/Player/Player.API/Dockerfile
+
 volumes:
   postgres_league:
+

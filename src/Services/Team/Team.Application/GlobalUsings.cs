@@ -22,3 +22,4 @@ global using Team.Application.Leagues.Commands.UpdateLeague;
 global using Team.Domain.Enums;
 global using Team.Domain.Models;
 global using Team.Domain.ValueObjects;
+global using Mapster;

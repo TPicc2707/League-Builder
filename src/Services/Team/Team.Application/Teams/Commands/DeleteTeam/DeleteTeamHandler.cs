@@ -1,5 +1,5 @@
 ﻿namespace Team.Application.Teams.Commands.DeleteTeam;
-public class DeleteTeamHandler(IApplicationDbContext dbContext)
+public class DeleteTeamHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
     : ICommandHandler<DeleteTeamCommand, DeleteTeamResult>
 {
     public async Task<DeleteTeamResult> Handle(DeleteTeamCommand command, CancellationToken cancellationToken)
@@ -19,6 +19,14 @@ public class DeleteTeamHandler(IApplicationDbContext dbContext)
 
         dbContext.Teams.Remove(team);
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        var eventMessage = new TeamDeletionEvent()
+        {
+            Id = command.TeamId
+        };
+
+        await publishEndpoint.Publish(eventMessage, cancellationToken);
+
 
         return new DeleteTeamResult(true);
     }

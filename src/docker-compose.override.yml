@@ -21,9 +21,22 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      - ./data:/var/opt/mssql/data
-      - ./log:/var/opt/mssql/log
-      - ./secrets:/var/opt/mssql/secrets
+      - ./data/team:/var/opt/mssql/data
+      - ./log/team:/var/opt/mssql/log
+      - ./secrets/team:/var/opt/mssql/secrets
+
+  playerdb:
+    container_name: playerdb
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=SwN12345678
+    restart: always
+    ports:
+      - "1434:1433"
+    volumes:
+      - ./data/player:/var/opt/mssql/data
+      - ./log/player:/var/opt/mssql/log
+      - ./secrets/player:/var/opt/mssql/secrets
 
   messagebroker:
     container_name: messagebroker
@@ -59,6 +72,8 @@ services:
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
 
   team.api:
+    container_name: team.api
+    restart: always
     environment:
       - ASPNETCORE_Kestrel__Certificates__Default__Password=some.long.password.fllkwefiwejf23049uwlekjf.sEFWEFGR98^&$
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
@@ -75,6 +90,29 @@ services:
     ports:
       - "6001:8080"
       - "6061:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  player.api:
+    container_name: player.api
+    restart: always
+    environment:
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=some.long.password.fllkwefiwejf23049uwlekjf.sEFWEFGR98^&$
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__Database=Server=playerdb;Database=PlayerDb;User Id=sa;Password=SwN12345678;Encrypt=False;TrustServerCertificate=True
+      - MessageBroker__Host=amqp://league-mq:5672
+      - MessageBroker__UserName=guest
+      - MessageBroker__Password=guest 
+    depends_on:
+      - playerdb
+      - messagebroker
+    ports:
+      - "6002:8080"
+      - "6062:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
