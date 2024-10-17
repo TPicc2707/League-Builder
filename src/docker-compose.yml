@@ -29,6 +29,13 @@ services:
       context: .
       dockerfile: Services/Player/Player.API/Dockerfile
 
+  league.builder.apigateway:
+    image: ${DOCKER_REGISTRY-}leaguebuilderapigateway
+    build:
+      context: .
+      dockerfile: ApiGateways/League.Builder.ApiGateway/Dockerfile
+
 volumes:
   postgres_league:
+
 

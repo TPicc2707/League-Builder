@@ -31,13 +31,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildingBlocks.Messaging", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Player", "Player", "{DE77785D-841F-4D3E-AF2F-EAE091A1C87E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.API", "Services\Player\Player.API\Player.API.csproj", "{B739D641-B86A-4D08-82D2-9C00D4D20CA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.API", "Services\Player\Player.API\Player.API.csproj", "{B739D641-B86A-4D08-82D2-9C00D4D20CA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.Application", "Services\Player\Player.Application\Player.Application.csproj", "{C803ABA7-F234-43D0-BB54-564C586B2A06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.Application", "Services\Player\Player.Application\Player.Application.csproj", "{C803ABA7-F234-43D0-BB54-564C586B2A06}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.Domain", "Services\Player\Player.Domain\Player.Domain.csproj", "{0125A8F9-36D0-4A5E-8E2C-7331520F80E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.Domain", "Services\Player\Player.Domain\Player.Domain.csproj", "{0125A8F9-36D0-4A5E-8E2C-7331520F80E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Player.Infrastructure", "Services\Player\Player.Infrastructure\Player.Infrastructure.csproj", "{13A811BC-52EB-487F-9CC9-09313E45B7DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Player.Infrastructure", "Services\Player\Player.Infrastructure\Player.Infrastructure.csproj", "{13A811BC-52EB-487F-9CC9-09313E45B7DA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApiGateways", "ApiGateways", "{AF4613DF-6F08-4C6E-90BA-B1A96694DF62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "League.Builder.ApiGateway", "ApiGateways\League.Builder.ApiGateway\League.Builder.ApiGateway.csproj", "{5E55973A-9893-4A02-9656-361E702397B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +97,10 @@ Global
 		{13A811BC-52EB-487F-9CC9-09313E45B7DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13A811BC-52EB-487F-9CC9-09313E45B7DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13A811BC-52EB-487F-9CC9-09313E45B7DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E55973A-9893-4A02-9656-361E702397B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E55973A-9893-4A02-9656-361E702397B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E55973A-9893-4A02-9656-361E702397B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E55973A-9893-4A02-9656-361E702397B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,6 +120,7 @@ Global
 		{C803ABA7-F234-43D0-BB54-564C586B2A06} = {DE77785D-841F-4D3E-AF2F-EAE091A1C87E}
 		{0125A8F9-36D0-4A5E-8E2C-7331520F80E2} = {DE77785D-841F-4D3E-AF2F-EAE091A1C87E}
 		{13A811BC-52EB-487F-9CC9-09313E45B7DA} = {DE77785D-841F-4D3E-AF2F-EAE091A1C87E}
+		{5E55973A-9893-4A02-9656-361E702397B9} = {AF4613DF-6F08-4C6E-90BA-B1A96694DF62}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {37BC98E0-E4DA-4023-98D1-A14B84DF2FE4}
