@@ -1,0 +1,89 @@
+﻿@page "/teams"
+@inject ITeamService TeamService
+@inject ILeagueService LeagueService
+
+@if (PageLoad)
+{
+    <div style="padding-bottom: 250px;">
+        <div style="padding-top: 50px;">
+            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Teams</MudText>
+        </div>
+
+        @for (var i = 1; i <= Counter; i++)
+        {
+            <div style="padding-top: 25px;">
+                <MudStack Justify="@_justify" Row="true">
+                    @foreach (var team in GetTeamsForRow(TeamCounter))
+                    {
+                        string imageFile = String.Concat("images/", team.ImageFile);
+                        string playerLink = String.Concat("/playersbyteam/", team.Id);
+                        string address = String.Concat(team.TeamAddress.AddressLine, ", ", team.TeamAddress.State, ", ", team.TeamAddress.ZipCode);
+                        string leagueName = GetLeagueName(team.LeagueId);
+                        <MudCard>
+                            <MudCardMedia Image="@imageFile" Height="200" />
+                            <MudCardContent>
+                                <MudText Typo="Typo.h5" Style="font-weight: bold; padding-bottom: 5px;">@team.TeamName</MudText>
+                                <MudText Typo="Typo.body1" Style="padding-bottom: 5px;">@leagueName</MudText>
+                                <MudText Typo="Typo.body2" Style="padding-bottom: 5px;">@address</MudText>
+                                <MudText Typo="Typo.body2" Style="padding-bottom: 5px;">@team.Description</MudText>
+                            </MudCardContent>
+                            <MudCardActions Style="align-content: center">
+                                <MudButton Href="@playerLink" Variant="Variant.Text" Color="Color.Primary">Players</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    }
+                </MudStack>
+            </div>
+
+        }
+
+    </div>
+
+}
+else
+{
+    <Loading />
+}
+
+@code {
+
+    private bool PageLoad = false;
+    private int TeamCount = 0;
+    private int PageSize = 0;
+    private int Counter = 0;
+    private Justify _justify = Justify.SpaceEvenly;
+    private int TeamCounter = 0;
+
+    private GetTeamsResponse TeamsResponse { get; set; }
+    private GetLeaguesResponse LeaguesResponse { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        TeamsResponse = await TeamService.GetTeams(0, 100);
+        LeaguesResponse = await LeagueService.GetLeagues();
+        TeamCount = (int)TeamsResponse.Teams.Count;
+        Console.WriteLine(TeamCount);
+        PageSize = 4;
+        Console.WriteLine(PageSize);
+        Counter = (int)Math.Ceiling((decimal)TeamCount / (decimal)PageSize);
+        Console.WriteLine(Counter);
+        PageLoad = true;
+
+    }
+
+    private string GetLeagueName(Guid id)
+    {
+        var leagueName = LeaguesResponse.Leagues.FirstOrDefault(l => l.Id == id).Name;
+
+        return leagueName;
+    }
+
+    private IEnumerable<TeamModel> GetTeamsForRow(int count)
+    {
+        Console.WriteLine(count);
+        var teams = TeamsResponse.Teams.Data.OrderBy(p => p.TeamName).Skip(4 * count).Take(4);
+        TeamCounter++;
+        return teams;
+    }
+
+}

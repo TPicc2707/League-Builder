@@ -6,11 +6,20 @@ builder.Services
     .AddInfrastructureServices(builder.Configuration)
     .AddApiServices(builder.Configuration);
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    builder.WithOrigins("https://localhost:6063")
+    .AllowAnyHeader()
+    .AllowAnyMethod());
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseApiServices();
+
+app.UseCors();
 
 if (app.Environment.IsDevelopment())
 {

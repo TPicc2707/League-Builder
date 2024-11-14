@@ -25,6 +25,13 @@ builder.Services.AddMessageBroker(builder.Configuration);
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    builder.WithOrigins("https://localhost:6063")
+    .AllowAnyHeader()
+    .AllowAnyMethod());
+});
 
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Database")!);
@@ -32,6 +39,8 @@ builder.Services.AddHealthChecks()
 var app = builder.Build();
 
 app.MapCarter();
+
+app.UseCors();
 
 app.UseExceptionHandler(options => { });
 

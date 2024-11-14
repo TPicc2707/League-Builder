@@ -1,0 +1,13 @@
+﻿<MudOverlay @bind-Visible="visible" DarkBackground="true" ZIndex="9999" AutoClose="true">
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+ </MudOverlay>
+
+@code {
+    private bool visible;
+
+    protected override async Task OnInitializedAsync()
+    {
+        visible = true;
+        StateHasChanged();
+    }
+}
