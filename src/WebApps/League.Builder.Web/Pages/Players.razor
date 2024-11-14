@@ -4,11 +4,11 @@
 
 @if (PageLoad)
 {
-     <div style="padding-bottom: 200px;">
+    <div style="padding-bottom: 200px;">
         <div style="padding-top: 50px;">
             <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">All Players</MudText>
         </div>
-        
+
         @for(var i = 1; i <= Counter; i++)
         {
             <div style="padding-top: 25px;">
@@ -63,7 +63,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         PlayersResponse = await PlayerService.GetPlayers(0, 100);
-        TeamsResponse = await TeamService.GetTeams();
+        TeamsResponse = await TeamService.GetTeams(0, 100);
         PlayerCount = (int)PlayersResponse.Players.Count;
         Console.WriteLine(PlayerCount);
         PageSize = 4;
@@ -75,9 +75,12 @@ else
 
     private string GetTeamName(Guid id)
     {
-        var teamName = TeamsResponse.Teams.Data.FirstOrDefault(t => t.Id == id).TeamName;
+        var team = TeamsResponse.Teams.Data.FirstOrDefault(t => t.Id == id);
 
-        return teamName;
+        if (team == null)
+            return string.Empty;
+
+        return team.TeamName;
     }
 
     private IEnumerable<PlayerModel> GetPlayersForRow(int count)
