@@ -5,7 +5,7 @@ public class LeagueConfiguration : IEntityTypeConfiguration<League>
     {
         builder.HasKey(l => l.Id);
         builder.Property(l => l.Id).HasConversion(
-                customerId => customerId.Value,
+                leagueId => leagueId.Value,
                 dbId => LeagueId.Of(dbId));
 
         builder.Property(c => c.Name).HasMaxLength(150).IsRequired();

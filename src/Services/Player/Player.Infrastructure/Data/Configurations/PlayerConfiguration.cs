@@ -7,7 +7,7 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Domain.Models.Player
         builder.HasKey(p => p.Id);
 
         builder.Property(p => p.Id).HasConversion(
-                teamId => teamId.Value,
+                playerId => playerId.Value,
                 dbId => PlayerId.Of(dbId));
 
         builder.HasOne<Team>()

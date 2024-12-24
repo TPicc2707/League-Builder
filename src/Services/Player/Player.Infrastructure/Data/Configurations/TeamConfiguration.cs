@@ -6,7 +6,7 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
     {
         builder.HasKey(l => l.Id);
         builder.Property(l => l.Id).HasConversion(
-                customerId => customerId.Value,
+                teamId => teamId.Value,
                 dbId => TeamId.Of(dbId));
 
         builder.Property(c => c.TeamName).HasMaxLength(50).IsRequired();

@@ -18,7 +18,7 @@ public class UpdateTeamHandler(IApplicationDbContext dbContext, IPublishEndpoint
         dbContext.Teams.Update(team);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        var eventMessage = new TeamUpatedEvent()
+        var eventMessage = new TeamUpdatedEvent()
         {
             Id = team.Id.Value,
             TeamName = team.TeamName.Value,

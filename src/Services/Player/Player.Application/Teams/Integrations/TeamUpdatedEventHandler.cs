@@ -1,9 +1,9 @@
 ﻿namespace Player.Application.Teams.Integrations;
 
 public class TeamUpdatedEventHandler(ISender sender, ILogger<TeamUpdatedEventHandler> logger)
-    : IConsumer<TeamUpatedEvent>
+    : IConsumer<TeamUpdatedEvent>
 {
-    public async Task Consume(ConsumeContext<TeamUpatedEvent> context)
+    public async Task Consume(ConsumeContext<TeamUpdatedEvent> context)
     {
         //TODO: Update league
         logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
@@ -12,7 +12,7 @@ public class TeamUpdatedEventHandler(ISender sender, ILogger<TeamUpdatedEventHan
         await sender.Send(command);
     }
 
-    private UpdateTeamCommand MapToUpdateTeamCommand(TeamUpatedEvent message)
+    private UpdateTeamCommand MapToUpdateTeamCommand(TeamUpdatedEvent message)
     {
         var teamDto = new TeamDto(
             Id: message.Id,
