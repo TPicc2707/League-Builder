@@ -10,7 +10,7 @@ public class GetPlayerByIdHandler(IApplicationDbContext dbContext)
         var playerId = PlayerId.Of(query.Id);
         var player = await dbContext.Players.FindAsync([playerId], cancellationToken: cancellationToken);
         if (player is null)
-            throw new TeamNotFoundException(query.Id);
+            throw new PlayerNotFoundException(query.Id);
 
         return new GetPlayerByIdResult(player.ToSingleTeamDto());
     }

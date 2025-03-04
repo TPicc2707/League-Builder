@@ -12,7 +12,7 @@ public class FootballStats : Aggregate<FootballStatsId>
     public FootballKickingStats KickingStats { get; private set; } = default!;
 
 
-    public static FootballStats Create(FootballStats id, LeagueId leagueId, TeamId teamId, PlayerId playerId, SeasonId seasonId,  GameId gameId, FootballOffensiveStats offensiveStats, FootballDefensiveStats defensiveStats, FootballKickingStats kickingStats)
+    public static FootballStats Create(FootballStatsId id, LeagueId leagueId, TeamId teamId, PlayerId playerId, SeasonId seasonId,  GameId gameId, FootballOffensiveStats offensiveStats, FootballDefensiveStats defensiveStats, FootballKickingStats kickingStats)
     {
         var stats = new FootballStats()
         {
