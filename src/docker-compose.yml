@@ -8,6 +8,9 @@ services:
   playerdb:
     image: mcr.microsoft.com/mssql/server
 
+  statsdb:
+    image: mcr.microsoft.com/mssql/server
+
   messagebroker:
     image: rabbitmq:management
 
@@ -35,7 +38,14 @@ services:
       context: .
       dockerfile: ApiGateways/League.Builder.ApiGateway/Dockerfile
 
+  stats.api:
+    image: ${DOCKER_REGISTRY-}statsapi
+    build:
+      context: .
+      dockerfile: Services/Stats/Stats.API/Dockerfile
+
 volumes:
   postgres_league:
+
 
 

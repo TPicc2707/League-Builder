@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Stats.Domain.Abstractions;
 
 namespace Stats.Infrastructure.Data.Inteceptors;
 
-public class AuditableEntityInterceptors : SaveChangesInterceptor
+public class AuditableEntityInterceptor : SaveChangesInterceptor
 {
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {

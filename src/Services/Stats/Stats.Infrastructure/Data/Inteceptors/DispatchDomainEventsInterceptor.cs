@@ -1,6 +1,6 @@
 ﻿namespace Stats.Infrastructure.Data.Inteceptors;
 
-public class DispatchDomainEventsInterceptors(IMediator mediator) : SaveChangesInterceptor
+public class DispatchDomainEventsInterceptor(IMediator mediator) : SaveChangesInterceptor
 {
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
