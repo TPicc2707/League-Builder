@@ -51,6 +51,18 @@ services:
         - ./log/player:/var/opt/mssql/log
         - ./secrets/player:/var/opt/mssql/secrets
 
+  seasondb:
+    container_name: seasondb
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=LeagueDb
+    restart: always
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_season:/var/lib/postgresql/data/
+
   messagebroker:
     container_name: messagebroker
     hostname: league-mq
@@ -147,13 +159,35 @@ services:
       - statsdb
       - messagebroker
     ports:
-      - "6003:8080"
-      - "6063:8081"
+      - "6005:8080"
+      - "6065:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+
+  season.api:
+    container_name: season.api
+    environment:
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=some.long.password.fllkwefiwejf23049uwlekjf.sEFWEFGR98^&$
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__Database=Server=seasondb;Port=5432;Database=SeasonDb;User Id=postgres;Password=postgres;Include Error Detail=true
+      - MessageBroker__Host=amqp://league-mq:5672
+      - MessageBroker__UserName=guest
+      - MessageBroker__Password=guest
+    depends_on:
+      - leaguedb
+      - messagebroker 
+    ports:
+      - "6004:8080"
+      - "6064:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
 
   league.builder.apigateway:
     container_name: league.builder.apigateway

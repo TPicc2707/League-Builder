@@ -36,6 +36,8 @@ internal class InitialData
         new List<Season>
         {
             //TODO
+            Season.Create(SeasonId.Of(new Guid("9baeb193-c9f1-4b92-8d04-dfef45b9ed3c")), 2023),
+            Season.Create(SeasonId.Of(new Guid("898a0e75-d5d3-4a05-973f-4eb5153649da")), 2024)
         };
 
     public static IEnumerable<Game> Games =>

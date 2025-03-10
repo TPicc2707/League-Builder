@@ -11,6 +11,9 @@ services:
   statsdb:
     image: mcr.microsoft.com/mssql/server
 
+  seasondb:
+    image: postgres
+
   messagebroker:
     image: rabbitmq:management
 
@@ -44,8 +47,15 @@ services:
       context: .
       dockerfile: Services/Stats/Stats.API/Dockerfile
 
+  season.api:
+    image: ${DOCKER_REGISTRY-}seasonapi
+    build:
+      context: .
+      dockerfile: Services/Season/Season.API/Dockerfile
+
 volumes:
   postgres_league:
+  postgres_season:
 
 
 
