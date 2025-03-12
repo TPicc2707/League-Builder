@@ -12,6 +12,6 @@ public class GetPlayerByIdHandler(IApplicationDbContext dbContext)
         if (player is null)
             throw new PlayerNotFoundException(query.Id);
 
-        return new GetPlayerByIdResult(player.ToSingleTeamDto());
+        return new GetPlayerByIdResult(player.ToSinglePlayerDto());
     }
 }

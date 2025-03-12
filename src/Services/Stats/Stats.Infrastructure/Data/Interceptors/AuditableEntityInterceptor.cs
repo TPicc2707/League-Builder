@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace Stats.Infrastructure.Data.Inteceptors;
+namespace Stats.Infrastructure.Data.Intecerptors;
 
 public class AuditableEntityInterceptor : SaveChangesInterceptor
 {

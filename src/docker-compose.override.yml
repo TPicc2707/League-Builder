@@ -63,6 +63,19 @@ services:
     volumes:
       - postgres_season:/var/lib/postgresql/data/
 
+  gamedb:
+    container_name: gamedb
+    environment:
+       - ACCEPT_EULA=Y
+       - SA_PASSWORD=SwN12345678
+    restart: always
+    ports:
+       - "1436:1433"
+    volumes:
+       - ./data/player:/var/opt/mssql/data
+       - ./log/player:/var/opt/mssql/log
+       - ./secrets/player:/var/opt/mssql/secrets
+
   messagebroker:
     container_name: messagebroker
     hostname: league-mq
@@ -163,9 +176,7 @@ services:
       - "6065:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
 
   season.api:
     container_name: season.api
@@ -180,11 +191,34 @@ services:
       - MessageBroker__UserName=guest
       - MessageBroker__Password=guest
     depends_on:
-      - leaguedb
+      - seasondb
       - messagebroker 
     ports:
       - "6004:8080"
       - "6064:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  game.api:
+    container_name: game.api
+    restart: always
+    environment:
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=some.long.password.fllkwefiwejf23049uwlekjf.sEFWEFGR98^&$
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__Database=Server=gamedb;Database=GameDb;User Id=sa;Password=SwN12345678;Encrypt=False;TrustServerCertificate=True
+      - MessageBroker__Host=amqp://league-mq:5672
+      - MessageBroker__UserName=guest
+      - MessageBroker__Password=guest 
+    depends_on:
+      - gamedb
+      - messagebroker
+    ports:
+      - "6006:8080"
+      - "6066:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

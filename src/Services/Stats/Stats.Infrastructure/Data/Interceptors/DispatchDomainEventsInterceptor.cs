@@ -1,4 +1,4 @@
-﻿namespace Stats.Infrastructure.Data.Inteceptors;
+﻿namespace Stats.Infrastructure.Data.Intecerptors;
 
 public class DispatchDomainEventsInterceptor(IMediator mediator) : SaveChangesInterceptor
 {

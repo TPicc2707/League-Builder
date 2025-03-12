@@ -27,7 +27,7 @@ public static class PlayerExtensions
             ));
     }
 
-    public static PlayerDto ToSingleTeamDto(this Domain.Models.Player player)
+    public static PlayerDto ToSinglePlayerDto(this Domain.Models.Player player)
     {
         return new PlayerDto(
             Id: player.Id.Value,

@@ -16,7 +16,8 @@ internal class InitialData
         Team.Create(TeamId.Of(new Guid("d8bd14ea-efd4-48a0-9e53-321e39681201")), "Cannons"),
         Team.Create(TeamId.Of(new Guid("7dc0013c-f09b-4e47-b4dc-b63161f8f055")), "Bombers"),
         Team.Create(TeamId.Of(new Guid("063770fb-5651-49bd-a04e-74687df1bd57")), "Eagles"),
-        Team.Create(TeamId.Of(new Guid("c9dcbacb-16e7-45e0-a496-b66ef212ac16")), "Pirates")
+        Team.Create(TeamId.Of(new Guid("c9dcbacb-16e7-45e0-a496-b66ef212ac16")), "Pirates"),
+        Team.Create(TeamId.Of(new Guid("0ef05e29-7562-4e93-b710-f875fe293db9")), "Cardinals")
     };
 
     public static IEnumerable<Player> Players =>
@@ -29,7 +30,12 @@ internal class InitialData
             Player.Create(PlayerId.Of(new Guid("053c5b0e-91c0-4e0c-9b75-eaa8523952fe")), "Jalen","Smith"),
             Player.Create(PlayerId.Of(new Guid("eac710ad-5af0-4a37-9f6b-feb08ff2415c")), "James","Garcia"),
             Player.Create(PlayerId.Of(new Guid("036a529b-1a76-4603-b0df-dfd48cf4c182")), "Ben","Thomas"),
-            Player.Create(PlayerId.Of(new Guid("d4c95b68-084d-4630-bd4d-41598dba484f")), "Noah","Jones")
+            Player.Create(PlayerId.Of(new Guid("d4c95b68-084d-4630-bd4d-41598dba484f")), "Noah","Jones"),
+            Player.Create(PlayerId.Of(new Guid("69752bda-2b77-4eaf-b8d2-4ef2d723a46e")), "Brock","Banner"),
+            Player.Create(PlayerId.Of(new Guid("5b32c8d2-ba86-4a16-9c9c-8bb8903205dd")), "Oswald","Jerome"),
+            Player.Create(PlayerId.Of(new Guid("dba1c618-826e-4d0c-afb4-df72c599874e")), "Victor","Bazwell"),
+            Player.Create(PlayerId.Of(new Guid("f7b4f809-40a3-451b-ae74-1089fa465bd0")), "Kellen","McNeal"),
+            Player.Create(PlayerId.Of(new Guid("36b95380-a7be-495d-98eb-ab7faafcadfe")), "Gary","Coleman")
        };
 
     public static IEnumerable<Season> Seasons =>
@@ -43,7 +49,15 @@ internal class InitialData
     public static IEnumerable<Game> Games =>
         new List<Game>
         {
-            //TODO
+            Game.Create(GameId.Of(new Guid("a16ea142-27a2-497c-a33a-5d1fcd985900"))),
+            Game.Create(GameId.Of(new Guid("d19157f2-ee31-444e-a423-26784e9e19d5"))),
+            Game.Create(GameId.Of(new Guid("dd16ee11-ebc2-4446-9b3b-cc3ba5227cc0"))),
+            Game.Create(GameId.Of(new Guid("a4a5a74d-8d24-4b38-8c67-b3f01d02e343"))),
+            Game.Create(GameId.Of(new Guid("4d60cf9c-87c2-4f9d-a588-c2b55145b6a2"))),
+            Game.Create(GameId.Of(new Guid("84a5e1f3-0945-408a-b1e3-1a4082c94922"))),
+            Game.Create(GameId.Of(new Guid("710f3ea1-1b62-47cc-a455-97619b2b53d5"))),
+            Game.Create(GameId.Of(new Guid("bb6a9a4a-42e8-4153-b9a6-807763b2d08c")))
+
         };
 
     public static IEnumerable<BaseballStats> BaseballStats =>

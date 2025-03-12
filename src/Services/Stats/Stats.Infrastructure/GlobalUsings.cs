@@ -10,5 +10,5 @@ global using Stats.Domain.Abstractions;
 global using Stats.Domain.Models;
 global using Stats.Domain.ValueObjects;
 global using Stats.Infrastructure.Data;
-global using Stats.Infrastructure.Data.Inteceptors;
+global using Stats.Infrastructure.Data.Intecerptors;
 global using System.Reflection;
