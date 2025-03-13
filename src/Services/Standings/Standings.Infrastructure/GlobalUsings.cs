@@ -1,0 +1,16 @@
+﻿global using MediatR;
+global using Microsoft.AspNetCore.Builder;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.ChangeTracking;
+global using Microsoft.EntityFrameworkCore.Diagnostics;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Standings.Application.Data;
+global using Standings.Domain.Abstractions;
+global using Standings.Domain.Enum;
+global using Standings.Domain.Models;
+global using Standings.Domain.ValueObjects;
+global using Standings.Infrastructure.Data;
+global using Standings.Infrastructure.Data.Intercerptors;
+global using System.Reflection;

@@ -1,6 +1,4 @@
-﻿using Game.Application.Extensions;
-
-namespace Game.Application.Games.Queries.GetGameById;
+﻿namespace Game.Application.Games.Queries.GetGameById;
 
 public class GetGameByIdHandler(IApplicationDbContext dbContext)
     : IQueryHandler<GetGameByIdQuery, GetGameByIdResult>
@@ -9,12 +7,12 @@ public class GetGameByIdHandler(IApplicationDbContext dbContext)
     {
         // get game by id using dbContext
         // return result
-        var playerId = GameId.Of(query.Id);
-        var player = await dbContext.Games.FindAsync([playerId], cancellationToken: cancellationToken);
-        if (player is null)
+        var gameId = GameId.Of(query.Id);
+        var game = await dbContext.Games.FindAsync([gameId], cancellationToken: cancellationToken);
+        if (game is null)
             throw new GameNotFoundException(query.Id);
 
-        return new GetGameByIdResult(player.ToSingleGameDto());
+        return new GetGameByIdResult(game.ToSingleGameDto());
     }
 }
 

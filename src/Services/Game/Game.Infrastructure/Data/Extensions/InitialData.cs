@@ -42,7 +42,7 @@ internal class InitialData
 
             var gameDetail3 = GameDetail.Of(0, 0, new DateTime(2023, 6, 16, 14, 0, 0), null);
             var game3 = Domain.Models.Game.Create(GameId.Of(new Guid("dd16ee11-ebc2-4446-9b3b-cc3ba5227cc0")), LeagueId.Of(new Guid("5334c996-8457-4cf0-815c-ed2b77c4ff61")), TeamId.Of(new Guid("7DC0013C-F09B-4E47-B4DC-B63161F8F055")), TeamId.Of(new Guid("0ef05e29-7562-4e93-b710-f875fe293db9")),
-            SeasonId.Of(new Guid("898a0e75-d5d3-4a05-973f-4eb5153649da")), gameDetail: gameDetail3);
+            SeasonId.Of(new Guid("9baeb193-c9f1-4b92-8d04-dfef45b9ed3c")), gameDetail: gameDetail3);
 
             var gameDetail4 = GameDetail.Of(0, 0, new DateTime(2024, 6, 18, 14, 0, 0), null);
             var game4 = Domain.Models.Game.Create(GameId.Of(new Guid("a4a5a74d-8d24-4b38-8c67-b3f01d02e343")), LeagueId.Of(new Guid("5334c996-8457-4cf0-815c-ed2b77c4ff61")), TeamId.Of(new Guid("0ef05e29-7562-4e93-b710-f875fe293db9")), TeamId.Of(new Guid("7DC0013C-F09B-4E47-B4DC-B63161F8F055")),
@@ -50,7 +50,7 @@ internal class InitialData
 
             var gameDetail5 = GameDetail.Of(0, 0, new DateTime(2023, 6, 18, 12, 0, 0), null);
             var game5 = Domain.Models.Game.Create(GameId.Of(new Guid("4d60cf9c-87c2-4f9d-a588-c2b55145b6a2")), LeagueId.Of(new Guid("5334c996-8457-4cf0-815c-ed2b77c4ff61")), TeamId.Of(new Guid("D8BD14EA-EFD4-48A0-9E53-321E39681201")), TeamId.Of(new Guid("0ef05e29-7562-4e93-b710-f875fe293db9")),
-            SeasonId.Of(new Guid("898a0e75-d5d3-4a05-973f-4eb5153649da")), gameDetail: gameDetail5);
+            SeasonId.Of(new Guid("9baeb193-c9f1-4b92-8d04-dfef45b9ed3c")), gameDetail: gameDetail5);
 
             var gameDetail6 = GameDetail.Of(0, 0, new DateTime(2024, 6, 20, 13, 0, 0), null);
             var game6 = Domain.Models.Game.Create(GameId.Of(new Guid("84a5e1f3-0945-408a-b1e3-1a4082c94922")), LeagueId.Of(new Guid("5334c996-8457-4cf0-815c-ed2b77c4ff61")), TeamId.Of(new Guid("0ef05e29-7562-4e93-b710-f875fe293db9")), TeamId.Of(new Guid("D8BD14EA-EFD4-48A0-9E53-321E39681201")),

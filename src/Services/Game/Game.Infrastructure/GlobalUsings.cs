@@ -2,7 +2,7 @@
 global using Game.Domain.Models;
 global using Game.Domain.ValueObjects;
 global using Game.Infrastructure.Data;
-global using Game.Infrastructure.Data.Intecerptors;
+global using Game.Infrastructure.Data.Intercerptors;
 global using MediatR;
 global using Microsoft.AspNetCore.Builder;
 global using Microsoft.EntityFrameworkCore;

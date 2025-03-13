@@ -1,4 +1,6 @@
-﻿namespace Game.Infrastructure.Data.Configurations;
+﻿using Game.Domain.Enum;
+
+namespace Game.Infrastructure.Data.Configurations;
 
 public class GameConfiguration : IEntityTypeConfiguration<Domain.Models.Game>
 {
@@ -42,5 +44,11 @@ public class GameConfiguration : IEntityTypeConfiguration<Domain.Models.Game>
                 gameDetailBuilder.Property(x => x.StartTime);
                 gameDetailBuilder.Property(x => x.EndTime);
             });
+
+        builder.Property(t => t.GameStatus)
+            .HasDefaultValue(GameStatus.NotStarted)
+            .HasConversion(
+                s => s.ToString(),
+                dbStatus => (GameStatus)Enum.Parse(typeof(GameStatus), dbStatus));
     }
 }

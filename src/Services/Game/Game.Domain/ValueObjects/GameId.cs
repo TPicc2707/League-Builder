@@ -9,7 +9,7 @@ public class GameId
         ArgumentNullException.ThrowIfNull(value);
 
         if (value == Guid.Empty)
-            throw new DomainException("BasketballStatsId cannot be empty.");
+            throw new DomainException("GameId cannot be empty.");
 
         return new GameId(value);
     }

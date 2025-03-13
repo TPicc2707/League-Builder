@@ -47,9 +47,9 @@ services:
      ports:
         - "1435:1433"
      volumes:
-        - ./data/player:/var/opt/mssql/data
-        - ./log/player:/var/opt/mssql/log
-        - ./secrets/player:/var/opt/mssql/secrets
+        - ./data/stats:/var/opt/mssql/data
+        - ./log/stats:/var/opt/mssql/log
+        - ./secrets/stats:/var/opt/mssql/secrets
 
   seasondb:
     container_name: seasondb
@@ -72,9 +72,22 @@ services:
     ports:
        - "1436:1433"
     volumes:
-       - ./data/player:/var/opt/mssql/data
-       - ./log/player:/var/opt/mssql/log
-       - ./secrets/player:/var/opt/mssql/secrets
+       - ./data/game:/var/opt/mssql/data
+       - ./log/game:/var/opt/mssql/log
+       - ./secrets/game:/var/opt/mssql/secrets
+
+  standingsdb:
+    container_name: standingsdb
+    environment:
+       - ACCEPT_EULA=Y
+       - SA_PASSWORD=SwN12345678
+    restart: always
+    ports:
+       - "1437:1433"
+    volumes:
+       - ./data/standings:/var/opt/mssql/data
+       - ./log/standings:/var/opt/mssql/log
+       - ./secrets/standings:/var/opt/mssql/secrets
 
   messagebroker:
     container_name: messagebroker
@@ -219,6 +232,29 @@ services:
     ports:
       - "6006:8080"
       - "6066:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  standings.api:
+    container_name: standings.api
+    restart: always
+    environment:
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=some.long.password.fllkwefiwejf23049uwlekjf.sEFWEFGR98^&$
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__Database=Server=standingsdb;Database=StandingsDb;User Id=sa;Password=SwN12345678;Encrypt=False;TrustServerCertificate=True
+      - MessageBroker__Host=amqp://league-mq:5672
+      - MessageBroker__UserName=guest
+      - MessageBroker__Password=guest 
+    depends_on:
+      - standingsdb
+      - messagebroker
+    ports:
+      - "6007:8080"
+      - "6067:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

@@ -17,6 +17,9 @@ services:
   gamedb:
     image: mcr.microsoft.com/mssql/server
 
+  standingsdb:
+    image: mcr.microsoft.com/mssql/server
+
   messagebroker:
     image: rabbitmq:management
 
@@ -62,9 +65,16 @@ services:
       context: .
       dockerfile: Services/Game/Game.API/Dockerfile
 
+  standings.api:
+    image: ${DOCKER_REGISTRY-}standingsapi
+    build:
+      context: .
+      dockerfile: Services/Standings/Standings.API/Dockerfile
+
 volumes:
   postgres_league:
   postgres_season:
+
 
 
 

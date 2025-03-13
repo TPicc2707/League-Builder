@@ -1,4 +1,4 @@
-﻿namespace Game.Infrastructure.Data.Intecerptors;
+﻿namespace Standings.Infrastructure.Data.Intercerptors;
 
 public class AuditableEntityInterceptor : SaveChangesInterceptor
 {
