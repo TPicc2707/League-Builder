@@ -33,7 +33,7 @@ public record UpdatePlayerModel(
     int PlayerStatus);
 
 public record AddressModel(string AddressLine, string Country, string State, string ZipCode);
-public record PlayerDetailModel(string EmailAddress, string PhoneNumber, DateTime BirthDate, int Height, int Weight, string Position);
+public record PlayerDetailModel(string EmailAddress, string PhoneNumber, DateTime BirthDate, int Height, int Weight, string Position, int Number);
 
 public enum PlayerStatus
 {
@@ -55,6 +55,7 @@ public record GetPlayersByTeamResponse(IEnumerable<PlayerModel> Players);
 public record GetPlayersByFirstNameResponse(IEnumerable<PlayerModel> Players);
 public record GetPlayersByLastNameResponse(IEnumerable<PlayerModel> Players);
 public record GetPlayersByPositionResponse(IEnumerable<PlayerModel> Players);
+public record GetPlayersByStateResponse(IEnumerable<PlayerModel> Players);
 public record GetPlayersByBirthDateResponse(IEnumerable<PlayerModel> Players);
 public record GetPlayersBeforeBirthDateResponse(IEnumerable<PlayerModel> Players);
 public record GetPlayersAfterBirthDateResponse(IEnumerable<PlayerModel> Players);

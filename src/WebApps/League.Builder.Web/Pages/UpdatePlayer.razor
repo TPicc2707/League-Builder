@@ -195,6 +195,9 @@ else
         public int Weight { get; set; }
 
         [Required]
+        public int Number { get; set; }
+
+        [Required]
         public string Position { get; set; }
 
         public string Description { get; set; }
@@ -249,7 +252,7 @@ else
         }
         model.BirthDate = (DateTime)date;
         Models.Player.AddressModel address = new Models.Player.AddressModel(model.AddressLine, model.Country, model.State, model.ZipCode);
-        Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(model.EmailAddress, model.PhoneNumber, model.BirthDate, model.Height, model.Weight, model.Position);
+        Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(model.EmailAddress, model.PhoneNumber, model.BirthDate, model.Height, model.Weight, model.Position, model.Number);
         UpdatePlayerRequest request = new UpdatePlayerRequest(new UpdatePlayerModel(model.Id, model.TeamId, model.FirstName, model.LastName, address, playerDetail, model.Description, model.ImageFile, (int)model.PlayerStatus));
         Console.WriteLine(request.Player.PlayerStatus);
         await PlayerService.UpdatePlayer(request);

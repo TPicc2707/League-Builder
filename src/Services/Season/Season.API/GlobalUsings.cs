@@ -6,6 +6,7 @@ global using BuildingBlocks.Messaging.Events;
 global using BuildingBlocks.Messaging.MassTransit;
 global using Carter;
 global using FluentValidation;
+global using HealthChecks.UI.Client;
 global using Mapster;
 global using Marten;
 global using Marten.Pagination;

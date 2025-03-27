@@ -36,5 +36,5 @@ public class SeasonInitialData : IInitialData
             Modified_DateTime = DateTime.Now,
             Modified_User = "tony.pic"
         }
-    }
+    };
 }

@@ -44,6 +44,8 @@ public record CreateTeamRequest(CreateTeamModel Team);
 public record GetTeamsResponse(PaginatedResult<TeamModel> Teams);
 public record GetTeamByIdResponse(TeamModel Team);
 public record GetTeamsByNameResponse(IEnumerable<TeamModel> Teams);
+public record GetTeamsBySportResponse(IEnumerable<TeamModel> Teams);
+public record GetTeamsByStateResponse(IEnumerable<TeamModel> Teams);
 public record GetTeamsByLeagueResponse(IEnumerable<TeamModel> Teams);
 public record CreateTeamResponse(Guid Id);
 public record UpdateTeamResponse(bool IsSuccess);

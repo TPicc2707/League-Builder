@@ -19,6 +19,7 @@ global using Player.Application.Players.Queries.GetPlayersByBirthDate;
 global using Player.Application.Players.Queries.GetPlayersByFirstName;
 global using Player.Application.Players.Queries.GetPlayersByLastName;
 global using Player.Application.Players.Queries.GetPlayersByPosition;
+global using Player.Application.Players.Queries.GetPlayersByState;
 global using Player.Application.Players.Queries.GetPlayersByTeam;
 global using Player.Infrastructure;
 global using Player.Infrastructure.Data.Extensions;

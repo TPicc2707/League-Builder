@@ -70,6 +70,8 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Domain.Models.Player
                 detailBuilder.Property(d => d.Weight);
 
                 detailBuilder.Property(d => d.Position);
+
+                detailBuilder.Property(d => d.Number);
             });
 
         builder.Property(x => x.Description);

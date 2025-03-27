@@ -1,4 +1,5 @@
 ﻿global using Game.Application.Data;
+global using Game.Domain.Abstractions;
 global using Game.Domain.Models;
 global using Game.Domain.ValueObjects;
 global using Game.Infrastructure.Data;

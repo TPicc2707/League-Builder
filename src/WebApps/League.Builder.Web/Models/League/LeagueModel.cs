@@ -18,6 +18,7 @@ public record UpdateLeagueRequest(Guid Id, string Name, string Sport, string Des
 public record GetLeaguesResponse(IEnumerable<LeagueModel> Leagues);
 public record GetLeagueByIdResponse(LeagueModel League);
 public record GetLeaguesBySportResponse(IEnumerable<LeagueModel> Leagues);
+public record GetLeaguesByNameResponse(IEnumerable<LeagueModel> Leagues);
 public record CreateLeagueResponse(Guid Id);
 public record UpdateLeagueResponse(bool IsSuccess);
 public record DeleteLeagueResponse(bool IsSuccess);

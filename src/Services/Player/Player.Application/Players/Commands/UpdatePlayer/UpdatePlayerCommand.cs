@@ -17,5 +17,6 @@ public class UpdatePlayerCommandValidator : AbstractValidator<UpdatePlayerComman
         RuleFor(x => x.Player.PlayerDetail.Position).NotEmpty().WithMessage("Position is required.");
         RuleFor(x => x.Player.PlayerDetail.Height).NotEmpty().GreaterThan(0).WithMessage("Height is required.");
         RuleFor(x => x.Player.PlayerDetail.Weight).NotEmpty().GreaterThan(0).WithMessage("Weight is required.");
+        RuleFor(x => x.Player.PlayerDetail.Number).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Number is required.");
     }
 }

@@ -24,7 +24,7 @@ public class UpdatePlayerHandler(IApplicationDbContext dbContext)
     private async Task UpdatePlayerWithNewValues(Domain.Models.Player player, PlayerDto playerDto)
     {
         var updatedPlayerAddress = Address.Of(playerDto.PlayerAddress.AddressLine, playerDto.PlayerAddress.Country, playerDto.PlayerAddress.State, playerDto.PlayerAddress.ZipCode);
-        var updatedPlayerDetail = PlayerDetail.Of(playerDto.PlayerDetail.EmailAddress, playerDto.PlayerDetail.PhoneNumber, playerDto.PlayerDetail.BirthDate, playerDto.PlayerDetail.Height, playerDto.PlayerDetail.Weight, playerDto.PlayerDetail.Position);
+        var updatedPlayerDetail = PlayerDetail.Of(playerDto.PlayerDetail.EmailAddress, playerDto.PlayerDetail.PhoneNumber, playerDto.PlayerDetail.BirthDate, playerDto.PlayerDetail.Height, playerDto.PlayerDetail.Weight, playerDto.PlayerDetail.Position, playerDto.PlayerDetail.Number);
 
         player.Update(
             teamId: TeamId.Of(playerDto.TeamId),

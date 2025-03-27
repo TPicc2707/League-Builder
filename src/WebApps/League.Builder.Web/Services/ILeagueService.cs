@@ -8,6 +8,8 @@ public interface ILeagueService
     Task<GetLeagueByIdResponse> GetLeague(Guid id);
     [Get("/league-service/leagues/sport/{sport}")]
     Task<GetLeaguesBySportResponse> GetLeaguesBySport(string sport);
+    [Get("/league-service/leagues/name/{name}")]
+    Task<GetLeaguesByNameResponse> GetLeaguesByName(string name);
     [Post("/league-service/leagues")]
     Task<CreateLeagueResponse> CreateLeague(CreateLeagueRequest request);
     [Put("/league-service/leagues")]

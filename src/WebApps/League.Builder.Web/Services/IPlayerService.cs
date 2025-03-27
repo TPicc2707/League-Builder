@@ -14,6 +14,8 @@ public interface IPlayerService
     Task<GetPlayersByLastNameResponse> GetPlayersByLastName(string lastName);
     [Get("/player-service/players/position/{position}")]
     Task<GetPlayersByPositionResponse> GetPlayersByPosition(string position);
+    [Get("/player-service/players/state/{state}")]
+    Task<GetPlayersByStateResponse> GetPlayersByState(string state);
     [Get("/player-service/players/by-birthdate/{birthDate}")]
     Task<GetPlayersByBirthDateResponse> GetPlayersByBirthDate(string birthDate);
     [Get("/player-service/players/before-birthdate/{birthDate}")]

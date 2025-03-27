@@ -9,12 +9,14 @@ public record PlayerDetail
     public int Weight { get; } = default!;
     public string Position { get; } = default!;
 
+    public int Number { get; } = default!;
+
     protected PlayerDetail()
     {
 
     }
 
-    private PlayerDetail(string emailAddress, string phoneNumber, DateTime birthDate, int height, int weight, string position)
+    private PlayerDetail(string emailAddress, string phoneNumber, DateTime birthDate, int height, int weight, string position, int number)
     {
         EmailAddress = emailAddress;
         PhoneNumber = phoneNumber;
@@ -22,12 +24,13 @@ public record PlayerDetail
         Height = height;
         Weight = weight;
         Position = position;
+        Number = number;
     }
 
-    public static PlayerDetail Of(string emailAddress, string phoneNumber, DateTime birthDate, int height, int weight, string position)
+    public static PlayerDetail Of(string emailAddress, string phoneNumber, DateTime birthDate, int height, int weight, string position, int number)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(emailAddress);
 
-        return new PlayerDetail(emailAddress, phoneNumber, birthDate, height, weight, position);
+        return new PlayerDetail(emailAddress, phoneNumber, birthDate, height, weight, position, number);
     }
 }

@@ -20,7 +20,8 @@ public static class PlayerExtensions
                 player.PlayerDetail.BirthDate,
                 player.PlayerDetail.Height,
                 player.PlayerDetail.Weight,
-                player.PlayerDetail.Position),
+                player.PlayerDetail.Position,
+                player.PlayerDetail.Number),
             Description: player.Description,
             ImageFile: player.ImageFile,
             PlayerStatus: player.PlayerStatus
@@ -45,7 +46,8 @@ public static class PlayerExtensions
                 player.PlayerDetail.BirthDate,
                 player.PlayerDetail.Height,
                 player.PlayerDetail.Weight,
-                player.PlayerDetail.Position),
+                player.PlayerDetail.Position,
+                player.PlayerDetail.Number),
             Description: player.Description,
             ImageFile: player.ImageFile,
             PlayerStatus: player.PlayerStatus

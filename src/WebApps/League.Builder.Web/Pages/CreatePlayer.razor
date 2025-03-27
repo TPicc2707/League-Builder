@@ -188,6 +188,9 @@ else
         public int Weight { get; set; }
 
         [Required]
+        public int Number { get; set; }
+
+        [Required]
         public string Position { get; set; }
 
         public string Description { get; set; }
@@ -221,7 +224,7 @@ else
         await model.File.OpenReadStream().CopyToAsync(filestream);
         model.BirthDate = (DateTime)date;
         Models.Player.AddressModel address = new Models.Player.AddressModel(model.AddressLine, model.Country, model.State, model.ZipCode);
-        Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(model.EmailAddress, model.PhoneNumber, model.BirthDate, model.Height, model.Weight, model.Position);
+        Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(model.EmailAddress, model.PhoneNumber, model.BirthDate, model.Height, model.Weight, model.Position, model.Number);
         CreatePlayerRequest request = new CreatePlayerRequest(new CreatePlayerModel(teamId, model.FirstName, model.LastName, address, playerDetail, model.Description, model.ImageFile));
         await PlayerService.CreatePlayer(request);
         success = true;
