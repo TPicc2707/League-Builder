@@ -70,4 +70,72 @@ builder.Services.AddRefitClient<IPlayerService>()
         //}
     });
 
+builder.Services.AddRefitClient<IStandingsService>()
+    .ConfigureHttpClient(c =>
+    {
+        c.BaseAddress = new Uri("https://localhost:6067");
+    })
+    .ConfigurePrimaryHttpMessageHandler(configure =>
+    new HttpClientHandler()
+    {
+        ClientCertificateOptions = ClientCertificateOption.Manual,
+        //SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
+        //ClientCertificates = { new System.Security.Cryptography.X509Certificates.X509Certificate(@"C:\localhost-cert.cer")},
+        //ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
+        //{
+        //    return true;
+        //}
+    });
+
+builder.Services.AddRefitClient<ISeasonService>()
+    .ConfigureHttpClient(c =>
+    {
+        c.BaseAddress = new Uri("https://localhost:6064");
+    })
+    .ConfigurePrimaryHttpMessageHandler(configure =>
+    new HttpClientHandler()
+    {
+        ClientCertificateOptions = ClientCertificateOption.Manual,
+        //SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
+        //ClientCertificates = { new System.Security.Cryptography.X509Certificates.X509Certificate(@"C:\localhost-cert.cer")},
+        //ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
+        //{
+        //    return true;
+        //}
+    });
+
+builder.Services.AddRefitClient<IGameService>()
+    .ConfigureHttpClient(c =>
+    {
+        c.BaseAddress = new Uri("https://localhost:6066");
+    })
+    .ConfigurePrimaryHttpMessageHandler(configure =>
+    new HttpClientHandler()
+    {
+        ClientCertificateOptions = ClientCertificateOption.Manual,
+        //SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
+        //ClientCertificates = { new System.Security.Cryptography.X509Certificates.X509Certificate(@"C:\localhost-cert.cer")},
+        //ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
+        //{
+        //    return true;
+        //}
+    });
+
+builder.Services.AddRefitClient<IStatsService>()
+    .ConfigureHttpClient(c =>
+    {
+        c.BaseAddress = new Uri("https://localhost:6065");
+    })
+    .ConfigurePrimaryHttpMessageHandler(configure =>
+    new HttpClientHandler()
+    {
+        ClientCertificateOptions = ClientCertificateOption.Manual,
+        //SslProtocols = System.Security.Authentication.SslProtocols.Tls12,
+        //ClientCertificates = { new System.Security.Cryptography.X509Certificates.X509Certificate(@"C:\localhost-cert.cer")},
+        //ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) =>
+        //{
+        //    return true;
+        //}
+    });
+
 await builder.Build().RunAsync();

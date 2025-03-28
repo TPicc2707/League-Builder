@@ -1,6 +1,4 @@
-﻿using Game.Domain.Enum;
-
-namespace Game.Application.Dtos;
+﻿namespace Game.Application.Dtos;
 
 public record GameDto(
     Guid Id,

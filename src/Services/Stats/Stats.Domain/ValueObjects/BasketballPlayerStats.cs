@@ -25,20 +25,20 @@ public record BasketballPlayerStats
 
     }
 
-    private BasketballPlayerStats(bool start, int minutes, int points, int fieldGoalsMade, int fieldGoalsAttempted, decimal fieldGoalPercentage, int threePointersMade, int threePointersAttempted, decimal threePointPercentage, int freeThrowsMade, int freeThrowsAttempted, decimal freeThrowPercentage, int rebounds, int assists, int steals, int blocks, int turnovers)
+    private BasketballPlayerStats(bool start, int minutes, int points, int fieldGoalsMade, int fieldGoalsAttempted, int threePointersMade, int threePointersAttempted, int freeThrowsMade, int freeThrowsAttempted, int rebounds, int assists, int steals, int blocks, int turnovers)
     {
         Start = start;
         Minutes = minutes;
         Points = points;
         FieldGoalsMade = fieldGoalsMade;
         FieldGoalsAttempted = fieldGoalsAttempted;
-        FieldGoalPercentage = fieldGoalPercentage;
+        FieldGoalPercentage = fieldGoalsMade / fieldGoalsAttempted;
         ThreePointersMade = threePointersMade;
         ThreePointersAttempted = threePointersAttempted;
-        ThreePointPercentage = threePointPercentage;
+        ThreePointPercentage = threePointersMade / threePointersAttempted;
         FreeThrowsMade = freeThrowsMade;
         FreeThrowsAttempted = freeThrowsAttempted;
-        FreeThrowPercentage = freeThrowPercentage;
+        FreeThrowPercentage = freeThrowsMade / freeThrowsAttempted;
         Rebounds = rebounds;
         Assists = assists;
         Steals = steals;
@@ -46,8 +46,8 @@ public record BasketballPlayerStats
         Turnovers = turnovers;
     }
 
-    public static BasketballPlayerStats Of(bool start, int minutes, int points, int fieldGoalsMade, int fieldGoalsAttempted, decimal fieldGoalPercentage, int threePointersMade, int threePointersAttempted, decimal threePointPercentage, int freeThrowsMade, int freeThrowsAttempted, decimal freeThrowPercentage, int rebounds, int assists, int steals, int blocks, int turnovers)
+    public static BasketballPlayerStats Of(bool start, int minutes, int points, int fieldGoalsMade, int fieldGoalsAttempted, int threePointersMade, int threePointersAttempted, int freeThrowsMade, int freeThrowsAttempted, int rebounds, int assists, int steals, int blocks, int turnovers)
     {
-        return new BasketballPlayerStats(start, minutes, points, fieldGoalsMade, fieldGoalsAttempted, fieldGoalPercentage, threePointersMade, threePointersAttempted, threePointPercentage, freeThrowsMade, freeThrowsAttempted, freeThrowPercentage, rebounds, assists, steals, blocks, turnovers);
+        return new BasketballPlayerStats(start, minutes, points, fieldGoalsMade, fieldGoalsAttempted, threePointersMade, threePointersAttempted, freeThrowsMade, freeThrowsAttempted, rebounds, assists, steals, blocks, turnovers);
     }
 }

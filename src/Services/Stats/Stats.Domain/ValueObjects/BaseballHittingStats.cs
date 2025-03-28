@@ -13,6 +13,8 @@ public record BaseballHittingStats
     public int StolenBases { get; } = default!;
     public int Strikeouts { get; } = default!;
     public int Walks { get; } = default!;
+    public int HitByPitch { get; } = default!;
+    public int SacrificeFly { get; } = default;
     public decimal Average { get; } = default!;
     public decimal Slugging { get; } = default!;
     public decimal OnBasePercentage { get; } = default!;
@@ -23,7 +25,7 @@ public record BaseballHittingStats
 
     }
 
-    private BaseballHittingStats(int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn, int stolenBases, int strikeouts, int walks, decimal average, decimal slugging, decimal onBasePercentage, decimal onBasePlusSlugging)
+    private BaseballHittingStats(int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn, int stolenBases, int strikeouts, int walks, int hitByPitch, int sacrificeFly)
     {
         AtBats = atBats;
         Hits = hits;
@@ -36,15 +38,17 @@ public record BaseballHittingStats
         StolenBases = stolenBases;
         Strikeouts = strikeouts;
         Walks = walks;
-        Average = average;
-        Slugging = slugging;
-        OnBasePercentage = onBasePercentage;
-        OnBasePlusSlugging = onBasePlusSlugging;
+        HitByPitch = hitByPitch;
+        SacrificeFly = sacrificeFly;
+        Average = hits / atBats;
+        Slugging = totalBases / atBats;
+        OnBasePercentage = (hits + walks + hitByPitch) / (atBats + walks + hitByPitch + sacrificeFly);
+        OnBasePlusSlugging = OnBasePercentage + Slugging;
     }
 
-    public static BaseballHittingStats Of(int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn, int stolenBases, int strikeouts, int walks, decimal average, decimal slugging, decimal onBasePercentage, decimal onBasePlusSlugging)
+    public static BaseballHittingStats Of(int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn, int stolenBases, int strikeouts, int walks, int hitByPitch, int sacrificeFly)
     {
-        return new BaseballHittingStats(atBats, hits, totalBases, runs, doubles, triples, homeRuns, runsBattedIn, stolenBases, strikeouts, walks, average, slugging, onBasePercentage, onBasePlusSlugging);
+        return new BaseballHittingStats(atBats, hits, totalBases, runs, doubles, triples, homeRuns, runsBattedIn, stolenBases, strikeouts, walks, hitByPitch, sacrificeFly);
     }
 
 }

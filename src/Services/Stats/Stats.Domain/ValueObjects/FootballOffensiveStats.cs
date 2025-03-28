@@ -22,7 +22,7 @@ public class FootballOffensiveStats
     public int Receptions { get; set; }
     public int Targets { get; set; }    
     public int ReceivingYards { get; set; }
-    public int ReceivingYardsPerPlay { get; set; }
+    public decimal ReceivingYardsPerPlay { get; set; }
     public int ReceivingTouchdowns { get; set; }
     public int ReceivingFumbles { get; set; }
     public int ReceivingFumblesLost { get; set; }
@@ -34,23 +34,23 @@ public class FootballOffensiveStats
 
     }
     
-    private FootballOffensiveStats(int passingCompletions, int passingAttempts, decimal passingCompletionPercentage, int passingYards, decimal passingYardsPerPlay, int longestPassingPlay, int passingTouchdowns, int passingInterceptions, int sacks, decimal passerRating,
-                                    int rushingAttempts, int rushingYards, decimal rushingYardsAverage, int longestRushingPlay, int rushingTouchdowns, int rushingFumbles, int rushingFumblesLost, 
-                                    int receptions, int targets, int receivingYards, int receivingYardsPerPlay, int receivingTouchdowns, int receivingFumbles, int receivingFumblesLost, int yardsAfterCatch)
+    private FootballOffensiveStats(int passingCompletions, int passingAttempts, int passingYards, int longestPassingPlay, int passingTouchdowns, int passingInterceptions, int sacks,
+                                    int rushingAttempts, int rushingYards, int longestRushingPlay, int rushingTouchdowns, int rushingFumbles, int rushingFumblesLost, 
+                                    int receptions, int targets, int receivingYards, int receivingTouchdowns, int receivingFumbles, int receivingFumblesLost, int yardsAfterCatch)
     {
         PassingCompletions = passingCompletions;
         PassingAttempts = passingAttempts;
-        PassingCompletionPercentage = passingCompletionPercentage;
+        PassingCompletionPercentage = passingCompletions / passingAttempts;
         PassingYards = passingYards;
-        PassingYardsPerPlay = passingYardsPerPlay;
+        PassingYardsPerPlay = passingYards / passingAttempts;
         LongestPassingPlay = longestPassingPlay;
         PassingTouchdowns = passingTouchdowns;
         PassingInterceptions = passingInterceptions;
         Sacks = sacks;
-        PasserRating = passerRating;
+        PasserRating = (((((passingCompletions / passingAttempts) - (decimal)0.3) * 5) + (((passingYards / passingAttempts) - 3) * (decimal)0.25) + ((passingTouchdowns / passingAttempts) * 20) + ((decimal)2.375 - (passingInterceptions / passingAttempts)) / 6) * 100);
         RushingAttempts = rushingAttempts;
         RushingYards = rushingYards;
-        RushingYardsAverage = rushingYardsAverage;
+        RushingYardsAverage = rushingYards / rushingAttempts;
         LongestRushingPlay = longestRushingPlay;
         RushingTouchdowns = rushingTouchdowns;
         RushingFumbles = rushingFumbles;
@@ -58,19 +58,19 @@ public class FootballOffensiveStats
         Receptions = receptions;
         Targets = targets;
         ReceivingYards = receivingYards;
-        ReceivingYardsPerPlay = receivingYardsPerPlay;
+        ReceivingYardsPerPlay = receivingYards / receptions;
         ReceivingTouchdowns = receivingTouchdowns;
         ReceivingFumbles = receivingFumbles;
         ReceivingFumblesLost = receivingFumblesLost;
         YardsAfterCatch = yardsAfterCatch;
     }
 
-    public static FootballOffensiveStats Of(int passingCompletions, int passingAttempts, decimal passingCompletionPercentage, int passingYards, decimal passingYardsPerPlay, int longestPassingPlay, int passingTouchdowns, int passingInterceptions, int sacks, decimal passerRating,
-                                    int rushingAttempts, int rushingYards, decimal rushingYardsAverage, int longestRushingPlay, int rushingTouchdowns, int rushingFumbles, int rushingFumblesLost,
-                                    int receptions, int targets, int receivingYards, int receivingYardsPerPlay, int receivingTouchdowns, int receivingFumbles, int receivingFumblesLost, int yardsAfterCatch)
+    public static FootballOffensiveStats Of(int passingCompletions, int passingAttempts, int passingYards, int longestPassingPlay, int passingTouchdowns, int passingInterceptions, int sacks,
+                                    int rushingAttempts, int rushingYards, int longestRushingPlay, int rushingTouchdowns, int rushingFumbles, int rushingFumblesLost,
+                                    int receptions, int targets, int receivingYards, int receivingTouchdowns, int receivingFumbles, int receivingFumblesLost, int yardsAfterCatch)
     {
-        return new FootballOffensiveStats(passingCompletions, passingAttempts, passingCompletionPercentage, passingYards, passingYardsPerPlay, longestPassingPlay, passingTouchdowns, passingInterceptions, sacks, passerRating,
-                                    rushingAttempts, rushingYards, rushingYardsAverage, longestRushingPlay, rushingTouchdowns, rushingFumbles, rushingFumblesLost,
-                                    receptions, targets, receivingYards, receivingYardsPerPlay, receivingTouchdowns, receivingFumbles, receivingFumblesLost, yardsAfterCatch);
+        return new FootballOffensiveStats(passingCompletions, passingAttempts, passingYards, longestPassingPlay, passingTouchdowns, passingInterceptions, sacks,
+                                    rushingAttempts, rushingYards, longestRushingPlay, rushingTouchdowns, rushingFumbles, rushingFumblesLost,
+                                    receptions, targets, receivingYards, receivingTouchdowns, receivingFumbles, receivingFumblesLost, yardsAfterCatch);
     }
 }

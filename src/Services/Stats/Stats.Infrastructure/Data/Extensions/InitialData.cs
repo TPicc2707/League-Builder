@@ -63,19 +63,19 @@ internal class InitialData
     public static IEnumerable<BaseballStats> BaseballStats =>
         new List<BaseballStats>
         {
-            //TODO
+            // Going to create Stats via Web app
         };
 
     public static IEnumerable<BasketballStats> BasketballStats =>
         new List<BasketballStats>
         {
-            //TODO
+            // Going to create Stats via Web app
         };
 
     public static IEnumerable<FootballStats> FootballStats =>
         new List<FootballStats>
         {
-            //TODO
+            // Going to create Stats via Web app
 
         };
 

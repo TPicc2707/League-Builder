@@ -17,7 +17,7 @@ public record BaseballPitchingStats
 
     }
 
-    private BaseballPitchingStats(int wins, int losses, bool start, int saves, decimal innings, int hitsAllowed, int walksAllowed, int pitchingStrikeouts, decimal walksHitsPerInning)
+    private BaseballPitchingStats(int wins, int losses, bool start, int saves, decimal innings, int hitsAllowed, int walksAllowed, int pitchingStrikeouts)
     {
         Wins = wins;
         Losses = losses;
@@ -27,11 +27,11 @@ public record BaseballPitchingStats
         HitsAllowed = hitsAllowed;
         WalksAllowed = walksAllowed;
         PitchingStrikeouts = pitchingStrikeouts;
-        WalksHitsPerInning = walksHitsPerInning;
+        WalksHitsPerInning = (walksAllowed + hitsAllowed) / innings;
     }
 
-    public static BaseballPitchingStats Of(int wins, int losses, bool start, int saves, decimal innings, int hitsAllowed, int walksAllowed, int pitchingStrikeouts, decimal walksHitsPerInning)
+    public static BaseballPitchingStats Of(int wins, int losses, bool start, int saves, decimal innings, int hitsAllowed, int walksAllowed, int pitchingStrikeouts)
     {
-        return new BaseballPitchingStats(wins, losses, start, saves, innings, hitsAllowed, walksAllowed, pitchingStrikeouts, walksHitsPerInning);
+        return new BaseballPitchingStats(wins, losses, start, saves, innings, hitsAllowed, walksAllowed, pitchingStrikeouts);
     }
 }

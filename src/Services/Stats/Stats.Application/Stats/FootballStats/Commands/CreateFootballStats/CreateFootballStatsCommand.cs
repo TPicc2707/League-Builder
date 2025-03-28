@@ -19,24 +19,19 @@ public class CreateFootballStatsCommandValidator : AbstractValidator<CreateFootb
         // Offensive Stats
         RuleFor(x => x.FootballStats.OffensiveStats.PassingCompletions).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Passing Completions is required.");
         RuleFor(x => x.FootballStats.OffensiveStats.PassingAttempts).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Passing Attempts is required and is greater than or equal to 0.");
-        RuleFor(x => x.FootballStats.OffensiveStats.PassingCompletionPercentage).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Passing Completion Percentage is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.PassingYards).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Passing Yards Made is required and is greater than or equal to 0.");
-        RuleFor(x => x.FootballStats.OffensiveStats.PassingYardsPerPlay).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Passing Yards Per Play is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.LongestPassingPlay).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Longest Passing Play is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.PassingTouchdowns).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Passing Touchdowns is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.PassingInterceptions).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Passing Interceptions Attempted is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.Sacks).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Sacks is required and is greater than or equal to 0.");
-        RuleFor(x => x.FootballStats.OffensiveStats.PasserRating).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Passer Rating Made is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.RushingAttempts).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Rushing Attempts is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.RushingYards).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Rushing Yards is required and is greater than or equal to 0.");
-        RuleFor(x => x.FootballStats.OffensiveStats.RushingYardsAverage).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Rushing Yards Average is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.LongestRushingPlay).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Longest Rushing Play is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.RushingTouchdowns).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Rushing Touchdowns is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.RushingFumbles).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Rushing Fumbles is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.RushingFumblesLost).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Rushing Fumbles Lost is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.Receptions).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Receptions is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.ReceivingYards).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Receiving Yards is required and is greater than or equal to 0.");
-        RuleFor(x => x.FootballStats.OffensiveStats.ReceivingYardsPerPlay).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Receiving Yards Per Play is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.ReceivingTouchdowns).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Receiving Touchdowns is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.ReceivingFumbles).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Receiving Fumbles is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.OffensiveStats.ReceivingFumblesLost).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Receiving Fumbles Lost is required and is greater than or equal to 0.");
@@ -57,10 +52,8 @@ public class CreateFootballStatsCommandValidator : AbstractValidator<CreateFootb
         // Kicking Stats
         RuleFor(x => x.FootballStats.KickingStats.FieldGoalsMade).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Field Goals Made is required.");
         RuleFor(x => x.FootballStats.KickingStats.FieldGoalsAttempted).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Field Goals Attempted is required and is greater than or equal to 0.");
-        RuleFor(x => x.FootballStats.KickingStats.FieldGoalPercentage).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Field Goal Percentage is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.KickingStats.ExtraPointsMade).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Extra Points Made is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.KickingStats.ExtraPointsAttempted).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Extra Points Attempted is required and is greater than or equal to 0.");
-        RuleFor(x => x.FootballStats.KickingStats.ExtraPointPercentage).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Extra Point Percentage is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.KickingStats.Punts).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Punts is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.KickingStats.PuntingYards).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Punting Yards is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.KickingStats.LongestPunt).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Longest Punt is required and is greater than or equal to 0.");

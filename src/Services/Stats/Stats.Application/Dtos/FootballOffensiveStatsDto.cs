@@ -21,7 +21,7 @@ public record FootballOffensiveStatsDto(
     int Receptions, 
     int Targets, 
     int ReceivingYards, 
-    int ReceivingYardsPerPlay,
+    decimal ReceivingYardsPerPlay,
     int ReceivingTouchdowns, 
     int ReceivingFumbles, 
     int ReceivingFumblesLost, 

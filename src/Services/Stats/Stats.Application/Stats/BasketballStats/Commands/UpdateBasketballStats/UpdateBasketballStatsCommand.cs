@@ -22,13 +22,10 @@ public class UpdateBasketballStatsCommandValidator : AbstractValidator<UpdateBas
         RuleFor(x => x.BasketballStats.Stats.Points).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Points is required and is greater than or equal to 0.");
         RuleFor(x => x.BasketballStats.Stats.FieldGoalsMade).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Field Goals Made is required and is greater than or equal to 0.");
         RuleFor(x => x.BasketballStats.Stats.FieldGoalsAttempted).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Field Goals Attempted is required and is greater than or equal to 0.");
-        RuleFor(x => x.BasketballStats.Stats.FieldGoalPercentage).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Field Goal Percentage is required and is greater than or equal to 0.");
         RuleFor(x => x.BasketballStats.Stats.ThreePointersMade).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Three Pointers Made is required and is greater than or equal to 0.");
         RuleFor(x => x.BasketballStats.Stats.ThreePointersAttempted).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Three Pointers Attempted is required and is greater than or equal to 0.");
-        RuleFor(x => x.BasketballStats.Stats.ThreePointPercentage).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Three Point Percentage is required and is greater than or equal to 0.");
         RuleFor(x => x.BasketballStats.Stats.FreeThrowsMade).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Free Throws Made is required and is greater than or equal to 0.");
         RuleFor(x => x.BasketballStats.Stats.FreeThrowsAttempted).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Free Throws Attempted is required and is greater than or equal to 0.");
-        RuleFor(x => x.BasketballStats.Stats.FreeThrowPercentage).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Free Throw Percentage is required and is greater than or equal to 0.");
         RuleFor(x => x.BasketballStats.Stats.Rebounds).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Rebounds is required and is greater than or equal to 0.");
         RuleFor(x => x.BasketballStats.Stats.Assists).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Assists is required and is greater than or equal to 0.");
         RuleFor(x => x.BasketballStats.Stats.Blocks).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Blocks is required and is greater than or equal to 0.");

@@ -17,21 +17,21 @@ public class FootballKickingStats
 
     }
 
-    private FootballKickingStats(int fieldGoalsMade, int fieldGoalsAttempted, decimal fieldGoalPercentage, int extraPointsMade, int extraPointsAttempted, decimal extraPointPercentage, int punts, int puntingYards, int longestPunt)
+    private FootballKickingStats(int fieldGoalsMade, int fieldGoalsAttempted, int extraPointsMade, int extraPointsAttempted, int punts, int puntingYards, int longestPunt)
     {
         FieldGoalsMade = fieldGoalsMade;
         FieldGoalsAttempted = fieldGoalsAttempted;
-        FieldGoalPercentage = fieldGoalPercentage;
+        FieldGoalPercentage = fieldGoalsMade/ fieldGoalsAttempted;
         ExtraPointsMade = extraPointsMade;
         ExtraPointsAttempted = extraPointsAttempted;
-        ExtraPointPercentage = extraPointPercentage;
+        ExtraPointPercentage = extraPointsMade / extraPointsAttempted;
         Punts = punts;
         PuntingYards = puntingYards;
         LongestPunt = longestPunt;
     }
 
-    public static FootballKickingStats Of(int fieldGoalsMade, int fieldGoalsAttempted, decimal fieldGoalPercentage, int extraPointsMade, int extraPointsAttempted, decimal extraPointPercentage, int punts, int puntingYards, int longestPunt)
+    public static FootballKickingStats Of(int fieldGoalsMade, int fieldGoalsAttempted, int extraPointsMade, int extraPointsAttempted, int punts, int puntingYards, int longestPunt)
     {
-        return new FootballKickingStats(fieldGoalsMade, fieldGoalsAttempted, fieldGoalPercentage, extraPointsMade, extraPointsAttempted, extraPointPercentage, punts, puntingYards, longestPunt);
+        return new FootballKickingStats(fieldGoalsMade, fieldGoalsAttempted, extraPointsMade, extraPointsAttempted, punts, puntingYards, longestPunt);
     }
 }

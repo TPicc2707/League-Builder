@@ -23,7 +23,7 @@ public interface IPlayerService
     [Get("/player-service/players/after-birthdate/{birthDate}")]
     Task<GetPlayersAfterBirthDateResponse> GetPlayersAfterBirthDate(string birthDate);
     [Post("/player-service/players")]
-    Task<CreatePlayerResponse> CreatePlayer(CreatePlayerRequest team);
+    Task<CreatePlayerResponse> CreatePlayer(CreatePlayerRequest player);
     [Put("/player-service/players")]
     Task<UpdatePlayerResponse> UpdatePlayer(UpdatePlayerRequest player);
     [Delete("/player-service/players/{id}")]

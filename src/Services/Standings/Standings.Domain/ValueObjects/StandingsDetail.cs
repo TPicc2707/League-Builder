@@ -6,10 +6,7 @@ public class StandingsDetail
     public int Wins { get; } = default!;
     public int Losses { get; } = default!;
     public int Ties { get; } = default!;
-    public decimal WinPercentage
-    {
-        get => Wins / GamesPlayed;
-    }
+    public decimal WinPercentage {  get; } = default!;
 
     protected StandingsDetail()
     {
@@ -22,6 +19,7 @@ public class StandingsDetail
         Wins = wins;
         Losses = losses;
         Ties = ties;
+        WinPercentage = wins / gamesPlayed;
     }
 
     public static StandingsDetail Of(int gamesPlayed, int wins, int losses, int ties)
