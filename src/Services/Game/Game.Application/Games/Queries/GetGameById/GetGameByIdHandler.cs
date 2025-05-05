@@ -12,7 +12,16 @@ public class GetGameByIdHandler(IApplicationDbContext dbContext)
         if (game is null)
             throw new GameNotFoundException(query.Id);
 
-        return new GetGameByIdResult(game.ToSingleGameDto());
+        var awayTeam = await dbContext.Teams.FindAsync([game.AwayTeamId], cancellationToken: cancellationToken);
+        var homeTeam = await dbContext.Teams.FindAsync([game.HomeTeamId], cancellationToken: cancellationToken);
+
+        if (awayTeam is null)
+            throw new TeamNotFoundException(game.AwayTeamId.Value);
+
+        if (homeTeam is null)
+            throw new TeamNotFoundException(game.HomeTeamId.Value);
+
+        return new GetGameByIdResult(game.ToSingleGameDto(awayTeam, homeTeam));
     }
 }
 

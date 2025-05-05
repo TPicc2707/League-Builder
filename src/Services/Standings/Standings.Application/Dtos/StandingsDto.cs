@@ -3,8 +3,8 @@
 public record StandingsDto(
     Guid Id,
     Guid LeagueId,
-    Guid TeamId,
     Guid SeasonId,
     StandingsDetailDto StandingsDetail,
-    StandingsStatus StandingsStatus
+    StandingsStatus StandingsStatus,
+    TeamDto Team
     );

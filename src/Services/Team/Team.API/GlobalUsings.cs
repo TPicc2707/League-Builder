@@ -18,4 +18,5 @@ global using Team.Application.Teams.Queries.GetTeamsByName;
 global using Team.Application.Teams.Queries.GetTeamsBySport;
 global using Team.Application.Teams.Queries.GetTeamsByState;
 global using Team.Infrastructure;
+global using Team.Infrastructure.Data;
 global using Team.Infrastructure.Data.Extensions;

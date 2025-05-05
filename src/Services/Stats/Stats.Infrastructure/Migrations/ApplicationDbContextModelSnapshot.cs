@@ -115,6 +115,9 @@ namespace Stats.Infrastructure.Migrations
                         {
                             b1.IsRequired();
 
+                            b1.Property<decimal>("EarnedRunAverage")
+                                .HasColumnType("decimal(18,2)");
+
                             b1.Property<int>("HitsAllowed")
                                 .HasColumnType("int");
 
@@ -125,6 +128,9 @@ namespace Stats.Infrastructure.Migrations
                                 .HasColumnType("int");
 
                             b1.Property<int>("PitchingStrikeouts")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Runs")
                                 .HasColumnType("int");
 
                             b1.Property<int>("Saves")

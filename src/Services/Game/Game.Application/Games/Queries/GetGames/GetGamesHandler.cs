@@ -12,14 +12,15 @@ public class GetGamesHandler(IApplicationDbContext dbContext)
         var pageSize = query.PaginationRequest.PageSize;
 
         var totalCount = await dbContext.Games.LongCountAsync(cancellationToken);
-
         var games = await dbContext.Games
                         .Skip(pageSize * pageIndex)
                         .Take(pageSize)
                         .ToListAsync();
 
+        var teams = await dbContext.Teams.ToListAsync();
+
         return new GetGamesResult(
             new PaginatedResult<GameDto>(
-                pageIndex, pageSize, totalCount, games.ToGameDtoList()));
+                pageIndex, pageSize, totalCount, games.ToGameDtoList(teams)));
     }
 }

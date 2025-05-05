@@ -28,7 +28,7 @@ public class UpdateStandingsHandler(IApplicationDbContext dbContext)
 
         standings.Update(
             leagueId: LeagueId.Of(standingsDto.LeagueId),
-            teamId: TeamId.Of(standingsDto.TeamId),
+            teamId: TeamId.Of(standingsDto.Team.Id),
             seasonId: SeasonId.Of(standingsDto.SeasonId),
             standingsDetail: updatedStandingsDetail,
             standingsStatus: standingsDto.StandingsStatus

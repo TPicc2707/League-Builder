@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="9.1.0" />
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageReference Include="Carter" Version="8.1.0" />
@@ -21,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Aspire\League.Builder.ServiceDefaults\League.Builder.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Standings.Application\Standings.Application.csproj" />
     <ProjectReference Include="..\Standings.Infrastructure\Standings.Infrastructure.csproj" />
   </ItemGroup>

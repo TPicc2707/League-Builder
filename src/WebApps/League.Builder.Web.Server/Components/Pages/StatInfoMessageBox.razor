@@ -1,0 +1,20 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Primary" Style="font-weight: bold;">Stat Info</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Align="Align.Center" Typo="Typo.h6">@Message</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Ok">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public string Message { get; set; }
+
+    private void Ok() => MudDialog.Cancel();
+}

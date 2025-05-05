@@ -32,13 +32,22 @@ public record BasketballPlayerStats
         Points = points;
         FieldGoalsMade = fieldGoalsMade;
         FieldGoalsAttempted = fieldGoalsAttempted;
-        FieldGoalPercentage = fieldGoalsMade / fieldGoalsAttempted;
+        if (fieldGoalsMade == 0 || fieldGoalsAttempted == 0)
+            FieldGoalPercentage = 0.00M;
+        else
+            FieldGoalPercentage = (decimal)fieldGoalsMade / fieldGoalsAttempted;
         ThreePointersMade = threePointersMade;
         ThreePointersAttempted = threePointersAttempted;
-        ThreePointPercentage = threePointersMade / threePointersAttempted;
+        if (threePointersMade == 0 || threePointersAttempted == 0)
+            ThreePointPercentage = 0.00M;
+        else
+            ThreePointPercentage = threePointersMade / threePointersAttempted;
         FreeThrowsMade = freeThrowsMade;
         FreeThrowsAttempted = freeThrowsAttempted;
-        FreeThrowPercentage = freeThrowsMade / freeThrowsAttempted;
+        if (freeThrowsMade == 0 || freeThrowsAttempted == 0)
+            FreeThrowPercentage = 0.00M;
+        else
+            FreeThrowPercentage = freeThrowsMade / freeThrowsAttempted;
         Rebounds = rebounds;
         Assists = assists;
         Steals = steals;

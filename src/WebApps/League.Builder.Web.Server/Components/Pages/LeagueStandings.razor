@@ -1,0 +1,88 @@
+﻿@page "/leaguestandings/{id}"
+@inject IStandingsService StandingsService
+@inject ISeasonService SeasonService
+
+@if (PageLoad)
+{
+    <div style="padding-top: 100px;">
+        <MudPaper Style="padding-right: 25px; padding-left: 25px;" Elevation="2">
+            <div style="padding-bottom: 50px;">
+                <div style="padding-top: 50px;">
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@Season.Year Standings</MudText>
+                    <MudSpacer />
+                    <MudStack Row="true">
+                        <MudItem xs="8" md="8" lg="8">
+                            <MudSelect @bind-Value="seasonValue" Placeholder="@placeholder" Label="@placeholder">
+                                @foreach (var season in SeasonsModel.Seasons)
+                                {
+                                    <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
+                            <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStandings" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                        </MudItem>
+                    </MudStack>
+                </div>
+            </div>
+            <div style="padding-bottom: 50px;">
+                <MudTable Items="@Model.Standings.Where(x => x.SeasonId == Season.Id)" Hover="true" SortLabel="Sort By">
+                    <HeaderContent>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<StandingsModel, object>(x=>x.Team.TeamName)">Team Name</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x=>x.StandingsDetail.GamesPlayed)">GP</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x=>x.StandingsDetail.Wins)">W</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x=>x.StandingsDetail.Losses)">L</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x=>x.StandingsDetail.Ties)">T</MudTableSortLabel></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Team Name">@context.Team.TeamName</MudTd>
+                        <MudTd DataLabel="Games Played">@context.StandingsDetail.GamesPlayed</MudTd>
+                        <MudTd DataLabel="Wins">@context.StandingsDetail.Wins</MudTd>
+                        <MudTd DataLabel="Losses">@context.StandingsDetail.Losses</MudTd>
+                        <MudTd DataLabel="Ties">@context.StandingsDetail.Ties</MudTd>
+                    </RowTemplate>
+                </MudTable>
+
+            </div>
+
+        </MudPaper>
+
+    </div>
+}
+else
+{
+    <Loading />
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private bool PageLoad = false;
+    private Justify _justify = Justify.SpaceEvenly;
+    private SeasonModel Season;
+    private string placeholder = "Season";
+    private int seasonValue;
+
+    private GetSeasonsResponse SeasonsModel { get; set; }
+    private GetSeasonByYearResponse SeasonModel { get; set; }
+    private GetStandingsByLeagueResponse Model { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var leagueId = Guid.Parse(Id);
+        SeasonsModel = await SeasonService.GetSeasons();
+        Season = SeasonsModel.Seasons.First();
+        Model = await StandingsService.GetStandingsByLeague(leagueId);
+        seasonValue = Season.Year;
+        PageLoad = true;
+    }
+
+    private async Task GetSeasonStandings()
+    {
+        PageLoad = false;
+        SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
+        Season = SeasonModel.Season;
+        StateHasChanged();
+        PageLoad = true;
+    }
+}

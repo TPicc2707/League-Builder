@@ -18,8 +18,10 @@ public class GetStandingsHandler(IApplicationDbContext dbContext)
                         .Take(pageSize)
                         .ToListAsync();
 
+        var teams = await dbContext.Teams.AsNoTracking().ToListAsync();
+
         return new GetStandingsResult(
             new PaginatedResult<StandingsDto>(
-                pageIndex, pageSize, totalCount, standings.ToStandingsDtoList()));
+                pageIndex, pageSize, totalCount, standings.ToStandingsDtoList(teams)));
     }
 }

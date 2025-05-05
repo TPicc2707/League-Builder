@@ -1,0 +1,75 @@
+﻿@page "/seasons"
+@inject ISeasonService SeasonService
+@inject NavigationManager NavManager
+@inject IDialogService DialogService
+
+@if (PageLoad)
+{
+    <div style="padding-top: 100px;">
+        <MudPaper Style="padding-right: 25px; padding-left: 25px;" Elevation="2">
+            <div style="padding-bottom: 25px;">
+                <div style="padding-top: 50px;">
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Seasons</MudText>
+                </div>
+            </div>
+            <div style="padding-bottom: 50px;">
+                <MudTable Items="@Model.Seasons" Hover="true" SortLabel="Sort By">
+                    <ToolBarContent>
+                        <MudStack Justify="Justify.FlexStart">
+                            <MudButton OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
+                        </MudStack>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<SeasonModel, object>(x=>x.Year)">Year</MudTableSortLabel></MudTh>
+                        <MudTh Class="mud-theme-primary"></MudTh>
+                        <MudTh Class="mud-theme-primary"></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Team Name">@context.Year</MudTd>
+                        <MudTd DataLabel="Edit"><MudLink OnClick="@(() => NavigateToUpdateSeason(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
+                        <MudTd DataLabel="Delete"><MudLink OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </div>
+        </MudPaper>
+    </div>
+}
+else
+{
+    <Loading />
+}
+
+@code {
+    private bool PageLoad = false;
+    GetSeasonsResponse Model { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model = await SeasonService.GetSeasons();
+        PageLoad = true;
+    }
+
+    private async Task NavigateToCreateGame()
+    {
+        NavManager.NavigateTo($"/createseason/");
+    }
+
+    private async Task NavigateToUpdateSeason(Guid id)
+    {
+        var idString = id.ToString();
+        NavManager.NavigateTo($"/updateseason/{idString}");
+    }
+
+    private async Task OpenDialogAsync(Guid id)
+    {
+        var parameters = new DialogParameters<DeleteSeasonMessageBox> { { x => x.Id, id } };
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialog = await DialogService.ShowAsync<DeleteSeasonMessageBox>("Delete Season", parameters, options);
+
+        var result = await dialog.Result;
+
+        if(!result.Canceled)
+            Model = await SeasonService.GetSeasons();
+    }
+}

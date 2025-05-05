@@ -13,6 +13,8 @@ public class GetGamesByTeamHandler(IApplicationDbContext dbContext)
                 .Where(o => o.AwayTeamId == TeamId.Of(query.TeamId) || o.HomeTeamId == TeamId.Of(query.TeamId))
                 .ToListAsync(cancellationToken);
 
-        return new GetGamesByTeamResult(games.ToGameDtoList());
+        var teams = await dbContext.Teams.AsNoTracking().ToListAsync();
+
+        return new GetGamesByTeamResult(games.ToGameDtoList(teams));
     }
 }

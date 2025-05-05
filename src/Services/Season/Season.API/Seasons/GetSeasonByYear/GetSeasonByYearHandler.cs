@@ -11,7 +11,7 @@ public class GetSeasonByYearHandler
 {
     public async Task<GetSeasonByYearResult> Handle(GetSeasonByYearQuery query, CancellationToken cancellationToken)
     {
-        var season = await documentSession.LoadAsync<Models.Season>(query.Year, cancellationToken);
+        var season = await documentSession.Query<Models.Season>().FirstOrDefaultAsync(x => x.Year == query.Year);
 
         if (season is null)
         {

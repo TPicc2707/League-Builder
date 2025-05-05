@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireHost>true</IsAspireHost>
+    <UserSecretsId>c5e196ae-c5c5-4942-acf2-c1e3ae21293a</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.1.0" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.1.0" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="9.1.0" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ApiGateways\League.Builder.ApiGateway\League.Builder.ApiGateway.csproj" />
+    <ProjectReference Include="..\..\Services\Game\Game.API\Game.API.csproj" />
+    <ProjectReference Include="..\..\Services\League\League.API\League.API.csproj" />
+    <ProjectReference Include="..\..\Services\Player\Player.API\Player.API.csproj" />
+    <ProjectReference Include="..\..\Services\Season\Season.API\Season.API.csproj" />
+    <ProjectReference Include="..\..\Services\Standings\Standings.API\Standings.API.csproj" />
+    <ProjectReference Include="..\..\Services\Stats\Stats.API\Stats.API.csproj" />
+    <ProjectReference Include="..\..\Services\Team\Team.API\Team.API.csproj" />
+    <ProjectReference Include="..\..\WebApps\League.Builder.Web.Server\League.Builder.Web.Server.csproj" />
+  </ItemGroup>
+
+</Project>

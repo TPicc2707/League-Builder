@@ -33,13 +33,15 @@ public static class BaseballStatsExtension
             PitchingStats: new BaseballPitchingStatsDto(
                 stats.PitchingStats.Wins,
                 stats.PitchingStats.Losses,
+                stats.PitchingStats.Runs,
                 stats.PitchingStats.Start,
                 stats.PitchingStats.Saves,
                 stats.PitchingStats.Innings,
                 stats.PitchingStats.HitsAllowed,
                 stats.PitchingStats.WalksAllowed,
                 stats.PitchingStats.PitchingStrikeouts,
-                stats.PitchingStats.WalksHitsPerInning)
+                stats.PitchingStats.WalksHitsPerInning,
+                stats.PitchingStats.EarnedRunAverage)
             ));
     }
 
@@ -74,13 +76,15 @@ public static class BaseballStatsExtension
             PitchingStats: new BaseballPitchingStatsDto(
                 stats.PitchingStats.Wins,
                 stats.PitchingStats.Losses,
+                stats.PitchingStats.Runs,
                 stats.PitchingStats.Start,
                 stats.PitchingStats.Saves,
                 stats.PitchingStats.Innings,
                 stats.PitchingStats.HitsAllowed,
                 stats.PitchingStats.WalksAllowed,
                 stats.PitchingStats.PitchingStrikeouts,
-                stats.PitchingStats.WalksHitsPerInning)
+                stats.PitchingStats.WalksHitsPerInning,
+                stats.PitchingStats.EarnedRunAverage)
             );
     }
 }

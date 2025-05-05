@@ -8,7 +8,8 @@ internal class InitialData
         Team.Create(TeamId.Of(new Guid("d8bd14ea-efd4-48a0-9e53-321e39681201")), "Cannons", "We love playing baseball."),
         Team.Create(TeamId.Of(new Guid("7dc0013c-f09b-4e47-b4dc-b63161f8f055")), "Bombers", "We love playing baseball."),
         Team.Create(TeamId.Of(new Guid("063770fb-5651-49bd-a04e-74687df1bd57")), "Eagles", "We love playing football."),
-        Team.Create(TeamId.Of(new Guid("c9dcbacb-16e7-45e0-a496-b66ef212ac16")), "Pirates", "We love playing football.")
+        Team.Create(TeamId.Of(new Guid("c9dcbacb-16e7-45e0-a496-b66ef212ac16")), "Pirates", "We love playing football."),
+        Team.Create(TeamId.Of(new Guid("0ef05e29-7562-4e93-b710-f875fe293db9")), "Cardinals", "We love playing baseball.")
     };
 
     public static IEnumerable<Domain.Models.Player> Players
@@ -38,6 +39,22 @@ internal class InitialData
 
             var address8 = Address.Of("741 Second Street", "US", "FL", "24512");
             var playerDetail8 = PlayerDetail.Of("nj@email.com", "8901234567", new DateTime(2001, 09, 23), 74, 205, "Wide Receiver", 0);
+
+            var address9 = Address.Of("1245 First Street", "US", "KY", "40265");
+            var playerDetail9 = PlayerDetail.Of("bb@email.com", "4567891241", new DateTime(2003, 11, 25), 78, 224, "Outfielder", 0);
+
+            var address10 = Address.Of("1475 Fast Lane", "US", "KY", "40275");
+            var playerDetail10 = PlayerDetail.Of("oj@email.com", "1254689632", new DateTime(2005, 06, 17), 74, 195, "Second Base", 0);
+
+            var address11 = Address.Of("741 Lazy Corner", "US", "FL", "24513");
+            var playerDetail11 = PlayerDetail.Of("vb@email.com", "4125687413", new DateTime(2002, 05, 11), 72, 225, "Running Back", 0);
+
+            var address12 = Address.Of("7586 Jump Corner", "US", "NY", "12348");
+            var playerDetail12 = PlayerDetail.Of("km@email.com", "7854698712", new DateTime(2004, 08, 04), 78, 300, "Offensive Lineman", 0);
+
+            var address13 = Address.Of("1254 Carrie Street", "US", "PA", "52135");
+            var playerDetail13 = PlayerDetail.Of("gc@email.com", "4512546325", new DateTime(2004, 05, 01), 75, 201, "Shortstop", 0);
+
 
             var player1 = Domain.Models.Player.Create(PlayerId.Of(new Guid("2bd14e3b-6dab-4b2c-ac3c-d6c2d73aec35")),
                                                   TeamId.Of(new Guid("d8bd14ea-efd4-48a0-9e53-321e39681201")),
@@ -111,7 +128,52 @@ internal class InitialData
                                                   "Im good at football.",
                                                   "player.png");
 
-            return new List<Domain.Models.Player> { player1, player2, player3, player4, player5, player6, player7, player8 };
+            var player9 = Domain.Models.Player.Create(PlayerId.Of(new Guid("69752bda-2b77-4eaf-b8d2-4ef2d723a46e")),
+                                                  TeamId.Of(new Guid("0ef05e29-7562-4e93-b710-f875fe293db9")),
+                                                  FirstName.Of("Brock"),
+                                                  LastName.Of("Banner"),
+                                                  playerAddress: address9,
+                                                  playerDetail: playerDetail9,
+                                                  "Im good at baseball.",
+                                                  "player.png");
+
+            var player10 = Domain.Models.Player.Create(PlayerId.Of(new Guid("5b32c8d2-ba86-4a16-9c9c-8bb8903205dd")),
+                                                  TeamId.Of(new Guid("0ef05e29-7562-4e93-b710-f875fe293db9")),
+                                                  FirstName.Of("Oswald"),
+                                                  LastName.Of("Jerome"),
+                                                  playerAddress: address10,
+                                                  playerDetail: playerDetail10,
+                                                  "Im good at baseball.",
+                                                  "player.png");
+
+            var player11 = Domain.Models.Player.Create(PlayerId.Of(new Guid("dba1c618-826e-4d0c-afb4-df72c599874e")),
+                                                  TeamId.Of(new Guid("c9dcbacb-16e7-45e0-a496-b66ef212ac16")),
+                                                  FirstName.Of("Victor"),
+                                                  LastName.Of("Bazwell"),
+                                                  playerAddress: address11,
+                                                  playerDetail: playerDetail11,
+                                                  "Im good at football.",
+                                                  "player.png");
+
+            var player12 = Domain.Models.Player.Create(PlayerId.Of(new Guid("f7b4f809-40a3-451b-ae74-1089fa465bd0")),
+                                                  TeamId.Of(new Guid("063770fb-5651-49bd-a04e-74687df1bd57")),
+                                                  FirstName.Of("Kellen"),
+                                                  LastName.Of("McNeal"),
+                                                  playerAddress: address12,
+                                                  playerDetail: playerDetail12,
+                                                  "Im good at football.",
+                                                  "player.png");
+
+            var player13 = Domain.Models.Player.Create(PlayerId.Of(new Guid("36b95380-a7be-495d-98eb-ab7faafcadfe")),
+                                                  TeamId.Of(new Guid("063770fb-5651-49bd-a04e-74687df1bd57")),
+                                                  FirstName.Of("Gary"),
+                                                  LastName.Of("Coleman"),
+                                                  playerAddress: address13,
+                                                  playerDetail: playerDetail13,
+                                                  "Im good at baseball.",
+                                                  "player.png");
+
+            return new List<Domain.Models.Player> { player1, player2, player3, player4, player5, player6, player7, player8, player9, player10, player11, player12, player13};
         }
     }
 }

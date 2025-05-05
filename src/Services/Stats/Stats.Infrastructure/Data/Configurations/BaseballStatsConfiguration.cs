@@ -63,6 +63,7 @@ public class BaseballStatsConfiguration : IEntityTypeConfiguration<BaseballStats
         {
             pitchingStatsBuilder.Property(s => s.Wins);
             pitchingStatsBuilder.Property(s => s.Losses);
+            pitchingStatsBuilder.Property(s => s.Runs);
             pitchingStatsBuilder.Property(s => s.Start);
             pitchingStatsBuilder.Property(s => s.Saves);
             pitchingStatsBuilder.Property(s => s.Innings);
@@ -70,6 +71,7 @@ public class BaseballStatsConfiguration : IEntityTypeConfiguration<BaseballStats
             pitchingStatsBuilder.Property(s => s.WalksAllowed);
             pitchingStatsBuilder.Property(s => s.PitchingStrikeouts);
             pitchingStatsBuilder.Property(s => s.WalksHitsPerInning);
+            pitchingStatsBuilder.Property(s => s.EarnedRunAverage);
         });
     }
 }

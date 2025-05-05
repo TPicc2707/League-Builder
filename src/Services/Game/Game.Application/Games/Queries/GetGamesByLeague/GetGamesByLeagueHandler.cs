@@ -13,6 +13,8 @@ public class GetGamesByLeagueHandler(IApplicationDbContext dbContext)
                 .Where(o => o.LeagueId == LeagueId.Of(query.LeagueId))
                 .ToListAsync(cancellationToken);
 
-        return new GetGamesByLeagueResult(games.ToGameDtoList());
+        var teams = await dbContext.Teams.AsNoTracking().ToListAsync();
+
+        return new GetGamesByLeagueResult(games.ToGameDtoList(teams));
     }
 }

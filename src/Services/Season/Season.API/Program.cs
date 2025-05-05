@@ -1,6 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.AddServiceDefaults();
+builder.AddNpgsqlDataSource("seasonDb");
 var assembly = typeof(Program).Assembly;
 builder.Services.AddMediatR(config =>
 {
@@ -15,13 +17,13 @@ builder.Services.AddCarter();
 
 builder.Services.AddMarten(opts =>
 {
-    opts.Connection(builder.Configuration.GetConnectionString("Database")!);
+    opts.Connection(builder.Configuration.GetConnectionString("seasonDb")!);
 }).UseLightweightSessions();
 
 if (builder.Environment.IsDevelopment())
     builder.Services.InitializeMartenWith<SeasonInitialData>();
 
-builder.Services.AddMessageBroker(builder.Configuration);
+builder.Services.AddMessageBroker(Assembly.GetExecutingAssembly());
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
@@ -34,9 +36,11 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration.GetConnectionString("Database")!);
+    .AddNpgSql(builder.Configuration.GetConnectionString("seasonDb")!);
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 app.MapCarter();
 

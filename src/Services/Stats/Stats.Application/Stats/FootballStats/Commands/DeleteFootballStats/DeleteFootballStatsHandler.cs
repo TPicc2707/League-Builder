@@ -9,7 +9,7 @@ public class DeleteFootballStatsHandler(IApplicationDbContext dbContext)
         //save to database
         //return result
 
-        var footballStatsId = BasketballStatsId.Of(command.FootballStatsId);
+        var footballStatsId = FootballStatsId.Of(command.FootballStatsId);
         var footballStats = await dbContext.FootballStats
             .FindAsync([footballStatsId], cancellationToken: cancellationToken);
 

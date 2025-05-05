@@ -3,9 +3,9 @@
 public record GameDto(
     Guid Id,
     Guid LeagueId,
-    Guid AwayTeamId,
-    Guid HomeTeamId,
     Guid? WinningTeamId,
     Guid SeasonId,
     GameDetailDto GameDetail,
-    GameStatus GameStatus);
+    GameStatus GameStatus,
+    TeamDto AwayTeam,
+    TeamDto HomeTeam);

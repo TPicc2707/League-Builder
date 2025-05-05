@@ -11,6 +11,7 @@ public class GetSeasonsHandler
     public async Task<GetSeasonsResult> Handle(GetSeasonsQuery query, CancellationToken cancellationToken)
     {
         var products = await documentSession.Query<Models.Season>()
+            .OrderByDescending(x => x.Year)
             .ToPagedListAsync(query.PageNumber ?? 1, query.PageSize ?? 10, cancellationToken);
 
         return new GetSeasonsResult(products);

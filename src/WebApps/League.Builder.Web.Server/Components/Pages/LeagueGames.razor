@@ -1,0 +1,204 @@
+﻿@page "/leaguegames/{id}"
+@inject IGameService GamesService
+@inject ISeasonService SeasonService
+@inject ILeagueService LeagueService
+@inject IDialogService DialogService
+@inject NavigationManager NavManager
+
+
+@if (PageLoad)
+{
+    <div style="padding-top: 100px;">
+        <MudPaper Style="padding-right: 25px; padding-left: 25px;" Elevation="2">
+            <div style="padding-bottom: 25px;">
+                <div style="padding-top: 50px;">
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@Season.Year Schedule</MudText>
+                    <MudSpacer />
+                    <MudStack Justify="Justify.FlexStart" Row="true">
+                        <MudItem xs="4" md="4" lg="4">
+                            <MudSelect @bind-Value="monthValue" Placeholder="@monthPlaceholder" Label="@monthPlaceholder">
+                                @foreach (var months in Constants.Months())
+                                {
+                                    <MudSelectItem Value="months.Value">@months.Key</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="4" md="4" lg="4">
+                            <MudSelect @bind-Value="seasonValue" Placeholder="@seasonPlaceholder" Label="@seasonPlaceholder">
+                                @foreach (var season in SeasonsModel.Seasons)
+                                {
+                                    <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
+                            <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStandings" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                        </MudItem>
+                    </MudStack>
+                </div>
+            </div>
+            <div style="padding-bottom: 50px;">
+                <MudTable Items="@Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month)" Hover="true" SortLabel="Sort By">
+                    <ColGroup>
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                        <col />
+                        <col style="width: 60px;" />
+                    </ColGroup>
+                    <ToolBarContent>
+                        <MudStack Justify="Justify.FlexStart">
+                            <MudButton OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
+                        </MudStack>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<GameModel, object>(x=>x.AwayTeam.TeamName)">Away Team</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<GameModel, object>(x=>x.HomeTeam.TeamName)">Home Team</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Score</MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<GameModel, object>(x=>x.GameDetail.StartTime)">Start Time</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">End Time</MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                        <MudTh Class="mud-theme-primary"></MudTh>
+                        <MudTh Class="mud-theme-primary"></MudTh>
+                        <MudTh Class="mud-theme-primary"></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Away Team">@context.AwayTeam.TeamName</MudTd>
+                        <MudTd DataLabel="Home Team">@context.HomeTeam.TeamName</MudTd>
+                        <MudTd DataLabel="Score">@context.GameDetail.AwayTeamScore - @context.GameDetail.HomeTeamScore</MudTd>
+                        <MudTd DataLabel="Start Time">@context.GameDetail.StartTime.ToString("hh:mm tt")</MudTd>
+                        @if (context.GameStatus == GameStatus.Completed)
+                        {
+                            <MudTd DataLabel="Start Time">@context.GameDetail.EndTime.Value.ToString("hh:mm tt")</MudTd>
+                        }
+                        else
+                        {
+                            <MudTd></MudTd>
+                        }
+                        <MudTd DataLabel="Status">@Constants.GameStatus(context.GameStatus)</MudTd>
+                        <MudTd DataLabel="Edit"><MudLink OnClick="@(() => NavigateToUpdateGame(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
+                        @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
+                        {
+                            <MudTd></MudTd>
+                        }
+                        else
+                        {
+                            <MudTd DataLabel="Delete"><MudLink OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                        }
+                        @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
+                        {
+                            <MudTd DataLabel="Delete"><MudLink OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))"><MudIcon Icon="@Icons.Material.Filled.QueryStats" /></MudLink></MudTd>
+                        }
+                        else
+                        {
+                            <MudTd></MudTd>
+                        }
+                    </RowTemplate>
+                </MudTable>
+
+            </div>
+
+        </MudPaper>
+
+    </div>
+}
+else
+{
+    <Loading />
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private bool PageLoad = false;
+    private Justify _justify = Justify.SpaceEvenly;
+    private SeasonModel Season;
+    private string seasonPlaceholder = "Season";
+    private string monthPlaceholder = "Month";
+    private int seasonValue;
+    private int monthValue = DateTime.Now.Month;
+    private int Month;
+    private int GameCount = 0;
+
+    private GetSeasonsResponse SeasonsModel { get; set; }
+    private GetSeasonByYearResponse SeasonModel { get; set; }
+    private GetGamesByLeagueResponse Model { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var leagueId = Guid.Parse(Id);
+        SeasonsModel = await SeasonService.GetSeasons();
+        Season = SeasonsModel.Seasons.First();
+        Model = await GamesService.GetGamesByLeague(leagueId);
+        Month = monthValue;
+        GameCount = Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month).Count();
+        seasonValue = Season.Year;
+        PageLoad = true;
+    }
+
+    private async Task GetSeasonStandings()
+    {
+        PageLoad = false;
+        SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
+        Season = SeasonModel.Season;
+        Month = monthValue;
+        GameCount = Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month).Count();
+        StateHasChanged();
+        PageLoad = true;
+    }
+
+    private async Task NavigateToUpdateGame(Guid id)
+    {
+        var idString = id.ToString();
+        NavManager.NavigateTo($"/updategame/{idString}");
+    }
+
+    private async Task NavigateToDeleteGame(Guid id)
+    {
+        var idString = id.ToString();
+        NavManager.NavigateTo($"/deleteGame/{idString}");
+    }
+
+    private async Task NavigateToCreateGame()
+    {
+        NavManager.NavigateTo($"/creategame/{Id}");
+    }
+
+    private async Task NavigateToGameStats(Guid id, Guid leagueId)
+    {
+        var idString = id.ToString();
+        var league = await LeagueService.GetLeague(leagueId);
+
+        if(league.League.Sport == SportName.BASEBALL)
+            NavManager.NavigateTo($"/baseballgamestats/{idString}");
+
+        if(league.League.Sport == SportName.FOOTBALL)
+            NavManager.NavigateTo($"/footballgamestats/{idString}");
+
+        if (league.League.Sport == SportName.BASKETBALL)
+            NavManager.NavigateTo($"/basketballgamestats/{idString}");
+    }
+
+    private async Task OpenDialogAsync(Guid id)
+    {
+        var parameters = new DialogParameters<DeleteGameMessageBox> { { x => x.Id, id } };
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialog = await DialogService.ShowAsync<DeleteGameMessageBox>("Delete Game", parameters, options);
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            PageLoad = false;
+            var leagueId = Guid.Parse(Id);
+            Model = await GamesService.GetGamesByLeague(leagueId);
+            Month = monthValue;
+            GameCount = Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month).Count();
+            seasonValue = Season.Year;
+            PageLoad = true;
+        }
+        
+    }
+}

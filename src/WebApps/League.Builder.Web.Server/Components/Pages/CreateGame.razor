@@ -1,0 +1,153 @@
+﻿@page "/creategame/{id}"
+@inject ITeamService TeamService
+@inject ISeasonService SeasonService
+@inject IGameService GameService
+@inject NavigationManager NavManager
+@inject ISnackbar Snackbar
+
+@if (PageLoad)
+{
+    <div style="padding-top: 150px; padding-bottom: 175px;">
+        <MudText Typo="Typo.h3" Style="font-weight: bold; padding-bottom: 25px;" Align="Align.Center" Color="Color.Primary">Create Game</MudText>
+        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="7">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Game Information</MudText>
+                            <MudSelect Class="mt-3" Label="Away Team" @bind-Value="awayTeamId">
+                                @foreach (var team in TeamsResponse.Teams)
+                                {
+                                    <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSelect Class="mt-3" Label="Home Team" @bind-Value="homeTeamId">
+                                @foreach (var team in TeamsResponse.Teams)
+                                {
+                                    <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudDatePicker Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="date" />
+                            <MudTimePicker Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="time" />
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Create</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="5">
+                    <MudPaper Class="pa-4 mud-height-full">
+                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                        @if (success)
+                        {
+                            <MudText Color="Color.Success">Success</MudText>
+                        }
+                        else
+                        {
+                            <MudText Color="@Color.Error">
+                                <CustomValidation @ref="customValidation" />
+                                <ValidationSummary />
+                            </MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.body2" Align="Align.Center">
+                        Fill out the form correctly to see the success message.
+                    </MudText>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+
+    </div>
+
+}
+else
+{
+    <Loading />
+}
+
+@code {
+
+    [Parameter]
+    public string Id { get; set; }
+    private CustomValidation? customValidation;
+    private bool PageLoad = false;
+    private Guid awayTeamId;
+    private Guid homeTeamId;
+    private DateTime? date = DateTime.Now;
+    private TimeSpan? time = new TimeSpan(12, 00, 00);
+
+    CreateGameForm model = new CreateGameForm();
+    bool success;
+    private GetTeamsByLeagueResponse TeamsResponse { get; set; }
+    private GetSeasonByYearResponse SeasonResponse { get; set; }
+
+    public class CreateGameForm
+    {
+        [Required(ErrorMessage = "Must have a Start Date.")]
+        public DateTime StartTime { get; set; }
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var leagueId = Guid.Parse(Id);
+        TeamsResponse = await TeamService.GetTeamsByLeague(leagueId);
+        awayTeamId = TeamsResponse.Teams.First().Id;
+        homeTeamId = TeamsResponse.Teams.Skip(1).First().Id;
+        PageLoad = true;
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        customValidation?.ClearErrors();
+
+        var errors = new Dictionary<string, List<string>>();
+
+        ValidateModel(errors);
+
+        if (errors.Any())
+            customValidation?.DisplayErrors(errors);
+        else
+        {
+            await SubmitGame();
+            success = true;
+            Snackbar.Add("Game has been created.", Severity.Success);
+            NavManager.NavigateTo($"/leaguegames/{Id}");
+            StateHasChanged();
+        }
+    }
+
+    private void ValidateModel(Dictionary<string, List<string>> errors)
+    {
+        if (date is null && time is null)
+            errors.Add(nameof(model.StartTime),
+                        [" " + "Start Date & Time is required."]);
+        else if (date is null || time is null)
+            errors.Add(nameof(model.StartTime),
+                            date is null ? [" " + "Start Date is required."] : [" " + "Start Time is required."]);
+
+        if (awayTeamId == homeTeamId)
+            errors.Add("Teams",
+                                [" " + "Home & Away Team must be different."]);
+    }
+
+    private async Task SubmitGame()
+    {
+        DateTime startDate = (DateTime)date;
+        TimeSpan startTime = (TimeSpan)time;
+        model.StartTime = new DateTime(startDate.Year, startDate.Month, startDate.Day, startTime.Hours, startTime.Minutes, startTime.Seconds);
+        var leagueId = Guid.Parse(Id);
+        SeasonResponse = await SeasonService.GetSeasonByYear(model.StartTime.Year);
+        Models.Game.GameDetailModel gameDetail = new GameDetailModel(0, 0, model.StartTime, null);
+        Models.Game.AwayTeamDetailModel awayTeamDetail = new AwayTeamDetailModel(awayTeamId, string.Empty);
+        Models.Game.HomeTeamDetailModel homeTeamDetail = new HomeTeamDetailModel(homeTeamId, string.Empty);
+        CreateGameModel createGameModel = new CreateGameModel(leagueId, null, SeasonResponse.Season.Id, gameDetail, awayTeamDetail, homeTeamDetail);
+        CreateGameRequest request = new CreateGameRequest(createGameModel);
+        await GameService.CreateGame(request);
+    }
+
+}
+

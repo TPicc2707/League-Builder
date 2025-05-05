@@ -117,6 +117,9 @@ namespace Standings.Infrastructure.Migrations
                             b1.Property<int>("Losses")
                                 .HasColumnType("int");
 
+                            b1.Property<int>("Ties")
+                                .HasColumnType("int");
+
                             b1.Property<decimal>("WinPercentage")
                                 .HasColumnType("decimal(18,2)");
 

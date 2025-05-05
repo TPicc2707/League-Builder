@@ -2,9 +2,12 @@ using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddServiceDiscoveryDestinationResolver();
 
 builder.Services.AddCors(o => o.AddPolicy("CustomPolicy", builder =>
 {
@@ -24,6 +27,8 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 app.UseCors();
 // Configure the HTTP request pipeline.

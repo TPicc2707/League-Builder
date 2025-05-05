@@ -1,0 +1,92 @@
+﻿@page "/leagues"
+@inject ILeagueService LeagueService
+
+@if (PageLoad)
+{
+    <div style="padding-bottom: 200px;">
+        <div style="padding-top: 50px;">
+            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">All Leagues</MudText>
+            <MudSpacer />
+            <MudStack Justify="Justify.FlexStart">
+                <MudButton Href="/createleague" Variant="Variant.Filled" Color="Color.Primary" style="width: 200px;">Create</MudButton>
+            </MudStack>
+        </div>
+        @for (var i = 1; i <= Counter; i++)
+        {
+        <div style="padding-top: 25px;">
+            <MudStack Justify="@_justify" Row="true">
+                @foreach (var league in GetLeaguesForRow(LeagueCounter))
+                {
+                    string imageFile = String.Concat("images/", league.ImageFile);
+                    string updateLeagueLink = String.Concat("/updateleague/", league.Id);
+                    string teamsLink = String.Concat("/teamsbyleague/", league.Id);
+                    string standingsLink = String.Concat("/leaguestandings/", league.Id);
+                    string gamesLink = String.Concat("/leaguegames/", league.Id);
+                    <MudCard>
+                        <MudCardMedia Image="@imageFile" Height="200" />
+                        <MudCardContent>
+                            <MudText Typo="Typo.h5" Style="font-weight: bold;">@league.Name</MudText>
+                            <MudText Typo="Typo.body2">@league.EmailAddress</MudText>
+                            <MudText Typo="Typo.body2">@league.Description</MudText>
+                        </MudCardContent>
+                        <MudCardActions Style="align-content: center">
+                                <MudButton Href="@gamesLink" Variant="Variant.Text" Color="Color.Primary">Games</MudButton>
+                            <MudButton Href="@standingsLink" Variant="Variant.Text" Color="Color.Primary">Standings</MudButton>
+                            <MudButton Href="@teamsLink" Variant="Variant.Text" Color="Color.Primary">Teams</MudButton>
+                            <MudButton Href="@updateLeagueLink" Variant="Variant.Text" Color="Color.Primary">Update</MudButton>
+                            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => OpenDialogAsync(league.Id))">Delete</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                }
+            </MudStack>
+        </div>
+        }
+    </div>
+
+}
+else
+{
+    <Loading />
+}
+
+@code {
+    [Inject] private IDialogService DialogService { get; set; }
+
+    string state = "Message box hasn't been opened yet";
+    private bool PageLoad = false;
+    private Justify _justify = Justify.SpaceBetween;
+    private int LeagueCount = 0;
+    private int PageSize = 0;
+    private int Counter = 0;
+    private int LeagueCounter = 0;
+
+    private GetLeaguesResponse LeaguesReponse { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        LeaguesReponse = await LeagueService.GetLeagues(1, 10);
+        LeagueCount = (int)LeaguesReponse.Leagues.Count();
+        Console.WriteLine(LeagueCount);
+        PageSize = 2;
+        Console.WriteLine(PageSize);
+        Counter = (int)Math.Ceiling((decimal)LeagueCount / (decimal)PageSize);
+        Console.WriteLine(Counter);
+        PageLoad = true;
+    }
+
+    private Task OpenDialogAsync(Guid id)
+    {
+        var parameters = new DialogParameters<DeleteLeagueMessageBox> { { x => x.Id, id } };
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        return DialogService.ShowAsync<DeleteLeagueMessageBox>("Delete League", parameters, options);
+    }
+
+    private IEnumerable<LeagueModel> GetLeaguesForRow(int count)
+    {
+        Console.WriteLine(count);
+        var leagues = LeaguesReponse.Leagues.OrderBy(p => p.Name).Skip(2 * count).Take(2);
+        LeagueCounter++;
+        return leagues;
+    }
+}

@@ -1,6 +1,6 @@
 ﻿namespace Standings.API.Endpoints;
 
-public record UpdateStandingsRequest(StandingsDto Game);
+public record UpdateStandingsRequest(StandingsDto Standings);
 public record UpdateStandingsResponse(bool IsSuccess);
 
 

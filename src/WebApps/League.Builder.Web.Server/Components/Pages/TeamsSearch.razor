@@ -1,0 +1,39 @@
+﻿@page "/teamsearch"
+@inject NavigationManager NavManager
+
+<MudItem Style="padding-top: 200px; padding-bottom: 450px;">
+    <MudItem Style="padding-bottom: 25px;">
+        <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Search Teams</MudText>
+    </MudItem>
+    <MudTabs Elevation="2" Centered="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="Color.Primary" Style="background-color: white;">
+        <MudTabPanel Text="Search All">
+            <MudButton OnClick="SearchAll" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Search All</MudButton>
+        </MudTabPanel>
+        <MudTabPanel Text="Team Name">
+            <MudStack Row="true">
+                <MudItem xs="9" md="9" lg="9">
+                    <MudTextField @bind-Value="teamName" Placeholder="Team Name" />
+                </MudItem>
+                <MudItem xs="3" md="3" lg="3">
+                    <MudButton Disabled="@(teamName == string.Empty ? true : false)" OnClick="SearchByTeamName" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                </MudItem>
+            </MudStack>
+        </MudTabPanel>
+    </MudTabs>
+
+</MudItem>
+
+@code {
+    private string teamName = string.Empty;
+
+    private void SearchAll()
+    {
+        NavManager.NavigateTo("/teams");
+    }
+
+    private void SearchByTeamName()
+    {
+        NavManager.NavigateTo($"/teamsbyname/{teamName}");
+    }
+
+}

@@ -16,10 +16,10 @@ public class GetSeasonByYearEndpoint : ICarterModule
 
             return Results.Ok(response);
         })
-        .WithName("GetSeasonById")
+        .WithName("GetSeasonByYear")
         .Produces<GetSeasonByYearResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
-        .WithSummary("Get Season By Id")
-        .WithDescription("Get Season By Id");
+        .WithSummary("Get Season By Year")
+        .WithDescription("Get Season By Year");
     }
 }

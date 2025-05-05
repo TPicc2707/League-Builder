@@ -1,6 +1,6 @@
 ﻿namespace Game.Application.Games.Commands.CreateGame;
 
-public class CreateGameHandler(IApplicationDbContext dbContext)
+public class CreateGameHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
     : ICommandHandler<CreateGameCommand, CreateGameResult>
 {
     public async Task<CreateGameResult> Handle(CreateGameCommand command, CancellationToken cancellationToken)
@@ -9,6 +9,13 @@ public class CreateGameHandler(IApplicationDbContext dbContext)
 
         dbContext.Games.Add(game);
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        var eventMessage = new GameCreationEvent()
+        {
+            Id = game.Id.Value
+        };
+
+        await publishEndpoint.Publish(eventMessage, cancellationToken);
 
         return new CreateGameResult(game.Id.Value);
     }
@@ -20,8 +27,8 @@ public class CreateGameHandler(IApplicationDbContext dbContext)
         var newGame = Domain.Models.Game.Create(
             id: GameId.Of(Guid.NewGuid()),
             leagueId: LeagueId.Of(gameDto.LeagueId),
-            awayTeamId: TeamId.Of(gameDto.AwayTeamId),
-            homeTeamId: TeamId.Of(gameDto.HomeTeamId),
+            awayTeamId: TeamId.Of(gameDto.AwayTeam.Id),
+            homeTeamId: TeamId.Of(gameDto.HomeTeam.Id),
             seasonId: SeasonId.Of(gameDto.SeasonId),
             gameDetail: gameDetail
             );

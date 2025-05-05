@@ -1,6 +1,6 @@
 ﻿namespace Stats.API.Endpoints.Basketball;
 
-public record UpdateBasketballStatsRequest(BasketballStatsDto BasketballStat);
+public record UpdateBasketballStatsRequest(BasketballStatsDto BasketballStats);
 public record UpdateBasketballStatsResponse(bool IsSuccess);
 
 

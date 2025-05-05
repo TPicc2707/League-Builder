@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="9.1.0" />
     <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageReference Include="Azure.Identity" Version="1.13.2" />
@@ -22,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Aspire\League.Builder.ServiceDefaults\League.Builder.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Player.Application\Player.Application.csproj" />
     <ProjectReference Include="..\Player.Infrastructure\Player.Infrastructure.csproj" />
   </ItemGroup>

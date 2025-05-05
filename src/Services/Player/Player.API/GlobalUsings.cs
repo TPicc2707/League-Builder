@@ -22,4 +22,5 @@ global using Player.Application.Players.Queries.GetPlayersByPosition;
 global using Player.Application.Players.Queries.GetPlayersByState;
 global using Player.Application.Players.Queries.GetPlayersByTeam;
 global using Player.Infrastructure;
+global using Player.Infrastructure.Data;
 global using Player.Infrastructure.Data.Extensions;

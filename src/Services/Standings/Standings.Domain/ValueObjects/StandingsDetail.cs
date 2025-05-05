@@ -19,7 +19,10 @@ public class StandingsDetail
         Wins = wins;
         Losses = losses;
         Ties = ties;
-        WinPercentage = wins / gamesPlayed;
+        if (wins <= 0 || gamesPlayed <= 0)
+            WinPercentage = .000M;
+        else
+            WinPercentage = (decimal)wins / gamesPlayed;
     }
 
     public static StandingsDetail Of(int gamesPlayed, int wins, int losses, int ties)

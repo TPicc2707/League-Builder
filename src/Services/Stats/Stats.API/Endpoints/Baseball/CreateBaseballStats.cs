@@ -1,6 +1,6 @@
 ﻿namespace Stats.API.Endpoints.Baseball;
 
-public record CreateBaseballStatsRequest(BaseballStatsDto BaseballStat);
+public record CreateBaseballStatsRequest(BaseballStatsDto BaseballStats);
 public record CreateBaseballStatsResponse(Guid Id);
 
 

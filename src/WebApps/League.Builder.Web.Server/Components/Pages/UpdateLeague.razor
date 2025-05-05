@@ -1,0 +1,154 @@
+﻿@page "/updateleague/{id}"
+@inject ILeagueService LeagueService
+@inject NavigationManager NavManager
+@inject ISnackbar Snackbar
+
+@if (PageLoad)
+{
+    // Add image selection when next version is worked
+    <div style="padding-top: 150px; padding-bottom: 175px;">
+        <MudText Typo="Typo.h3" Style="font-weight: bold; padding-bottom: 25px;" Align="Align.Center" Color="Color.Primary">Update League</MudText>
+        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="7">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">League Information:</MudText>
+                            <MudTextField Label="League Name" HelperText="Max. 150 characters"
+                            @bind-Value="model.Name" For="@(() => model.Name)" />
+                            <MudTextField Label="Sport" Class="mt-3"
+                            @bind-Value="model.Sport" For="@(() => model.Sport)" />
+                            <MudTextField Label="Email Address" Class="mt-3"
+                            @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
+                            <MudTextField Label="Description" Class="mt-3"
+                            @bind-Value="model.Description" For="@(() => model.Description)" />
+                            <MudItem Style="padding-top: 20px;">
+                                <MudStack Row="true">
+                                    <MudCheckBox @bind-Value="uploadFile" Color="Color.Primary"></MudCheckBox>
+                                    <MudFileUpload @ref="@_fileUpload"
+                                    T="IBrowserFile"
+                                    Disabled="@(uploadFile == true ? false : true)"
+                                    For="@(() => model.File)"
+                                    @bind-Files="model.File">
+                                        <ActivatorContent>
+                                            <MudButton Variant="Variant.Filled"
+                                            Color="Color.Primary"
+                                            StartIcon="@Icons.Material.Filled.CloudUpload">
+                                                League Image
+                                            </MudButton>
+                                        </ActivatorContent>
+                                    </MudFileUpload>
+                                    @if (model.File != null && uploadFile == true)
+                                    {
+                                        <MudText Typo="@Typo.h6">@model.File.Name</MudText>
+                                    }
+                                </MudStack>
+                            </MudItem>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="5">
+                    <MudPaper Class="pa-4 mud-height-full">
+                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                        @if (success)
+                        {
+                            <MudText Color="Color.Success">Success</MudText>
+                        }
+                        else
+                        {
+                            <MudText Color="@Color.Error">
+                                <ValidationSummary />
+                            </MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.body2" Align="Align.Center">
+                        Fill out the form correctly to see the success message.
+                    </MudText>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+
+    </div>
+
+}
+else
+{
+    <Loading />
+}
+
+@code {
+
+    [Parameter]
+    public string Id { get; set; }
+
+    private bool PageLoad = false;
+    private GetLeagueByIdResponse LeagueByIdResponse { get; set; }
+    UpdateLeagueForm model = new UpdateLeagueForm();
+    bool success;
+    bool uploadFile = false;
+    private MudFileUpload<IBrowserFile> _fileUpload;
+
+
+    public class UpdateLeagueForm
+    {
+        [Required]
+        public Guid Id { get; set; }
+
+        [Required]
+        [StringLength(150, ErrorMessage = "Name length can't be more than 150.")]
+        public string Name { get; set; }
+
+        [Required]
+        public string Sport { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string EmailAddress { get; set; }
+
+        public string Description { get; set; }
+
+        [Required]
+        public string ImageFile { get; set; }
+
+        public IBrowserFile File { get; set; }
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var leagueId = Guid.Parse(Id);
+        LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
+        model.Id = LeagueByIdResponse.League.Id;
+        model.Name = LeagueByIdResponse.League.Name;
+        model.Sport = LeagueByIdResponse.League.Sport;
+        model.EmailAddress = LeagueByIdResponse.League.EmailAddress;
+        model.Description = LeagueByIdResponse.League.Description;
+        model.ImageFile = LeagueByIdResponse.League.ImageFile;
+        PageLoad = true;
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        if (uploadFile == true)
+        {
+            model.ImageFile = model.File.Name;
+            string rootpath = @"C:\Development\league-builder\src\WebApps\League.Builder.Web\wwwroot\images";
+            FileStream filestream = new FileStream(rootpath, FileMode.Create, FileAccess.Write);
+            await model.File.OpenReadStream().CopyToAsync(filestream);
+        }
+
+        UpdateLeagueRequest request = new UpdateLeagueRequest(model.Id, model.Name, model.Sport, model.Description, model.ImageFile, model.EmailAddress);
+        await LeagueService.UpdateLeague(request);
+        success = true;
+        Snackbar.Add("League has been updated.", Severity.Success);
+        NavManager.NavigateTo("/leagues");
+        StateHasChanged();
+    }
+
+}

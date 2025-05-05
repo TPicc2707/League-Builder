@@ -177,13 +177,13 @@ namespace Game.Infrastructure.Migrations
                     b.HasOne("Game.Domain.Models.Team", null)
                         .WithMany()
                         .HasForeignKey("AwayTeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Game.Domain.Models.Team", null)
                         .WithMany()
                         .HasForeignKey("HomeTeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Game.Domain.Models.League", null)
@@ -200,7 +200,8 @@ namespace Game.Infrastructure.Migrations
 
                     b.HasOne("Game.Domain.Models.Team", null)
                         .WithMany()
-                        .HasForeignKey("WinningTeamId");
+                        .HasForeignKey("WinningTeamId")
+                        .OnDelete(DeleteBehavior.NoAction);
                 });
 #pragma warning restore 612, 618
         }

@@ -21,10 +21,16 @@ public class FootballKickingStats
     {
         FieldGoalsMade = fieldGoalsMade;
         FieldGoalsAttempted = fieldGoalsAttempted;
-        FieldGoalPercentage = fieldGoalsMade/ fieldGoalsAttempted;
+        if (fieldGoalsMade == 0 || fieldGoalsAttempted == 0)
+            FieldGoalPercentage = 0.00M;
+        else
+            FieldGoalPercentage = fieldGoalsMade/ fieldGoalsAttempted;
         ExtraPointsMade = extraPointsMade;
         ExtraPointsAttempted = extraPointsAttempted;
-        ExtraPointPercentage = extraPointsMade / extraPointsAttempted;
+        if (extraPointsMade == 0 || extraPointsAttempted == 0)
+            ExtraPointPercentage = 0.00M;
+        else
+            ExtraPointPercentage = extraPointsMade / extraPointsAttempted;
         Punts = punts;
         PuntingYards = puntingYards;
         LongestPunt = longestPunt;

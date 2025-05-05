@@ -40,9 +40,18 @@ public record BaseballHittingStats
         Walks = walks;
         HitByPitch = hitByPitch;
         SacrificeFly = sacrificeFly;
-        Average = hits / atBats;
-        Slugging = totalBases / atBats;
-        OnBasePercentage = (hits + walks + hitByPitch) / (atBats + walks + hitByPitch + sacrificeFly);
+        if (hits == 0 || atBats == 0)
+            Average = 0.00M;
+        else
+            Average = (decimal)hits / atBats;
+        if (totalBases == 0 || atBats == 0)
+            Slugging = 0.00M;
+        else
+            Slugging = (decimal)totalBases / atBats;
+        if ((hits + walks + hitByPitch) == 0 || (atBats + walks + hitByPitch + sacrificeFly) == 0)
+            OnBasePercentage = 0.00M;
+        else
+            OnBasePercentage = (decimal)(hits + walks + hitByPitch) / (atBats + walks + hitByPitch + sacrificeFly);
         OnBasePlusSlugging = OnBasePercentage + Slugging;
     }
 

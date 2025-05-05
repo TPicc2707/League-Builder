@@ -20,16 +20,19 @@ public class GameConfiguration : IEntityTypeConfiguration<Domain.Models.Game>
         builder.HasOne<Team>()
             .WithMany()
             .HasForeignKey(o => o.AwayTeamId)
-            .IsRequired();
+            .IsRequired()
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasOne<Team>()
             .WithMany()
             .HasForeignKey(o => o.HomeTeamId)
-            .IsRequired();
+            .IsRequired()
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasOne<Team>()
             .WithMany()
-            .HasForeignKey(o => o.WinningTeamId);
+            .HasForeignKey(o => o.WinningTeamId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasOne<Season>()
             .WithMany()

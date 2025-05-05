@@ -1,0 +1,126 @@
+﻿@page "/updateseason/{id}"
+@inject ISeasonService SeasonService
+@inject ITeamService TeamsService
+@inject IStandingsService StandingsService
+@inject NavigationManager NavManager
+@inject ISnackbar Snackbar
+
+@if (PageLoad)
+{
+    <div style="padding-top: 150px; padding-bottom: 175px;">
+        <MudText Typo="Typo.h3" Style="font-weight: bold; padding-bottom: 25px;" Align="Align.Center" Color="Color.Primary">Update Season</MudText>
+        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="7">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Season Information:</MudText>
+                            <MudNumericField Label="Season Year"
+                            @bind-Value="model.Year" For="@(() => model.Year)" />
+                            <MudTextField Label="Description" Class="mt-3"
+                            @bind-Value="model.Description" For="@(() => model.Description)" />
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="12" sm="5">
+                    <MudPaper Class="pa-4 mud-height-full">
+                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                        @if (success)
+                        {
+                            <MudText Color="Color.Success">Success</MudText>
+                        }
+                        else
+                        {
+                            <MudText Color="@Color.Error">
+                                <CustomValidation @ref="customValidation" />
+                                <ValidationSummary />
+                            </MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.body2" Align="Align.Center">
+                        Fill out the form correctly to see the success message.
+                    </MudText>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+
+    </div>
+
+}
+else
+{
+    <Loading />
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set;}
+
+    UpdateSeasonForm model = new UpdateSeasonForm();
+    bool success;
+    private CustomValidation? customValidation;
+    GetSeasonByIdResponse GetSeasonModel { get; set; }
+    public bool PageLoad = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var seasonId = Guid.Parse(Id);
+        GetSeasonModel = await SeasonService.GetSeason(seasonId);
+        model.Id = GetSeasonModel.Season.Id;
+        model.Year = GetSeasonModel.Season.Year;
+        model.Description = GetSeasonModel.Season.Description;
+        PageLoad = true;
+    }
+
+    public class UpdateSeasonForm
+    {
+        public Guid Id { get; set; }
+        [Required]
+        public int Year { get; set; } = DateTime.Now.Year;
+        public string Description { get; set; }
+
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        customValidation?.ClearErrors();
+
+        var errors = new Dictionary<string, List<string>>();
+
+        await ValidateModel(errors);
+
+        if (errors.Any())
+            customValidation?.DisplayErrors(errors);
+        else
+        {
+            UpdateSeasonRequest request = new UpdateSeasonRequest(model.Id, model.Year, model.Description);
+            await SeasonService.UpdateSeason(request);
+            success = true;
+            NavManager.NavigateTo("/seasons");
+            Snackbar.Add("Season has been updated.", Severity.Success);
+            StateHasChanged();
+        }
+    }
+
+    private async Task ValidateModel(Dictionary<string, List<string>> errors)
+    {
+        var seasons = await SeasonService.GetSeasons();
+
+        if (model.Year <= 1990)
+            errors.Add("Year",
+                         [" " + "The season year must be a more recent year."]);
+
+        var futureYear = DateTime.Now.Year + 30;
+
+        if (model.Year >= futureYear)
+            errors.Add("Year",
+                         [" " + "The season year must be 30 or less years in the future."]);
+    }
+}
+

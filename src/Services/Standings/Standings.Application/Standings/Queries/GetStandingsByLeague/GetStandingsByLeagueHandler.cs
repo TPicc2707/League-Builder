@@ -9,10 +9,12 @@ public class GetStandingsByLeagueHandler(IApplicationDbContext dbContext)
         // return result
 
         var standings = await dbContext.Standings
-        .AsNoTracking()
+                .AsNoTracking()
                 .Where(o => o.LeagueId == LeagueId.Of(query.LeagueId))
                 .ToListAsync(cancellationToken);
 
-        return new GetStandingsByLeagueResult(standings.ToStandingsDtoList());
+        var teams = await dbContext.Teams.AsNoTracking().ToListAsync();
+
+        return new GetStandingsByLeagueResult(standings.ToStandingsDtoList(teams));
     }
 }

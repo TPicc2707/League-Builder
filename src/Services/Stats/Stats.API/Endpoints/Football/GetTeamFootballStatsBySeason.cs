@@ -10,11 +10,11 @@ public class GetTeamFootballStatsBySeason : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/footballstats/team/game/{teamId}/{seasonId}", async (Guid teamId, Guid seasonId, ISender sender) =>
+        app.MapGet("/footballstats/team/season/{teamId}/{seasonId}", async (Guid teamId, Guid seasonId, ISender sender) =>
         {
             var result = await sender.Send(new GetTeamFootballStatsBySeasonQuery(teamId, seasonId));
 
-            var response = result.Adapt<GetTeamBasketballStatsBySeasonResponse>();
+            var response = result.Adapt<GetTeamFootballStatsBySeasonResponse>();
 
             return Results.Ok(response);
         })

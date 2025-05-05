@@ -8,7 +8,7 @@ public class GetTeamBaseballStatsBySeason : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/baseballstats/team/game/{teamId}/{seasonId}", async (Guid teamId, Guid seasonId, ISender sender) =>
+        app.MapGet("/baseballstats/team/season/{teamId}/{seasonId}", async (Guid teamId, Guid seasonId, ISender sender) =>
         {
             var result = await sender.Send(new GetTeamBaseballStatsBySeasonQuery(teamId, seasonId));
 

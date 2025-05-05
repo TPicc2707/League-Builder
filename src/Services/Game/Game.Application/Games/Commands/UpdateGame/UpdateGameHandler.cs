@@ -1,6 +1,6 @@
 ﻿namespace Game.Application.Games.Commands.UpdateGame;
 
-public class UpdateGameHandler(IApplicationDbContext dbContext)
+public class UpdateGameHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
     : ICommandHandler<UpdateGameCommand, UpdateGameResult>
 {
     public async Task<UpdateGameResult> Handle(UpdateGameCommand command, CancellationToken cancellationToken)
@@ -19,6 +19,14 @@ public class UpdateGameHandler(IApplicationDbContext dbContext)
 
         dbContext.Games.Update(game);
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        var eventMessage = new GameUpdatedEvent()
+        {
+            Id = game.Id.Value
+        };
+
+        await publishEndpoint.Publish(eventMessage, cancellationToken);
+
         return new UpdateGameResult(true);
     }
 
@@ -28,8 +36,8 @@ public class UpdateGameHandler(IApplicationDbContext dbContext)
 
         game.Update(
             leagueId: LeagueId.Of(gameDto.LeagueId),
-            awayTeamId: TeamId.Of(gameDto.AwayTeamId),
-            homeTeamId: TeamId.Of(gameDto.HomeTeamId),
+            awayTeamId: TeamId.Of(gameDto.AwayTeam.Id),
+            homeTeamId: TeamId.Of(gameDto.HomeTeam.Id),
             winningTeamId: gameDto.WinningTeamId != null ? TeamId.Of((Guid)gameDto.WinningTeamId) : null,
             seasonId: SeasonId.Of(gameDto.SeasonId),
             gameDetail: updatedGameDetail,

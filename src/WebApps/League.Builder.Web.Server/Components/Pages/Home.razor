@@ -1,0 +1,52 @@
+﻿@page "/"
+@inject NavigationManager NavManager
+
+
+<div style="padding-top: 25px; align-content: center;">
+    <MudCarousel Class="mud-width-full" Style="height:400px;" ShowArrows="false" ShowBullets="true" EnableSwipeGesture="true" AutoCycle="true" TData="object">
+        <MudCarouselItem Transition="transition">
+            <div class="d-flex" style="height:100%">
+                <MudImage Fluid="true" Src="images/league-builder.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
+            </div>
+        </MudCarouselItem>
+        <MudCarouselItem Transition="transition">
+            <div class="d-flex" style="height:100%">
+                <MudImage Fluid="true" Src="images/baseball-1.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
+            </div>
+        </MudCarouselItem>
+        <MudCarouselItem Transition="transition">
+            <div class="d-flex" style="height:100%">
+                <MudImage Fluid="true" Src="images/league-2.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
+            </div>
+        </MudCarouselItem>
+    </MudCarousel>
+
+</div>
+
+<div style="padding-top: 50px;">
+    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Pick a Sport</MudText>
+</div>
+<div style="padding-top: 25px;">
+    <MudStack Justify="@_justify" Row="true">
+        <MudLink OnClick="@(() => GetLeaguesBySport("baseball"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/baseball.png" Alt="Baseball" Elevation="25" Class="rounded-lg" /></MudLink>
+        <MudLink OnClick="@(() => GetLeaguesBySport("football"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/football.png" Alt="Football" Elevation="25" Class="rounded-lg" /></MudLink>
+        <MudLink OnClick="@(() => GetLeaguesBySport("basketball"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/basketball.png" Alt="Baseball" Elevation="25" Class="rounded-lg" /></MudLink>
+    </MudStack>
+</div>
+
+@code {
+    private Transition transition = Transition.Fade;
+    private Justify _justify = Justify.SpaceEvenly;
+
+    private ObjectFit ImageFit = ObjectFit.Cover;
+
+    void SetImageFit(ObjectFit value)
+    {
+        ImageFit = value;
+    }
+
+    private void GetLeaguesBySport(string sport)
+    {
+        NavManager.NavigateTo($"/leaguesbysport/{sport}");
+    }
+}

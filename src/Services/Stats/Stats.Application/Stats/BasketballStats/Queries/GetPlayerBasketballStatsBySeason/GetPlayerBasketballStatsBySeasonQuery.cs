@@ -3,4 +3,4 @@
 public record GetPlayerBasketballStatsBySeasonQuery(Guid PlayerId, Guid SeasonId)
     : IQuery<GetPlayerBasketballStatsBySeasonResult>;
 
-public record GetPlayerBasketballStatsBySeasonResult(IEnumerable<BasketballStatsDto> BasketballStat);
+public record GetPlayerBasketballStatsBySeasonResult(IEnumerable<BasketballStatsDto> BasketballStats);

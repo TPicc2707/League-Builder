@@ -12,7 +12,12 @@ public class GetStandingsByIdHandler(IApplicationDbContext dbContext)
         if (standings is null)
             throw new StandingsNotFoundException(query.Id);
 
-        return new GetStandingsByIdResult(standings.ToSingleStandingsDto());
+        var team = await dbContext.Teams.FindAsync([standings.TeamId], cancellationToken: cancellationToken);
+
+        if (team is null)
+            throw new TeamNotFoundException(standings.TeamId.Value);
+
+        return new GetStandingsByIdResult(standings.ToSingleStandingsDto(team));
     }
 }
 

@@ -41,9 +41,8 @@ internal class InitialData
     public static IEnumerable<Season> Seasons =>
         new List<Season>
         {
-            //TODO
             Season.Create(SeasonId.Of(new Guid("9baeb193-c9f1-4b92-8d04-dfef45b9ed3c")), 2023),
-            Season.Create(SeasonId.Of(new Guid("898a0e75-d5d3-4a05-973f-4eb5153649da")), 2024)
+            Season.Create(SeasonId.Of(new Guid("898a0e75-d5d3-4a05-973f-4eb5153649da")), 2024),
         };
 
     public static IEnumerable<Game> Games =>
@@ -60,23 +59,41 @@ internal class InitialData
 
         };
 
-    public static IEnumerable<BaseballStats> BaseballStats =>
-        new List<BaseballStats>
+    public static IEnumerable<BaseballStats> BaseballStats
+    {
+        get
         {
-            // Going to create Stats via Web app
-        };
+            //var hittingStats = BaseballHittingStats.Of(3, 1, 2, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0);
+            //var pitchingStats = BaseballPitchingStats.Of(0, 0, false, 0, 0, 0, 0, 0);
+            //var stats = Domain.Models.BaseballStats.Create(BaseballStatsId.Of(new Guid("af1f1d75-669e-43d1-af69-2980c6832156")), LeagueId.Of(new Guid("5334c996-8457-4cf0-815c-ed2b77c4ff61")), TeamId.Of(new Guid("0ef05e29-7562-4e93-b710-f875fe293db9")),
+            //                                               PlayerId.Of(new Guid("69752bda-2b77-4eaf-b8d2-4ef2d723a46e")), SeasonId.Of(new Guid("9baeb193-c9f1-4b92-8d04-dfef45b9ed3c")), GameId.Of(new Guid("4d60cf9c-87c2-4f9d-a588-c2b55145b6a2")),
+            //                                               hittingStats: hittingStats, pitchingStats: pitchingStats);
 
-    public static IEnumerable<BasketballStats> BasketballStats =>
-        new List<BasketballStats>
+            return new List<BaseballStats> { /*stats*/ };
+        }
+    }
+
+    public static IEnumerable<BasketballStats> BasketballStats
+    {
+        get
         {
-            // Going to create Stats via Web app
-        };
+            //var basketballStats = BasketballPlayerStats.Of(true, 30, 14, 3, 7, 1, 3, 7, 7, 3, 2, 1, 1, 3);
+            return new List<BasketballStats> { };
+        }
+    }
 
-    public static IEnumerable<FootballStats> FootballStats =>
-        new List<FootballStats>
+    public static IEnumerable<FootballStats> FootballStats
+    {
+        get
         {
-            // Going to create Stats via Web app
-
-        };
+            //var offensiveStats = FootballOffensiveStats.Of(13, 25, 198, 25, 2, 1, 3, 2, 12, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            //var defensiveStats = FootballDefensiveStats.Of(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            //var kickingStats = FootballKickingStats.Of(0, 0, 0, 0, 0, 0, 0);
+            //var stats = Domain.Models.FootballStats.Create(FootballStatsId.Of(new Guid("aa76ce02-4b4c-4270-9b3a-dad5f473935a")), LeagueId.Of(new Guid("05d80a72-d2dd-43c1-8ca0-ef1c0585db3b")), TeamId.Of(new Guid("c9dcbacb-16e7-45e0-a496-b66ef212ac16")), PlayerId.Of(new Guid("036a529b-1a76-4603-b0df-dfd48cf4c182")),
+            //                                              SeasonId.Of(new Guid("9baeb193-c9f1-4b92-8d04-dfef45b9ed3c")), GameId.Of(new Guid("710f3ea1-1b62-47cc-a455-97619b2b53d5")),
+            //                                              offensiveStats: offensiveStats, defensiveStats: defensiveStats, kickingStats: kickingStats);
+            return new List<FootballStats> { /*stats*/ };
+        }
+    }
 
 }

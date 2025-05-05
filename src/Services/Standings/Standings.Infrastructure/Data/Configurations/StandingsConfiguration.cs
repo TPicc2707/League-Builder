@@ -31,6 +31,7 @@ public class StandingsConfiguration : IEntityTypeConfiguration<Domain.Models.Sta
                 standingsDetailBuilder.Property(x => x.GamesPlayed);
                 standingsDetailBuilder.Property(x => x.Wins);
                 standingsDetailBuilder.Property(x => x.Losses);
+                standingsDetailBuilder.Property(x => x.Ties);
                 standingsDetailBuilder.Property(x => x.WinPercentage);
             });
 

@@ -1,7 +1,7 @@
 ﻿namespace Stats.API.Endpoints.Football;
 
 //public record GetPlayerFootballStatsByGameRequest(Guid PlayerId, Guid GameId);
-public record GetPlayerFootballStatsByGameResponse(FootballStatsDto FootballStat);
+public record GetPlayerFootballStatsByGameResponse(FootballStatsDto FootballStats);
 
 
 public class GetPlayerFootballStatsByGame : ICarterModule

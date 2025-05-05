@@ -13,6 +13,8 @@ public class GetStandingsByTeamHandler(IApplicationDbContext dbContext)
                 .Where(o => o.TeamId == TeamId.Of(query.TeamId))
                 .ToListAsync(cancellationToken);
 
-        return new GetStandingsByTeamResult(standings.ToStandingsDtoList());
+        var teams = await dbContext.Teams.Where(x => x.Id == TeamId.Of(query.TeamId)).ToListAsync();
+
+        return new GetStandingsByTeamResult(standings.ToStandingsDtoList(teams));
     }
 }

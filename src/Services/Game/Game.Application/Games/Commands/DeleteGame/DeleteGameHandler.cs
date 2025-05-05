@@ -1,6 +1,6 @@
 ﻿namespace Game.Application.Games.Commands.DeleteGame;
 
-public class DeleteGameHandler(IApplicationDbContext dbContext)
+public class DeleteGameHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
     : ICommandHandler<DeleteGameCommand, DeleteGameResult>
 {
     public async Task<DeleteGameResult> Handle(DeleteGameCommand command, CancellationToken cancellationToken)
@@ -20,6 +20,13 @@ public class DeleteGameHandler(IApplicationDbContext dbContext)
 
         dbContext.Games.Remove(game);
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        var eventMessage = new GameDeletionEvent()
+        {
+            Id = command.GameId
+        };
+
+        await publishEndpoint.Publish(eventMessage, cancellationToken);
 
         return new DeleteGameResult(true);
     }

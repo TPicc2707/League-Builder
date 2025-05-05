@@ -25,7 +25,7 @@ internal class InitialData
         {
             //TODO
             Season.Create(SeasonId.Of(new Guid("9baeb193-c9f1-4b92-8d04-dfef45b9ed3c")), 2023),
-            Season.Create(SeasonId.Of(new Guid("898a0e75-d5d3-4a05-973f-4eb5153649da")), 2024)
+            Season.Create(SeasonId.Of(new Guid("898a0e75-d5d3-4a05-973f-4eb5153649da")), 2024),
         };
 
     public static IEnumerable<Domain.Models.Standings> Standings
@@ -69,7 +69,7 @@ internal class InitialData
             SeasonId.Of(new Guid("9baeb193-c9f1-4b92-8d04-dfef45b9ed3c")), standingsDetail: standingsDetail9);
 
             var standingsDetail10 = StandingsDetail.Of(0, 0, 0, 0);
-            var standings10 = Domain.Models.Standings.Create(StandingsId.Of(new Guid("d8123fe9-f45f-4e88-895f-6b97f99d0ab3")), LeagueId.Of(new Guid("05d80a72-d2dd-43c1-8ca0-ef1c0585db3b")), TeamId.Of(new Guid("C9DCBACB-16E7-45E0-A496-B66EF212AC16")),
+            var standings10 = Domain.Models.Standings.Create(StandingsId.Of(new Guid("f436e70b-aada-433f-9720-8fc2ef9ca9a9")), LeagueId.Of(new Guid("05d80a72-d2dd-43c1-8ca0-ef1c0585db3b")), TeamId.Of(new Guid("C9DCBACB-16E7-45E0-A496-B66EF212AC16")),
             SeasonId.Of(new Guid("898a0e75-d5d3-4a05-973f-4eb5153649da")), standingsDetail: standingsDetail10);
 
 

@@ -16,3 +16,4 @@ global using Marten.Schema;
 global using MassTransit;
 global using MediatR;
 global using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+global using System.Reflection;

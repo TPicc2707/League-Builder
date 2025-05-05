@@ -3,8 +3,8 @@
 public class Game : Entity<GameId>
 {
     public LeagueId LeagueId { get; private set; } = default!;
-    public TeamId AwayTeamId { get; private set; } = default!;
-    public TeamId HomeTeamId { get; private set; } = default!;
+    public TeamId? AwayTeamId { get; private set; } = default!;
+    public TeamId? HomeTeamId { get; private set; } = default!;
     public TeamId? WinningTeamId { get; private set; } = default!;
     public SeasonId SeasonId { get; private set; } = default!;
     public GameDetail GameDetail { get; private set; } = default!;

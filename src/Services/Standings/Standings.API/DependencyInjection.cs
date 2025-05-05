@@ -8,7 +8,7 @@ public static class DependencyInjection
 
         services.AddExceptionHandler<CustomExceptionHandler>();
         services.AddHealthChecks()
-            .AddSqlServer(configuration.GetConnectionString("Database")!);
+            .AddSqlServer(configuration.GetConnectionString("standingsDb")!);
 
         return services;
     }

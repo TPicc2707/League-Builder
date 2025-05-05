@@ -48,5 +48,5 @@ global using Stats.Application.Stats.FootballStats.Queries.GetPlayerFootballStat
 global using Stats.Application.Stats.FootballStats.Queries.GetTeamFootballStatsByGame;
 global using Stats.Application.Stats.FootballStats.Queries.GetTeamFootballStatsBySeason;
 global using Stats.Infrastructure;
+global using Stats.Infrastructure.Data;
 global using Stats.Infrastructure.Data.Extensions;
-

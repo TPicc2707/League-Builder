@@ -1,6 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
-// Add services to the container.
 
+
+// Add services to the container.
+builder.AddServiceDefaults();
 builder.Services
     .AddApplicationServices(builder.Configuration)
     .AddInfrastructureServices(builder.Configuration)
@@ -15,6 +17,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 app.UseApiServices();
