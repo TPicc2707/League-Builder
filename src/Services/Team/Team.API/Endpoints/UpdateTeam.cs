@@ -21,6 +21,7 @@ public class UpdateTeam : ICarterModule
         .Produces<UpdateTeamResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Update Team")
-        .WithDescription("Update Team");
+        .WithDescription("Update Team")
+        .RequireAuthorization(KeycloakPolicy.UpdateTeamPolicy);
     }
 }

@@ -21,6 +21,7 @@ public class GetLeagueBasketballStatsBySeason : ICarterModule
        .ProducesProblem(StatusCodes.Status400BadRequest)
        .ProducesProblem(StatusCodes.Status404NotFound)
        .WithSummary("Get League Basketball Stats By Season")
-       .WithDescription("Get League Basketball Stats By Season");
+       .WithDescription("Get League Basketball Stats By Season")
+       .RequireAuthorization(KeycloakPolicy.ReadStatPolicy);
     }
 }

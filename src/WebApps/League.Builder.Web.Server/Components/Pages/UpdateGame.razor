@@ -4,102 +4,109 @@
 @inject IGameService GameService
 @inject IStandingsService StandingsService
 @inject NavigationManager NavManager
+@inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
 
-@if (PageLoad)
-{
-    <div style="padding-top: 150px; padding-bottom: 175px;">
-        <MudText Typo="Typo.h3" Style="font-weight: bold; padding-bottom: 25px;" Align="Align.Center" Color="Color.Primary">Update Game</MudText>
-        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
-            <DataAnnotationsValidator />
-            <MudGrid>
-                <MudItem xs="12" sm="7">
-                    <MudCard>
-                        <MudCardContent>
-                            <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Game Information</MudText>
-                            <MudSelect Class="mt-3" Label="Away Team" @bind-Value="awayTeamId">
-                                @foreach (var team in TeamsResponse.Teams)
+<AuthorizeView Roles="@String.Concat(Roles.UpdateGames, ", ", Roles.ReadGames, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.UpdateStandings, ", ", Roles.ReadStandings)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <div style="padding-top: 150px; padding-bottom: 175px;">
+                <MudText Typo="Typo.h3" Style="font-weight: bold; padding-bottom: 25px;" Align="Align.Center" Color="Color.Primary">Update Game</MudText>
+                <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+                    <DataAnnotationsValidator />
+                    <MudGrid>
+                        <MudItem xs="12" sm="7">
+                            <MudCard>
+                                <MudCardContent>
+                                    <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Game Information</MudText>
+                                    <MudSelect Class="mt-3" Label="Away Team" @bind-Value="awayTeamId">
+                                        @foreach (var team in TeamsResponse.Teams)
+                                        {
+                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    <MudSelect Class="mt-3" Label="Home Team" @bind-Value="homeTeamId">
+                                        @foreach (var team in TeamsResponse.Teams)
+                                        {
+                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    <MudDatePicker Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="startDate" />
+                                    <MudTimePicker Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="startTime" />
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12" sm="5">
+                            <MudPaper Class="pa-4 mud-height-full">
+                                <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                                @if (success)
                                 {
-                                    <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                    <MudText Color="Color.Success">Success</MudText>
                                 }
-                            </MudSelect>
-                            <MudSelect Class="mt-3" Label="Home Team" @bind-Value="homeTeamId">
-                                @foreach (var team in TeamsResponse.Teams)
+                                else
                                 {
-                                    <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                    <MudText Color="@Color.Error">
+                                        <CustomValidation @ref="customValidation" />
+                                        <ValidationSummary />
+                                    </MudText>
                                 }
-                            </MudSelect>
-                            <MudDatePicker Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="startDate" />
-                            <MudTimePicker Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="startTime" />
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12" sm="5">
-                    <MudPaper Class="pa-4 mud-height-full">
-                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
-                        @if (success)
-                        {
-                            <MudText Color="Color.Success">Success</MudText>
-                        }
-                        else
-                        {
-                            <MudText Color="@Color.Error">
-                                <CustomValidation @ref="customValidation" />
-                                <ValidationSummary />
-                            </MudText>
-                        }
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="7">
-                    <MudCard>
-                        <MudCardContent>
-                            <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Game Details</MudText>
-                            @if(model.GameStatus == GameStatus.Completed)
-                            {
-                                <MudSelect Class="mt-3" Label="Winning Team" @bind-Value="winningTeamId">
-                                    @foreach (var team in TeamsInGame)
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="7">
+                            <MudCard>
+                                <MudCardContent>
+                                    <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Game Details</MudText>
+                                    @if (model.GameStatus == GameStatus.Completed)
                                     {
-                                        <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                        <MudSelect Class="mt-3" Label="Winning Team" @bind-Value="winningTeamId">
+                                            @foreach (var team in TeamsInGame)
+                                            {
+                                                <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                            }
+                                        </MudSelect>
                                     }
-                                </MudSelect>
-                            }
-                            <MudNumericField Label="Away Team Score" Class="mt-3"
-                            @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
-                            <MudNumericField Label="Home Team Score" Class="mt-3"
-                            @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
-                            <MudSelect Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
-                                @foreach (var status in Enum.GetValues<GameStatus>())
-                                {
-                                    <MudSelectItem Value="status">@status</MudSelectItem>
-                                }
-                            </MudSelect>
-                            @if(model.GameStatus == GameStatus.Completed)
-                            {
-                                <MudDatePicker Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="endDate" />
-                                <MudTimePicker Class="mt-3" Label="End Time" AmPm="true" Editable="true" @bind-Time="endTime" />
-                            }
-                        </MudCardContent>
-                        <MudCardActions>
-                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudText Typo="Typo.body2" Align="Align.Center">
-                        Fill out the form correctly to see the success message.
-                    </MudText>
-                </MudItem>
-            </MudGrid>
-        </EditForm>
+                                    <MudNumericField Label="Away Team Score" Class="mt-3"
+                                                     @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
+                                    <MudNumericField Label="Home Team Score" Class="mt-3"
+                                                     @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
+                                    <MudSelect Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
+                                        @foreach (var status in Enum.GetValues<GameStatus>())
+                                        {
+                                            <MudSelectItem Value="status">@status</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    @if (model.GameStatus == GameStatus.Completed)
+                                    {
+                                        <MudDatePicker Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="endDate" />
+                                        <MudTimePicker Class="mt-3" Label="End Time" AmPm="true" Editable="true" @bind-Time="endTime" />
+                                    }
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.body2" Align="Align.Center">
+                                Fill out the form correctly to see the success message.
+                            </MudText>
+                        </MudItem>
+                    </MudGrid>
+                </EditForm>
 
-    </div>
+            </div>
 
-}
-else
-{
-    <Loading />
-}
-
+        }
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     [Parameter]
@@ -123,6 +130,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
         var gameId = Guid.Parse(Id);
         GameModel = await GameService.GetGameById(gameId);
         model.LeagueId = GameModel.Game.LeagueId;

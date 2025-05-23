@@ -22,6 +22,7 @@ public class CreateGame : ICarterModule
        .Produces<CreateGameResponse>(StatusCodes.Status201Created)
        .ProducesProblem(StatusCodes.Status400BadRequest)
        .WithSummary("Create Game")
-       .WithDescription("Create Game");
+       .WithDescription("Create Game")
+       .RequireAuthorization(KeycloakPolicy.CreateGamePolicy);
     }
 }

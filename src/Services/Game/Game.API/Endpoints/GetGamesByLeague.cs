@@ -20,6 +20,7 @@ public class GetGamesByLeague : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Games By League")
-        .WithDescription("Get Games By League");
+        .WithDescription("Get Games By League")
+        .RequireAuthorization(KeycloakPolicy.ReadGamePolicy);
     }
 }

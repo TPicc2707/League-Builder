@@ -19,6 +19,7 @@ public class DeleteGame : ICarterModule
         .Produces<DeleteGameResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Delete Game")
-        .WithDescription("Delete Game");
+        .WithDescription("Delete Game")
+        .RequireAuthorization(KeycloakPolicy.DeleteGamePolicy);
     }
 }

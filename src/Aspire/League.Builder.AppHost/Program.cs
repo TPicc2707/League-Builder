@@ -20,6 +20,11 @@ var rabbitmq = builder
       .WithDataVolume()
       .WithLifetime(ContainerLifetime.Persistent);
 
+var keycloak = builder
+    .AddKeycloak("keycloak", 8080)
+    .WithDataVolume()
+    .WithLifetime(ContainerLifetime.Persistent);
+
 //Postgress
 var leagueDb = postgres.AddDatabase("leagueDb");
 var seasonDb = postgres.AddDatabase("seasonDb");
@@ -44,8 +49,10 @@ var league = builder
             .WithHttpsEndpoint(port: 6060)
             .WithReference(leagueDb)
             .WithReference(rabbitmq)
+            .WithReference(keycloak)
             .WaitFor(leagueDb)
-            .WaitFor(rabbitmq);
+            .WaitFor(rabbitmq)
+            .WaitFor(keycloak);
 
 
 var team = builder
@@ -60,8 +67,10 @@ var team = builder
             .WithHttpsEndpoint(port: 6061)
             .WithReference(teamDb)
             .WithReference(rabbitmq)
+            .WithReference(keycloak)
             .WaitFor(teamDb)
-            .WaitFor(rabbitmq);
+            .WaitFor(rabbitmq)
+            .WaitFor(keycloak);
 
 
 var player = builder
@@ -76,8 +85,10 @@ var player = builder
             .WithHttpsEndpoint(port: 6062)
             .WithReference(playerDb)
             .WithReference(rabbitmq)
+            .WithReference(keycloak)
             .WaitFor(playerDb)
-            .WaitFor(rabbitmq);
+            .WaitFor(rabbitmq)
+            .WaitFor(keycloak);
 
 
 var stats = builder
@@ -92,8 +103,10 @@ var stats = builder
             .WithHttpsEndpoint(port: 6067)
             .WithReference(statsDb)
             .WithReference(rabbitmq)
+            .WithReference(keycloak)
             .WaitFor(statsDb)
-            .WaitFor(rabbitmq);
+            .WaitFor(rabbitmq)
+            .WaitFor(keycloak);
 
 
 var standings = builder
@@ -108,8 +121,10 @@ var standings = builder
                 .WithHttpsEndpoint(port: 6065)
                 .WithReference(standingsDb)
                 .WithReference(rabbitmq)
+                .WithReference(keycloak)
                 .WaitFor(standingsDb)
-                .WaitFor(rabbitmq);
+                .WaitFor(rabbitmq)
+                .WaitFor(keycloak);
 
 
 var season = builder
@@ -124,8 +139,10 @@ var season = builder
             .WithHttpsEndpoint(port: 6064)
             .WithReference(seasonDb)
             .WithReference(rabbitmq)
+            .WithReference(keycloak)
             .WaitFor(seasonDb)
-            .WaitFor(rabbitmq);
+            .WaitFor(rabbitmq)
+            .WaitFor(keycloak);
 
 var game = builder
             .AddProject<Projects.Game_API>("game-api",
@@ -139,8 +156,10 @@ var game = builder
             .WithHttpsEndpoint(port: 6066)
             .WithReference(gameDb)
             .WithReference(rabbitmq)
+            .WithReference(keycloak)
             .WaitFor(gameDb)
-            .WaitFor(rabbitmq);
+            .WaitFor(rabbitmq)
+            .WaitFor(keycloak);
 
 
 var apiGateway = builder
@@ -160,12 +179,14 @@ var apiGateway = builder
                 .WithReference(game)
                 .WithReference(standings)
                 .WithReference(season)
+                .WithReference(keycloak)
                 .WaitFor(league)
                 .WaitFor(team)
                 .WaitFor(stats)
                 .WaitFor(game)
                 .WaitFor(standings)
-                .WaitFor(season);
+                .WaitFor(season)
+                .WithReference(keycloak);
 
 
 builder.AddProject<Projects.League_Builder_Web_Server>("league-builder-web-server",
@@ -179,7 +200,9 @@ builder.AddProject<Projects.League_Builder_Web_Server>("league-builder-web-serve
                 .WithHttpsEndpoint(port: 6068)
                 .WithExternalHttpEndpoints()
                 .WithReference(apiGateway)
-                .WaitFor(apiGateway);
+                .WithReference(keycloak)
+                .WaitFor(apiGateway)
+                .WaitFor(keycloak);
 
 
 builder.Build().Run();

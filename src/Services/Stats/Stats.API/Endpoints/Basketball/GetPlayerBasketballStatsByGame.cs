@@ -21,7 +21,8 @@ public class GetPlayerBasketballStatsByGame : ICarterModule
        .ProducesProblem(StatusCodes.Status400BadRequest)
        .ProducesProblem(StatusCodes.Status404NotFound)
        .WithSummary("Get Player Basketball Stats By Game")
-       .WithDescription("Get Player Basketball Stats By Game");
+       .WithDescription("Get Player Basketball Stats By Game")
+       .RequireAuthorization(KeycloakPolicy.ReadStatPolicy);
 
     }
 }

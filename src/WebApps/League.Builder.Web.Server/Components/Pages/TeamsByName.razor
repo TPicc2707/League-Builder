@@ -1,50 +1,59 @@
 ﻿@page "/teamsbyname/{teamName}"
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
+@inject NavigationManager NavManager
+@inject IHttpContextAccessor HttpContextAccessor
 
-@if (PageLoad)
-{
-    <div style="padding-bottom: 250px;">
-        <div style="padding-top: 50px;">
-            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Teams</MudText>
-        </div>
 
-        @for (var i = 1; i <= Counter; i++)
+<AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadLeagues)">
+    <Authorized>
+        @if (PageLoad)
         {
-            <div style="padding-top: 25px;">
-                <MudStack Justify="@_justify" Row="true">
-                    @foreach (var team in GetTeamsForRow(TeamCounter))
-                    {
-                        string imageFile = String.Concat("images/", team.ImageFile);
-                        string playerLink = String.Concat("/playersbyteam/", team.Id);
-                        string address = String.Concat(team.TeamAddress.AddressLine, ", ", team.TeamAddress.State, ", ", team.TeamAddress.ZipCode);
-                        string leagueName = GetLeagueName(team.LeagueId);
-                        <MudCard>
-                            <MudCardMedia Image="@imageFile" Height="200" />
-                            <MudCardContent>
-                                <MudText Typo="Typo.h5" Style="font-weight: bold; padding-bottom: 5px;">@team.TeamName</MudText>
-                                <MudText Typo="Typo.body1" Style="padding-bottom: 5px;">@leagueName</MudText>
-                                <MudText Typo="Typo.body2" Style="padding-bottom: 5px;">@address</MudText>
-                                <MudText Typo="Typo.body2" Style="padding-bottom: 5px;">@team.Description</MudText>
-                            </MudCardContent>
-                            <MudCardActions Style="align-content: center">
-                                <MudButton Href="@playerLink" Variant="Variant.Text" Color="Color.Primary">Players</MudButton>
-                            </MudCardActions>
-                        </MudCard>
-                    }
-                </MudStack>
+            <div style="padding-bottom: 250px;">
+                <div style="padding-top: 50px;">
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Teams</MudText>
+                </div>
+
+                @for (var i = 1; i <= Counter; i++)
+                {
+                    <div style="padding-top: 25px;">
+                        <MudStack Justify="@_justify" Row="true">
+                            @foreach (var team in GetTeamsForRow(TeamCounter))
+                            {
+                                string imageFile = String.Concat("images/", team.ImageFile);
+                                string playerLink = String.Concat("/playersbyteam/", team.Id);
+                                string address = String.Concat(team.TeamAddress.AddressLine, ", ", team.TeamAddress.State, ", ", team.TeamAddress.ZipCode);
+                                string leagueName = GetLeagueName(team.LeagueId);
+                                <MudCard>
+                                    <MudCardMedia Image="@imageFile" Height="200" />
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.h5" Style="font-weight: bold; padding-bottom: 5px;">@team.TeamName</MudText>
+                                        <MudText Typo="Typo.body1" Style="padding-bottom: 5px;">@leagueName</MudText>
+                                        <MudText Typo="Typo.body2" Style="padding-bottom: 5px;">@address</MudText>
+                                        <MudText Typo="Typo.body2" Style="padding-bottom: 5px;">@team.Description</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="align-content: center">
+                                        <MudButton Href="@playerLink" Variant="Variant.Text" Color="Color.Primary">Players</MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            }
+                        </MudStack>
+                    </div>
+
+                }
+
             </div>
 
         }
-
-    </div>
-
-}
-else
-{
-    <Loading />
-}
-
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 @code {
     private bool PageLoad = false;
     private int TeamCount = 0;
@@ -61,6 +70,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
         TeamsResponse = await TeamService.GetTeamsByName(TeamName);
         LeaguesResponse = await LeagueService.GetLeagues();
         TeamCount = (int)TeamsResponse.Teams.Count();

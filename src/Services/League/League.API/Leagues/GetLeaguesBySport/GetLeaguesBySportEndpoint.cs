@@ -20,6 +20,7 @@ public class GetLeaguesBySportEndpoint : ICarterModule
         .Produces<GetLeaguesBySportResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Get Leagues By Sport")
-        .WithDescription("Get Leagues By Sport");
+        .WithDescription("Get Leagues By Sport")
+        .RequireAuthorization(KeycloakPolicy.ReadLeaguePolicy);
     }
 }

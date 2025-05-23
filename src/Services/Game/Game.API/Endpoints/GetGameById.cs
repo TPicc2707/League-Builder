@@ -20,6 +20,7 @@ public class GetGameById : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Game By Id")
-        .WithDescription("Get Game By Id");
+        .WithDescription("Get Game By Id")
+        .RequireAuthorization(KeycloakPolicy.ReadGamePolicy);
     }
 }

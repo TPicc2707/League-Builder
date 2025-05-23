@@ -23,6 +23,7 @@ public class UpdateLeagueEndpoint : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Update League")
-        .WithDescription("Update League");
+        .WithDescription("Update League")
+        .RequireAuthorization(KeycloakPolicy.UpdateLeaguePolicy);
     }
 }

@@ -40,9 +40,17 @@ builder.Services.AddCors(options =>
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("leagueDb")!);
 
+builder.Services.AddCustomAuthentication();
+
+builder.Services.AddKeycloakPolicies(ServiceName.LeagueService);
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.MapCarter();
 
@@ -55,5 +63,7 @@ app.UseHealthChecks("/health",
     {
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
     });
+
+
 
 app.Run();

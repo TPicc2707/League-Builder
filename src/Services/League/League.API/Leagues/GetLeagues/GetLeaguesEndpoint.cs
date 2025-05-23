@@ -22,6 +22,7 @@ public class GetLeaguesEndpoint : ICarterModule
         .Produces<GetLeaguesResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Get Leagues")
-        .WithDescription("Get Leagues");
+        .WithDescription("Get Leagues")
+        .RequireAuthorization(KeycloakPolicy.ReadLeaguePolicy);
     }
 }

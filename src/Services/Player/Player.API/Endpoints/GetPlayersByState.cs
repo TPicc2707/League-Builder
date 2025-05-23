@@ -20,6 +20,7 @@ public class GetPlayersByState : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Players By State")
-        .WithDescription("Get Players By State");
+        .WithDescription("Get Players By State")
+        .RequireAuthorization(KeycloakPolicy.ReadPlayerPolicy);
     }
 }

@@ -3,974 +3,658 @@
 @inject IGameService GameService
 @inject IPlayerService PlayerService
 @inject ISnackbar Snackbar
+@inject NavigationManager NavManager;
+@inject IHttpContextAccessor HttpContextAccessor
 
 
-@if (PageLoad)
-{
-    <div style="padding-top: 100px;">
-        <div style="padding-bottom: 25px;">
-            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
-        </div>
-        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
-            <MudTabPanel Text="@String.Concat(GameModel.Game.AwayTeam.TeamName + " Stats")">
-                <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" CanCancelEdit="true"
-                @bind-SelectedItem="passingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitPassingStats"
-                RowEditPreview="BackupPassingItem" RowEditCancel="ResetPassingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                    <ColGroup>
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                    </ColGroup>
-                    <HeaderContent>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                        <MudTd DataLabel="Completions">@context.PassingCompletions</MudTd>
-                        <MudTd DataLabel="Attempts">@context.PassingAttempts</MudTd>
-                        <MudTd DataLabel="Yards">@context.PassingYards</MudTd>
-                        <MudTd DataLabel="Touchdowns">@context.PassingTouchdowns</MudTd>
-                        <MudTd DataLabel="Interceptions">@context.PassingInterceptions</MudTd>
-                        <MudTd DataLabel="Longest">@context.LongestPassingPlay</MudTd>
-                        <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
-                    </RowTemplate>
-                    <RowEditingTemplate>
-                        <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                        <MudTd DataLabel="Completions">
-                            <MudTextField @bind-Value="context.PassingCompletions" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Attempts">
-                            <MudTextField @bind-Value="context.PassingAttempts" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Yards">
-                            <MudTextField @bind-Value="context.PassingYards" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Touchdowns">
-                            <MudTextField @bind-Value="context.PassingTouchdowns" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Interceptions">
-                            <MudTextField @bind-Value="context.PassingInterceptions" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Longest">
-                            <MudTextField @bind-Value="context.LongestPassingPlay" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Sacks">
-                            <MudTextField @bind-Value="context.Sacks" Style="font-size: 12px;" Required />
-                        </MudTd>
-                    </RowEditingTemplate>
-                    <EditButtonContent Context="button">
-                        <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                    </EditButtonContent>
-                </MudTable>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>CMP</th>
-                                <th>ATT</th>
-                                <th>YDS</th>
-                                <th>TD</th>
-                                <th>INT</th>
-                                <th>S</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@AwayTotalPassingCompletions</td>
-                                <td>@AwayTotalPassingAttempts</td>
-                                <td>@AwayTotalPassingYards</td>
-                                <td>@AwayTotalPassingTouchdowns</td>
-                                <td>@AwayTotalPassingInterceptions</td>
-                                <td>@AwayTotalSacks</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
+<AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadGames, ", ", Roles.ReadPlayers)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <div style="padding-top: 100px;">
+                <div style="padding-bottom: 25px;">
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
                 </div>
-                <div style="padding-top: 25px;">
-                    <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" CanCancelEdit="true"
-                    @bind-SelectedItem="rushingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitRushingStats"
-                    RowEditPreview="BackupRushingItem" RowEditCancel="ResetRushingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                        <ColGroup>
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                        </ColGroup>
-                        <HeaderContent>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">CAR</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FUM</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LST</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="Carries">@context.RushingAttempts</MudTd>
-                            <MudTd DataLabel="Yards">@context.RushingYards</MudTd>
-                            <MudTd DataLabel="Touchdowns">@context.RushingTouchdowns</MudTd>
-                            <MudTd DataLabel="Longest">@context.LongestRushingPlay</MudTd>
-                            <MudTd DataLabel="Fumbles">@context.RushingFumbles</MudTd>
-                            <MudTd DataLabel="Fumbles Lost">@context.RushingFumblesLost</MudTd>
-                        </RowTemplate>
-                        <RowEditingTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="Carries">
-                                <MudTextField @bind-Value="context.RushingAttempts" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Yards">
-                                <MudTextField @bind-Value="context.RushingYards" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Touchdowns">
-                                <MudTextField @bind-Value="context.RushingTouchdowns" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Longest">
-                                <MudTextField @bind-Value="context.LongestRushingPlay" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Fumbles">
-                                <MudTextField @bind-Value="context.RushingFumbles" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Fumbles Lost">
-                                <MudTextField @bind-Value="context.RushingFumblesLost" Style="font-size: 12px;" Required />
-                            </MudTd>
-                        </RowEditingTemplate>
-                        <EditButtonContent Context="button">
-                            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                        </EditButtonContent>
-                    </MudTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>CAR</th>
-                                <th>YDS</th>
-                                <th>TD</th>
-                                <th>FUM</th>
-                                <th>FUM LST</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@AwayTotalRushingAttempts</td>
-                                <td>@AwayTotalRushingYards</td>
-                                <td>@AwayTotalRushingTouchdowns</td>
-                                <td>@AwayTotalRushingFumbles</td>
-                                <td>@AwayTotalRushingFumblesLost</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" CanCancelEdit="true"
-                    @bind-SelectedItem="receivingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitReceivingStats"
-                    RowEditPreview="BackupReceivingItem" RowEditCancel="ResetReceivingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                        <ColGroup>
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                        </ColGroup>
-                        <HeaderContent>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">REC</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TGTS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YAC</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FUM</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LST</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="Receptions">@context.Receptions</MudTd>
-                            <MudTd DataLabel="Targets">@context.Targets</MudTd>
-                            <MudTd DataLabel="Yards">@context.ReceivingYards</MudTd>
-                            <MudTd DataLabel="Touchdowns">@context.ReceivingTouchdowns</MudTd>
-                            <MudTd DataLabel="Yards After Catch">@context.YardsAfterCatch</MudTd>
-                            <MudTd DataLabel="Fumbles">@context.ReceivingFumbles</MudTd>
-                            <MudTd DataLabel="Fumbles Lost">@context.ReceivingFumblesLost</MudTd>
-                        </RowTemplate>
-                        <RowEditingTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="Receptions">
-                                <MudTextField @bind-Value="context.Receptions" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Targets">
-                                <MudTextField @bind-Value="context.Targets" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Yards">
-                                <MudTextField @bind-Value="context.ReceivingYards" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Touchdowns">
-                                <MudTextField @bind-Value="context.ReceivingTouchdowns" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Yards After Catch">
-                                <MudTextField @bind-Value="context.YardsAfterCatch" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Fumbles">
-                                <MudTextField @bind-Value="context.ReceivingFumbles" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Fumbles Lost">
-                                <MudTextField @bind-Value="context.ReceivingFumblesLost" Style="font-size: 12px;" Required />
-                            </MudTd>
-                        </RowEditingTemplate>
-                        <EditButtonContent Context="button">
-                            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                        </EditButtonContent>
-                    </MudTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>REC</th>
-                                <th>TGTS</th>
-                                <th>YDS</th>
-                                <th>TD</th>
-                                <th>YAC</th>
-                                <th>FUM</th>
-                                <th>FUM LST</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@AwayTotalReceptions</td>
-                                <td>@AwayTotalTargets</td>
-                                <td>@AwayTotalReceivingYards</td>
-                                <td>@AwayTotalReceivingTouchdowns</td>
-                                <td>@AwayTotalYardsAfterCatch</td>
-                                <td>@AwayTotalReceivingFumbles</td>
-                                <td>@AwayTotalReceivingFumblesLost</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" CanCancelEdit="true"
-                    @bind-SelectedItem="defensiveStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitDefensiveStats"
-                    RowEditPreview="BackupDefensiveItem" RowEditCancel="ResetDefensiveItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                        <ColGroup>
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                        </ColGroup>
-                        <HeaderContent>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TOT</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">SACK</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TFL</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FF</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FR</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">PD</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="TOT">@context.Tackles</MudTd>
-                            <MudTd DataLabel="SACKS">@context.DefensiveSacks</MudTd>
-                            <MudTd DataLabel="TFL">@context.TacklesForLoss</MudTd>
-                            <MudTd DataLabel="FF">@context.ForcedFumbles</MudTd>
-                            <MudTd DataLabel="FR">@context.ReceivingFumbles</MudTd>
-                            <MudTd DataLabel="INT">@context.DefensiveInterceptions</MudTd>
-                            <MudTd DataLabel="YDS">@context.DefensiveInterceptionYards</MudTd>
-                            <MudTd DataLabel="TD">@context.DefensiveTouchdowns</MudTd>
-                            <MudTd DataLabel="LNG">@context.LongestDefensiveInterceptionPlay</MudTd>
-                            <MudTd DataLabel="PD">@context.PassesDefended</MudTd>
-                        </RowTemplate>
-                        <RowEditingTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="TOT">
-                                <MudTextField @bind-Value="context.Tackles" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="SACKS">
-                                <MudTextField @bind-Value="context.DefensiveSacks" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="TFL">
-                                <MudTextField @bind-Value="context.TacklesForLoss" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="FF">
-                                <MudTextField @bind-Value="context.ForcedFumbles" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="FR">
-                                <MudTextField @bind-Value="context.RecoveredFumbles" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="INT">
-                                <MudTextField @bind-Value="context.DefensiveInterceptions" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="YDS">
-                                <MudTextField @bind-Value="context.DefensiveInterceptionYards" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="TD">
-                                <MudTextField @bind-Value="context.DefensiveTouchdowns" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="LNG">
-                                <MudTextField @bind-Value="context.LongestDefensiveInterceptionPlay" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="PD">
-                                <MudTextField @bind-Value="context.PassesDefended" Style="font-size: 12px;" Required />
-                            </MudTd>
-                        </RowEditingTemplate>
-                        <EditButtonContent Context="button">
-                            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                        </EditButtonContent>
-                    </MudTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>TOT</th>
-                                <th>SACKS</th>
-                                <th>TFL</th>
-                                <th>FF</th>
-                                <th>FR</th>
-                                <th>INT</th>
-                                <th>YDS</th>
-                                <th>TD</th>
-                                <th>PD</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@AwayTotalTackles</td>
-                                <td>@AwayTotalDefensiveSacks</td>
-                                <td>@AwayTotalTacklesForLoss</td>
-                                <td>@AwayTotalForcedFumbles</td>
-                                <td>@AwayTotalRecoveredFumbles</td>
-                                <td>@AwayTotalDefensiveInterceptions</td>
-                                <td>@AwayTotalDefensiveInterceptionYards</td>
-                                <td>@AwayTotalDefensiveTouchdowns</td>
-                                <td>@AwayTotalPassesDefended</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" CanCancelEdit="true"
-                              @bind-SelectedItem="kickingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitKickingStats"
-                              RowEditPreview="BackupKickingItem" RowEditCancel="ResetKickingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                        <ColGroup>
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                        </ColGroup>
-                        <HeaderContent>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FG</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPM</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPA</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">PUNTS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="FG">@context.FieldGoalsMade</MudTd>
-                            <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
-                            <MudTd DataLabel="XPM">@context.ExtraPointsMade</MudTd>
-                            <MudTd DataLabel="XPA">@context.ExtraPointsAttempted</MudTd>
-                            <MudTd DataLabel="PUNTS">@context.Punts</MudTd>
-                            <MudTd DataLabel="YDS">@context.PuntingYards</MudTd>
-                            <MudTd DataLabel="LNG">@context.LongestPunt</MudTd>
-                        </RowTemplate>
-                        <RowEditingTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="FG">
-                                <MudTextField @bind-Value="context.FieldGoalsMade" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="FGA">
-                                <MudTextField @bind-Value="context.FieldGoalsAttempted" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="XPM">
-                                <MudTextField @bind-Value="context.ExtraPointsMade" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="XPA">
-                                <MudTextField @bind-Value="context.ExtraPointsAttempted" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="PUNTS">
-                                <MudTextField @bind-Value="context.Punts" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="YDS">
-                                <MudTextField @bind-Value="context.PuntingYards" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="LNG">
-                                <MudTextField @bind-Value="context.LongestPunt" Style="font-size: 12px;" Required />
-                            </MudTd>
-                        </RowEditingTemplate>
-                        <EditButtonContent Context="button">
-                            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                        </EditButtonContent>
-                    </MudTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>FG</th>
-                                <th>FGA</th>
-                                <th>XPM</th>
-                                <th>XPA</th>
-                                <th>PUNTS</th>
-                                <th>YDS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@AwayTotalFieldGoalsMade</td>
-                                <td>@AwayTotalFieldGoalsAttempted</td>
-                                <td>@AwayTotalExtraPointsMade</td>
-                                <td>@AwayTotalExtraPointsAttempted</td>
-                                <td>@AwayTotalPunts</td>
-                                <td>@AwayTotalPuntingYards</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-            </MudTabPanel>
-            <MudTabPanel Text="@String.Concat(GameModel.Game.HomeTeam.TeamName + " Stats")">
-                <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
-                @bind-SelectedItem="passingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitPassingStats"
-                RowEditPreview="BackupPassingItem" RowEditCancel="ResetPassingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                    <ColGroup>
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                    </ColGroup>
-                    <HeaderContent>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                        <MudTd DataLabel="Completions">@context.PassingCompletions</MudTd>
-                        <MudTd DataLabel="Attempts">@context.PassingAttempts</MudTd>
-                        <MudTd DataLabel="Yards">@context.PassingYards</MudTd>
-                        <MudTd DataLabel="Touchdowns">@context.PassingTouchdowns</MudTd>
-                        <MudTd DataLabel="Interceptions">@context.PassingInterceptions</MudTd>
-                        <MudTd DataLabel="Longest">@context.LongestPassingPlay</MudTd>
-                        <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
-                    </RowTemplate>
-                    <RowEditingTemplate>
-                        <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                        <MudTd DataLabel="Completions">
-                            <MudTextField @bind-Value="context.PassingCompletions" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Attempts">
-                            <MudTextField @bind-Value="context.PassingAttempts" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Yards">
-                            <MudTextField @bind-Value="context.PassingYards" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Touchdowns">
-                            <MudTextField @bind-Value="context.PassingTouchdowns" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Interceptions">
-                            <MudTextField @bind-Value="context.PassingInterceptions" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Longest">
-                            <MudTextField @bind-Value="context.LongestPassingPlay" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="Sacks">
-                            <MudTextField @bind-Value="context.Sacks" Style="font-size: 12px;" Required />
-                        </MudTd>
-                    </RowEditingTemplate>
-                    <EditButtonContent Context="button">
-                        <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                    </EditButtonContent>
-                </MudTable>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>CMP</th>
-                                <th>ATT</th>
-                                <th>YDS</th>
-                                <th>TD</th>
-                                <th>INT</th>
-                                <th>S</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@HomeTotalPassingCompletions</td>
-                                <td>@HomeTotalPassingAttempts</td>
-                                <td>@HomeTotalPassingYards</td>
-                                <td>@HomeTotalPassingTouchdowns</td>
-                                <td>@HomeTotalPassingInterceptions</td>
-                                <td>@HomeTotalSacks</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
-                    @bind-SelectedItem="rushingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitRushingStats"
-                    RowEditPreview="BackupRushingItem" RowEditCancel="ResetRushingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                        <ColGroup>
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                        </ColGroup>
-                        <HeaderContent>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">CAR</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FUM</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LST</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="Carries">@context.RushingAttempts</MudTd>
-                            <MudTd DataLabel="Yards">@context.RushingYards</MudTd>
-                            <MudTd DataLabel="Touchdowns">@context.RushingTouchdowns</MudTd>
-                            <MudTd DataLabel="Longest">@context.LongestRushingPlay</MudTd>
-                            <MudTd DataLabel="Fumbles">@context.RushingFumbles</MudTd>
-                            <MudTd DataLabel="Fumbles Lost">@context.RushingFumblesLost</MudTd>
-                        </RowTemplate>
-                        <RowEditingTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="Carries">
-                                <MudTextField @bind-Value="context.RushingAttempts" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Yards">
-                                <MudTextField @bind-Value="context.RushingYards" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Touchdowns">
-                                <MudTextField @bind-Value="context.RushingTouchdowns" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Longest">
-                                <MudTextField @bind-Value="context.LongestRushingPlay" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Fumbles">
-                                <MudTextField @bind-Value="context.RushingFumbles" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Fumbles Lost">
-                                <MudTextField @bind-Value="context.RushingFumblesLost" Style="font-size: 12px;" Required />
-                            </MudTd>
-                        </RowEditingTemplate>
-                        <EditButtonContent Context="button">
-                            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                        </EditButtonContent>
-                    </MudTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>CAR</th>
-                                <th>YDS</th>
-                                <th>TD</th>
-                                <th>FUM</th>
-                                <th>FUM LST</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@HomeTotalRushingAttempts</td>
-                                <td>@HomeTotalRushingYards</td>
-                                <td>@HomeTotalRushingTouchdowns</td>
-                                <td>@HomeTotalRushingFumbles</td>
-                                <td>@HomeTotalRushingFumblesLost</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
-                    @bind-SelectedItem="receivingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitReceivingStats"
-                    RowEditPreview="BackupReceivingItem" RowEditCancel="ResetReceivingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                        <ColGroup>
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                        </ColGroup>
-                        <HeaderContent>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">REC</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TGTS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YAC</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FUM</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LST</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="Receptions">@context.Receptions</MudTd>
-                            <MudTd DataLabel="Targets">@context.Targets</MudTd>
-                            <MudTd DataLabel="Yards">@context.ReceivingYards</MudTd>
-                            <MudTd DataLabel="Touchdowns">@context.ReceivingTouchdowns</MudTd>
-                            <MudTd DataLabel="Yards After Catch">@context.YardsAfterCatch</MudTd>
-                            <MudTd DataLabel="Fumbles">@context.ReceivingFumbles</MudTd>
-                            <MudTd DataLabel="Fumbles Lost">@context.ReceivingFumblesLost</MudTd>
-                        </RowTemplate>
-                        <RowEditingTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="Receptions">
-                                <MudTextField @bind-Value="context.Receptions" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Targets">
-                                <MudTextField @bind-Value="context.Targets" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Yards">
-                                <MudTextField @bind-Value="context.ReceivingYards" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Touchdowns">
-                                <MudTextField @bind-Value="context.ReceivingTouchdowns" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Yards After Catch">
-                                <MudTextField @bind-Value="context.YardsAfterCatch" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Fumbles">
-                                <MudTextField @bind-Value="context.ReceivingFumbles" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="Fumbles Lost">
-                                <MudTextField @bind-Value="context.ReceivingFumblesLost" Style="font-size: 12px;" Required />
-                            </MudTd>
-                        </RowEditingTemplate>
-                        <EditButtonContent Context="button">
-                            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                        </EditButtonContent>
-                    </MudTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>REC</th>
-                                <th>TGTS</th>
-                                <th>YDS</th>
-                                <th>TD</th>
-                                <th>YAC</th>
-                                <th>FUM</th>
-                                <th>FUM LST</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@HomeTotalReceptions</td>
-                                <td>@HomeTotalTargets</td>
-                                <td>@HomeTotalReceivingYards</td>
-                                <td>@HomeTotalReceivingTouchdowns</td>
-                                <td>@HomeTotalYardsAfterCatch</td>
-                                <td>@HomeTotalReceivingFumbles</td>
-                                <td>@HomeTotalReceivingFumblesLost</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
-                    @bind-SelectedItem="defensiveStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitDefensiveStats"
-                    RowEditPreview="BackupDefensiveItem" RowEditCancel="ResetDefensiveItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                        <ColGroup>
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                        </ColGroup>
-                        <HeaderContent>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TOT</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">SACK</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TFL</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FF</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FR</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">PD</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="TOT">@context.Tackles</MudTd>
-                            <MudTd DataLabel="SACKS">@context.DefensiveSacks</MudTd>
-                            <MudTd DataLabel="TFL">@context.TacklesForLoss</MudTd>
-                            <MudTd DataLabel="FF">@context.ForcedFumbles</MudTd>
-                            <MudTd DataLabel="FR">@context.ReceivingFumbles</MudTd>
-                            <MudTd DataLabel="INT">@context.DefensiveInterceptions</MudTd>
-                            <MudTd DataLabel="YDS">@context.DefensiveInterceptionYards</MudTd>
-                            <MudTd DataLabel="TD">@context.DefensiveTouchdowns</MudTd>
-                            <MudTd DataLabel="LNG">@context.LongestDefensiveInterceptionPlay</MudTd>
-                            <MudTd DataLabel="PD">@context.PassesDefended</MudTd>
-                        </RowTemplate>
-                        <RowEditingTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="TOT">
-                                <MudTextField @bind-Value="context.Tackles" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="SACKS">
-                                <MudTextField @bind-Value="context.DefensiveSacks" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="TFL">
-                                <MudTextField @bind-Value="context.TacklesForLoss" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="FF">
-                                <MudTextField @bind-Value="context.ForcedFumbles" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="FR">
-                                <MudTextField @bind-Value="context.RecoveredFumbles" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="INT">
-                                <MudTextField @bind-Value="context.DefensiveInterceptions" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="YDS">
-                                <MudTextField @bind-Value="context.DefensiveInterceptionYards" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="TD">
-                                <MudTextField @bind-Value="context.DefensiveTouchdowns" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="LNG">
-                                <MudTextField @bind-Value="context.LongestDefensiveInterceptionPlay" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="PD">
-                                <MudTextField @bind-Value="context.PassesDefended" Style="font-size: 12px;" Required />
-                            </MudTd>
-                        </RowEditingTemplate>
-                        <EditButtonContent Context="button">
-                            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                        </EditButtonContent>
-                    </MudTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>TOT</th>
-                                <th>SACKS</th>
-                                <th>TFL</th>
-                                <th>FF</th>
-                                <th>FR</th>
-                                <th>INT</th>
-                                <th>YDS</th>
-                                <th>TD</th>
-                                <th>PD</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@HomeTotalTackles</td>
-                                <td>@HomeTotalDefensiveSacks</td>
-                                <td>@HomeTotalTacklesForLoss</td>
-                                <td>@HomeTotalForcedFumbles</td>
-                                <td>@HomeTotalRecoveredFumbles</td>
-                                <td>@HomeTotalDefensiveInterceptions</td>
-                                <td>@HomeTotalDefensiveInterceptionYards</td>
-                                <td>@HomeTotalDefensiveTouchdowns</td>
-                                <td>@HomeTotalPassesDefended</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
-                              @bind-SelectedItem="kickingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitKickingStats"
-                              RowEditPreview="BackupKickingItem" RowEditCancel="ResetKickingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                        <ColGroup>
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                            <col />
-                        </ColGroup>
-                        <HeaderContent>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FG</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPM</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPA</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">PUNTS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="FG">@context.FieldGoalsMade</MudTd>
-                            <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
-                            <MudTd DataLabel="XPM">@context.ExtraPointsMade</MudTd>
-                            <MudTd DataLabel="XPA">@context.ExtraPointsAttempted</MudTd>
-                            <MudTd DataLabel="PUNTS">@context.Punts</MudTd>
-                            <MudTd DataLabel="YDS">@context.PuntingYards</MudTd>
-                            <MudTd DataLabel="LNG">@context.LongestPunt</MudTd>
-                        </RowTemplate>
-                        <RowEditingTemplate>
-                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                            <MudTd DataLabel="FG">
-                                <MudTextField @bind-Value="context.FieldGoalsMade" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="FGA">
-                                <MudTextField @bind-Value="context.FieldGoalsAttempted" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="XPM">
-                                <MudTextField @bind-Value="context.ExtraPointsMade" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="XPA">
-                                <MudTextField @bind-Value="context.ExtraPointsAttempted" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="PUNTS">
-                                <MudTextField @bind-Value="context.Punts" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="YDS">
-                                <MudTextField @bind-Value="context.PuntingYards" Style="font-size: 12px;" Required />
-                            </MudTd>
-                            <MudTd DataLabel="LNG">
-                                <MudTextField @bind-Value="context.LongestPunt" Style="font-size: 12px;" Required />
-                            </MudTd>
-                        </RowEditingTemplate>
-                        <EditButtonContent Context="button">
-                            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                        </EditButtonContent>
-                    </MudTable>
-                </div>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>FG</th>
-                                <th>FGA</th>
-                                <th>XPM</th>
-                                <th>XPA</th>
-                                <th>PUNTS</th>
-                                <th>YDS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@HomeTotalFieldGoalsMade</td>
-                                <td>@HomeTotalFieldGoalsAttempted</td>
-                                <td>@HomeTotalExtraPointsMade</td>
-                                <td>@HomeTotalExtraPointsAttempted</td>
-                                <td>@HomeTotalPunts</td>
-                                <td>@HomeTotalPuntingYards</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-            </MudTabPanel>
-        </MudTabs>
-    </div>
-}
-else
-{
-    <Loading />
-}
-
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
+                    <MudTabPanel Text="@String.Concat(GameModel.Game.AwayTeam.TeamName + " Stats")">
+                        <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
+                            <ColGroup>
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                            </ColGroup>
+                            <HeaderContent>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                <MudTd DataLabel="Completions">@context.PassingCompletions</MudTd>
+                                <MudTd DataLabel="Attempts">@context.PassingAttempts</MudTd>
+                                <MudTd DataLabel="Yards">@context.PassingYards</MudTd>
+                                <MudTd DataLabel="Touchdowns">@context.PassingTouchdowns</MudTd>
+                                <MudTd DataLabel="Interceptions">@context.PassingInterceptions</MudTd>
+                                <MudTd DataLabel="Longest">@context.LongestPassingPlay</MudTd>
+                                <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>CMP</th>
+                                        <th>ATT</th>
+                                        <th>YDS</th>
+                                        <th>TD</th>
+                                        <th>INT</th>
+                                        <th>S</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@AwayTotalPassingCompletions</td>
+                                        <td>@AwayTotalPassingAttempts</td>
+                                        <td>@AwayTotalPassingYards</td>
+                                        <td>@AwayTotalPassingTouchdowns</td>
+                                        <td>@AwayTotalPassingInterceptions</td>
+                                        <td>@AwayTotalSacks</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">CAR</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FUM</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LST</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="Carries">@context.RushingAttempts</MudTd>
+                                    <MudTd DataLabel="Yards">@context.RushingYards</MudTd>
+                                    <MudTd DataLabel="Touchdowns">@context.RushingTouchdowns</MudTd>
+                                    <MudTd DataLabel="Longest">@context.LongestRushingPlay</MudTd>
+                                    <MudTd DataLabel="Fumbles">@context.RushingFumbles</MudTd>
+                                    <MudTd DataLabel="Fumbles Lost">@context.RushingFumblesLost</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>CAR</th>
+                                        <th>YDS</th>
+                                        <th>TD</th>
+                                        <th>FUM</th>
+                                        <th>FUM LST</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@AwayTotalRushingAttempts</td>
+                                        <td>@AwayTotalRushingYards</td>
+                                        <td>@AwayTotalRushingTouchdowns</td>
+                                        <td>@AwayTotalRushingFumbles</td>
+                                        <td>@AwayTotalRushingFumblesLost</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">REC</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TGTS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YAC</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FUM</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LST</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="Receptions">@context.Receptions</MudTd>
+                                    <MudTd DataLabel="Targets">@context.Targets</MudTd>
+                                    <MudTd DataLabel="Yards">@context.ReceivingYards</MudTd>
+                                    <MudTd DataLabel="Touchdowns">@context.ReceivingTouchdowns</MudTd>
+                                    <MudTd DataLabel="Yards After Catch">@context.YardsAfterCatch</MudTd>
+                                    <MudTd DataLabel="Fumbles">@context.ReceivingFumbles</MudTd>
+                                    <MudTd DataLabel="Fumbles Lost">@context.ReceivingFumblesLost</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>REC</th>
+                                        <th>TGTS</th>
+                                        <th>YDS</th>
+                                        <th>TD</th>
+                                        <th>YAC</th>
+                                        <th>FUM</th>
+                                        <th>FUM LST</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@AwayTotalReceptions</td>
+                                        <td>@AwayTotalTargets</td>
+                                        <td>@AwayTotalReceivingYards</td>
+                                        <td>@AwayTotalReceivingTouchdowns</td>
+                                        <td>@AwayTotalYardsAfterCatch</td>
+                                        <td>@AwayTotalReceivingFumbles</td>
+                                        <td>@AwayTotalReceivingFumblesLost</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TOT</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">SACK</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TFL</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FF</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FR</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">PD</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="TOT">@context.Tackles</MudTd>
+                                    <MudTd DataLabel="SACKS">@context.DefensiveSacks</MudTd>
+                                    <MudTd DataLabel="TFL">@context.TacklesForLoss</MudTd>
+                                    <MudTd DataLabel="FF">@context.ForcedFumbles</MudTd>
+                                    <MudTd DataLabel="FR">@context.ReceivingFumbles</MudTd>
+                                    <MudTd DataLabel="INT">@context.DefensiveInterceptions</MudTd>
+                                    <MudTd DataLabel="YDS">@context.DefensiveInterceptionYards</MudTd>
+                                    <MudTd DataLabel="TD">@context.DefensiveTouchdowns</MudTd>
+                                    <MudTd DataLabel="LNG">@context.LongestDefensiveInterceptionPlay</MudTd>
+                                    <MudTd DataLabel="PD">@context.PassesDefended</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>TOT</th>
+                                        <th>SACKS</th>
+                                        <th>TFL</th>
+                                        <th>FF</th>
+                                        <th>FR</th>
+                                        <th>INT</th>
+                                        <th>YDS</th>
+                                        <th>TD</th>
+                                        <th>PD</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@AwayTotalTackles</td>
+                                        <td>@AwayTotalDefensiveSacks</td>
+                                        <td>@AwayTotalTacklesForLoss</td>
+                                        <td>@AwayTotalForcedFumbles</td>
+                                        <td>@AwayTotalRecoveredFumbles</td>
+                                        <td>@AwayTotalDefensiveInterceptions</td>
+                                        <td>@AwayTotalDefensiveInterceptionYards</td>
+                                        <td>@AwayTotalDefensiveTouchdowns</td>
+                                        <td>@AwayTotalPassesDefended</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FG</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPM</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">PUNTS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="FG">@context.FieldGoalsMade</MudTd>
+                                    <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
+                                    <MudTd DataLabel="XPM">@context.ExtraPointsMade</MudTd>
+                                    <MudTd DataLabel="XPA">@context.ExtraPointsAttempted</MudTd>
+                                    <MudTd DataLabel="PUNTS">@context.Punts</MudTd>
+                                    <MudTd DataLabel="YDS">@context.PuntingYards</MudTd>
+                                    <MudTd DataLabel="LNG">@context.LongestPunt</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>FG</th>
+                                        <th>FGA</th>
+                                        <th>XPM</th>
+                                        <th>XPA</th>
+                                        <th>PUNTS</th>
+                                        <th>YDS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@AwayTotalFieldGoalsMade</td>
+                                        <td>@AwayTotalFieldGoalsAttempted</td>
+                                        <td>@AwayTotalExtraPointsMade</td>
+                                        <td>@AwayTotalExtraPointsAttempted</td>
+                                        <td>@AwayTotalPunts</td>
+                                        <td>@AwayTotalPuntingYards</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                    </MudTabPanel>
+                    <MudTabPanel Text="@String.Concat(GameModel.Game.HomeTeam.TeamName + " Stats")">
+                        <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
+                            <ColGroup>
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                            </ColGroup>
+                            <HeaderContent>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                <MudTd DataLabel="Completions">@context.PassingCompletions</MudTd>
+                                <MudTd DataLabel="Attempts">@context.PassingAttempts</MudTd>
+                                <MudTd DataLabel="Yards">@context.PassingYards</MudTd>
+                                <MudTd DataLabel="Touchdowns">@context.PassingTouchdowns</MudTd>
+                                <MudTd DataLabel="Interceptions">@context.PassingInterceptions</MudTd>
+                                <MudTd DataLabel="Longest">@context.LongestPassingPlay</MudTd>
+                                <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>CMP</th>
+                                        <th>ATT</th>
+                                        <th>YDS</th>
+                                        <th>TD</th>
+                                        <th>INT</th>
+                                        <th>S</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@HomeTotalPassingCompletions</td>
+                                        <td>@HomeTotalPassingAttempts</td>
+                                        <td>@HomeTotalPassingYards</td>
+                                        <td>@HomeTotalPassingTouchdowns</td>
+                                        <td>@HomeTotalPassingInterceptions</td>
+                                        <td>@HomeTotalSacks</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">CAR</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FUM</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LST</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="Carries">@context.RushingAttempts</MudTd>
+                                    <MudTd DataLabel="Yards">@context.RushingYards</MudTd>
+                                    <MudTd DataLabel="Touchdowns">@context.RushingTouchdowns</MudTd>
+                                    <MudTd DataLabel="Longest">@context.LongestRushingPlay</MudTd>
+                                    <MudTd DataLabel="Fumbles">@context.RushingFumbles</MudTd>
+                                    <MudTd DataLabel="Fumbles Lost">@context.RushingFumblesLost</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>CAR</th>
+                                        <th>YDS</th>
+                                        <th>TD</th>
+                                        <th>FUM</th>
+                                        <th>FUM LST</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@HomeTotalRushingAttempts</td>
+                                        <td>@HomeTotalRushingYards</td>
+                                        <td>@HomeTotalRushingTouchdowns</td>
+                                        <td>@HomeTotalRushingFumbles</td>
+                                        <td>@HomeTotalRushingFumblesLost</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">REC</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TGTS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YAC</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FUM</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LST</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="Receptions">@context.Receptions</MudTd>
+                                    <MudTd DataLabel="Targets">@context.Targets</MudTd>
+                                    <MudTd DataLabel="Yards">@context.ReceivingYards</MudTd>
+                                    <MudTd DataLabel="Touchdowns">@context.ReceivingTouchdowns</MudTd>
+                                    <MudTd DataLabel="Yards After Catch">@context.YardsAfterCatch</MudTd>
+                                    <MudTd DataLabel="Fumbles">@context.ReceivingFumbles</MudTd>
+                                    <MudTd DataLabel="Fumbles Lost">@context.ReceivingFumblesLost</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>REC</th>
+                                        <th>TGTS</th>
+                                        <th>YDS</th>
+                                        <th>TD</th>
+                                        <th>YAC</th>
+                                        <th>FUM</th>
+                                        <th>FUM LST</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@HomeTotalReceptions</td>
+                                        <td>@HomeTotalTargets</td>
+                                        <td>@HomeTotalReceivingYards</td>
+                                        <td>@HomeTotalReceivingTouchdowns</td>
+                                        <td>@HomeTotalYardsAfterCatch</td>
+                                        <td>@HomeTotalReceivingFumbles</td>
+                                        <td>@HomeTotalReceivingFumblesLost</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TOT</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">SACK</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TFL</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FF</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FR</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">PD</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="TOT">@context.Tackles</MudTd>
+                                    <MudTd DataLabel="SACKS">@context.DefensiveSacks</MudTd>
+                                    <MudTd DataLabel="TFL">@context.TacklesForLoss</MudTd>
+                                    <MudTd DataLabel="FF">@context.ForcedFumbles</MudTd>
+                                    <MudTd DataLabel="FR">@context.ReceivingFumbles</MudTd>
+                                    <MudTd DataLabel="INT">@context.DefensiveInterceptions</MudTd>
+                                    <MudTd DataLabel="YDS">@context.DefensiveInterceptionYards</MudTd>
+                                    <MudTd DataLabel="TD">@context.DefensiveTouchdowns</MudTd>
+                                    <MudTd DataLabel="LNG">@context.LongestDefensiveInterceptionPlay</MudTd>
+                                    <MudTd DataLabel="PD">@context.PassesDefended</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>TOT</th>
+                                        <th>SACKS</th>
+                                        <th>TFL</th>
+                                        <th>FF</th>
+                                        <th>FR</th>
+                                        <th>INT</th>
+                                        <th>YDS</th>
+                                        <th>TD</th>
+                                        <th>PD</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@HomeTotalTackles</td>
+                                        <td>@HomeTotalDefensiveSacks</td>
+                                        <td>@HomeTotalTacklesForLoss</td>
+                                        <td>@HomeTotalForcedFumbles</td>
+                                        <td>@HomeTotalRecoveredFumbles</td>
+                                        <td>@HomeTotalDefensiveInterceptions</td>
+                                        <td>@HomeTotalDefensiveInterceptionYards</td>
+                                        <td>@HomeTotalDefensiveTouchdowns</td>
+                                        <td>@HomeTotalPassesDefended</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FG</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPM</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">PUNTS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="FG">@context.FieldGoalsMade</MudTd>
+                                    <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
+                                    <MudTd DataLabel="XPM">@context.ExtraPointsMade</MudTd>
+                                    <MudTd DataLabel="XPA">@context.ExtraPointsAttempted</MudTd>
+                                    <MudTd DataLabel="PUNTS">@context.Punts</MudTd>
+                                    <MudTd DataLabel="YDS">@context.PuntingYards</MudTd>
+                                    <MudTd DataLabel="LNG">@context.LongestPunt</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>FG</th>
+                                        <th>FGA</th>
+                                        <th>XPM</th>
+                                        <th>XPA</th>
+                                        <th>PUNTS</th>
+                                        <th>YDS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@HomeTotalFieldGoalsMade</td>
+                                        <td>@HomeTotalFieldGoalsAttempted</td>
+                                        <td>@HomeTotalExtraPointsMade</td>
+                                        <td>@HomeTotalExtraPointsAttempted</td>
+                                        <td>@HomeTotalPunts</td>
+                                        <td>@HomeTotalPuntingYards</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                    </MudTabPanel>
+                </MudTabs>
+            </div>
+        }
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 
 
 @code {
     [Parameter]
     public string Id { get; set; }
     private bool PageLoad = false;
-    List<CreateFootballStatsForm> Model = new List<CreateFootballStatsForm>();
-    CreateFootballStatsForm passingStatSelectedItem = null;
-    CreateFootballStatsForm rushingStatSelectedItem = null;
-    CreateFootballStatsForm receivingStatSelectedItem = null;
-    CreateFootballStatsForm defensiveStatSelectedItem = null;
-    CreateFootballStatsForm kickingStatSelectedItem = null;
-    CreateFootballStatsForm passingStatBeforeEdit;
-    CreateFootballStatsForm rushingStatBeforeEdit;
-    CreateFootballStatsForm receivingStatBeforeEdit;
-    CreateFootballStatsForm defensiveStatBeforeEdit;
-    CreateFootballStatsForm kickingStatBeforeEdit;
-    private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
-    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+    List<FootballStatsModel> Model = new List<FootballStatsModel>();
     GetGameByIdResponse GameModel { get; set; }
     GetPlayersByTeamResponse AwayPlayersModel { get; set; }
     GetPlayersByTeamResponse HomePlayersModel { get; set; }
     GetFootballStatsByTeamResponse AwayPlayerStatsModel { get; set; }
     GetFootballStatsByTeamResponse HomePlayerStatsModel { get; set; }
-    private int AwayTotalPassingCompletions  = 0;
+    private int AwayTotalPassingCompletions = 0;
     private int AwayTotalPassingAttempts = 0;
     private int AwayTotalPassingYards = 0;
     private int AwayTotalPassingTouchdowns = 0;
@@ -1040,6 +724,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
         var gameId = Guid.Parse(Id);
         GameModel = await GameService.GetGameById(gameId);
         AwayPlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
@@ -1047,13 +736,13 @@ else
         AwayPlayerStatsModel = await StatsService.GetFootballStatsByTeam(GameModel.Game.AwayTeam.Id);
         HomePlayerStatsModel = await StatsService.GetFootballStatsByTeam(GameModel.Game.HomeTeam.Id);
 
-        foreach(var player in AwayPlayersModel.Players)
+        foreach (var player in AwayPlayersModel.Players)
         {
             var playerStat = AwayPlayerStatsModel.FootballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
 
-            if(playerStat is not null)
+            if (playerStat is not null)
             {
-                Model.Add(new CreateFootballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
                                                    playerStat.OffensiveStats.PassingCompletions, playerStat.OffensiveStats.PassingAttempts, playerStat.OffensiveStats.PassingYards,
                                                    playerStat.OffensiveStats.LongestPassingPlay, playerStat.OffensiveStats.PassingTouchdowns, playerStat.OffensiveStats.PassingInterceptions,
                                                    playerStat.OffensiveStats.Sacks, playerStat.OffensiveStats.RushingAttempts, playerStat.OffensiveStats.RushingYards,
@@ -1103,7 +792,7 @@ else
 
             }
             else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                Model.Add(new CreateFootballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+                Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
         }
 
         foreach (var player in HomePlayersModel.Players)
@@ -1112,7 +801,7 @@ else
 
             if (playerStat is not null)
             {
-                Model.Add(new CreateFootballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
                                                    playerStat.OffensiveStats.PassingCompletions, playerStat.OffensiveStats.PassingAttempts, playerStat.OffensiveStats.PassingYards,
                                                    playerStat.OffensiveStats.LongestPassingPlay, playerStat.OffensiveStats.PassingTouchdowns, playerStat.OffensiveStats.PassingInterceptions,
                                                    playerStat.OffensiveStats.Sacks, playerStat.OffensiveStats.RushingAttempts, playerStat.OffensiveStats.RushingYards,
@@ -1161,745 +850,20 @@ else
 
             }
             else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                Model.Add(new CreateFootballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+                Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
         }
 
         PageLoad = true;
     }
 
-    private void BackupPassingItem(object stats)
+    public class FootballStatsModel
     {
-        passingStatBeforeEdit = new()
-            {
-                PlayerName = ((CreateFootballStatsForm)stats).PlayerName,
-                LeagueId = ((CreateFootballStatsForm)stats).LeagueId,
-                TeamId = ((CreateFootballStatsForm)stats).TeamId,
-                PlayerId = ((CreateFootballStatsForm)stats).PlayerId,
-                SeasonId = ((CreateFootballStatsForm)stats).SeasonId,
-                GameId = ((CreateFootballStatsForm)stats).GameId,
-                PassingCompletions = ((CreateFootballStatsForm)stats).PassingCompletions,
-                PassingAttempts = ((CreateFootballStatsForm)stats).PassingAttempts,
-                PassingYards = ((CreateFootballStatsForm)stats).PassingYards,
-                LongestPassingPlay = ((CreateFootballStatsForm)stats).LongestPassingPlay,
-                PassingTouchdowns = ((CreateFootballStatsForm)stats).PassingTouchdowns,
-                PassingInterceptions = ((CreateFootballStatsForm)stats).PassingInterceptions,
-                Sacks = ((CreateFootballStatsForm)stats).Sacks
-            };
-    }
-
-    private void BackupRushingItem(object stats)
-    {
-        rushingStatBeforeEdit = new()
-            {
-                PlayerName = ((CreateFootballStatsForm)stats).PlayerName,
-                LeagueId = ((CreateFootballStatsForm)stats).LeagueId,
-                TeamId = ((CreateFootballStatsForm)stats).TeamId,
-                PlayerId = ((CreateFootballStatsForm)stats).PlayerId,
-                SeasonId = ((CreateFootballStatsForm)stats).SeasonId,
-                GameId = ((CreateFootballStatsForm)stats).GameId,
-                RushingAttempts = ((CreateFootballStatsForm)stats).RushingAttempts,
-                RushingYards = ((CreateFootballStatsForm)stats).RushingYards,
-                RushingTouchdowns = ((CreateFootballStatsForm)stats).RushingTouchdowns,
-                LongestRushingPlay = ((CreateFootballStatsForm)stats).LongestRushingPlay,
-                RushingFumbles = ((CreateFootballStatsForm)stats).RushingFumbles,
-                RushingFumblesLost = ((CreateFootballStatsForm)stats).RushingFumblesLost,
-            };
-    }
-
-    private void BackupReceivingItem(object stats)
-    {
-        receivingStatBeforeEdit = new()
-            {
-                PlayerName = ((CreateFootballStatsForm)stats).PlayerName,
-                LeagueId = ((CreateFootballStatsForm)stats).LeagueId,
-                TeamId = ((CreateFootballStatsForm)stats).TeamId,
-                PlayerId = ((CreateFootballStatsForm)stats).PlayerId,
-                SeasonId = ((CreateFootballStatsForm)stats).SeasonId,
-                GameId = ((CreateFootballStatsForm)stats).GameId,
-                Receptions = ((CreateFootballStatsForm)stats).Receptions,
-                Targets = ((CreateFootballStatsForm)stats).Targets,
-                ReceivingYards = ((CreateFootballStatsForm)stats).ReceivingYards,
-                ReceivingTouchdowns = ((CreateFootballStatsForm)stats).ReceivingTouchdowns,
-                ReceivingFumbles = ((CreateFootballStatsForm)stats).ReceivingFumbles,
-                ReceivingFumblesLost = ((CreateFootballStatsForm)stats).ReceivingFumblesLost,
-                YardsAfterCatch = ((CreateFootballStatsForm)stats).YardsAfterCatch,
-            };
-    }
-
-    private void BackupDefensiveItem(object stats)
-    {
-        defensiveStatBeforeEdit = new()
-            {
-                PlayerName = ((CreateFootballStatsForm)stats).PlayerName,
-                LeagueId = ((CreateFootballStatsForm)stats).LeagueId,
-                TeamId = ((CreateFootballStatsForm)stats).TeamId,
-                PlayerId = ((CreateFootballStatsForm)stats).PlayerId,
-                SeasonId = ((CreateFootballStatsForm)stats).SeasonId,
-                GameId = ((CreateFootballStatsForm)stats).GameId,
-                Tackles = ((CreateFootballStatsForm)stats).Tackles,
-                DefensiveSacks = ((CreateFootballStatsForm)stats).DefensiveSacks,
-                TacklesForLoss = ((CreateFootballStatsForm)stats).TacklesForLoss,
-                PassesDefended = ((CreateFootballStatsForm)stats).PassesDefended,
-                DefensiveInterceptions = ((CreateFootballStatsForm)stats).DefensiveInterceptions,
-                DefensiveInterceptionYards = ((CreateFootballStatsForm)stats).DefensiveInterceptionYards,
-                LongestDefensiveInterceptionPlay = ((CreateFootballStatsForm)stats).LongestDefensiveInterceptionPlay,
-                DefensiveTouchdowns = ((CreateFootballStatsForm)stats).DefensiveTouchdowns,
-                ForcedFumbles = ((CreateFootballStatsForm)stats).ForcedFumbles,
-                RecoveredFumbles = ((CreateFootballStatsForm)stats).RecoveredFumbles,
-            };
-    }
-
-    private void BackupKickingItem(object stats)
-    {
-        kickingStatBeforeEdit = new()
-            {
-                PlayerName = ((CreateFootballStatsForm)stats).PlayerName,
-                LeagueId = ((CreateFootballStatsForm)stats).LeagueId,
-                TeamId = ((CreateFootballStatsForm)stats).TeamId,
-                PlayerId = ((CreateFootballStatsForm)stats).PlayerId,
-                SeasonId = ((CreateFootballStatsForm)stats).SeasonId,
-                GameId = ((CreateFootballStatsForm)stats).GameId,
-                FieldGoalsMade = ((CreateFootballStatsForm)stats).FieldGoalsMade,
-                FieldGoalsAttempted = ((CreateFootballStatsForm)stats).FieldGoalsAttempted,
-                ExtraPointsMade = ((CreateFootballStatsForm)stats).ExtraPointsMade,
-                ExtraPointsAttempted = ((CreateFootballStatsForm)stats).ExtraPointsAttempted,
-                Punts = ((CreateFootballStatsForm)stats).Punts,
-                PuntingYards = ((CreateFootballStatsForm)stats).PuntingYards,
-                LongestPunt = ((CreateFootballStatsForm)stats).LongestPunt
-            };
-    }
-
-    private void ResetPassingItemToOriginalValues(object stats)
-    {
-        ((CreateFootballStatsForm)stats).PlayerName = passingStatBeforeEdit.PlayerName;
-        ((CreateFootballStatsForm)stats).PassingCompletions = passingStatBeforeEdit.PassingCompletions;
-        ((CreateFootballStatsForm)stats).PassingAttempts = passingStatBeforeEdit.PassingAttempts;
-        ((CreateFootballStatsForm)stats).PassingYards = passingStatBeforeEdit.PassingYards;
-        ((CreateFootballStatsForm)stats).LongestPassingPlay = passingStatBeforeEdit.LongestPassingPlay;
-        ((CreateFootballStatsForm)stats).PassingTouchdowns = passingStatBeforeEdit.PassingTouchdowns;
-        ((CreateFootballStatsForm)stats).PassingInterceptions = passingStatBeforeEdit.PassingInterceptions;
-        ((CreateFootballStatsForm)stats).Sacks = passingStatBeforeEdit.Sacks;
-    }
-
-    private void ResetRushingItemToOriginalValues(object stats)
-    {
-        ((CreateFootballStatsForm)stats).PlayerName = rushingStatBeforeEdit.PlayerName;
-        ((CreateFootballStatsForm)stats).RushingAttempts = rushingStatBeforeEdit.RushingAttempts;
-        ((CreateFootballStatsForm)stats).RushingYards = rushingStatBeforeEdit.RushingYards;
-        ((CreateFootballStatsForm)stats).RushingTouchdowns = rushingStatBeforeEdit.RushingTouchdowns;
-        ((CreateFootballStatsForm)stats).LongestRushingPlay = rushingStatBeforeEdit.LongestRushingPlay;
-        ((CreateFootballStatsForm)stats).RushingFumbles = rushingStatBeforeEdit.RushingFumbles;
-        ((CreateFootballStatsForm)stats).RushingFumblesLost = rushingStatBeforeEdit.RushingFumblesLost;
-    }
-
-    private void ResetReceivingItemToOriginalValues(object stats)
-    {
-        ((CreateFootballStatsForm)stats).PlayerName = receivingStatBeforeEdit.PlayerName;
-        ((CreateFootballStatsForm)stats).Receptions = receivingStatBeforeEdit.Receptions;
-        ((CreateFootballStatsForm)stats).Targets = receivingStatBeforeEdit.Targets;
-        ((CreateFootballStatsForm)stats).ReceivingYards = receivingStatBeforeEdit.ReceivingYards;
-        ((CreateFootballStatsForm)stats).ReceivingTouchdowns = receivingStatBeforeEdit.ReceivingTouchdowns;
-        ((CreateFootballStatsForm)stats).ReceivingFumbles = receivingStatBeforeEdit.ReceivingFumbles;
-        ((CreateFootballStatsForm)stats).ReceivingFumblesLost = receivingStatBeforeEdit.ReceivingFumblesLost;
-        ((CreateFootballStatsForm)stats).YardsAfterCatch = receivingStatBeforeEdit.YardsAfterCatch;
-    }
-
-    private void ResetDefensiveItemToOriginalValues(object stats)
-    {
-        ((CreateFootballStatsForm)stats).PlayerName = defensiveStatBeforeEdit.PlayerName;
-        ((CreateFootballStatsForm)stats).Tackles = defensiveStatBeforeEdit.Tackles;
-        ((CreateFootballStatsForm)stats).DefensiveSacks = defensiveStatBeforeEdit.DefensiveSacks;
-        ((CreateFootballStatsForm)stats).TacklesForLoss = defensiveStatBeforeEdit.TacklesForLoss;
-        ((CreateFootballStatsForm)stats).PassesDefended = defensiveStatBeforeEdit.PassesDefended;
-        ((CreateFootballStatsForm)stats).DefensiveInterceptions = defensiveStatBeforeEdit.DefensiveInterceptions;
-        ((CreateFootballStatsForm)stats).DefensiveInterceptionYards = defensiveStatBeforeEdit.DefensiveInterceptionYards;
-        ((CreateFootballStatsForm)stats).LongestDefensiveInterceptionPlay = defensiveStatBeforeEdit.LongestDefensiveInterceptionPlay;
-        ((CreateFootballStatsForm)stats).DefensiveTouchdowns = defensiveStatBeforeEdit.DefensiveTouchdowns;
-        ((CreateFootballStatsForm)stats).ForcedFumbles = defensiveStatBeforeEdit.ForcedFumbles;
-        ((CreateFootballStatsForm)stats).RecoveredFumbles = defensiveStatBeforeEdit.RecoveredFumbles;
-    }
-
-    private void ResetKickingItemToOriginalValues(object stats)
-    {
-        ((CreateFootballStatsForm)stats).PlayerName = kickingStatBeforeEdit.PlayerName;
-        ((CreateFootballStatsForm)stats).Tackles = kickingStatBeforeEdit.FieldGoalsMade;
-        ((CreateFootballStatsForm)stats).DefensiveSacks = kickingStatBeforeEdit.FieldGoalsAttempted;
-        ((CreateFootballStatsForm)stats).TacklesForLoss = kickingStatBeforeEdit.ExtraPointsMade;
-        ((CreateFootballStatsForm)stats).PassesDefended = kickingStatBeforeEdit.ExtraPointsAttempted;
-        ((CreateFootballStatsForm)stats).DefensiveInterceptions = kickingStatBeforeEdit.Punts;
-        ((CreateFootballStatsForm)stats).DefensiveInterceptionYards = kickingStatBeforeEdit.PuntingYards;
-        ((CreateFootballStatsForm)stats).LongestDefensiveInterceptionPlay = kickingStatBeforeEdit.LongestPunt;
-    }
-
-    private async Task SubmitPassingStats()
-    {
-        if (passingStatSelectedItem is not null)
-        {
-            var form = Model.FirstOrDefault(x => x.PlayerId == passingStatSelectedItem.PlayerId);
-
-            var playerStats = await StatsService.GetFootballStatsByPlayer(passingStatSelectedItem.PlayerId);
-
-            var isStatCreated = playerStats.FootballStats.Any(x => x.GameId == passingStatSelectedItem.GameId);
-
-            if (isStatCreated)
-            {
-                var gameStat = playerStats.FootballStats.FirstOrDefault(x => x.GameId == passingStatSelectedItem.GameId);
-
-                UpdateFootballOffensiveStatsModel offensiveStatsModel = new UpdateFootballOffensiveStatsModel(passingStatSelectedItem.PassingCompletions, passingStatSelectedItem.PassingAttempts,
-                                                            passingStatSelectedItem.PassingYards, passingStatSelectedItem.LongestPassingPlay,
-                                                            passingStatSelectedItem.PassingTouchdowns, passingStatSelectedItem.PassingInterceptions,
-                                                            passingStatSelectedItem.Sacks, form.RushingAttempts,
-                                                            form.RushingYards, form.LongestRushingPlay, form.RushingTouchdowns, form.RushingFumbles,
-                                                            form.RushingFumblesLost, form.Receptions, form.Targets, form.ReceivingYards, form.ReceivingTouchdowns,
-                                                            form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
-
-                UpdateFootballDefensiveStatsModel defensiveStatsModel = new UpdateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                              form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                              form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
-
-                UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
-
-                UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, passingStatSelectedItem.LeagueId, passingStatSelectedItem.TeamId,
-                                                                                           passingStatSelectedItem.PlayerId, passingStatSelectedItem.SeasonId,
-                                                                                           passingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
-
-                UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
-                await StatsService.UpdateFootballStats(request);
-
-                if (passingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalPassingCompletions += passingStatSelectedItem.PassingCompletions - gameStat.OffensiveStats.PassingCompletions;
-                    AwayTotalPassingAttempts += passingStatSelectedItem.PassingAttempts - gameStat.OffensiveStats.PassingAttempts;
-                    AwayTotalPassingYards += passingStatSelectedItem.PassingYards - gameStat.OffensiveStats.PassingYards;
-                    AwayTotalPassingTouchdowns += passingStatSelectedItem.PassingTouchdowns - gameStat.OffensiveStats.PassingTouchdowns;
-                    AwayTotalPassingInterceptions += passingStatSelectedItem.PassingInterceptions - gameStat.OffensiveStats.PassingInterceptions;
-                    AwayTotalSacks += passingStatSelectedItem.Sacks - gameStat.OffensiveStats.Sacks;
-                }
-                else
-                {
-                    HomeTotalPassingCompletions += passingStatSelectedItem.PassingCompletions - gameStat.OffensiveStats.PassingCompletions;
-                    HomeTotalPassingAttempts += passingStatSelectedItem.PassingAttempts - gameStat.OffensiveStats.PassingAttempts;
-                    HomeTotalPassingYards += passingStatSelectedItem.PassingYards - gameStat.OffensiveStats.PassingYards;
-                    HomeTotalPassingTouchdowns += passingStatSelectedItem.PassingTouchdowns - gameStat.OffensiveStats.PassingTouchdowns;
-                    HomeTotalPassingInterceptions += passingStatSelectedItem.PassingInterceptions - gameStat.OffensiveStats.PassingInterceptions;
-                    HomeTotalSacks += passingStatSelectedItem.Sacks - gameStat.OffensiveStats.Sacks;
-                }
-
-                Snackbar.Add("Players Passing Stats have been saved.", Severity.Success);
-                StateHasChanged();
-            }
-            else
-            {
-                CreateFootballOffensiveStatsModel offensiveStatsModel = new CreateFootballOffensiveStatsModel(passingStatSelectedItem.PassingCompletions, passingStatSelectedItem.PassingAttempts,
-                                                            passingStatSelectedItem.PassingYards, passingStatSelectedItem.LongestPassingPlay,
-                                                            passingStatSelectedItem.PassingTouchdowns, passingStatSelectedItem.PassingInterceptions,
-                                                            passingStatSelectedItem.Sacks, form.RushingAttempts,
-                                                            form.RushingYards, form.LongestRushingPlay, form.RushingTouchdowns, form.RushingFumbles,
-                                                            form.RushingFumblesLost, form.Receptions, form.Targets, form.ReceivingYards, form.ReceivingTouchdowns,
-                                                            form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
-
-                CreateFootballDefensiveStatsModel defensiveStatsModel = new CreateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                              form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                              form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
-
-                CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
-
-                CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(passingStatSelectedItem.LeagueId, passingStatSelectedItem.TeamId,
-                                                                                           passingStatSelectedItem.PlayerId, passingStatSelectedItem.SeasonId,
-                                                                                           passingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
-
-                CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
-
-                await StatsService.CreateFootballStats(request);
-
-                if (passingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalPassingCompletions += passingStatSelectedItem.PassingCompletions;
-                    AwayTotalPassingAttempts += passingStatSelectedItem.PassingAttempts;
-                    AwayTotalPassingYards += passingStatSelectedItem.PassingYards;
-                    AwayTotalPassingTouchdowns += passingStatSelectedItem.PassingTouchdowns;
-                    AwayTotalPassingInterceptions += passingStatSelectedItem.PassingInterceptions;
-                    AwayTotalSacks += passingStatSelectedItem.Sacks;
-                }
-                else
-                {
-                    HomeTotalPassingCompletions += passingStatSelectedItem.PassingCompletions;
-                    HomeTotalPassingAttempts += passingStatSelectedItem.PassingAttempts;
-                    HomeTotalPassingYards += passingStatSelectedItem.PassingYards;
-                    HomeTotalPassingTouchdowns += passingStatSelectedItem.PassingTouchdowns;
-                    HomeTotalPassingInterceptions += passingStatSelectedItem.PassingInterceptions;
-                    HomeTotalSacks += passingStatSelectedItem.Sacks;
-                }
-
-                Snackbar.Add("Players Passing Stats have been saved.", Severity.Success);
-                StateHasChanged();
-
-            }
-        }
-    }
-
-    private async Task SubmitRushingStats()
-    {
-        if (rushingStatSelectedItem is not null)
-        {
-            var form = Model.FirstOrDefault(x => x.PlayerId == rushingStatSelectedItem.PlayerId);
-
-            var playerStats = await StatsService.GetFootballStatsByPlayer(rushingStatSelectedItem.PlayerId);
-
-            var isStatCreated = playerStats.FootballStats.Any(x => x.GameId == rushingStatSelectedItem.GameId);
-
-            if (isStatCreated)
-            {
-                var gameStat = playerStats.FootballStats.FirstOrDefault(x => x.GameId == rushingStatSelectedItem.GameId);
-
-                UpdateFootballOffensiveStatsModel offensiveStatsModel = new UpdateFootballOffensiveStatsModel(form.PassingCompletions, form.PassingAttempts,
-                                                            form.PassingYards, form.LongestPassingPlay,
-                                                            form.PassingTouchdowns, form.PassingInterceptions,
-                                                            form.Sacks, rushingStatSelectedItem.RushingAttempts,
-                                                            rushingStatSelectedItem.RushingYards, rushingStatSelectedItem.LongestRushingPlay, rushingStatSelectedItem.RushingTouchdowns, rushingStatSelectedItem.RushingFumbles,
-                                                            rushingStatSelectedItem.RushingFumblesLost, form.Receptions, form.Targets, form.ReceivingYards, form.ReceivingTouchdowns,
-                                                            form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
-
-                UpdateFootballDefensiveStatsModel defensiveStatsModel = new UpdateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                              form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                              form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
-
-                UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
-
-                UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, rushingStatSelectedItem.LeagueId, rushingStatSelectedItem.TeamId,
-                                                                                           rushingStatSelectedItem.PlayerId, rushingStatSelectedItem.SeasonId,
-                                                                                           rushingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
-
-                UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
-                await StatsService.UpdateFootballStats(request);
-
-                if (rushingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalRushingAttempts += rushingStatSelectedItem.RushingAttempts - gameStat.OffensiveStats.RushingAttempts;
-                    AwayTotalRushingYards += rushingStatSelectedItem.RushingYards - gameStat.OffensiveStats.RushingYards;
-                    AwayTotalRushingTouchdowns += rushingStatSelectedItem.RushingTouchdowns - gameStat.OffensiveStats.RushingTouchdowns;
-                    AwayTotalRushingFumbles += rushingStatSelectedItem.RushingFumbles - gameStat.OffensiveStats.RushingFumbles;
-                    AwayTotalRushingFumblesLost += rushingStatSelectedItem.RushingFumblesLost - gameStat.OffensiveStats.RushingFumblesLost;
-                }
-                else
-                {
-                    HomeTotalRushingAttempts += rushingStatSelectedItem.RushingAttempts - gameStat.OffensiveStats.RushingAttempts;
-                    HomeTotalRushingYards += rushingStatSelectedItem.RushingYards - gameStat.OffensiveStats.RushingYards;
-                    HomeTotalRushingTouchdowns += rushingStatSelectedItem.RushingTouchdowns - gameStat.OffensiveStats.RushingTouchdowns;
-                    HomeTotalRushingFumbles += rushingStatSelectedItem.RushingFumbles - gameStat.OffensiveStats.RushingFumbles;
-                    HomeTotalRushingFumblesLost += rushingStatSelectedItem.RushingFumblesLost - gameStat.OffensiveStats.RushingFumblesLost;
-                }
-
-                Snackbar.Add("Players Rushing Stats have been saved.", Severity.Success);
-                StateHasChanged();
-            }
-            else
-            {
-                CreateFootballOffensiveStatsModel offensiveStatsModel = new CreateFootballOffensiveStatsModel(form.PassingCompletions, form.PassingAttempts,
-                                                            form.PassingYards, form.LongestPassingPlay,
-                                                            form.PassingTouchdowns, form.PassingInterceptions,
-                                                            form.Sacks, rushingStatSelectedItem.RushingAttempts,
-                                                            rushingStatSelectedItem.RushingYards, rushingStatSelectedItem.LongestRushingPlay, rushingStatSelectedItem.RushingTouchdowns, rushingStatSelectedItem.RushingFumbles,
-                                                            rushingStatSelectedItem.RushingFumblesLost, form.Receptions, form.Targets, form.ReceivingYards, form.ReceivingTouchdowns,
-                                                            form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
-
-                CreateFootballDefensiveStatsModel defensiveStatsModel = new CreateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                              form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                              form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
-
-                CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
-
-                CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(rushingStatSelectedItem.LeagueId, rushingStatSelectedItem.TeamId,
-                                                                                           rushingStatSelectedItem.PlayerId, rushingStatSelectedItem.SeasonId,
-                                                                                           rushingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
-
-                CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
-
-                await StatsService.CreateFootballStats(request);
-
-                if (rushingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalRushingAttempts += rushingStatSelectedItem.RushingAttempts;
-                    AwayTotalRushingYards += rushingStatSelectedItem.RushingYards;
-                    AwayTotalRushingTouchdowns += rushingStatSelectedItem.RushingTouchdowns;
-                    AwayTotalRushingFumbles += rushingStatSelectedItem.RushingFumbles;
-                    AwayTotalRushingFumblesLost += rushingStatSelectedItem.RushingFumblesLost;
-                }
-                else
-                {
-                    HomeTotalRushingAttempts += rushingStatSelectedItem.RushingAttempts;
-                    HomeTotalRushingYards += rushingStatSelectedItem.RushingYards;
-                    HomeTotalRushingTouchdowns += rushingStatSelectedItem.RushingTouchdowns;
-                    HomeTotalRushingFumbles += rushingStatSelectedItem.RushingFumbles;
-                    HomeTotalRushingFumblesLost += rushingStatSelectedItem.RushingFumblesLost;
-                }
-
-                Snackbar.Add("Players Rushing Stats have been saved.", Severity.Success);
-                StateHasChanged();
-
-            }
-        }
-    }
-
-    private async Task SubmitReceivingStats()
-    {
-        if (receivingStatSelectedItem is not null)
-        {
-            var form = Model.FirstOrDefault(x => x.PlayerId == receivingStatSelectedItem.PlayerId);
-
-            var playerStats = await StatsService.GetFootballStatsByPlayer(receivingStatSelectedItem.PlayerId);
-
-            var isStatCreated = playerStats.FootballStats.Any(x => x.GameId == receivingStatSelectedItem.GameId);
-
-            if (isStatCreated)
-            {
-                var gameStat = playerStats.FootballStats.FirstOrDefault(x => x.GameId == receivingStatSelectedItem.GameId);
-
-                UpdateFootballOffensiveStatsModel offensiveStatsModel = new UpdateFootballOffensiveStatsModel(form.PassingCompletions, form.PassingAttempts,
-                                                            form.PassingYards, form.LongestPassingPlay,
-                                                            form.PassingTouchdowns, form.PassingInterceptions,
-                                                            form.Sacks, form.RushingAttempts,
-                                                            form.RushingYards, form.LongestRushingPlay, form.RushingTouchdowns, form.RushingFumbles,
-                                                            form.RushingFumblesLost, receivingStatSelectedItem.Receptions, receivingStatSelectedItem.Targets, receivingStatSelectedItem.ReceivingYards, receivingStatSelectedItem.ReceivingTouchdowns,
-                                                            receivingStatSelectedItem.ReceivingFumbles, receivingStatSelectedItem.ReceivingFumblesLost, receivingStatSelectedItem.YardsAfterCatch);
-
-                UpdateFootballDefensiveStatsModel defensiveStatsModel = new UpdateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                              form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                              form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
-
-                UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
-
-                UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, receivingStatSelectedItem.LeagueId, receivingStatSelectedItem.TeamId,
-                                                                                           receivingStatSelectedItem.PlayerId, receivingStatSelectedItem.SeasonId,
-                                                                                           receivingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
-
-                UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
-                await StatsService.UpdateFootballStats(request);
-
-                if (receivingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalReceptions += receivingStatSelectedItem.Receptions - gameStat.OffensiveStats.Receptions;
-                    AwayTotalTargets += receivingStatSelectedItem.Targets - gameStat.OffensiveStats.Targets;
-                    AwayTotalReceivingYards += receivingStatSelectedItem.ReceivingYards - gameStat.OffensiveStats.ReceivingYards;
-                    AwayTotalReceivingTouchdowns += receivingStatSelectedItem.ReceivingTouchdowns - gameStat.OffensiveStats.ReceivingTouchdowns;
-                    AwayTotalReceivingFumbles += receivingStatSelectedItem.ReceivingFumbles - gameStat.OffensiveStats.ReceivingFumbles;
-                    AwayTotalReceivingFumblesLost += receivingStatSelectedItem.ReceivingFumblesLost - gameStat.OffensiveStats.ReceivingFumblesLost;
-                    AwayTotalYardsAfterCatch += receivingStatSelectedItem.YardsAfterCatch - gameStat.OffensiveStats.YardsAfterCatch;
-                }
-                else
-                {
-                    HomeTotalReceptions += receivingStatSelectedItem.Receptions - gameStat.OffensiveStats.Receptions;
-                    HomeTotalTargets += receivingStatSelectedItem.Targets - gameStat.OffensiveStats.Targets;
-                    HomeTotalReceivingYards += receivingStatSelectedItem.ReceivingYards - gameStat.OffensiveStats.ReceivingYards;
-                    HomeTotalReceivingTouchdowns += receivingStatSelectedItem.ReceivingTouchdowns - gameStat.OffensiveStats.ReceivingTouchdowns;
-                    HomeTotalReceivingFumbles += receivingStatSelectedItem.ReceivingFumbles - gameStat.OffensiveStats.ReceivingFumbles;
-                    HomeTotalReceivingFumblesLost += receivingStatSelectedItem.ReceivingFumblesLost - gameStat.OffensiveStats.ReceivingFumblesLost;
-                    HomeTotalYardsAfterCatch += receivingStatSelectedItem.YardsAfterCatch - gameStat.OffensiveStats.YardsAfterCatch;
-                }
-
-                Snackbar.Add("Players Receiving Stats have been saved.", Severity.Success);
-                StateHasChanged();
-            }
-            else
-            {
-                CreateFootballOffensiveStatsModel offensiveStatsModel = new CreateFootballOffensiveStatsModel(form.PassingCompletions, form.PassingAttempts,
-                                                            form.PassingYards, form.LongestPassingPlay,
-                                                            form.PassingTouchdowns, form.PassingInterceptions,
-                                                            form.Sacks, form.RushingAttempts,
-                                                            form.RushingYards, form.LongestRushingPlay, form.RushingTouchdowns, form.RushingFumbles,
-                                                            form.RushingFumblesLost, receivingStatSelectedItem.Receptions, receivingStatSelectedItem.Targets, receivingStatSelectedItem.ReceivingYards, receivingStatSelectedItem.ReceivingTouchdowns,
-                                                            receivingStatSelectedItem.ReceivingFumbles, receivingStatSelectedItem.ReceivingFumblesLost, receivingStatSelectedItem.YardsAfterCatch);
-
-                CreateFootballDefensiveStatsModel defensiveStatsModel = new CreateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                              form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                              form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
-
-                CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
-
-                CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(receivingStatSelectedItem.LeagueId, receivingStatSelectedItem.TeamId,
-                                                                                           receivingStatSelectedItem.PlayerId, receivingStatSelectedItem.SeasonId,
-                                                                                           receivingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
-
-                CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
-
-                await StatsService.CreateFootballStats(request);
-
-                if (receivingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalReceptions += receivingStatSelectedItem.Receptions;
-                    AwayTotalTargets += receivingStatSelectedItem.Targets;
-                    AwayTotalReceivingYards += receivingStatSelectedItem.ReceivingYards;
-                    AwayTotalReceivingTouchdowns += receivingStatSelectedItem.ReceivingTouchdowns;
-                    AwayTotalReceivingFumbles += receivingStatSelectedItem.ReceivingFumbles;
-                    AwayTotalReceivingFumblesLost += receivingStatSelectedItem.ReceivingFumblesLost;
-                    AwayTotalYardsAfterCatch += receivingStatSelectedItem.YardsAfterCatch;
-                }
-                else
-                {
-                    HomeTotalReceptions += receivingStatSelectedItem.Receptions;
-                    HomeTotalTargets += receivingStatSelectedItem.Targets;
-                    HomeTotalReceivingYards += receivingStatSelectedItem.ReceivingYards;
-                    HomeTotalReceivingTouchdowns += receivingStatSelectedItem.ReceivingTouchdowns;
-                    HomeTotalReceivingFumbles += receivingStatSelectedItem.ReceivingFumbles;
-                    HomeTotalReceivingFumblesLost += receivingStatSelectedItem.ReceivingFumblesLost;
-                    HomeTotalYardsAfterCatch += receivingStatSelectedItem.YardsAfterCatch;
-                }
-
-                Snackbar.Add("Players Receiving Stats have been saved.", Severity.Success);
-                StateHasChanged();
-
-            }
-        }
-    }
-
-    private async Task SubmitDefensiveStats()
-    {
-        if (defensiveStatSelectedItem is not null)
-        {
-            var form = Model.FirstOrDefault(x => x.PlayerId == defensiveStatSelectedItem.PlayerId);
-
-            var playerStats = await StatsService.GetFootballStatsByPlayer(defensiveStatSelectedItem.PlayerId);
-
-            var isStatCreated = playerStats.FootballStats.Any(x => x.GameId == defensiveStatSelectedItem.GameId);
-
-            if (isStatCreated)
-            {
-                var gameStat = playerStats.FootballStats.FirstOrDefault(x => x.GameId == defensiveStatSelectedItem.GameId);
-
-                UpdateFootballOffensiveStatsModel offensiveStatsModel = new UpdateFootballOffensiveStatsModel(form.PassingCompletions, form.PassingAttempts,
-                                                            form.PassingYards, form.LongestPassingPlay,
-                                                            form.PassingTouchdowns, form.PassingInterceptions,
-                                                            form.Sacks, form.RushingAttempts,
-                                                            form.RushingYards, form.LongestRushingPlay, form.RushingTouchdowns, form.RushingFumbles,
-                                                            form.RushingFumblesLost, form.Receptions, form.Targets, form.ReceivingYards, form.ReceivingTouchdowns,
-                                                            form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
-
-                UpdateFootballDefensiveStatsModel defensiveStatsModel = new UpdateFootballDefensiveStatsModel(defensiveStatSelectedItem.Tackles, defensiveStatSelectedItem.DefensiveSacks, defensiveStatSelectedItem.TacklesForLoss,
-                                                                                                              defensiveStatSelectedItem.PassesDefended, defensiveStatSelectedItem.DefensiveInterceptions, defensiveStatSelectedItem.DefensiveInterceptionYards,
-                                                                                                              defensiveStatSelectedItem.LongestDefensiveInterceptionPlay, defensiveStatSelectedItem.DefensiveTouchdowns, defensiveStatSelectedItem.ForcedFumbles,
-                                                                                                              defensiveStatSelectedItem.RecoveredFumbles);
-
-                UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
-
-                UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, defensiveStatSelectedItem.LeagueId, defensiveStatSelectedItem.TeamId,
-                                                                                           defensiveStatSelectedItem.PlayerId, defensiveStatSelectedItem.SeasonId,
-                                                                                           defensiveStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
-
-                UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
-                await StatsService.UpdateFootballStats(request);
-
-                if (defensiveStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalTackles += defensiveStatSelectedItem.Tackles - gameStat.DefensiveStats.Tackles;
-                    AwayTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks - gameStat.DefensiveStats.Sacks;
-                    AwayTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss - gameStat.DefensiveStats.TacklesForLoss;
-                    AwayTotalPassesDefended += defensiveStatSelectedItem.PassesDefended - gameStat.DefensiveStats.PassesDefended;
-                    AwayTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions - gameStat.DefensiveStats.DefensiveInterceptions;
-                    AwayTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards - gameStat.DefensiveStats.DefensiveInterceptionYards;
-                    AwayTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns - gameStat.DefensiveStats.DefensiveTouchdowns;
-                    AwayTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles - gameStat.DefensiveStats.ForcedFumbles;
-                    AwayTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles - gameStat.DefensiveStats.RecoveredFumbles;
-                }
-                else
-                {
-                    HomeTotalTackles += defensiveStatSelectedItem.Tackles - gameStat.DefensiveStats.Tackles;
-                    HomeTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks - gameStat.DefensiveStats.Sacks;
-                    HomeTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss - gameStat.DefensiveStats.TacklesForLoss;
-                    HomeTotalPassesDefended += defensiveStatSelectedItem.PassesDefended - gameStat.DefensiveStats.PassesDefended;
-                    HomeTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions - gameStat.DefensiveStats.DefensiveInterceptions;
-                    HomeTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards - gameStat.DefensiveStats.DefensiveInterceptionYards;
-                    HomeTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns - gameStat.DefensiveStats.DefensiveTouchdowns;
-                    HomeTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles - gameStat.DefensiveStats.ForcedFumbles;
-                    HomeTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles - gameStat.DefensiveStats.RecoveredFumbles;
-                }
-
-                Snackbar.Add("Players Defensive Stats have been saved.", Severity.Success);
-                StateHasChanged();
-            }
-            else
-            {
-                CreateFootballOffensiveStatsModel offensiveStatsModel = new CreateFootballOffensiveStatsModel(form.PassingCompletions, form.PassingAttempts,
-                                                            form.PassingYards, form.LongestPassingPlay,
-                                                            form.PassingTouchdowns, form.PassingInterceptions,
-                                                            form.Sacks, form.RushingAttempts,
-                                                            form.RushingYards, form.LongestRushingPlay, form.RushingTouchdowns, form.RushingFumbles,
-                                                            form.RushingFumblesLost, form.Receptions, form.Targets, form.ReceivingYards, form.ReceivingTouchdowns,
-                                                            form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
-
-                CreateFootballDefensiveStatsModel defensiveStatsModel = new CreateFootballDefensiveStatsModel(defensiveStatSelectedItem.Tackles, defensiveStatSelectedItem.DefensiveSacks, defensiveStatSelectedItem.TacklesForLoss,
-                                                                                                              defensiveStatSelectedItem.PassesDefended, defensiveStatSelectedItem.DefensiveInterceptions, defensiveStatSelectedItem.DefensiveInterceptionYards,
-                                                                                                              defensiveStatSelectedItem.LongestDefensiveInterceptionPlay, defensiveStatSelectedItem.DefensiveTouchdowns, defensiveStatSelectedItem.ForcedFumbles,
-                                                                                                              defensiveStatSelectedItem.RecoveredFumbles);
-
-                CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
-
-                CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(defensiveStatSelectedItem.LeagueId, defensiveStatSelectedItem.TeamId,
-                                                                                           defensiveStatSelectedItem.PlayerId, defensiveStatSelectedItem.SeasonId,
-                                                                                           defensiveStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
-
-                CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
-
-                await StatsService.CreateFootballStats(request);
-
-                if (defensiveStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalTackles += defensiveStatSelectedItem.Tackles;
-                    AwayTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks;
-                    AwayTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss;
-                    AwayTotalPassesDefended += defensiveStatSelectedItem.PassesDefended;
-                    AwayTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions;
-                    AwayTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards;
-                    AwayTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns;
-                    AwayTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles;
-                    AwayTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles;
-                }
-                else
-                {
-                    HomeTotalTackles += defensiveStatSelectedItem.Tackles;
-                    HomeTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks;
-                    HomeTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss;
-                    HomeTotalPassesDefended += defensiveStatSelectedItem.PassesDefended;
-                    HomeTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions;
-                    HomeTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards;
-                    HomeTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns;
-                    HomeTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles;
-                    HomeTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles;
-                }
-
-                Snackbar.Add("Players Defensive Stats have been saved.", Severity.Success);
-                StateHasChanged();
-
-            }
-        }
-    }
-
-    private async Task SubmitKickingStats()
-    {
-        if (kickingStatSelectedItem is not null)
-        {
-            var form = Model.FirstOrDefault(x => x.PlayerId == kickingStatSelectedItem.PlayerId);
-
-            var playerStats = await StatsService.GetFootballStatsByPlayer(kickingStatSelectedItem.PlayerId);
-
-            var isStatCreated = playerStats.FootballStats.Any(x => x.GameId == kickingStatSelectedItem.GameId);
-
-            if (isStatCreated)
-            {
-                var gameStat = playerStats.FootballStats.FirstOrDefault(x => x.GameId == kickingStatSelectedItem.GameId);
-
-                UpdateFootballOffensiveStatsModel offensiveStatsModel = new UpdateFootballOffensiveStatsModel(form.PassingCompletions, form.PassingAttempts,
-                                                            form.PassingYards, form.LongestPassingPlay,
-                                                            form.PassingTouchdowns, form.PassingInterceptions,
-                                                            form.Sacks, form.RushingAttempts,
-                                                            form.RushingYards, form.LongestRushingPlay, form.RushingTouchdowns, form.RushingFumbles,
-                                                            form.RushingFumblesLost, form.Receptions, form.Targets, form.ReceivingYards, form.ReceivingTouchdowns,
-                                                            form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
-
-                UpdateFootballDefensiveStatsModel defensiveStatsModel = new UpdateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss,
-                                                                                                              form.PassesDefended, form.DefensiveInterceptions, form.DefensiveInterceptionYards,
-                                                                                                              form.LongestDefensiveInterceptionPlay, form.DefensiveTouchdowns, form.ForcedFumbles,
-                                                                                                              form.RecoveredFumbles);
-
-                UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(kickingStatSelectedItem.FieldGoalsMade, kickingStatSelectedItem.FieldGoalsAttempted, kickingStatSelectedItem.ExtraPointsMade,
-                                                                                                        kickingStatSelectedItem.ExtraPointsAttempted, kickingStatSelectedItem.Punts, kickingStatSelectedItem.PuntingYards, kickingStatSelectedItem.LongestPunt);
-
-                UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, kickingStatSelectedItem.LeagueId, kickingStatSelectedItem.TeamId,
-                                                                                           kickingStatSelectedItem.PlayerId, kickingStatSelectedItem.SeasonId,
-                                                                                           kickingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
-
-                UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
-                await StatsService.UpdateFootballStats(request);
-
-                if (kickingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalFieldGoalsMade += kickingStatSelectedItem.FieldGoalsMade - gameStat.KickingStats.FieldGoalsMade;
-                    AwayTotalFieldGoalsAttempted += kickingStatSelectedItem.FieldGoalsAttempted - gameStat.KickingStats.FieldGoalsAttempted;
-                    AwayTotalExtraPointsMade += kickingStatSelectedItem.ExtraPointsMade - gameStat.KickingStats.ExtraPointsMade;
-                    AwayTotalExtraPointsAttempted += kickingStatSelectedItem.ExtraPointsAttempted - gameStat.KickingStats.ExtraPointsAttempted;
-                    AwayTotalPunts += kickingStatSelectedItem.Punts - gameStat.KickingStats.Punts;
-                    AwayTotalPuntingYards += kickingStatSelectedItem.PuntingYards - gameStat.KickingStats.PuntingYards;
-                }
-                else
-                {
-                    HomeTotalFieldGoalsMade += kickingStatSelectedItem.FieldGoalsMade - gameStat.KickingStats.FieldGoalsMade;
-                    HomeTotalFieldGoalsAttempted += kickingStatSelectedItem.FieldGoalsAttempted - gameStat.KickingStats.FieldGoalsAttempted;
-                    HomeTotalExtraPointsMade += kickingStatSelectedItem.ExtraPointsMade - gameStat.KickingStats.ExtraPointsMade;
-                    HomeTotalExtraPointsAttempted += kickingStatSelectedItem.ExtraPointsAttempted - gameStat.KickingStats.ExtraPointsAttempted;
-                    HomeTotalPunts += kickingStatSelectedItem.Punts - gameStat.KickingStats.Punts;
-                    HomeTotalPuntingYards += kickingStatSelectedItem.PuntingYards - gameStat.KickingStats.PuntingYards;
-                }
-
-                Snackbar.Add("Players Kicking Stats have been saved.", Severity.Success);
-                StateHasChanged();
-            }
-            else
-            {
-                CreateFootballOffensiveStatsModel offensiveStatsModel = new CreateFootballOffensiveStatsModel(form.PassingCompletions, form.PassingAttempts,
-                                                            form.PassingYards, form.LongestPassingPlay,
-                                                            form.PassingTouchdowns, form.PassingInterceptions,
-                                                            form.Sacks, form.RushingAttempts,
-                                                            form.RushingYards, form.LongestRushingPlay, form.RushingTouchdowns, form.RushingFumbles,
-                                                            form.RushingFumblesLost, form.Receptions, form.Targets, form.ReceivingYards, form.ReceivingTouchdowns,
-                                                            form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
-
-                CreateFootballDefensiveStatsModel defensiveStatsModel = new CreateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss,
-                                                                                                              form.PassesDefended, form.DefensiveInterceptions, form.DefensiveInterceptionYards,
-                                                                                                              form.LongestDefensiveInterceptionPlay, form.DefensiveTouchdowns, form.ForcedFumbles,
-                                                                                                              form.RecoveredFumbles);
-
-                CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(kickingStatSelectedItem.FieldGoalsMade, kickingStatSelectedItem.FieldGoalsAttempted, kickingStatSelectedItem.ExtraPointsMade,
-                                                                                                        kickingStatSelectedItem.ExtraPointsAttempted, kickingStatSelectedItem.Punts, kickingStatSelectedItem.PuntingYards, kickingStatSelectedItem.LongestPunt);
-
-                CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(kickingStatSelectedItem.LeagueId, kickingStatSelectedItem.TeamId,
-                                                                                           kickingStatSelectedItem.PlayerId, kickingStatSelectedItem.SeasonId,
-                                                                                           kickingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
-
-                CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
-
-                await StatsService.CreateFootballStats(request);
-
-                if (kickingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalFieldGoalsMade += kickingStatSelectedItem.FieldGoalsMade;
-                    AwayTotalFieldGoalsAttempted += kickingStatSelectedItem.FieldGoalsAttempted;
-                    AwayTotalExtraPointsMade += kickingStatSelectedItem.ExtraPointsMade;
-                    AwayTotalExtraPointsAttempted += kickingStatSelectedItem.ExtraPointsAttempted;
-                    AwayTotalPunts += kickingStatSelectedItem.Punts;
-                    AwayTotalPuntingYards += kickingStatSelectedItem.PuntingYards;
-                }
-                else
-                {
-                    HomeTotalFieldGoalsMade += kickingStatSelectedItem.FieldGoalsMade;
-                    HomeTotalFieldGoalsAttempted += kickingStatSelectedItem.FieldGoalsAttempted;
-                    HomeTotalExtraPointsMade += kickingStatSelectedItem.ExtraPointsMade;
-                    HomeTotalExtraPointsAttempted += kickingStatSelectedItem.ExtraPointsAttempted;
-                    HomeTotalPunts += kickingStatSelectedItem.Punts;
-                    HomeTotalPuntingYards += kickingStatSelectedItem.PuntingYards;
-                }
-
-                Snackbar.Add("Players Kicking Stats have been saved.", Severity.Success);
-                StateHasChanged();
-
-            }
-        }
-    }
-
-    public class CreateFootballStatsForm
-    {
-        public CreateFootballStatsForm()
+        public FootballStatsModel()
         {
 
         }
 
-        public CreateFootballStatsForm(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName)
+        public FootballStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName)
         {
             LeagueId = leagueId;
             TeamId = teamId;
@@ -1909,7 +873,7 @@ else
             PlayerName = String.Concat(firstName + " " + lastName);
         }
 
-        public CreateFootballStatsForm(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName,
+        public FootballStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName,
                                        int passingCompletions, int passingAttempts, int passingYards, int longestPassingPlay, int passingTouchdowns, int passingInterceptions, int sacks,
                                        int rushingAttempts, int rushingYards, int longestRushingPlay, int rushingTouchdowns, int rushingFumbles, int rushingFumblesLost,
                                        int receptions, int targets, int receivingYards, int receivingTouchdowns, int receivingFumbles, int receivingFumblesLost, int yardsAfterCatch,

@@ -1,6 +1,5 @@
 ﻿@inherits LayoutComponentBase
 
-
 <MudThemeProvider Theme="MyCustomTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -10,7 +9,28 @@
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Inherit" />
+        <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Inherit" OnClick="@ToggleOpen" />
+        <MudPopover Open="_open" Style="padding-top: 30px;" Fixed="true" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterRight" Paper="false">
+            <MudPaper Outlined="true" Class="d-flex flex-column pa-1">
+                <AuthorizeView> 
+                    <Authorized>
+                        <form method="post" action="authentication/signout" style="display:inline;">
+                            <AntiforgeryToken />
+                            <MudStack>
+                                <MudText>Hello, @context.User.Identity?.Name!</MudText>
+                                <MudStack Row="true" AlignItems="AlignItems.Center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Person"></MudIcon>
+                                    <button type="submit" class="mud-nav-link">Log out</button>
+                                </MudStack>
+                            </MudStack>
+                        </form>
+                    </Authorized>
+                    <NotAuthorized>
+                        <MudNavLink Href="/authentication/login" Icon="@Icons.Material.Filled.Person">Log In</MudNavLink>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </MudPaper>
+        </MudPopover>
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen">
         <MyNavMenu />
@@ -28,12 +48,15 @@
     bool _drawerOpen = true;
     private string version = string.Empty;
     private string date = DateTime.Now.Year.ToString();
+    private bool _open = false;
 
     protected override async Task OnInitializedAsync()
     {
         var assembly = Assembly.GetExecutingAssembly();
         version = assembly.GetName().Version.ToString();
     }
+
+    private void ToggleOpen() => _open = !_open;
 
     void DrawerToggle()
     {

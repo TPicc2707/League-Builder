@@ -22,6 +22,7 @@ public class UpdateBaseballStats : ICarterModule
         .Produces<UpdateBaseballStatsResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Update Baseball Stats")
-        .WithDescription("Update Baseball Stats");
+        .WithDescription("Update Baseball Stats")
+        .RequireAuthorization(KeycloakPolicy.UpdateStatPolicy);
     }
 }

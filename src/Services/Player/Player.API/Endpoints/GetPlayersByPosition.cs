@@ -20,6 +20,7 @@ public class GetPlayersByPosition : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Players By Position")
-        .WithDescription("Get Players By Position");
+        .WithDescription("Get Players By Position")
+        .RequireAuthorization(KeycloakPolicy.ReadPlayerPolicy);
     }
 }

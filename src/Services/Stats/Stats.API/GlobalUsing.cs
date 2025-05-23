@@ -1,5 +1,6 @@
 ﻿global using BuildingBlocks.Exceptions.Handler;
 global using BuildingBlocks.Pagination;
+global using BuildingBlocks.Security;
 global using Carter;
 global using HealthChecks.UI.Client;
 global using Mapster;
@@ -48,5 +49,4 @@ global using Stats.Application.Stats.FootballStats.Queries.GetPlayerFootballStat
 global using Stats.Application.Stats.FootballStats.Queries.GetTeamFootballStatsByGame;
 global using Stats.Application.Stats.FootballStats.Queries.GetTeamFootballStatsBySeason;
 global using Stats.Infrastructure;
-global using Stats.Infrastructure.Data;
 global using Stats.Infrastructure.Data.Extensions;

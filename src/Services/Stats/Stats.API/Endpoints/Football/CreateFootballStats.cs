@@ -22,6 +22,7 @@ public class CreateFootballStats : ICarterModule
        .Produces<CreateFootballStatsResponse>(StatusCodes.Status201Created)
        .ProducesProblem(StatusCodes.Status400BadRequest)
        .WithSummary("Create Football Stats")
-       .WithDescription("Create Football Stats");
+       .WithDescription("Create Football Stats")
+       .RequireAuthorization(KeycloakPolicy.CreateStatPolicy);
     }
 }

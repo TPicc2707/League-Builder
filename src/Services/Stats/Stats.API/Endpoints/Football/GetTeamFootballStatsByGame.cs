@@ -21,7 +21,8 @@ public class GetTeamFootballStatsByGame : ICarterModule
        .ProducesProblem(StatusCodes.Status400BadRequest)
        .ProducesProblem(StatusCodes.Status404NotFound)
        .WithSummary("Get Team Football Stats By Game")
-       .WithDescription("Get Team Football Stats By Game");
+       .WithDescription("Get Team Football Stats By Game")
+       .RequireAuthorization(KeycloakPolicy.ReadStatPolicy);
 
 
     }

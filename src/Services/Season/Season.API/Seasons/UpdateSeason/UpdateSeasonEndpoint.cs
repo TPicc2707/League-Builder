@@ -24,6 +24,7 @@ public class UpdateSeasonEndpoint : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Update Season")
-        .WithDescription("Update Season");
+        .WithDescription("Update Season")
+        .RequireAuthorization(KeycloakPolicy.UpdateSeasonPolicy);
     }
 }

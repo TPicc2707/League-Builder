@@ -21,6 +21,7 @@ public class GetFootballStatsByPlayer : ICarterModule
        .ProducesProblem(StatusCodes.Status400BadRequest)
        .ProducesProblem(StatusCodes.Status404NotFound)
        .WithSummary("Get Football Stats By Player")
-       .WithDescription("Get Football Stats By Player");
+       .WithDescription("Get Football Stats By Player")
+       .RequireAuthorization(KeycloakPolicy.ReadStatPolicy);
     }
 }

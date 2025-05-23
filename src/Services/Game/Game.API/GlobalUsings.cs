@@ -1,5 +1,6 @@
 ﻿global using BuildingBlocks.Exceptions.Handler;
 global using BuildingBlocks.Pagination;
+global using BuildingBlocks.Security;
 global using Carter;
 global using Game.API;
 global using Game.Application;
@@ -12,7 +13,6 @@ global using Game.Application.Games.Queries.GetGames;
 global using Game.Application.Games.Queries.GetGamesByLeague;
 global using Game.Application.Games.Queries.GetGamesByTeam;
 global using Game.Infrastructure;
-global using Game.Infrastructure.Data;
 global using Game.Infrastructure.Data.Extensions;
 global using HealthChecks.UI.Client;
 global using Mapster;

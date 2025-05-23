@@ -20,6 +20,7 @@ public class GetSeasonByIdEndpoint : ICarterModule
         .Produces<GetSeasonByIdResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Get Season By Id")
-        .WithDescription("Get Season By Id");
+        .WithDescription("Get Season By Id")
+        .RequireAuthorization(KeycloakPolicy.ReadSeasonPolicy);
     }
 }

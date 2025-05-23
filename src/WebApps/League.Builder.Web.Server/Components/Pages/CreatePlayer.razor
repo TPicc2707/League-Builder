@@ -5,134 +5,143 @@
 @inject NavigationManager NavManager
 @inject ISnackbar Snackbar
 @inject IWebHostEnvironment env
+@inject NavigationManager NavManager;
+@inject IHttpContextAccessor HttpContextAccessor
 
-@if (PageLoad)
-{
-    // Add select option when more leagues are created
-    // Add image selection when next version is worked
-    <div style="padding-top: 150px; padding-bottom: 175px;">
-        <MudText Typo="Typo.h3" Style="font-weight: bold; padding-bottom: 25px;" Align="Align.Center" Color="Color.Primary">Create Player</MudText>
-        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
-            <DataAnnotationsValidator />
 
-            <MudGrid>
-                <MudItem xs="12" sm="7">
-                    <MudCard>
-                        <MudCardContent>
-                            <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Person Information:</MudText>
-                            <MudTextField Label="First Name" HelperText="Max. 50 characters"
-                            @bind-Value="model.FirstName" For="@(() => model.FirstName)" />
-                            <MudTextField Label="Last Name" HelperText="Max. 50 characters"
-                            @bind-Value="model.LastName" For="@(() => model.LastName)" />
-                            <MudSelect Class="mt-3" Label="Team" @bind-Value="teamId">
-                                @foreach (var team in TeamsResponse.Teams.Data.Where(l => l.Id == teamId))
+<AuthorizeView Roles="@String.Concat(Roles.CreatePlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            // Add select option when more leagues are created
+            // Add image selection when next version is worked
+            <div style="padding-top: 150px; padding-bottom: 175px;">
+                <MudText Typo="Typo.h3" Style="font-weight: bold; padding-bottom: 25px;" Align="Align.Center" Color="Color.Primary">Create Player</MudText>
+                <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <MudGrid>
+                        <MudItem xs="12" sm="7">
+                            <MudCard>
+                                <MudCardContent>
+                                    <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Person Information:</MudText>
+                                    <MudTextField Label="First Name" HelperText="Max. 50 characters"
+                                                  @bind-Value="model.FirstName" For="@(() => model.FirstName)" />
+                                    <MudTextField Label="Last Name" HelperText="Max. 50 characters"
+                                                  @bind-Value="model.LastName" For="@(() => model.LastName)" />
+                                    <MudSelect Class="mt-3" Label="Team" @bind-Value="teamId">
+                                        @foreach (var team in TeamsResponse.Teams.Data.Where(l => l.Id == teamId))
+                                        {
+                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    <MudTextField Label="Description" Class="mt-3"
+                                                  @bind-Value="model.Description" For="@(() => model.Description)" />
+                                    <MudItem Style="padding-top: 20px;">
+                                        <MudStack Row="true">
+                                            <MudFileUpload @ref="@_fileUpload"
+                                                           T="IBrowserFile"
+                                                           For="@(() => model.File)"
+                                                           @bind-Files="model.File">
+                                                <ActivatorContent>
+                                                    <MudButton Variant="Variant.Filled"
+                                                               Color="Color.Primary"
+                                                               StartIcon="@Icons.Material.Filled.CloudUpload">
+                                                        Player Image
+                                                    </MudButton>
+                                                </ActivatorContent>
+                                            </MudFileUpload>
+                                            @if (model.File != null)
+                                            {
+                                                <MudText Typo="@Typo.h6">@model.File.Name</MudText>
+                                            }
+                                        </MudStack>
+                                    </MudItem>
+
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12" sm="5">
+                            <MudPaper Class="pa-4 mud-height-full">
+                                <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                                @if (success)
                                 {
-                                    <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                    <MudText Color="Color.Success">Success</MudText>
                                 }
-                            </MudSelect>                            
-                            <MudTextField Label="Description" Class="mt-3"
-                            @bind-Value="model.Description" For="@(() => model.Description)" />
-                            <MudItem Style="padding-top: 20px;">
-                                <MudStack Row="true">
-                                    <MudFileUpload @ref="@_fileUpload"
-                                    T="IBrowserFile"
-                                    For="@(() => model.File)"
-                                    @bind-Files="model.File">
-                                        <ActivatorContent>
-                                            <MudButton Variant="Variant.Filled"
-                                            Color="Color.Primary"
-                                            StartIcon="@Icons.Material.Filled.CloudUpload">
-                                                Player Image
-                                            </MudButton>
-                                        </ActivatorContent>
-                                    </MudFileUpload>
-                                    @if (model.File != null)
-                                    {
-                                        <MudText Typo="@Typo.h6">@model.File.Name</MudText>
-                                    }
-                                </MudStack>
-                            </MudItem>
-
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12" sm="5">
-                    <MudPaper Class="pa-4 mud-height-full">
-                        <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
-                        @if (success)
-                        {
-                            <MudText Color="Color.Success">Success</MudText>
-                        }
-                        else
-                        {
-                            <MudText Color="@Color.Error">
-                                <ValidationSummary />
+                                else
+                                {
+                                    <MudText Color="@Color.Error">
+                                        <ValidationSummary />
+                                    </MudText>
+                                }
+                            </MudPaper>
+                        </MudItem>
+                        <MudItem xs="12" sm="7">
+                            <MudCard>
+                                <MudCardContent>
+                                    <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Person Details:</MudText>
+                                    <MudTextField Label="Email Address" Class="mt-3"
+                                                  @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
+                                    <MudTextField Label="Phone Number" Class="mt-3"
+                                                  @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" />
+                                    <MudDatePicker Class="mt-3" Label="Birth Date" Editable="true" @bind-Date="date" />
+                                    <MudNumericField Label="Height" Class="mt-3"
+                                                     @bind-Value="model.Height" For="@(() => model.Height)" />
+                                    <MudNumericField Label="Weight" Class="mt-3"
+                                                     @bind-Value="model.Weight" For="@(() => model.Weight)" />
+                                    <MudNumericField Label="Number" Class="mt-3"
+                                                     @bind-Value="model.Number" For="@(() => model.Number)" />
+                                    <MudSelect Class="mt-3" Label="Position" @bind-Value="model.Position">
+                                        @foreach (var position in Constants.Positions(sport))
+                                        {
+                                            <MudSelectItem Value="position">@position</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12" sm="7">
+                            <MudCard>
+                                <MudCardContent>
+                                    <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Address:</MudText>
+                                    <MudTextField Label="Address Line" Class="mt-3"
+                                                  @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" />
+                                    <MudSelect Class="mt-3" Label="State" @bind-Value="model.State">
+                                        @foreach (var state in states)
+                                        {
+                                            <MudSelectItem Value="state">@state</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                    <MudTextField Label="Country" Class="mt-3"
+                                                  @bind-Value="model.Country" For="@(() => model.Country)" />
+                                    <MudTextField Label="Zip Code" Class="mt-3"
+                                                  @bind-Value="model.ZipCode" For="@(() => model.ZipCode)" />
+                                </MudCardContent>
+                                <MudCardActions>
+                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Create</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.body2" Align="Align.Center">
+                                Fill out the form correctly to see the success message.
                             </MudText>
-                        }
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="7">
-                    <MudCard>
-                        <MudCardContent>
-                            <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Person Details:</MudText>
-                            <MudTextField Label="Email Address" Class="mt-3"
-                            @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
-                            <MudTextField Label="Phone Number" Class="mt-3"
-                            @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" />
-                            <MudDatePicker Class="mt-3" Label="Birth Date" Editable="true" @bind-Date="date" />
-                            <MudNumericField Label="Height" Class="mt-3"
-                            @bind-Value="model.Height" For="@(() => model.Height)" />
-                            <MudNumericField Label="Weight" Class="mt-3"
-                            @bind-Value="model.Weight" For="@(() => model.Weight)" />
-                            <MudNumericField Label="Number" Class="mt-3"
-                            @bind-Value="model.Number" For="@(() => model.Number)" />
-                            <MudSelect Class="mt-3" Label="Position" @bind-Value="model.Position">
-                                @foreach (var position in Constants.Positions(sport))
-                                {
-                                    <MudSelectItem Value="position">@position</MudSelectItem>
-                                }
-                            </MudSelect>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12" sm="7">
-                    <MudCard>
-                        <MudCardContent>
-                            <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Address:</MudText>
-                            <MudTextField Label="Address Line" Class="mt-3"
-                            @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" />
-                            <MudSelect Class="mt-3" Label="State" @bind-Value="model.State">
-                                @foreach (var state in states)
-                                {
-                                    <MudSelectItem Value="state">@state</MudSelectItem>
-                                }
-                            </MudSelect>
-                            <MudTextField Label="Country" Class="mt-3"
-                            @bind-Value="model.Country" For="@(() => model.Country)" />
-                            <MudTextField Label="Zip Code" Class="mt-3"
-                            @bind-Value="model.ZipCode" For="@(() => model.ZipCode)" />
-                        </MudCardContent>
-                        <MudCardActions>
-                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Create</MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12">
-                    <MudText Typo="Typo.body2" Align="Align.Center">
-                        Fill out the form correctly to see the success message.
-                    </MudText>
-                </MudItem>
-            </MudGrid>
-        </EditForm>
+                        </MudItem>
+                    </MudGrid>
+                </EditForm>
 
-    </div>
+            </div>
 
-}
-else
-{
-    <Loading />
-}
-
+        }
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 @code {
     [Parameter]
     public string Id { get; set; }
@@ -210,6 +219,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+        
         teamId = Guid.Parse(Id);
         TeamsResponse = await TeamService.GetTeams();
         var team = await TeamService.GetTeamById(teamId);

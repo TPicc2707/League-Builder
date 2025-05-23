@@ -20,6 +20,7 @@ public class GetPlayersByTeam : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Players By Team")
-        .WithDescription("Get Players By Team");
+        .WithDescription("Get Players By Team")
+        .RequireAuthorization(KeycloakPolicy.ReadPlayerPolicy);
     }
 }

@@ -22,6 +22,7 @@ public class CreateLeagueEndpoint : ICarterModule
         .Produces<CreateLeagueResponse>(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Create League")
-        .WithDescription("Create League");
+        .WithDescription("Create League")
+        .RequireAuthorization(KeycloakPolicy.CreateLeaguePolicy);
     }
 }

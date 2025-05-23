@@ -20,6 +20,7 @@ public class GetBasketballStats : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Basketball Stats")
-        .WithDescription("Get Basketball Stats");
+        .WithDescription("Get Basketball Stats")
+        .RequireAuthorization(KeycloakPolicy.ReadStatPolicy);
     }
 }

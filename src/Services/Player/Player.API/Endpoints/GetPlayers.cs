@@ -21,6 +21,7 @@ public class GetPlayers : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Players")
-        .WithDescription("Get Players");
+        .WithDescription("Get Players")
+        .RequireAuthorization(KeycloakPolicy.ReadPlayerPolicy);
     }
 }

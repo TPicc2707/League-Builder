@@ -1,51 +1,65 @@
 ﻿@page "/teamsbyleague/{id}"
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
+@inject NavigationManager NavManager
+@inject IHttpContextAccessor HttpContextAccessor
 
-@if (PageLoad)
-{
-    string createTeamLink = String.Concat("/createteam/", Id);
-    <div style="padding-top: 100px; padding-bottom: 200px;">
-        <div style="padding-top: 50px;">
-            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@League.League.Name</MudText>
-                            <MudSpacer />
-                            <div style="align-content: end">
-                                <MudButton Href="@createTeamLink" Variant="Variant.Filled" Color="Color.Primary">Create</MudButton>
-                            </div>
-        </div>
-        <div style="padding-top: 25px;">
-            <MudStack Justify="@_justify" Row="true">
-                @foreach (var team in GetTeamsForRow(TeamCounter))
-                {
-                    string imageFile = String.Concat("images/", team.ImageFile);
-                    string updateTeamLink = String.Concat("/updateteam/", team.Id);
-                    string playerLink = String.Concat("/playersbyteam/", team.Id);
-                    string address = String.Concat(team.TeamAddress.AddressLine, ", ", team.TeamAddress.State, ", ", team.TeamAddress.ZipCode);
-                    <MudCard>
-                        <MudCardMedia Image="@imageFile" Height="200" />
-                        <MudCardContent>
-                            <MudText Typo="Typo.h5" Style="font-weight: bold;">@team.TeamName</MudText>
-                            <MudText Typo="Typo.body2">@address</MudText>
-                            <MudText Typo="Typo.body2">@team.Description</MudText>
-                        </MudCardContent>
-                        <MudCardActions Style="align-content: center">
-                            <MudButton Href="@playerLink" Variant="Variant.Text" Color="Color.Primary">Players</MudButton>
-                            <MudButton Href="@updateTeamLink" Variant="Variant.Text" Color="Color.Primary">Update</MudButton>
-                            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => OpenDialogAsync(team.Id))">Delete</MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                }
-            </MudStack>
-        </div>
+<AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            string createTeamLink = String.Concat("/createteam/", Id);
+            <div style="padding-top: 100px; padding-bottom: 200px;">
+                <div style="padding-top: 50px;">
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@League.League.Name</MudText>
+                    <MudSpacer />
+                    <AuthorizeView Roles="@Roles.CreateTeams">
+                        <div style="align-content: end">
+                            <MudButton Href="@createTeamLink" Variant="Variant.Filled" Color="Color.Primary">Create</MudButton>
+                        </div>
+                    </AuthorizeView>
+                </div>
+                <div style="padding-top: 25px;">
+                    <MudStack Justify="@_justify" Row="true">
+                        @foreach (var team in GetTeamsForRow(TeamCounter))
+                        {
+                            string imageFile = String.Concat("images/", team.ImageFile);
+                            string updateTeamLink = String.Concat("/updateteam/", team.Id);
+                            string playerLink = String.Concat("/playersbyteam/", team.Id);
+                            string address = String.Concat(team.TeamAddress.AddressLine, ", ", team.TeamAddress.State, ", ", team.TeamAddress.ZipCode);
+                            <MudCard>
+                                <MudCardMedia Image="@imageFile" Height="200" />
+                                <MudCardContent>
+                                    <MudText Typo="Typo.h5" Style="font-weight: bold;">@team.TeamName</MudText>
+                                    <MudText Typo="Typo.body2">@address</MudText>
+                                    <MudText Typo="Typo.body2">@team.Description</MudText>
+                                </MudCardContent>
+                                <MudCardActions Style="align-content: center">
+                                    <MudButton Href="@playerLink" Variant="Variant.Text" Color="Color.Primary">Players</MudButton>
+                                    <AuthorizeView Roles="@Roles.UpdateTeams">
+                                        <MudButton Href="@updateTeamLink" Variant="Variant.Text" Color="Color.Primary">Update</MudButton>
+                                    </AuthorizeView>
+                                    <AuthorizeView Roles="@Roles.DeleteTeams">
+                                        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => OpenDialogAsync(team.Id))">Delete</MudButton>
+                                    </AuthorizeView>
+                                </MudCardActions>
+                            </MudCard>
+                        }
+                    </MudStack>
+                </div>
 
-    </div>
+            </div>
 
-}
-else
-{
-    <Loading />
-}
-
+        }
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 
 
 @code {
@@ -65,6 +79,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
         var leagueId = Guid.Parse(Id);
         League = await LeagueService.GetLeague(leagueId);
         Teams = await TeamService.GetTeamsByLeague(leagueId);

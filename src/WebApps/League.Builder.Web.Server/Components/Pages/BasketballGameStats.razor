@@ -3,348 +3,251 @@
 @inject IGameService GameService
 @inject IPlayerService PlayerService
 @inject ISnackbar Snackbar
+@inject NavigationManager NavManager;
+@inject IHttpContextAccessor HttpContextAccessor
 
-@if (PageLoad)
-{
-    <div style="padding-top: 100px;">
-        <div style="padding-bottom: 25px;">
-            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
-        </div>
-        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
-            <MudTabPanel Text="@String.Concat(GameModel.Game.AwayTeam.TeamName + " Stats")">
-                <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" CanCancelEdit="true"
-                @bind-SelectedItem="basketballStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitBasketballStats"
-                          RowEditPreview="BackupBasketballStatsItem" RowEditCancel="ResetBasketballStatsItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                    <ColGroup>
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                    </ColGroup>
-                    <HeaderContent>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">MIN</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">REB</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">AST</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">BLK</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">STL</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">TO</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGM</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PM</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PA</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTM</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                        @if (context.Start)
-                        {
-                            <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
-                        }
-                        else
-                        {
-                            <MudTd DataLabel="S"></MudTd>
-                        }
-                        <MudTd DataLabel="MIN">@context.Minutes</MudTd>
-                        <MudTd DataLabel="PTS">@context.Points</MudTd>
-                        <MudTd DataLabel="REB">@context.Rebounds</MudTd>
-                        <MudTd DataLabel="AST">@context.Assists</MudTd>
-                        <MudTd DataLabel="BLK">@context.Blocks</MudTd>
-                        <MudTd DataLabel="STL">@context.Steals</MudTd>
-                        <MudTd DataLabel="TO">@context.Turnovers</MudTd>
-                        <MudTd DataLabel="FGM">@context.FieldGoalsMade</MudTd>
-                        <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
-                        <MudTd DataLabel="3PM">@context.ThreePointersMade</MudTd>
-                        <MudTd DataLabel="3PA">@context.ThreePointersAttempted</MudTd>
-                        <MudTd DataLabel="FTM">@context.FreeThrowsMade</MudTd>
-                        <MudTd DataLabel="FTA">@context.FreeThrowsAttempted</MudTd>
-                    </RowTemplate>
-                    <RowEditingTemplate>
-                        <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                        <MudTd DataLabel="S">
-                            <MudCheckBox @bind-Value="context.Start" Color="Color.Primary"></MudCheckBox>
-                        </MudTd>
-                        <MudTd DataLabel="MIN">
-                            <MudTextField @bind-Value="context.Minutes" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="PTS">
-                            <MudTextField @bind-Value="context.Points" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="REB">
-                            <MudTextField @bind-Value="context.Rebounds" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="AST">
-                            <MudTextField @bind-Value="context.Assists" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="BLK">
-                            <MudTextField @bind-Value="context.Blocks" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="STL">
-                            <MudTextField @bind-Value="context.Steals" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="TO">
-                            <MudTextField @bind-Value="context.Turnovers" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="FGM">
-                            <MudTextField @bind-Value="context.FieldGoalsMade" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="FGA">
-                            <MudTextField @bind-Value="context.FieldGoalsAttempted" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="3PM">
-                            <MudTextField @bind-Value="context.ThreePointersMade" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="3PA">
-                            <MudTextField @bind-Value="context.ThreePointersAttempted" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="FTM">
-                            <MudTextField @bind-Value="context.FreeThrowsMade" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="FTA">
-                            <MudTextField @bind-Value="context.FreeThrowsAttempted" Style="font-size: 12px;" Required />
-                        </MudTd>
-                    </RowEditingTemplate>
-                    <EditButtonContent Context="button">
-                        <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                    </EditButtonContent>
-                </MudTable>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>PTS</th>
-                                <th>REB</th>
-                                <th>AST</th>
-                                <th>BLK</th>
-                                <th>STL</th>
-                                <th>TO</th>
-                                <th>FGM</th>
-                                <th>FGA</th>
-                                <th>3PM</th>
-                                <th>3PA</th>
-                                <th>FTM</th>
-                                <th>FTA</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@AwayTotalPoints</td>
-                                <td>@AwayTotalRebounds</td>
-                                <td>@AwayTotalAssists</td>
-                                <td>@AwayTotalBlocks</td>
-                                <td>@AwayTotalSteals</td>
-                                <td>@AwayTotalTurnovers</td>
-                                <td>@AwayTotalFieldGoalsMade</td>
-                                <td>@AwayTotalFieldGoalsAttempted</td>
-                                <td>@AwayTotalThreePointersMade</td>
-                                <td>@AwayTotalThreePointersAttempted</td>
-                                <td>@AwayTotalFreeThrowsMade</td>
-                                <td>@AwayTotalFreeThrowsAttempted</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
+<AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadGames, ", ", Roles.ReadPlayers)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <div style="padding-top: 100px;">
+                <div style="padding-bottom: 25px;">
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
                 </div>
-            </MudTabPanel>
-            <MudTabPanel Text="@String.Concat(GameModel.Game.HomeTeam.TeamName + " Stats")">
-                <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
-                          @bind-SelectedItem="basketballStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitBasketballStats"
-                          RowEditPreview="BackupBasketballStatsItem" RowEditCancel="ResetBasketballStatsItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                    <ColGroup>
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                        <col />
-                    </ColGroup>
-                    <HeaderContent>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">MIN</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">REB</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">AST</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">BLK</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">STL</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">TO</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGM</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PM</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PA</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTM</MudTh>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                        @if (context.Start)
-                        {
-                            <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
-                        }
-                        else
-                        {
-                            <MudTd DataLabel="S"></MudTd>
-                        }
-                        <MudTd DataLabel="MIN">@context.Minutes</MudTd>
-                        <MudTd DataLabel="PTS">@context.Points</MudTd>
-                        <MudTd DataLabel="REB">@context.Rebounds</MudTd>
-                        <MudTd DataLabel="AST">@context.Assists</MudTd>
-                        <MudTd DataLabel="BLK">@context.Blocks</MudTd>
-                        <MudTd DataLabel="STL">@context.Steals</MudTd>
-                        <MudTd DataLabel="TO">@context.Turnovers</MudTd>
-                        <MudTd DataLabel="FGM">@context.FieldGoalsMade</MudTd>
-                        <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
-                        <MudTd DataLabel="3PM">@context.ThreePointersMade</MudTd>
-                        <MudTd DataLabel="3PA">@context.ThreePointersAttempted</MudTd>
-                        <MudTd DataLabel="FTM">@context.FreeThrowsMade</MudTd>
-                        <MudTd DataLabel="FTA">@context.FreeThrowsAttempted</MudTd>
-                    </RowTemplate>
-                    <RowEditingTemplate>
-                        <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                        <MudTd DataLabel="S">
-                            <MudCheckBox @bind-Value="context.Start" Color="Color.Primary"></MudCheckBox>
-                        </MudTd>
-                        <MudTd DataLabel="MIN">
-                            <MudTextField @bind-Value="context.Minutes" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="PTS">
-                            <MudTextField @bind-Value="context.Points" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="REB">
-                            <MudTextField @bind-Value="context.Rebounds" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="AST">
-                            <MudTextField @bind-Value="context.Assists" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="BLK">
-                            <MudTextField @bind-Value="context.Blocks" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="STL">
-                            <MudTextField @bind-Value="context.Steals" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="TO">
-                            <MudTextField @bind-Value="context.Turnovers" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="FGM">
-                            <MudTextField @bind-Value="context.FieldGoalsMade" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="FGA">
-                            <MudTextField @bind-Value="context.FieldGoalsAttempted" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="3PM">
-                            <MudTextField @bind-Value="context.ThreePointersMade" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="3PA">
-                            <MudTextField @bind-Value="context.ThreePointersAttempted" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="FTM">
-                            <MudTextField @bind-Value="context.FreeThrowsMade" Style="font-size: 12px;" Required />
-                        </MudTd>
-                        <MudTd DataLabel="FTA">
-                            <MudTextField @bind-Value="context.FreeThrowsAttempted" Style="font-size: 12px;" Required />
-                        </MudTd>
-                    </RowEditingTemplate>
-                    <EditButtonContent Context="button">
-                        <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                    </EditButtonContent>
-                </MudTable>
-                <div style="padding-top: 25px;">
-                    <MudSimpleTable>
-                        <thead>
-                            <tr class="mud-theme-primary">
-                                <th></th>
-                                <th>PTS</th>
-                                <th>REB</th>
-                                <th>AST</th>
-                                <th>BLK</th>
-                                <th>STL</th>
-                                <th>TO</th>
-                                <th>FGM</th>
-                                <th>FGA</th>
-                                <th>3PM</th>
-                                <th>3PA</th>
-                                <th>FTM</th>
-                                <th>FTA</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Totals:</td>
-                                <td>@HomeTotalPoints</td>
-                                <td>@HomeTotalRebounds</td>
-                                <td>@HomeTotalAssists</td>
-                                <td>@HomeTotalBlocks</td>
-                                <td>@HomeTotalSteals</td>
-                                <td>@HomeTotalTurnovers</td>
-                                <td>@HomeTotalFieldGoalsMade</td>
-                                <td>@HomeTotalFieldGoalsAttempted</td>
-                                <td>@HomeTotalThreePointersMade</td>
-                                <td>@HomeTotalThreePointersAttempted</td>
-                                <td>@HomeTotalFreeThrowsMade</td>
-                                <td>@HomeTotalFreeThrowsAttempted</td>
-                            </tr>
-                        </tbody>
-                    </MudSimpleTable>
-                </div>
-            </MudTabPanel>
-        </MudTabs>
-    </div>
-}
-else
-{
-    <Loading />
-}
-
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
+                    <MudTabPanel Text="@String.Concat(GameModel.Game.AwayTeam.TeamName + " Stats")">
+                        <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
+                            <ColGroup>
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                            </ColGroup>
+                            <HeaderContent>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">MIN</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">REB</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">AST</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">BLK</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">STL</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TO</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGM</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PM</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PA</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTM</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                @if (context.Start)
+                                {
+                                    <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
+                                }
+                                else
+                                {
+                                    <MudTd DataLabel="S"></MudTd>
+                                }
+                                <MudTd DataLabel="MIN">@context.Minutes</MudTd>
+                                <MudTd DataLabel="PTS">@context.Points</MudTd>
+                                <MudTd DataLabel="REB">@context.Rebounds</MudTd>
+                                <MudTd DataLabel="AST">@context.Assists</MudTd>
+                                <MudTd DataLabel="BLK">@context.Blocks</MudTd>
+                                <MudTd DataLabel="STL">@context.Steals</MudTd>
+                                <MudTd DataLabel="TO">@context.Turnovers</MudTd>
+                                <MudTd DataLabel="FGM">@context.FieldGoalsMade</MudTd>
+                                <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
+                                <MudTd DataLabel="3PM">@context.ThreePointersMade</MudTd>
+                                <MudTd DataLabel="3PA">@context.ThreePointersAttempted</MudTd>
+                                <MudTd DataLabel="FTM">@context.FreeThrowsMade</MudTd>
+                                <MudTd DataLabel="FTA">@context.FreeThrowsAttempted</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>PTS</th>
+                                        <th>REB</th>
+                                        <th>AST</th>
+                                        <th>BLK</th>
+                                        <th>STL</th>
+                                        <th>TO</th>
+                                        <th>FGM</th>
+                                        <th>FGA</th>
+                                        <th>3PM</th>
+                                        <th>3PA</th>
+                                        <th>FTM</th>
+                                        <th>FTA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@AwayTotalPoints</td>
+                                        <td>@AwayTotalRebounds</td>
+                                        <td>@AwayTotalAssists</td>
+                                        <td>@AwayTotalBlocks</td>
+                                        <td>@AwayTotalSteals</td>
+                                        <td>@AwayTotalTurnovers</td>
+                                        <td>@AwayTotalFieldGoalsMade</td>
+                                        <td>@AwayTotalFieldGoalsAttempted</td>
+                                        <td>@AwayTotalThreePointersMade</td>
+                                        <td>@AwayTotalThreePointersAttempted</td>
+                                        <td>@AwayTotalFreeThrowsMade</td>
+                                        <td>@AwayTotalFreeThrowsAttempted</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                    </MudTabPanel>
+                    <MudTabPanel Text="@String.Concat(GameModel.Game.HomeTeam.TeamName + " Stats")">
+                        <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
+                            <ColGroup>
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                            </ColGroup>
+                            <HeaderContent>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">MIN</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">REB</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">AST</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">BLK</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">STL</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TO</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGM</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PM</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PA</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTM</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                @if (context.Start)
+                                {
+                                    <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
+                                }
+                                else
+                                {
+                                    <MudTd DataLabel="S"></MudTd>
+                                }
+                                <MudTd DataLabel="MIN">@context.Minutes</MudTd>
+                                <MudTd DataLabel="PTS">@context.Points</MudTd>
+                                <MudTd DataLabel="REB">@context.Rebounds</MudTd>
+                                <MudTd DataLabel="AST">@context.Assists</MudTd>
+                                <MudTd DataLabel="BLK">@context.Blocks</MudTd>
+                                <MudTd DataLabel="STL">@context.Steals</MudTd>
+                                <MudTd DataLabel="TO">@context.Turnovers</MudTd>
+                                <MudTd DataLabel="FGM">@context.FieldGoalsMade</MudTd>
+                                <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
+                                <MudTd DataLabel="3PM">@context.ThreePointersMade</MudTd>
+                                <MudTd DataLabel="3PA">@context.ThreePointersAttempted</MudTd>
+                                <MudTd DataLabel="FTM">@context.FreeThrowsMade</MudTd>
+                                <MudTd DataLabel="FTA">@context.FreeThrowsAttempted</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>PTS</th>
+                                        <th>REB</th>
+                                        <th>AST</th>
+                                        <th>BLK</th>
+                                        <th>STL</th>
+                                        <th>TO</th>
+                                        <th>FGM</th>
+                                        <th>FGA</th>
+                                        <th>3PM</th>
+                                        <th>3PA</th>
+                                        <th>FTM</th>
+                                        <th>FTA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@HomeTotalPoints</td>
+                                        <td>@HomeTotalRebounds</td>
+                                        <td>@HomeTotalAssists</td>
+                                        <td>@HomeTotalBlocks</td>
+                                        <td>@HomeTotalSteals</td>
+                                        <td>@HomeTotalTurnovers</td>
+                                        <td>@HomeTotalFieldGoalsMade</td>
+                                        <td>@HomeTotalFieldGoalsAttempted</td>
+                                        <td>@HomeTotalThreePointersMade</td>
+                                        <td>@HomeTotalThreePointersAttempted</td>
+                                        <td>@HomeTotalFreeThrowsMade</td>
+                                        <td>@HomeTotalFreeThrowsAttempted</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                    </MudTabPanel>
+                </MudTabs>
+            </div>
+        }
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     [Parameter]
     public string Id { get; set; }
     private bool PageLoad = false;
-    List<CreateBasketballStatsForm> Model = new List<CreateBasketballStatsForm>();
-    CreateBasketballStatsForm basketballStatSelectedItem = null;
-    CreateBasketballStatsForm basketballStatBeforeEdit;
+    List<BasketballStatsModel> Model = new List<BasketballStatsModel>();
     GetGameByIdResponse GameModel { get; set; }
     GetPlayersByTeamResponse AwayPlayersModel { get; set; }
     GetPlayersByTeamResponse HomePlayersModel { get; set; }
     GetBasketballStatsByTeamResponse AwayPlayerStatsModel { get; set; }
     GetBasketballStatsByTeamResponse HomePlayerStatsModel { get; set; }
-    private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
-    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+
     private int AwayTotalPoints = 0;
     private int AwayTotalFieldGoalsMade = 0;
-    private int AwayTotalFieldGoalsAttempted= 0;
-    private int AwayTotalThreePointersMade= 0;
-    private int AwayTotalThreePointersAttempted= 0;
-    private int AwayTotalFreeThrowsMade= 0;
-    private int AwayTotalFreeThrowsAttempted= 0;
-    private int AwayTotalRebounds= 0;
-    private int AwayTotalAssists= 0;
-    private int AwayTotalSteals= 0;
-    private int AwayTotalBlocks= 0;
+    private int AwayTotalFieldGoalsAttempted = 0;
+    private int AwayTotalThreePointersMade = 0;
+    private int AwayTotalThreePointersAttempted = 0;
+    private int AwayTotalFreeThrowsMade = 0;
+    private int AwayTotalFreeThrowsAttempted = 0;
+    private int AwayTotalRebounds = 0;
+    private int AwayTotalAssists = 0;
+    private int AwayTotalSteals = 0;
+    private int AwayTotalBlocks = 0;
     private int AwayTotalTurnovers = 0;
 
     private int HomeTotalPoints = 0;
@@ -363,6 +266,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
         var gameId = Guid.Parse(Id);
         GameModel = await GameService.GetGameById(gameId);
         AwayPlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
@@ -374,7 +282,7 @@ else
             var playerStat = AwayPlayerStatsModel.BasketballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
             if (playerStat is not null)
             {
-                Model.Add(new CreateBasketballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
                                                     playerStat.Stats.Start, playerStat.Stats.Minutes, playerStat.Stats.Points, playerStat.Stats.FieldGoalsMade, playerStat.Stats.FieldGoalsAttempted, playerStat.Stats.ThreePointersMade, playerStat.Stats.ThreePointersAttempted,
                                                     playerStat.Stats.FreeThrowsMade, playerStat.Stats.FreeThrowsAttempted, playerStat.Stats.Rebounds, playerStat.Stats.Assists, playerStat.Stats.Steals,
                                                     playerStat.Stats.Blocks, playerStat.Stats.Turnovers));
@@ -393,14 +301,14 @@ else
                 AwayTotalTurnovers += playerStat.Stats.Turnovers;
             }
             else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                Model.Add(new CreateBasketballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+                Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
         }
         foreach (var player in HomePlayersModel.Players)
         {
             var playerStat = HomePlayerStatsModel.BasketballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
             if (playerStat is not null)
             {
-                Model.Add(new CreateBasketballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
                                                     playerStat.Stats.Start, playerStat.Stats.Minutes, playerStat.Stats.Points, playerStat.Stats.FieldGoalsMade, playerStat.Stats.FieldGoalsAttempted, playerStat.Stats.ThreePointersMade, playerStat.Stats.ThreePointersAttempted,
                                                     playerStat.Stats.FreeThrowsMade, playerStat.Stats.FreeThrowsAttempted, playerStat.Stats.Rebounds, playerStat.Stats.Assists, playerStat.Stats.Steals,
                                                     playerStat.Stats.Blocks, playerStat.Stats.Turnovers));
@@ -421,180 +329,19 @@ else
 
             }
             else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                Model.Add(new CreateBasketballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+                Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
         }
         PageLoad = true;
     }
 
-    private void BackupBasketballStatsItem(object stats)
+    public class BasketballStatsModel
     {
-        basketballStatBeforeEdit = new()
-            {
-                PlayerName = ((CreateBasketballStatsForm)stats).PlayerName,
-                LeagueId = ((CreateBasketballStatsForm)stats).LeagueId,
-                TeamId = ((CreateBasketballStatsForm)stats).TeamId,
-                PlayerId = ((CreateBasketballStatsForm)stats).PlayerId,
-                SeasonId = ((CreateBasketballStatsForm)stats).SeasonId,
-                GameId = ((CreateBasketballStatsForm)stats).GameId,
-                Start = ((CreateBasketballStatsForm)stats).Start,
-                Minutes = ((CreateBasketballStatsForm)stats).Minutes,
-                Points = ((CreateBasketballStatsForm)stats).Points,
-                FieldGoalsMade = ((CreateBasketballStatsForm)stats).FieldGoalsMade,
-                FieldGoalsAttempted = ((CreateBasketballStatsForm)stats).FieldGoalsAttempted,
-                ThreePointersMade = ((CreateBasketballStatsForm)stats).ThreePointersMade,
-                ThreePointersAttempted = ((CreateBasketballStatsForm)stats).ThreePointersAttempted,
-                FreeThrowsMade = ((CreateBasketballStatsForm)stats).FreeThrowsMade,
-                FreeThrowsAttempted = ((CreateBasketballStatsForm)stats).FreeThrowsAttempted,
-                Rebounds = ((CreateBasketballStatsForm)stats).Rebounds,
-                Assists = ((CreateBasketballStatsForm)stats).Assists,
-                Steals = ((CreateBasketballStatsForm)stats).Steals,
-                Blocks = ((CreateBasketballStatsForm)stats).Blocks,
-                Turnovers = ((CreateBasketballStatsForm)stats).Turnovers
-            };
-    }
-
-    private void ResetBasketballStatsItemToOriginalValues(object stats)
-    {
-        ((CreateBasketballStatsForm)stats).Start = basketballStatBeforeEdit.Start;
-        ((CreateBasketballStatsForm)stats).Minutes = basketballStatBeforeEdit.Minutes;
-        ((CreateBasketballStatsForm)stats).Points = basketballStatBeforeEdit.Points;
-        ((CreateBasketballStatsForm)stats).FieldGoalsMade = basketballStatBeforeEdit.FieldGoalsMade;
-        ((CreateBasketballStatsForm)stats).FieldGoalsAttempted = basketballStatBeforeEdit.FieldGoalsAttempted;
-        ((CreateBasketballStatsForm)stats).ThreePointersMade = basketballStatBeforeEdit.ThreePointersMade;
-        ((CreateBasketballStatsForm)stats).ThreePointersAttempted = basketballStatBeforeEdit.ThreePointersAttempted;
-        ((CreateBasketballStatsForm)stats).FreeThrowsMade = basketballStatBeforeEdit.FreeThrowsMade;
-        ((CreateBasketballStatsForm)stats).FreeThrowsAttempted = basketballStatBeforeEdit.FreeThrowsAttempted;
-        ((CreateBasketballStatsForm)stats).Rebounds = basketballStatBeforeEdit.Rebounds;
-        ((CreateBasketballStatsForm)stats).Assists = basketballStatBeforeEdit.Assists;
-        ((CreateBasketballStatsForm)stats).Steals = basketballStatBeforeEdit.Steals;
-        ((CreateBasketballStatsForm)stats).Blocks = basketballStatBeforeEdit.Blocks;
-        ((CreateBasketballStatsForm)stats).Turnovers = basketballStatBeforeEdit.Turnovers;
-    }
-
-    private async Task SubmitBasketballStats()
-    {
-        if (basketballStatSelectedItem is not null)
-        {
-            var form = Model.FirstOrDefault(x => x.PlayerId == basketballStatSelectedItem.PlayerId);
-
-            var playerStats = await StatsService.GetBasketballStatsByPlayer(basketballStatSelectedItem.PlayerId);
-
-            var isStatCreated = playerStats.BasketballStats.Any(x => x.GameId == basketballStatSelectedItem.GameId);
-
-            if (isStatCreated)
-            {
-                var gameStat = playerStats.BasketballStats.FirstOrDefault(x => x.GameId == basketballStatSelectedItem.GameId);
-
-                UpdateBasketballPlayerStatsModel statsModel = new UpdateBasketballPlayerStatsModel(basketballStatSelectedItem.Start, basketballStatSelectedItem.Minutes,
-                                                            basketballStatSelectedItem.Points, basketballStatSelectedItem.FieldGoalsMade,
-                                                            basketballStatSelectedItem.FieldGoalsAttempted, basketballStatSelectedItem.ThreePointersMade,
-                                                            basketballStatSelectedItem.ThreePointersAttempted, basketballStatSelectedItem.FreeThrowsMade,
-                                                            basketballStatSelectedItem.FreeThrowsAttempted, basketballStatSelectedItem.Rebounds, basketballStatSelectedItem.Assists, basketballStatSelectedItem.Steals,
-                                                            basketballStatSelectedItem.Blocks, basketballStatSelectedItem.Turnovers);
-
-                UpdateBasketballStatsModel basketballStatsModel = new UpdateBasketballStatsModel(gameStat.Id, basketballStatSelectedItem.LeagueId, basketballStatSelectedItem.TeamId,
-                                                                                           basketballStatSelectedItem.PlayerId, basketballStatSelectedItem.SeasonId,
-                                                                                           basketballStatSelectedItem.GameId, statsModel);
-
-                UpdateBasketballStatsRequest request = new UpdateBasketballStatsRequest(basketballStatsModel);
-                await StatsService.UpdateBasketballStats(request);
-
-                if (basketballStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalPoints += basketballStatSelectedItem.Points - gameStat.Stats.Points;
-                    AwayTotalFieldGoalsMade += basketballStatSelectedItem.FieldGoalsMade - gameStat.Stats.FieldGoalsMade;
-                    AwayTotalFieldGoalsAttempted += basketballStatSelectedItem.FieldGoalsAttempted - gameStat.Stats.FieldGoalsAttempted;
-                    AwayTotalThreePointersMade += basketballStatSelectedItem.ThreePointersMade - gameStat.Stats.ThreePointersMade;
-                    AwayTotalThreePointersAttempted += basketballStatSelectedItem.ThreePointersAttempted - gameStat.Stats.ThreePointersAttempted;
-                    AwayTotalFreeThrowsMade += basketballStatSelectedItem.FreeThrowsMade - gameStat.Stats.FreeThrowsMade;
-                    AwayTotalFreeThrowsAttempted += basketballStatSelectedItem.FreeThrowsAttempted - gameStat.Stats.FreeThrowsAttempted;
-                    AwayTotalRebounds += basketballStatSelectedItem.Rebounds - gameStat.Stats.Rebounds;
-                    AwayTotalAssists += basketballStatSelectedItem.Assists - gameStat.Stats.Assists;
-                    AwayTotalSteals += basketballStatSelectedItem.Steals - gameStat.Stats.Steals;
-                    AwayTotalBlocks += basketballStatSelectedItem.Blocks - gameStat.Stats.Blocks;
-                    AwayTotalTurnovers += basketballStatSelectedItem.Turnovers - gameStat.Stats.Turnovers;
-                }
-                else
-                {
-                    HomeTotalPoints += basketballStatSelectedItem.Points - gameStat.Stats.Points;
-                    HomeTotalFieldGoalsMade += basketballStatSelectedItem.FieldGoalsMade - gameStat.Stats.FieldGoalsMade;
-                    HomeTotalFieldGoalsAttempted += basketballStatSelectedItem.FieldGoalsAttempted - gameStat.Stats.FieldGoalsAttempted;
-                    HomeTotalThreePointersMade += basketballStatSelectedItem.ThreePointersMade - gameStat.Stats.ThreePointersMade;
-                    HomeTotalThreePointersAttempted += basketballStatSelectedItem.ThreePointersAttempted - gameStat.Stats.ThreePointersAttempted;
-                    HomeTotalFreeThrowsMade += basketballStatSelectedItem.FreeThrowsMade - gameStat.Stats.FreeThrowsMade;
-                    HomeTotalFreeThrowsAttempted += basketballStatSelectedItem.FreeThrowsAttempted - gameStat.Stats.FreeThrowsAttempted;
-                    HomeTotalRebounds += basketballStatSelectedItem.Rebounds - gameStat.Stats.Rebounds;
-                    HomeTotalAssists += basketballStatSelectedItem.Assists - gameStat.Stats.Assists;
-                    HomeTotalSteals += basketballStatSelectedItem.Steals - gameStat.Stats.Steals;
-                    HomeTotalBlocks += basketballStatSelectedItem.Blocks - gameStat.Stats.Blocks;
-                    HomeTotalTurnovers += basketballStatSelectedItem.Turnovers - gameStat.Stats.Turnovers;
-                }
-
-                Snackbar.Add("Players Basketball Stats have been saved.", Severity.Success);
-                StateHasChanged();
-            }
-            else
-            {
-                CreateBasketballPlayerStatsModel statsModel = new CreateBasketballPlayerStatsModel(basketballStatSelectedItem.Start, basketballStatSelectedItem.Minutes,
-                                                                                                   basketballStatSelectedItem.Points, basketballStatSelectedItem.FieldGoalsMade,
-                                                                                                   basketballStatSelectedItem.FieldGoalsAttempted, basketballStatSelectedItem.ThreePointersMade,
-                                                                                                   basketballStatSelectedItem.ThreePointersAttempted, basketballStatSelectedItem.FreeThrowsMade,
-                                                                                                   basketballStatSelectedItem.FreeThrowsAttempted, basketballStatSelectedItem.Rebounds, basketballStatSelectedItem.Assists, basketballStatSelectedItem.Steals,
-                                                                                                   basketballStatSelectedItem.Blocks, basketballStatSelectedItem.Turnovers);
-
-                CreateBasketballStatsModel basketballStatsModel = new CreateBasketballStatsModel(basketballStatSelectedItem.LeagueId, basketballStatSelectedItem.TeamId,
-                                                                                           basketballStatSelectedItem.PlayerId, basketballStatSelectedItem.SeasonId,
-                                                                                           basketballStatSelectedItem.GameId, statsModel);
-
-                CreateBasketballStatsRequest request = new CreateBasketballStatsRequest(basketballStatsModel);
-                await StatsService.CreateBasketballStats(request);
-
-                if (basketballStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                    AwayTotalPoints += basketballStatSelectedItem.Points;
-                    AwayTotalFieldGoalsMade += basketballStatSelectedItem.FieldGoalsMade;
-                    AwayTotalFieldGoalsAttempted += basketballStatSelectedItem.FieldGoalsAttempted;
-                    AwayTotalThreePointersMade += basketballStatSelectedItem.ThreePointersMade;
-                    AwayTotalThreePointersAttempted += basketballStatSelectedItem.ThreePointersAttempted;
-                    AwayTotalFreeThrowsMade += basketballStatSelectedItem.FreeThrowsMade;
-                    AwayTotalFreeThrowsAttempted += basketballStatSelectedItem.FreeThrowsAttempted;
-                    AwayTotalRebounds += basketballStatSelectedItem.Rebounds;
-                    AwayTotalAssists += basketballStatSelectedItem.Assists;
-                    AwayTotalSteals += basketballStatSelectedItem.Steals;
-                    AwayTotalBlocks += basketballStatSelectedItem.Blocks;
-                    AwayTotalTurnovers += basketballStatSelectedItem.Turnovers;
-                }
-                else
-                {
-                    HomeTotalPoints += basketballStatSelectedItem.Points;
-                    HomeTotalFieldGoalsMade += basketballStatSelectedItem.FieldGoalsMade;
-                    HomeTotalFieldGoalsAttempted += basketballStatSelectedItem.FieldGoalsAttempted;
-                    HomeTotalThreePointersMade += basketballStatSelectedItem.ThreePointersMade;
-                    HomeTotalThreePointersAttempted += basketballStatSelectedItem.ThreePointersAttempted;
-                    HomeTotalFreeThrowsMade += basketballStatSelectedItem.FreeThrowsMade;
-                    HomeTotalFreeThrowsAttempted += basketballStatSelectedItem.FreeThrowsAttempted;
-                    HomeTotalRebounds += basketballStatSelectedItem.Rebounds;
-                    HomeTotalAssists += basketballStatSelectedItem.Assists;
-                    HomeTotalSteals += basketballStatSelectedItem.Steals;
-                    HomeTotalBlocks += basketballStatSelectedItem.Blocks;
-                    HomeTotalTurnovers += basketballStatSelectedItem.Turnovers;
-                }
-
-                Snackbar.Add("Players Basketball Stats have been saved.", Severity.Success);
-                StateHasChanged();
-
-            }
-        }
-    }
-
-    public class CreateBasketballStatsForm
-    {
-        public CreateBasketballStatsForm()
+        public BasketballStatsModel()
         {
 
         }
 
-        public CreateBasketballStatsForm(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName)
+        public BasketballStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName)
         {
             LeagueId = leagueId;
             TeamId = teamId;
@@ -604,7 +351,7 @@ else
             PlayerName = String.Concat(firstName + " " + lastName);
         }
 
-        public CreateBasketballStatsForm(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName,
+        public BasketballStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName,
                                        bool start, int minutes, int points, int fieldGoalsMade, int fieldGoalsAttempted, int threePointersMade,
                                        int threePointersAttempted, int freeThrowsMade, int freeThrowsAttempted, int rebounds, int assists, int steals,
                                        int blocks, int turnovers)
@@ -653,3 +400,4 @@ else
         public int Turnovers { get; set; }
     }
 }
+

@@ -22,6 +22,7 @@ public class CreateStandings : ICarterModule
        .Produces<CreateStandingsResponse>(StatusCodes.Status201Created)
        .ProducesProblem(StatusCodes.Status400BadRequest)
        .WithSummary("Create Standings")
-       .WithDescription("Create Standings");
+       .WithDescription("Create Standings")
+       .RequireAuthorization(KeycloakPolicy.CreateStandingsPolicy);
     }
 }

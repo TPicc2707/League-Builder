@@ -22,6 +22,7 @@ public class UpdateGame : ICarterModule
         .Produces<UpdateGameResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Update Game")
-        .WithDescription("Update Game");
+        .WithDescription("Update Game")
+        .RequireAuthorization(KeycloakPolicy.UpdateGamePolicy);
     }
 }

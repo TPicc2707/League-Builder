@@ -23,6 +23,7 @@ public class GetTeamFootballStatsBySeason : ICarterModule
        .ProducesProblem(StatusCodes.Status400BadRequest)
        .ProducesProblem(StatusCodes.Status404NotFound)
        .WithSummary("Get Team Football Stats By Season")
-       .WithDescription("Get Team Football Stats By Season");
+       .WithDescription("Get Team Football Stats By Season")
+       .RequireAuthorization(KeycloakPolicy.ReadStatPolicy);
     }
 }

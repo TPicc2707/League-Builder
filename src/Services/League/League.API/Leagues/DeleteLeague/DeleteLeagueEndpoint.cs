@@ -20,6 +20,7 @@ public class DeleteLeagueEndpoint : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Delete League")
-        .WithDescription("Delete League");
+        .WithDescription("Delete League")
+        .RequireAuthorization(KeycloakPolicy.DeleteLeaguePolicy);
     }
 }

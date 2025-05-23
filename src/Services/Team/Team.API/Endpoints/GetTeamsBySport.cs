@@ -21,6 +21,7 @@ public class GetTeamsBySport : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Teams By Sport")
-        .WithDescription("Get Teams By Sport");
+        .WithDescription("Get Teams By Sport")
+        .RequireAuthorization(KeycloakPolicy.ReadTeamPolicy);
     }
 }

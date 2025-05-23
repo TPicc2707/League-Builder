@@ -21,6 +21,7 @@ public class GetPlayersAfterBirthDate : ICarterModule
          .ProducesProblem(StatusCodes.Status400BadRequest)
          .ProducesProblem(StatusCodes.Status404NotFound)
          .WithSummary("Get Players After Birth Date")
-         .WithDescription("Get Players After Birth Date");
+         .WithDescription("Get Players After Birth Date")
+         .RequireAuthorization(KeycloakPolicy.ReadPlayerPolicy);
     }
 }

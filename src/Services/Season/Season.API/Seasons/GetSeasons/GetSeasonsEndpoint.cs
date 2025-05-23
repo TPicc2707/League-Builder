@@ -22,6 +22,7 @@ public class GetSeasonsEndpoint : ICarterModule
         .Produces<GetSeasonsResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Get Seasons")
-        .WithDescription("Get Seasons");
+        .WithDescription("Get Seasons")
+        .RequireAuthorization(KeycloakPolicy.ReadSeasonPolicy);
     }
 }

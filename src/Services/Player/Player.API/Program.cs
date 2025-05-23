@@ -16,9 +16,17 @@ builder.Services.AddCors(options =>
     .AllowAnyMethod());
 });
 
+builder.Services.AddCustomAuthentication();
+
+builder.Services.AddKeycloakPolicies(ServiceName.PlayerService);
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
 app.UseApiServices();

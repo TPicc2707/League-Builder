@@ -1,53 +1,69 @@
 ﻿@page "/leagues"
+@using System.Security.Claims
 @inject ILeagueService LeagueService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavManager;
 
-@if (PageLoad)
-{
-    <div style="padding-bottom: 200px;">
-        <div style="padding-top: 50px;">
-            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">All Leagues</MudText>
-            <MudSpacer />
-            <MudStack Justify="Justify.FlexStart">
-                <MudButton Href="/createleague" Variant="Variant.Filled" Color="Color.Primary" style="width: 200px;">Create</MudButton>
-            </MudStack>
-        </div>
-        @for (var i = 1; i <= Counter; i++)
+
+<AuthorizeView Roles="@Roles.ReadLeagues" Context="auth">
+    <Authorized>
+        @if (PageLoad)
         {
-        <div style="padding-top: 25px;">
-            <MudStack Justify="@_justify" Row="true">
-                @foreach (var league in GetLeaguesForRow(LeagueCounter))
-                {
-                    string imageFile = String.Concat("images/", league.ImageFile);
-                    string updateLeagueLink = String.Concat("/updateleague/", league.Id);
-                    string teamsLink = String.Concat("/teamsbyleague/", league.Id);
-                    string standingsLink = String.Concat("/leaguestandings/", league.Id);
-                    string gamesLink = String.Concat("/leaguegames/", league.Id);
-                    <MudCard>
-                        <MudCardMedia Image="@imageFile" Height="200" />
-                        <MudCardContent>
-                            <MudText Typo="Typo.h5" Style="font-weight: bold;">@league.Name</MudText>
-                            <MudText Typo="Typo.body2">@league.EmailAddress</MudText>
-                            <MudText Typo="Typo.body2">@league.Description</MudText>
-                        </MudCardContent>
-                        <MudCardActions Style="align-content: center">
-                                <MudButton Href="@gamesLink" Variant="Variant.Text" Color="Color.Primary">Games</MudButton>
-                            <MudButton Href="@standingsLink" Variant="Variant.Text" Color="Color.Primary">Standings</MudButton>
-                            <MudButton Href="@teamsLink" Variant="Variant.Text" Color="Color.Primary">Teams</MudButton>
-                            <MudButton Href="@updateLeagueLink" Variant="Variant.Text" Color="Color.Primary">Update</MudButton>
-                            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => OpenDialogAsync(league.Id))">Delete</MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                }
-            </MudStack>
+        <div style="padding-bottom: 200px;">
+            <div style="padding-top: 50px;">
+                <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">All Leagues</MudText>
+                <MudSpacer />
+                <AuthorizeView Roles="@Roles.CreateLeagues">
+                    <MudStack Justify="Justify.FlexStart">
+                        <MudButton Href="/createleague" Variant="Variant.Filled" Color="Color.Primary" style="width: 200px;">Create</MudButton>
+                    </MudStack>
+                </AuthorizeView>
+            </div>
+            @for (var i = 1; i <= Counter; i++)
+            {
+                <div style="padding-top: 25px;">
+                    <MudStack Justify="@_justify" Row="true">
+                        @foreach (var league in GetLeaguesForRow(LeagueCounter))
+                        {
+                            string imageFile = String.Concat("images/", league.ImageFile);
+                            string updateLeagueLink = String.Concat("/updateleague/", league.Id);
+                            string teamsLink = String.Concat("/teamsbyleague/", league.Id);
+                            string standingsLink = String.Concat("/leaguestandings/", league.Id);
+                            string gamesLink = String.Concat("/leaguegames/", league.Id);
+                            <MudCard>
+                                <MudCardMedia Image="@imageFile" Height="200" />
+                                <MudCardContent>
+                                    <MudText Typo="Typo.h5" Style="font-weight: bold;">@league.Name</MudText>
+                                    <MudText Typo="Typo.body2">@league.EmailAddress</MudText>
+                                    <MudText Typo="Typo.body2">@league.Description</MudText>
+                                </MudCardContent>
+                                <MudCardActions Style="align-content: center">
+                                    <MudButton Href="@gamesLink" Variant="Variant.Text" Color="Color.Primary">Games</MudButton>
+                                    <MudButton Href="@standingsLink" Variant="Variant.Text" Color="Color.Primary">Standings</MudButton>
+                                    <MudButton Href="@teamsLink" Variant="Variant.Text" Color="Color.Primary">Teams</MudButton>
+                                    <AuthorizeView Roles="@Roles.UpdateLeagues">
+                                        <MudButton Href="@updateLeagueLink" Variant="Variant.Text" Color="Color.Primary">Update</MudButton>
+                                    </AuthorizeView>
+                                    <AuthorizeView Roles="@Roles.DeleteLeagues">
+                                        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => OpenDialogAsync(league.Id))">Delete</MudButton>
+                                    </AuthorizeView>
+                                </MudCardActions>
+                            </MudCard>
+                        }
+                    </MudStack>
+                </div>
+            }
         </div>
-        }
-    </div>
-
-}
-else
-{
-    <Loading />
-}
+    }
+    else
+    {
+        <Loading />
+    }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     [Inject] private IDialogService DialogService { get; set; }
@@ -59,11 +75,18 @@ else
     private int PageSize = 0;
     private int Counter = 0;
     private int LeagueCounter = 0;
+    private bool canUpdate = false;
+    private bool canDelete = false;
 
     private GetLeaguesResponse LeaguesReponse { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
         LeaguesReponse = await LeagueService.GetLeagues(1, 10);
         LeagueCount = (int)LeaguesReponse.Leagues.Count();
         Console.WriteLine(LeagueCount);

@@ -1,40 +1,53 @@
 ﻿@page "/leaguesbyname/{name}"
 @inject ILeagueService LeagueService
+@inject NavigationManager NavManager;
+@inject IHttpContextAccessor HttpContextAccessor
 
-@if (PageLoad)
-{
-    <div style="padding-top: 100px; padding-bottom: 200px;">
-        <div style="padding-top: 50px;">
-            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Leagues</MudText>
-        </div>
-        <div style="padding-top: 25px;">
-            <MudStack Justify="@_justify" Row="true">
-                @foreach (var league in GetLeaguesForRow(LeagueCounter))
-                {
-                    string imageFile = String.Concat("images/", league.ImageFile);
-                    string teamsLink = String.Concat("/teamsbyleague/", league.Id);
-                    <MudCard>
-                        <MudCardMedia Image="@imageFile" Height="200" />
-                        <MudCardContent>
-                            <MudText Typo="Typo.h5" Style="font-weight: bold;">@league.Name</MudText>
-                            <MudText Typo="Typo.body2">@league.EmailAddress</MudText>
-                            <MudText Typo="Typo.body2">@league.Description</MudText>
-                        </MudCardContent>
-                        <MudCardActions Style="align-content: center">
-                            <MudButton Href="@teamsLink" Variant="Variant.Text" Color="Color.Primary">Teams</MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                }
-            </MudStack>
-        </div>
+<AuthorizeView Roles="@Roles.ReadLeagues">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <div style="padding-top: 100px; padding-bottom: 200px;">
+                <div style="padding-top: 50px;">
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Leagues</MudText>
+                </div>
+                <div style="padding-top: 25px;">
+                    <MudStack Justify="@_justify" Row="true">
+                        @foreach (var league in GetLeaguesForRow(LeagueCounter))
+                        {
+                            string imageFile = String.Concat("images/", league.ImageFile);
+                            string teamsLink = String.Concat("/teamsbyleague/", league.Id);
+                            string standingsLink = String.Concat("/leaguestandings/", league.Id);
+                            string gamesLink = String.Concat("/leaguegames/", league.Id);
+                            <MudCard>
+                                <MudCardMedia Image="@imageFile" Height="200" />
+                                <MudCardContent>
+                                    <MudText Typo="Typo.h5" Style="font-weight: bold;">@league.Name</MudText>
+                                    <MudText Typo="Typo.body2">@league.EmailAddress</MudText>
+                                    <MudText Typo="Typo.body2">@league.Description</MudText>
+                                </MudCardContent>
+                                <MudCardActions Style="align-content: center">
+                                    <MudButton Href="@gamesLink" Variant="Variant.Text" Color="Color.Primary">Games</MudButton>
+                                    <MudButton Href="@standingsLink" Variant="Variant.Text" Color="Color.Primary">Standings</MudButton>
+                                    <MudButton Href="@teamsLink" Variant="Variant.Text" Color="Color.Primary">Teams</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        }
+                    </MudStack>
+                </div>
 
-    </div>
+            </div>
+    }
+    else
+    {
+        <Loading />
+    }
 
-}
-else
-{
-    <Loading />
-}
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     [Parameter]
@@ -50,6 +63,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
         LeaguesByNameResponse = await LeagueService.GetLeaguesByName(Name);
         LeagueCount = (int)LeaguesByNameResponse.Leagues.Count();
         Console.WriteLine(LeagueCount);

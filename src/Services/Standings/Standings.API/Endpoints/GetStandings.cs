@@ -20,6 +20,7 @@ public class GetStandings : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Standings")
-        .WithDescription("Get Standings");
+        .WithDescription("Get Standings")
+        .RequireAuthorization(KeycloakPolicy.ReadStandingsPolicy);
     }
 }

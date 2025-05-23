@@ -1,10 +1,13 @@
 ﻿@page "/seasons"
 @inject ISeasonService SeasonService
 @inject NavigationManager NavManager
+@inject IHttpContextAccessor HttpContextAccessor
 @inject IDialogService DialogService
 
-@if (PageLoad)
-{
+<AuthorizeView Roles="@Roles.CreateSeasons" Context="auth">
+    <Authorized>
+    @if (PageLoad)
+    {
     <div style="padding-top: 100px;">
         <MudPaper Style="padding-right: 25px; padding-left: 25px;" Elevation="2">
             <div style="padding-bottom: 25px;">
@@ -15,9 +18,11 @@
             <div style="padding-bottom: 50px;">
                 <MudTable Items="@Model.Seasons" Hover="true" SortLabel="Sort By">
                     <ToolBarContent>
-                        <MudStack Justify="Justify.FlexStart">
-                            <MudButton OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
-                        </MudStack>
+                        <AuthorizeView Roles="@Roles.CreateSeasons">
+                            <MudStack Justify="Justify.FlexStart">
+                                <MudButton OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
+                            </MudStack>
+                        </AuthorizeView>
                     </ToolBarContent>
                     <HeaderContent>
                         <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<SeasonModel, object>(x=>x.Year)">Year</MudTableSortLabel></MudTh>
@@ -26,25 +31,49 @@
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Team Name">@context.Year</MudTd>
-                        <MudTd DataLabel="Edit"><MudLink OnClick="@(() => NavigateToUpdateSeason(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
-                        <MudTd DataLabel="Delete"><MudLink OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                        <AuthorizeView Roles="@Roles.UpdateSeasons" Context="updateAuth">
+                            <Authorized>
+                                <MudTd DataLabel="Edit"><MudLink OnClick="@(() => NavigateToUpdateSeason(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
+                            </Authorized>
+                            <NotAuthorized>
+                                <MudTd></MudTd>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                        <AuthorizeView Roles="@Roles.DeleteSeasons" Context="deleteAuth">
+                            <Authorized>
+                                <MudTd DataLabel="Delete"><MudLink OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                            </Authorized>
+                            <NotAuthorized>
+                                <MudTd></MudTd>
+                            </NotAuthorized>
+                        </AuthorizeView>
                     </RowTemplate>
                 </MudTable>
             </div>
         </MudPaper>
     </div>
-}
-else
-{
-    <Loading />
-}
+    }
+    else
+    {
+        <Loading />
+    }
 
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 @code {
     private bool PageLoad = false;
     GetSeasonsResponse Model { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
         Model = await SeasonService.GetSeasons();
         PageLoad = true;
     }

@@ -21,6 +21,7 @@ public class GetLeaguesByNameEndpoint : ICarterModule
         .Produces<GetLeaguesByNameResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Get Leagues By Name")
-        .WithDescription("Get Leagues By Name");
+        .WithDescription("Get Leagues By Name")
+        .RequireAuthorization(KeycloakPolicy.ReadLeaguePolicy);
     }
 }

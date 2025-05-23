@@ -22,6 +22,7 @@ public class CreatePlayer : ICarterModule
        .Produces<CreatePlayerResponse>(StatusCodes.Status201Created)
        .ProducesProblem(StatusCodes.Status400BadRequest)
        .WithSummary("Create Player")
-       .WithDescription("Create Player");
+       .WithDescription("Create Player")
+       .RequireAuthorization(KeycloakPolicy.CreatePlayerPolicy);
     }
 }

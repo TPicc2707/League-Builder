@@ -20,6 +20,7 @@ public class GetTeamsByLeague : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Teams By League")
-        .WithDescription("Get Teams By League");
+        .WithDescription("Get Teams By League")
+        .RequireAuthorization(KeycloakPolicy.ReadTeamPolicy);
     }
 }

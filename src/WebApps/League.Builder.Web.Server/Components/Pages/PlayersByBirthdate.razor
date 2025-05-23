@@ -2,55 +2,64 @@
 @inject IPlayerService PlayerService
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
+@inject NavigationManager NavManager
+@inject IHttpContextAccessor HttpContextAccessor
 
-@if (PageLoad)
-{
-    <div style="padding-bottom: 200px;">
-        <div style="padding-top: 50px;">
-            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Players</MudText>
-        </div>
 
-        @for (var i = 1; i <= Counter; i++)
+<AuthorizeView Roles="@String.Concat(Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)">
+    <Authorized>
+        @if (PageLoad)
         {
-            <div style="padding-top: 25px;">
-                <MudStack Justify="@_justify" Row="true">
-                    @foreach (var player in GetPlayersForRow(PlayerCounter))
-                    {
-                        string imageFile = String.Concat("images/", player.ImageFile);
-                        string statsLink = GetStatLink(player);
-                        string address = String.Concat(player.PlayerAddress.AddressLine, ", ", player.PlayerAddress.State, ", ", player.PlayerAddress.ZipCode);
-                        string teamName = GetTeamName(player.TeamId);
-                        <MudCard>
-                            <MudCardMedia Image="@imageFile" Height="200" />
-                            <MudCardContent>
-                                <MudText Typo="Typo.h5" Style="font-weight: bold;">@player.FirstName @player.LastName</MudText>
-                                <MudText Typo="Typo.body1" Style="padding-bottom: 5px;">@teamName</MudText>
-                                <MudText Typo="Typo.body2">@address</MudText>
-                                <MudText Typo="Typo.body2">Birthday: @player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
-                                <MudText Typo="Typo.body2">Height: @player.PlayerDetail.Height (inches)</MudText>
-                                <MudText Typo="Typo.body2">Weight: @player.PlayerDetail.Weight (lbs)</MudText>
-                                <MudText Typo="Typo.body2">@player.PlayerDetail.EmailAddress</MudText>
-                                <MudText Typo="Typo.body2">@player.PlayerDetail.PhoneNumber</MudText>
-                                <MudText Typo="Typo.body2">Postion: @player.PlayerDetail.Position</MudText>
-                            </MudCardContent>
-                            <MudCardActions Style="align-content: center">
-                                <MudButton Href="@statsLink" Variant="Variant.Text" Color="Color.Primary">Stats</MudButton>
-                            </MudCardActions>
-                        </MudCard>
-                    }
-                </MudStack>
+            <div style="padding-bottom: 200px;">
+                <div style="padding-top: 50px;">
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Players</MudText>
+                </div>
+
+                @for (var i = 1; i <= Counter; i++)
+                {
+                    <div style="padding-top: 25px;">
+                        <MudStack Justify="@_justify" Row="true">
+                            @foreach (var player in GetPlayersForRow(PlayerCounter))
+                            {
+                                string imageFile = String.Concat("images/", player.ImageFile);
+                                string statsLink = GetStatLink(player);
+                                string address = String.Concat(player.PlayerAddress.AddressLine, ", ", player.PlayerAddress.State, ", ", player.PlayerAddress.ZipCode);
+                                string teamName = GetTeamName(player.TeamId);
+                                <MudCard>
+                                    <MudCardMedia Image="@imageFile" Height="200" />
+                                    <MudCardContent>
+                                        <MudText Typo="Typo.h5" Style="font-weight: bold;">@player.FirstName @player.LastName</MudText>
+                                        <MudText Typo="Typo.body1" Style="padding-bottom: 5px;">@teamName</MudText>
+                                        <MudText Typo="Typo.body2">@address</MudText>
+                                        <MudText Typo="Typo.body2">Birthday: @player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
+                                        <MudText Typo="Typo.body2">Height: @player.PlayerDetail.Height (inches)</MudText>
+                                        <MudText Typo="Typo.body2">Weight: @player.PlayerDetail.Weight (lbs)</MudText>
+                                        <MudText Typo="Typo.body2">@player.PlayerDetail.EmailAddress</MudText>
+                                        <MudText Typo="Typo.body2">@player.PlayerDetail.PhoneNumber</MudText>
+                                        <MudText Typo="Typo.body2">Postion: @player.PlayerDetail.Position</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="align-content: center">
+                                        <MudButton Href="@statsLink" Variant="Variant.Text" Color="Color.Primary">Stats</MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            }
+                        </MudStack>
+                    </div>
+
+                }
+
             </div>
 
         }
-
-    </div>
-
-}
-else
-{
-    <Loading />
-}
-
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 @code {
     private bool PageLoad = false;
     private int PlayerCount = 0;
@@ -73,6 +82,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
         if(When == "By")
         {
             PlayersByBirthdateResponse = await PlayerService.GetPlayersByBirthDate(Birthdate);

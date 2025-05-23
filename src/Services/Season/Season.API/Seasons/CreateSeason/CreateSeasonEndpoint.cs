@@ -23,6 +23,7 @@ public class CreateSeasonEndpoint : ICarterModule
         .Produces<CreateSeasonResponse>(StatusCodes.Status201Created)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Create Season")
-        .WithDescription("Create Season");
+        .WithDescription("Create Season")
+        .RequireAuthorization(KeycloakPolicy.CreateSeasonPolicy);
     }
 }

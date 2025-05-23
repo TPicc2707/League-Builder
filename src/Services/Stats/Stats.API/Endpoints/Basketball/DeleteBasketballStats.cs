@@ -19,6 +19,7 @@ public class DeleteBasketballStats : ICarterModule
         .Produces<DeleteBasketballStatsResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Delete Basketball Stats")
-        .WithDescription("Delete Basketball Stats");
+        .WithDescription("Delete Basketball Stats")
+        .RequireAuthorization(KeycloakPolicy.DeleteStatPolicy);
     }
 }

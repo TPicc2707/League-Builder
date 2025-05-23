@@ -22,6 +22,7 @@ public class UpdateStandings : ICarterModule
         .Produces<UpdateStandingsResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Update Standings")
-        .WithDescription("Update Standings");
+        .WithDescription("Update Standings")
+        .RequireAuthorization(KeycloakPolicy.UpdateStandingsPolicy);
     }
 }

@@ -21,6 +21,7 @@ public class GetTeamsByState : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Teams By State")
-        .WithDescription("Get Teams By State");
+        .WithDescription("Get Teams By State")
+        .RequireAuthorization(KeycloakPolicy.ReadTeamPolicy);
     }
 }

@@ -20,6 +20,7 @@ public class DeleteTeam : ICarterModule
         .Produces<DeleteTeamResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Delete Team")
-        .WithDescription("Delete Team");
+        .WithDescription("Delete Team")
+        .RequireAuthorization(KeycloakPolicy.DeleteTeamPolicy);
     }
 }

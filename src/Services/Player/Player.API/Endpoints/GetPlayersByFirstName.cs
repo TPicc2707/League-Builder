@@ -20,6 +20,7 @@ public class GetPlayersByFirstName : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Players By First Name")
-        .WithDescription("Get Players By First Name");
+        .WithDescription("Get Players By First Name")
+        .RequireAuthorization(KeycloakPolicy.ReadPlayerPolicy);
     }
 }

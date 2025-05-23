@@ -20,6 +20,7 @@ public class GetGames : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Games")
-        .WithDescription("Get Games");
+        .WithDescription("Get Games")
+        .RequireAuthorization(KeycloakPolicy.ReadGamePolicy);
     }
 }

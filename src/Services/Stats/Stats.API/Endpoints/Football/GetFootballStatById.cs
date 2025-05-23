@@ -21,6 +21,7 @@ public class GetFootballStatById : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Football Stat By Id")
-        .WithDescription("Get Football Stat By Id");
+        .WithDescription("Get Football Stat By Id")
+        .RequireAuthorization(KeycloakPolicy.ReadStatPolicy);
     }
 }

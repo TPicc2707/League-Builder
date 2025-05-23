@@ -2,65 +2,79 @@
 @inject IPlayerService PlayerService
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
+@inject NavigationManager NavManager
+@inject IHttpContextAccessor HttpContextAccessor
 
-@if (PageLoad)
-{
-    string createPlayerLink = String.Concat("/createplayer/", Id);
-    <div style="padding-top: 100px; padding-bottom: 200px;">
-        <div style="padding-top: 50px;">
-            <MudStack Justify="Justify.Center" class="pa-3">
-                <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@Team.Team.TeamName</MudText>
-                <MudSpacer />
-                <MudStack Row="true">
-                    <MudItem xs="2" md="2" lg="2">
-                    </MudItem>
-                    <MudItem xs="8" md="8" lg="8">
-                        <MudButton FullWidth="true" Href="@createPlayerLink" Variant="Variant.Filled" Color="Color.Primary">Create</MudButton>
-                    </MudItem>
-                    <MudItem xs="2" md="2" lg="2">
-                    </MudItem>
-                </MudStack>
-            </MudStack>
-        </div>
-        <div style="padding-top: 25px;">
-            <MudStack Justify="@_justify" Row="true">
-                @foreach (var player in GetPlayersForRow(PlayerCounter))
-                {
-                    string imageFile = String.Concat("images/", player.ImageFile);
-                    string statsLink = GetStatLink(player);
-                    string updatePlayerLink = String.Concat("/updateplayer/", player.Id);
-                    string address = String.Concat(player.PlayerAddress.AddressLine, ", ", player.PlayerAddress.State, ", ", player.PlayerAddress.ZipCode);
-                    <MudCard>
-                        <MudCardMedia Image="@imageFile" Height="200" />
-                        <MudCardContent>
-                            <MudText Typo="Typo.h5" Style="font-weight: bold;">@player.FirstName @player.LastName</MudText>
-                            <MudText Typo="Typo.body2">@address</MudText>
-                            <MudText Typo="Typo.body2">Birthday: @player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
-                            <MudText Typo="Typo.body2">Height: @player.PlayerDetail.Height (inches)</MudText>
-                            <MudText Typo="Typo.body2">Weight: @player.PlayerDetail.Weight (lbs)</MudText>
-                            <MudText Typo="Typo.body2">@player.PlayerDetail.EmailAddress</MudText>
-                            <MudText Typo="Typo.body2">@player.PlayerDetail.PhoneNumber</MudText>
-                            <MudText Typo="Typo.body2">Number: @player.PlayerDetail.Number</MudText>
-                            <MudText Typo="Typo.body2">Postion: @player.PlayerDetail.Position</MudText>
-                        </MudCardContent>
-                        <MudCardActions Style="align-content: center">
-                            <MudButton Href="@statsLink" Variant="Variant.Text" Color="Color.Primary">Stats</MudButton>
-                            <MudButton Href="@updatePlayerLink" Variant="Variant.Text" Color="Color.Primary">Update</MudButton>
-                            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => OpenDialogAsync(player.Id))">Delete</MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                }
-            </MudStack>
-        </div>
+<AuthorizeView Roles="@String.Concat(Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            string createPlayerLink = String.Concat("/createplayer/", Id);
+            <div style="padding-top: 100px; padding-bottom: 200px;">
+                <div style="padding-top: 50px;">
+                    <MudStack Justify="Justify.Center" class="pa-3">
+                        <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@Team.Team.TeamName</MudText>
+                        <MudSpacer />
+                        <AuthorizeView Roles="@Roles.CreatePlayers">
+                            <MudStack Row="true">
+                                <MudItem xs="2" md="2" lg="2">
+                                </MudItem>
+                                <MudItem xs="8" md="8" lg="8">
+                                    <MudButton FullWidth="true" Href="@createPlayerLink" Variant="Variant.Filled" Color="Color.Primary">Create</MudButton>
+                                </MudItem>
+                                <MudItem xs="2" md="2" lg="2">
+                                </MudItem>
+                            </MudStack>
+                        </AuthorizeView>
+                    </MudStack>
+                </div>
+                <div style="padding-top: 25px;">
+                    <MudStack Justify="@_justify" Row="true">
+                        @foreach (var player in GetPlayersForRow(PlayerCounter))
+                        {
+                            string imageFile = String.Concat("images/", player.ImageFile);
+                            string statsLink = GetStatLink(player);
+                            string updatePlayerLink = String.Concat("/updateplayer/", player.Id);
+                            string address = String.Concat(player.PlayerAddress.AddressLine, ", ", player.PlayerAddress.State, ", ", player.PlayerAddress.ZipCode);
+                            <MudCard>
+                                <MudCardMedia Image="@imageFile" Height="200" />
+                                <MudCardContent>
+                                    <MudText Typo="Typo.h5" Style="font-weight: bold;">@player.FirstName @player.LastName</MudText>
+                                    <MudText Typo="Typo.body2">@address</MudText>
+                                    <MudText Typo="Typo.body2">Birthday: @player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
+                                    <MudText Typo="Typo.body2">Height: @player.PlayerDetail.Height (inches)</MudText>
+                                    <MudText Typo="Typo.body2">Weight: @player.PlayerDetail.Weight (lbs)</MudText>
+                                    <MudText Typo="Typo.body2">@player.PlayerDetail.EmailAddress</MudText>
+                                    <MudText Typo="Typo.body2">@player.PlayerDetail.PhoneNumber</MudText>
+                                    <MudText Typo="Typo.body2">Number: @player.PlayerDetail.Number</MudText>
+                                    <MudText Typo="Typo.body2">Postion: @player.PlayerDetail.Position</MudText>
+                                </MudCardContent>
+                                <MudCardActions Style="align-content: center">
+                                    <MudButton Href="@statsLink" Variant="Variant.Text" Color="Color.Primary">Stats</MudButton>
+                                    <AuthorizeView Roles="@Roles.UpdatePlayers">
+                                        <MudButton Href="@updatePlayerLink" Variant="Variant.Text" Color="Color.Primary">Update</MudButton>
+                                    </AuthorizeView>
+                                    <AuthorizeView Roles="@Roles.DeletePlayers">
+                                        <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => OpenDialogAsync(player.Id))">Delete</MudButton>
+                                    </AuthorizeView>
+                                </MudCardActions>
+                            </MudCard>
+                        }
+                    </MudStack>
+                </div>
 
-    </div>
+            </div>
 
-}
-else
-{
-    <Loading />
-}
-
+        }
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 @code {
     [Parameter]
     public string Id { get; set; }
@@ -80,6 +94,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
         var teamId = Guid.Parse(Id);
         Team = await TeamService.GetTeamById(teamId);
         Players = await PlayerService.GetPlayersByTeam(teamId);

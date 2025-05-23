@@ -20,6 +20,7 @@ public class GetPlayersBeforeBirthDate : ICarterModule
          .ProducesProblem(StatusCodes.Status400BadRequest)
          .ProducesProblem(StatusCodes.Status404NotFound)
          .WithSummary("Get Players Before Birth Date")
-         .WithDescription("Get Players Before Birth Date");
+         .WithDescription("Get Players Before Birth Date")
+         .RequireAuthorization(KeycloakPolicy.ReadPlayerPolicy);
     }
 }

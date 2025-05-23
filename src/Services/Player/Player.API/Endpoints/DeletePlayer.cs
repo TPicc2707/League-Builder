@@ -20,6 +20,7 @@ public class DeletePlayer : ICarterModule
         .Produces<DeletePlayerResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Delete Player")
-        .WithDescription("Delete Player");
+        .WithDescription("Delete Player")
+        .RequireAuthorization(KeycloakPolicy.DeletePlayerPolicy);
     }
 }

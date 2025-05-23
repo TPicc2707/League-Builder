@@ -19,6 +19,7 @@ public class DeleteStandings : ICarterModule
         .Produces<DeleteStandingsResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Delete Standings")
-        .WithDescription("Delete Standings");
+        .WithDescription("Delete Standings")
+        .RequireAuthorization(KeycloakPolicy.DeleteStandingsPolicy);
     }
 }

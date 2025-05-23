@@ -21,6 +21,7 @@ public class GetTeamBasketballStatsBySeason : ICarterModule
        .ProducesProblem(StatusCodes.Status400BadRequest)
        .ProducesProblem(StatusCodes.Status404NotFound)
        .WithSummary("Get Team Basketball Stats By Season")
-       .WithDescription("Get Team Basketball Stats By Season");
+       .WithDescription("Get Team Basketball Stats By Season")
+       .RequireAuthorization(KeycloakPolicy.ReadStatPolicy);
     }
 }

@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject NavigationManager NavManager
+@inject IHttpContextAccessor HttpContextAccessor
 
 
 <div style="padding-top: 25px; align-content: center;">
@@ -23,22 +24,35 @@
 
 </div>
 
-<div style="padding-top: 50px;">
-    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Pick a Sport</MudText>
-</div>
-<div style="padding-top: 25px;">
-    <MudStack Justify="@_justify" Row="true">
-        <MudLink OnClick="@(() => GetLeaguesBySport("baseball"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/baseball.png" Alt="Baseball" Elevation="25" Class="rounded-lg" /></MudLink>
-        <MudLink OnClick="@(() => GetLeaguesBySport("football"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/football.png" Alt="Football" Elevation="25" Class="rounded-lg" /></MudLink>
-        <MudLink OnClick="@(() => GetLeaguesBySport("basketball"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/basketball.png" Alt="Baseball" Elevation="25" Class="rounded-lg" /></MudLink>
-    </MudStack>
-</div>
+<AuthorizeView>
+    <Authorized>
+        <div style="padding-top: 50px;">
+            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Pick a Sport</MudText>
+        </div>
+        <div style="padding-top: 25px;">
+            <MudStack Justify="@_justify" Row="true">
+                <MudLink OnClick="@(() => GetLeaguesBySport("baseball"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/baseball.png" Alt="Baseball" Elevation="25" Class="rounded-lg" /></MudLink>
+                <MudLink OnClick="@(() => GetLeaguesBySport("football"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/football.png" Alt="Football" Elevation="25" Class="rounded-lg" /></MudLink>
+                <MudLink OnClick="@(() => GetLeaguesBySport("basketball"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/basketball.png" Alt="Baseball" Elevation="25" Class="rounded-lg" /></MudLink>
+            </MudStack>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
 
 @code {
     private Transition transition = Transition.Fade;
     private Justify _justify = Justify.SpaceEvenly;
 
     private ObjectFit ImageFit = ObjectFit.Cover;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+    }
 
     void SetImageFit(ObjectFit value)
     {

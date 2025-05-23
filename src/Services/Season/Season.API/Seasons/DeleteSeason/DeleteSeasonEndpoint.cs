@@ -21,6 +21,7 @@ public class DeleteSeasonEndpoint : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Delete Season")
-        .WithDescription("Delete Season");
+        .WithDescription("Delete Season")
+        .RequireAuthorization(KeycloakPolicy.DeleteSeasonPolicy);
     }
 }

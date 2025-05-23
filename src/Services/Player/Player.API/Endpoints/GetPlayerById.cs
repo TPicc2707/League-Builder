@@ -20,6 +20,7 @@ public class GetPlayerById : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Player By Id")
-        .WithDescription("Get Player By Id");
+        .WithDescription("Get Player By Id")
+        .RequireAuthorization(KeycloakPolicy.ReadPlayerPolicy);
     }
 }

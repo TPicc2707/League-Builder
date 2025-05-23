@@ -1,5 +1,6 @@
 ﻿global using BuildingBlocks.Exceptions.Handler;
 global using BuildingBlocks.Pagination;
+global using BuildingBlocks.Security;
 global using Carter;
 global using HealthChecks.UI.Client;
 global using Mapster;

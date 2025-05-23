@@ -21,6 +21,7 @@ public class GetTeamsByName : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Teams By Name")
-        .WithDescription("Get Teams By Name");
+        .WithDescription("Get Teams By Name")
+        .RequireAuthorization(KeycloakPolicy.ReadTeamPolicy);
     }
 }

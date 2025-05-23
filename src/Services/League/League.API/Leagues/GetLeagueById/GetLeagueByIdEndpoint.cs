@@ -20,6 +20,7 @@ public class GetLeagueByIdEndpoint : ICarterModule
         .Produces<GetLeagueByIdResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Get League By Id")
-        .WithDescription("Get League By Id");
+        .WithDescription("Get League By Id")
+        .RequireAuthorization(KeycloakPolicy.ReadLeaguePolicy);
     }
 }

@@ -21,6 +21,7 @@ public class GetBaseballStats : ICarterModule
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .ProducesProblem(StatusCodes.Status404NotFound)
         .WithSummary("Get Baseball Stats")
-        .WithDescription("Get Baseball Stats");
+        .WithDescription("Get Baseball Stats")
+        .RequireAuthorization(KeycloakPolicy.ReadStatPolicy);
     }
 }

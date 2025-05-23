@@ -20,6 +20,7 @@ public class GetSeasonByYearEndpoint : ICarterModule
         .Produces<GetSeasonByYearResponse>(StatusCodes.Status200OK)
         .ProducesProblem(StatusCodes.Status400BadRequest)
         .WithSummary("Get Season By Year")
-        .WithDescription("Get Season By Year");
+        .WithDescription("Get Season By Year")
+        .RequireAuthorization(KeycloakPolicy.ReadSeasonPolicy);
     }
 }

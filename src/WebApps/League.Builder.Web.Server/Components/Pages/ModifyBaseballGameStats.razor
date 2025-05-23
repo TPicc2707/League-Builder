@@ -1,0 +1,1072 @@
+﻿@page "/editbaseballgamestats/{id}"
+@inject IStatsService StatsService
+@inject IGameService GameService
+@inject IPlayerService PlayerService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+
+<AuthorizeView Roles="@String.Concat(Roles.CreateStats, ", ", Roles.UpdateStats, ", ", Roles.ReadStats, ", ", Roles.ReadGames, ", ", Roles.ReadPlayers)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <div style="padding-top: 100px;">
+                <div style="padding-bottom: 25px;">
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
+                </div>
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
+                    <MudTabPanel Text="@String.Concat(GameModel.Game.AwayTeam.TeamName + " Stats")">
+                        <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" CanCancelEdit="true"
+                                  @bind-SelectedItem="hittingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitHittingStats"
+                                  RowEditPreview="BackupHittingItem" RowEditCancel="ResetHittingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+                            <ColGroup>
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col style="width:20px;" />
+                            </ColGroup>
+                            <HeaderContent>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">AB</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">RBI</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">HBP</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">SB</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TB</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">2B</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">3B</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">HR</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">SF</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
+                                <MudTd DataLabel="Runs">@context.Runs</MudTd>
+                                <MudTd DataLabel="Hits">@context.Hits</MudTd>
+                                <MudTd DataLabel="RBI">@context.RunsBattedIn</MudTd>
+                                <MudTd DataLabel="BB">@context.Walks</MudTd>
+                                <MudTd DataLabel="HBP">@context.HitByPitch</MudTd>
+                                <MudTd DataLabel="K">@context.Strikeouts</MudTd>
+                                <MudTd DataLabel="SB">@context.StolenBases</MudTd>
+                                <MudTd DataLabel="TB">@context.TotalBases</MudTd>
+                                <MudTd DataLabel="2B">@context.Doubles</MudTd>
+                                <MudTd DataLabel="3B">@context.Triples</MudTd>
+                                <MudTd DataLabel="HR">@context.HomeRuns</MudTd>
+                                <MudTd DataLabel="SF">@context.SacrificeFly</MudTd>
+                            </RowTemplate>
+                            <RowEditingTemplate>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                <MudTd DataLabel="At Bats">
+                                    <MudTextField @bind-Value="context.AtBats" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="Runs">
+                                    <MudTextField @bind-Value="context.Runs" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="Hits">
+                                    <MudTextField @bind-Value="context.Hits" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="RBI">
+                                    <MudTextField @bind-Value="context.RunsBattedIn" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="BB">
+                                    <MudTextField @bind-Value="context.Walks" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="HBP">
+                                    <MudTextField @bind-Value="context.HitByPitch" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="K">
+                                    <MudTextField @bind-Value="context.Strikeouts" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="SB">
+                                    <MudTextField @bind-Value="context.StolenBases" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="TB">
+                                    <MudTextField @bind-Value="context.TotalBases" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="2B">
+                                    <MudTextField @bind-Value="context.Doubles" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="3B">
+                                    <MudTextField @bind-Value="context.Triples" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="HR">
+                                    <MudTextField @bind-Value="context.HomeRuns" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="SF">
+                                    <MudTextField @bind-Value="context.SacrificeFly" Style="font-size: 12px;" Required />
+                                </MudTd>
+                            </RowEditingTemplate>
+                            <EditButtonContent Context="button">
+                                <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
+                            </EditButtonContent>
+                        </MudTable>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>AB</th>
+                                        <th>R</th>
+                                        <th>H</th>
+                                        <th>RBI</th>
+                                        <th>BB</th>
+                                        <th>HBP</th>
+                                        <th>K</th>
+                                        <th>SB</th>
+                                        <th>TB</th>
+                                        <th>2B</th>
+                                        <th>3B</th>
+                                        <th>HR</th>
+                                        <th>SF</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@AwayTotalAtBats</td>
+                                        <td>@AwayTotalRuns</td>
+                                        <td>@AwayTotalHits</td>
+                                        <td>@AwayTotalRBIs</td>
+                                        <td>@AwayTotalWalks</td>
+                                        <td>@AwayTotalHBPs</td>
+                                        <td>@AwayTotalStrikeouts</td>
+                                        <td>@AwayTotalSBs</td>
+                                        <td>@AwayTotalTBs</td>
+                                        <td>@AwayTotalDoubles</td>
+                                        <td>@AwayTotalTriples</td>
+                                        <td>@AwayTotalHomeRuns</td>
+                                        <td>@AwayTotalSFs</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" CanCancelEdit="true"
+                                      @bind-SelectedItem="pitchingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitPitchingStats"
+                                      RowEditPreview="BackupPitchingItem" RowEditCancel="ResetPitchingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col style="width:20px;" />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">W</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">L</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">IP</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    @if (context.Start)
+                                    {
+                                        <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
+                                    }
+                                    else
+                                    {
+                                        <MudTd DataLabel="S"></MudTd>
+                                    }
+                                    <MudTd DataLabel="W">@context.Wins</MudTd>
+                                    <MudTd DataLabel="L">@context.Losses</MudTd>
+                                    <MudTd DataLabel="IP">@context.Innings</MudTd>
+                                    <MudTd DataLabel="H">@context.HitsAllowed</MudTd>
+                                    <MudTd DataLabel="R">@context.PitchingRuns</MudTd>
+                                    <MudTd DataLabel="BB">@context.WalksAllowed</MudTd>
+                                    <MudTd DataLabel="K">@context.PitchingStrikeouts</MudTd>
+                                </RowTemplate>
+                                <RowEditingTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="S">
+                                        <MudCheckBox @bind-Value="context.Start" Color="Color.Primary"></MudCheckBox>
+                                    </MudTd>
+                                    <MudTd DataLabel="W">
+                                        <MudTextField @bind-Value="context.Wins" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="L">
+                                        <MudTextField @bind-Value="context.Losses" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="IP">
+                                        <MudTextField @bind-Value="context.Innings" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="H">
+                                        <MudTextField @bind-Value="context.HitsAllowed" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="R">
+                                        <MudTextField @bind-Value="context.PitchingRuns" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="BB">
+                                        <MudTextField @bind-Value="context.WalksAllowed" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="K">
+                                        <MudTextField @bind-Value="context.PitchingStrikeouts" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                </RowEditingTemplate>
+                                <EditButtonContent Context="button">
+                                    <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
+                                </EditButtonContent>
+                            </MudTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th></th>
+                                        <th>W</th>
+                                        <th>L</th>
+                                        <th>IP</th>
+                                        <th>H</th>
+                                        <th>R</th>
+                                        <th>BB</th>
+                                        <th>K</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td></td>
+                                        <td>@AwayTotalWins</td>
+                                        <td>@AwayTotalLosses</td>
+                                        <td>@AwayTotalInnings</td>
+                                        <td>@AwayTotalHitsAllowed</td>
+                                        <td>@AwayTotalPitchingRuns</td>
+                                        <td>@AwayTotalWalksAllowed</td>
+                                        <td>@AwayTotalPitchingStrikeouts</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                    </MudTabPanel>
+                    <MudTabPanel Text="@String.Concat(GameModel.Game.HomeTeam.TeamName + " Stats")">
+                        <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
+                                  @bind-SelectedItem="hittingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitHittingStats"
+                                  RowEditPreview="BackupHittingItem" RowEditCancel="ResetHittingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+                            <ColGroup>
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col style="width:50px;" />
+                            </ColGroup>
+                            <HeaderContent>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">AB</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">RBI</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">HBP</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">SB</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TB</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">2B</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">3B</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">HR</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">SF</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
+                                <MudTd DataLabel="Runs">@context.Runs</MudTd>
+                                <MudTd DataLabel="Hits">@context.Hits</MudTd>
+                                <MudTd DataLabel="RBI">@context.RunsBattedIn</MudTd>
+                                <MudTd DataLabel="BB">@context.Walks</MudTd>
+                                <MudTd DataLabel="HBP">@context.HitByPitch</MudTd>
+                                <MudTd DataLabel="K">@context.Strikeouts</MudTd>
+                                <MudTd DataLabel="SB">@context.StolenBases</MudTd>
+                                <MudTd DataLabel="TB">@context.TotalBases</MudTd>
+                                <MudTd DataLabel="2B">@context.Doubles</MudTd>
+                                <MudTd DataLabel="3B">@context.Triples</MudTd>
+                                <MudTd DataLabel="HR">@context.HomeRuns</MudTd>
+                                <MudTd DataLabel="SF">@context.SacrificeFly</MudTd>
+                            </RowTemplate>
+                            <RowEditingTemplate>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                <MudTd DataLabel="At Bats">
+                                    <MudTextField @bind-Value="context.AtBats" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="Runs">
+                                    <MudTextField @bind-Value="context.Runs" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="Hits">
+                                    <MudTextField @bind-Value="context.Hits" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="RBI">
+                                    <MudTextField @bind-Value="context.RunsBattedIn" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="BB">
+                                    <MudTextField @bind-Value="context.Walks" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="HBP">
+                                    <MudTextField @bind-Value="context.HitByPitch" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="K">
+                                    <MudTextField @bind-Value="context.Strikeouts" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="SB">
+                                    <MudTextField @bind-Value="context.StolenBases" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="TB">
+                                    <MudTextField @bind-Value="context.TotalBases" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="2B">
+                                    <MudTextField @bind-Value="context.Doubles" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="3B">
+                                    <MudTextField @bind-Value="context.Triples" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="HR">
+                                    <MudTextField @bind-Value="context.HomeRuns" Style="font-size: 12px;" Required />
+                                </MudTd>
+                                <MudTd DataLabel="SF">
+                                    <MudTextField @bind-Value="context.SacrificeFly" Style="font-size: 12px;" Required />
+                                </MudTd>
+                            </RowEditingTemplate>
+                            <EditButtonContent Context="button">
+                                <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
+                            </EditButtonContent>
+                        </MudTable>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th>AB</th>
+                                        <th>R</th>
+                                        <th>H</th>
+                                        <th>RBI</th>
+                                        <th>BB</th>
+                                        <th>HBP</th>
+                                        <th>K</th>
+                                        <th>SB</th>
+                                        <th>TB</th>
+                                        <th>2B</th>
+                                        <th>3B</th>
+                                        <th>HR</th>
+                                        <th>SF</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td>@HomeTotalAtBats</td>
+                                        <td>@HomeTotalRuns</td>
+                                        <td>@HomeTotalHits</td>
+                                        <td>@HomeTotalRBIs</td>
+                                        <td>@HomeTotalWalks</td>
+                                        <td>@HomeTotalHBPs</td>
+                                        <td>@HomeTotalStrikeouts</td>
+                                        <td>@HomeTotalSBs</td>
+                                        <td>@HomeTotalTBs</td>
+                                        <td>@HomeTotalDoubles</td>
+                                        <td>@HomeTotalTriples</td>
+                                        <td>@HomeTotalHomeRuns</td>
+                                        <td>@HomeTotalSFs</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
+                                      @bind-SelectedItem="pitchingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitPitchingStats"
+                                      RowEditPreview="BackupPitchingItem" RowEditCancel="ResetPitchingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col style="width:20px;" />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">W</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">L</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">IP</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    @if (context.Start)
+                                    {
+                                        <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
+                                    }
+                                    else
+                                    {
+                                        <MudTd DataLabel="S"></MudTd>
+                                    }
+                                    <MudTd DataLabel="W">@context.Wins</MudTd>
+                                    <MudTd DataLabel="L">@context.Losses</MudTd>
+                                    <MudTd DataLabel="IP">@context.Innings</MudTd>
+                                    <MudTd DataLabel="H">@context.HitsAllowed</MudTd>
+                                    <MudTd DataLabel="R">@context.PitchingRuns</MudTd>
+                                    <MudTd DataLabel="BB">@context.WalksAllowed</MudTd>
+                                    <MudTd DataLabel="K">@context.PitchingStrikeouts</MudTd>
+                                </RowTemplate>
+                                <RowEditingTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="S">
+                                        <MudCheckBox @bind-Value="context.Start" Color="Color.Primary"></MudCheckBox>
+                                    </MudTd>
+                                    <MudTd DataLabel="W">
+                                        <MudTextField @bind-Value="context.Wins" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="L">
+                                        <MudTextField @bind-Value="context.Losses" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="IP">
+                                        <MudTextField @bind-Value="context.Innings" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="H">
+                                        <MudTextField @bind-Value="context.HitsAllowed" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="R">
+                                        <MudTextField @bind-Value="context.PitchingRuns" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="BB">
+                                        <MudTextField @bind-Value="context.WalksAllowed" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="K">
+                                        <MudTextField @bind-Value="context.PitchingStrikeouts" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                </RowEditingTemplate>
+                                <EditButtonContent Context="button">
+                                    <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
+                                </EditButtonContent>
+                            </MudTable>
+                        </div>
+                        <div style="padding-top: 25px;">
+                            <MudSimpleTable>
+                                <thead>
+                                    <tr class="mud-theme-primary">
+                                        <th></th>
+                                        <th></th>
+                                        <th>W</th>
+                                        <th>L</th>
+                                        <th>IP</th>
+                                        <th>H</th>
+                                        <th>R</th>
+                                        <th>BB</th>
+                                        <th>K</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Totals:</td>
+                                        <td></td>
+                                        <td>@HomeTotalWins</td>
+                                        <td>@HomeTotalLosses</td>
+                                        <td>@HomeTotalInnings</td>
+                                        <td>@HomeTotalHitsAllowed</td>
+                                        <td>@HomeTotalPitchingRuns</td>
+                                        <td>@HomeTotalWalksAllowed</td>
+                                        <td>@HomeTotalPitchingStrikeouts</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </div>
+                    </MudTabPanel>
+                </MudTabs>
+
+            </div>
+        }
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private bool PageLoad = false;
+    List<CreateBaseballStatsForm> Model = new List<CreateBaseballStatsForm>();
+    CreateBaseballStatsForm hittingStatSelectedItem = null;
+    CreateBaseballStatsForm pitchingStatSelectedItem = null;
+    CreateBaseballStatsForm hittingStatBeforeEdit;
+    CreateBaseballStatsForm pitchingStatBeforeEdit;
+    GetGameByIdResponse GameModel { get; set; }
+    GetPlayersByTeamResponse AwayPlayersModel { get; set; }
+    GetPlayersByTeamResponse HomePlayersModel { get; set; }
+    GetBaseballStatsByTeamResponse AwayPlayerStatsModel { get; set; }
+    GetBaseballStatsByTeamResponse HomePlayerStatsModel { get; set; }
+    private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
+    private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+    private int AwayTotalAtBats = 0;
+    private int AwayTotalHits =0;
+    private int AwayTotalRuns = 0;
+    private int AwayTotalTBs = 0;
+    private int AwayTotalWalks = 0;
+    private int AwayTotalHBPs = 0;
+    private int AwayTotalSFs = 0;
+    private int AwayTotalStrikeouts = 0;
+    private int AwayTotalDoubles = 0;
+    private int AwayTotalTriples = 0;
+    private int AwayTotalHomeRuns = 0;
+    private int AwayTotalRBIs = 0;
+    private int AwayTotalSBs = 0;
+    private int AwayTotalWins = 0;
+    private int AwayTotalLosses = 0;
+    private int AwayTotalPitchingRuns = 0;
+    private int AwayTotalSaves = 0;
+    private decimal AwayTotalInnings = 0;
+    private int AwayTotalHitsAllowed = 0;
+    private int AwayTotalWalksAllowed = 0;
+    private int AwayTotalPitchingStrikeouts = 0;
+
+    private int HomeTotalAtBats = 0;
+    private int HomeTotalHits = 0;
+    private int HomeTotalRuns = 0;
+    private int HomeTotalTBs = 0;
+    private int HomeTotalWalks = 0;
+    private int HomeTotalHBPs = 0;
+    private int HomeTotalSFs = 0;
+    private int HomeTotalStrikeouts = 0;
+    private int HomeTotalDoubles = 0;
+    private int HomeTotalTriples = 0;
+    private int HomeTotalHomeRuns = 0;
+    private int HomeTotalRBIs = 0;
+    private int HomeTotalSBs = 0;
+    private int HomeTotalWins = 0;
+    private int HomeTotalLosses = 0;
+    private int HomeTotalPitchingRuns = 0;
+    private int HomeTotalSaves = 0;
+    private decimal HomeTotalInnings = 0;
+    private int HomeTotalHitsAllowed = 0;
+    private int HomeTotalWalksAllowed = 0;
+    private int HomeTotalPitchingStrikeouts = 0;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
+        var gameId = Guid.Parse(Id);
+        GameModel = await GameService.GetGameById(gameId);
+        AwayPlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
+        HomePlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
+        AwayPlayerStatsModel = await StatsService.GetBaseballStatsByTeam(GameModel.Game.AwayTeam.Id);
+        HomePlayerStatsModel = await StatsService.GetBaseballStatsByTeam(GameModel.Game.HomeTeam.Id);
+        foreach(var player in AwayPlayersModel.Players)
+        {
+            var playerStat = AwayPlayerStatsModel.BaseballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
+            if (playerStat is not null)
+            {
+                Model.Add(new CreateBaseballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                                                    playerStat.HittingStats.AtBats, playerStat.HittingStats.Hits, playerStat.HittingStats.TotalBases, playerStat.HittingStats.Runs, playerStat.HittingStats.Doubles,
+                                                    playerStat.HittingStats.Triples, playerStat.HittingStats.HomeRuns, playerStat.HittingStats.RunsBattedIn, playerStat.HittingStats.StolenBases,
+                                                    playerStat.HittingStats.Strikeouts, playerStat.HittingStats.Walks, playerStat.HittingStats.HitByPitch, playerStat.HittingStats.SacrificeFly, playerStat.PitchingStats.Wins, playerStat.PitchingStats.Losses, playerStat.PitchingStats.Runs,
+                                                    playerStat.PitchingStats.Start, playerStat.PitchingStats.Saves, playerStat.PitchingStats.Innings, playerStat.PitchingStats.HitsAllowed, playerStat.PitchingStats.WalksAllowed,
+                                                    playerStat.PitchingStats.PitchingStrikeouts));
+
+                AwayTotalAtBats += playerStat.HittingStats.AtBats;
+                AwayTotalHits += playerStat.HittingStats.Hits;
+                AwayTotalTBs += playerStat.HittingStats.TotalBases;
+                AwayTotalRuns += playerStat.HittingStats.Runs;
+                AwayTotalDoubles += playerStat.HittingStats.Doubles;
+                AwayTotalTriples += playerStat.HittingStats.Triples;
+                AwayTotalHomeRuns += playerStat.HittingStats.HomeRuns;
+                AwayTotalRBIs += playerStat.HittingStats.RunsBattedIn;
+                AwayTotalSBs += playerStat.HittingStats.StolenBases;
+                AwayTotalWalks += playerStat.HittingStats.Walks;
+                AwayTotalHBPs += playerStat.HittingStats.HitByPitch;
+                AwayTotalSFs += playerStat.HittingStats.SacrificeFly;
+                AwayTotalStrikeouts += playerStat.HittingStats.Strikeouts;
+
+                AwayTotalWins += playerStat.PitchingStats.Wins;
+                AwayTotalLosses += playerStat.PitchingStats.Losses;
+                AwayTotalPitchingRuns += playerStat.PitchingStats.Runs;
+                AwayTotalSaves += playerStat.PitchingStats.Saves;
+                AwayTotalInnings += playerStat.PitchingStats.Innings;
+                AwayTotalHitsAllowed += playerStat.PitchingStats.HitsAllowed;
+                AwayTotalWalksAllowed += playerStat.PitchingStats.WalksAllowed;
+                AwayTotalPitchingStrikeouts += playerStat.PitchingStats.PitchingStrikeouts;
+            }
+            else if(GameModel.Game.GameStatus == GameStatus.Completed)
+                Model.Add(new CreateBaseballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+        }
+        foreach (var player in HomePlayersModel.Players)
+        {
+            var playerStat = HomePlayerStatsModel.BaseballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
+            if (playerStat is not null)
+            {
+                Model.Add(new CreateBaseballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                                        playerStat.HittingStats.AtBats, playerStat.HittingStats.Hits, playerStat.HittingStats.TotalBases, playerStat.HittingStats.Runs, playerStat.HittingStats.Doubles,
+                                        playerStat.HittingStats.Triples, playerStat.HittingStats.HomeRuns, playerStat.HittingStats.RunsBattedIn, playerStat.HittingStats.StolenBases,
+                                        playerStat.HittingStats.Strikeouts, playerStat.HittingStats.Walks, playerStat.HittingStats.HitByPitch, playerStat.HittingStats.SacrificeFly, playerStat.PitchingStats.Wins, playerStat.PitchingStats.Losses, playerStat.PitchingStats.Runs,
+                                        playerStat.PitchingStats.Start, playerStat.PitchingStats.Saves, playerStat.PitchingStats.Innings, playerStat.PitchingStats.HitsAllowed, playerStat.PitchingStats.WalksAllowed,
+                                        playerStat.PitchingStats.PitchingStrikeouts));
+
+                HomeTotalAtBats += playerStat.HittingStats.AtBats;
+                HomeTotalHits += playerStat.HittingStats.Hits;
+                HomeTotalTBs += playerStat.HittingStats.TotalBases;
+                HomeTotalRuns += playerStat.HittingStats.Runs;
+                HomeTotalDoubles += playerStat.HittingStats.Doubles;
+                HomeTotalTriples += playerStat.HittingStats.Triples;
+                HomeTotalHomeRuns += playerStat.HittingStats.HomeRuns;
+                HomeTotalRBIs += playerStat.HittingStats.RunsBattedIn;
+                HomeTotalSBs += playerStat.HittingStats.StolenBases;
+                HomeTotalWalks += playerStat.HittingStats.Walks;
+                HomeTotalHBPs += playerStat.HittingStats.HitByPitch;
+                HomeTotalSFs += playerStat.HittingStats.SacrificeFly;
+                HomeTotalStrikeouts += playerStat.HittingStats.Strikeouts;
+
+                HomeTotalWins += playerStat.PitchingStats.Wins;
+                HomeTotalLosses += playerStat.PitchingStats.Losses;
+                HomeTotalPitchingRuns += playerStat.PitchingStats.Runs;
+                HomeTotalSaves += playerStat.PitchingStats.Saves;
+                HomeTotalInnings += playerStat.PitchingStats.Innings;
+                HomeTotalHitsAllowed += playerStat.PitchingStats.HitsAllowed;
+                HomeTotalWalksAllowed += playerStat.PitchingStats.WalksAllowed;
+                HomeTotalPitchingStrikeouts += playerStat.PitchingStats.PitchingStrikeouts;
+
+
+            }
+            else if (GameModel.Game.GameStatus == GameStatus.Completed)
+                Model.Add(new CreateBaseballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+        }
+        PageLoad = true;
+    }
+
+    private void BackupHittingItem(object stats)
+    {
+        hittingStatBeforeEdit = new()
+            {
+                PlayerName = ((CreateBaseballStatsForm)stats).PlayerName,
+                LeagueId = ((CreateBaseballStatsForm)stats).LeagueId,
+                TeamId = ((CreateBaseballStatsForm)stats).TeamId,
+                PlayerId = ((CreateBaseballStatsForm)stats).PlayerId,
+                SeasonId = ((CreateBaseballStatsForm)stats).SeasonId,
+                GameId = ((CreateBaseballStatsForm)stats).GameId,
+                AtBats = ((CreateBaseballStatsForm)stats).AtBats,
+                Runs = ((CreateBaseballStatsForm)stats).Runs,
+                Hits = ((CreateBaseballStatsForm)stats).Hits,
+                RunsBattedIn = ((CreateBaseballStatsForm)stats).RunsBattedIn,
+                Walks = ((CreateBaseballStatsForm)stats).Walks,
+                HitByPitch = ((CreateBaseballStatsForm)stats).HitByPitch,
+                SacrificeFly = ((CreateBaseballStatsForm)stats).SacrificeFly,
+                Strikeouts = ((CreateBaseballStatsForm)stats).Strikeouts,
+                StolenBases = ((CreateBaseballStatsForm)stats).StolenBases,
+                TotalBases = ((CreateBaseballStatsForm)stats).TotalBases,
+                Doubles = ((CreateBaseballStatsForm)stats).Doubles,
+                Triples = ((CreateBaseballStatsForm)stats).Triples,
+                HomeRuns = ((CreateBaseballStatsForm)stats).HomeRuns
+            };
+    }
+
+    private void BackupPitchingItem(object stats)
+    {
+        pitchingStatBeforeEdit = new()
+            {
+                PlayerName = ((CreateBaseballStatsForm)stats).PlayerName,
+                LeagueId = ((CreateBaseballStatsForm)stats).LeagueId,
+                TeamId = ((CreateBaseballStatsForm)stats).TeamId,
+                PlayerId = ((CreateBaseballStatsForm)stats).PlayerId,
+                SeasonId = ((CreateBaseballStatsForm)stats).SeasonId,
+                GameId = ((CreateBaseballStatsForm)stats).GameId,
+                Wins = ((CreateBaseballStatsForm)stats).Wins,
+                Losses = ((CreateBaseballStatsForm)stats).Losses,
+                Start = ((CreateBaseballStatsForm)stats).Start,
+                Saves = ((CreateBaseballStatsForm)stats).Saves,
+                Innings = ((CreateBaseballStatsForm)stats).Innings,
+                HitsAllowed = ((CreateBaseballStatsForm)stats).HitsAllowed,
+                WalksAllowed = ((CreateBaseballStatsForm)stats).WalksAllowed,
+                PitchingStrikeouts = ((CreateBaseballStatsForm)stats).PitchingStrikeouts
+            };
+    }
+
+    private void ResetHittingItemToOriginalValues(object stats)
+    {
+        ((CreateBaseballStatsForm)stats).AtBats = hittingStatBeforeEdit.AtBats;
+        ((CreateBaseballStatsForm)stats).Runs = hittingStatBeforeEdit.Runs;
+        ((CreateBaseballStatsForm)stats).Hits = hittingStatBeforeEdit.Hits;
+        ((CreateBaseballStatsForm)stats).RunsBattedIn = hittingStatBeforeEdit.RunsBattedIn;
+        ((CreateBaseballStatsForm)stats).Walks = hittingStatBeforeEdit.Walks;
+        ((CreateBaseballStatsForm)stats).HitByPitch = hittingStatBeforeEdit.HitByPitch;
+        ((CreateBaseballStatsForm)stats).SacrificeFly = hittingStatBeforeEdit.SacrificeFly;
+        ((CreateBaseballStatsForm)stats).Strikeouts = hittingStatBeforeEdit.Strikeouts;
+        ((CreateBaseballStatsForm)stats).StolenBases = hittingStatBeforeEdit.StolenBases;
+        ((CreateBaseballStatsForm)stats).TotalBases = hittingStatBeforeEdit.TotalBases;
+        ((CreateBaseballStatsForm)stats).Doubles = hittingStatBeforeEdit.Doubles;
+        ((CreateBaseballStatsForm)stats).Triples = hittingStatBeforeEdit.Triples;
+        ((CreateBaseballStatsForm)stats).HomeRuns = hittingStatBeforeEdit.HomeRuns;
+    }
+
+    private void ResetPitchingItemToOriginalValues(object stats)
+    {
+        ((CreateBaseballStatsForm)stats).Wins = pitchingStatBeforeEdit.Wins;
+        ((CreateBaseballStatsForm)stats).Losses = pitchingStatBeforeEdit.Losses;
+        ((CreateBaseballStatsForm)stats).Start = pitchingStatBeforeEdit.Start;
+        ((CreateBaseballStatsForm)stats).Saves = pitchingStatBeforeEdit.Saves;
+        ((CreateBaseballStatsForm)stats).Innings = pitchingStatBeforeEdit.Innings;
+        ((CreateBaseballStatsForm)stats).HitsAllowed = pitchingStatBeforeEdit.HitsAllowed;
+        ((CreateBaseballStatsForm)stats).WalksAllowed = pitchingStatBeforeEdit.WalksAllowed;
+        ((CreateBaseballStatsForm)stats).PitchingStrikeouts = pitchingStatBeforeEdit.PitchingStrikeouts;
+    }
+
+    private async Task SubmitHittingStats()
+    {
+        if(hittingStatSelectedItem is not null)
+        {
+            var form = Model.FirstOrDefault(x => x.PlayerId == hittingStatSelectedItem.PlayerId);
+
+            var playerStats = await StatsService.GetBaseballStatsByPlayer(hittingStatSelectedItem.PlayerId);
+
+            var isStatCreated = playerStats.BaseballStats.Any(x => x.GameId == hittingStatSelectedItem.GameId);
+
+            if (isStatCreated)
+            {
+                var gameStat = playerStats.BaseballStats.FirstOrDefault(x => x.GameId == hittingStatSelectedItem.GameId);
+
+                UpdateBaseballHittingStatsModel hittingStatsModel = new UpdateBaseballHittingStatsModel(hittingStatSelectedItem.AtBats, hittingStatSelectedItem.Hits,
+                                                            hittingStatSelectedItem.TotalBases, hittingStatSelectedItem.Runs,
+                                                            hittingStatSelectedItem.Doubles, hittingStatSelectedItem.Triples,
+                                                            hittingStatSelectedItem.HomeRuns, hittingStatSelectedItem.RunsBattedIn,
+                                                            hittingStatSelectedItem.StolenBases, hittingStatSelectedItem.Strikeouts, hittingStatSelectedItem.Walks, hittingStatSelectedItem.HitByPitch,
+                                                            hittingStatSelectedItem.SacrificeFly);
+
+                UpdateBaseballPitchingStatsModel pitchingStatsModel = new UpdateBaseballPitchingStatsModel(form.Wins, form.Losses, form.PitchingRuns,
+                                                                                                            form.Start, form.Saves, form.Innings,
+                                                                                                            form.HitsAllowed, form.WalksAllowed, form.PitchingStrikeouts);
+
+                UpdateBaseballStatsModel baseballStatsModel = new UpdateBaseballStatsModel(gameStat.Id, hittingStatSelectedItem.LeagueId, hittingStatSelectedItem.TeamId,
+                                                                                           hittingStatSelectedItem.PlayerId, hittingStatSelectedItem.SeasonId,
+                                                                                           hittingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
+
+                UpdateBaseballStatsRequest request = new UpdateBaseballStatsRequest(baseballStatsModel);
+                await StatsService.UpdateBaseballStats(request);
+
+                if(hittingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
+                {
+                    AwayTotalAtBats += hittingStatSelectedItem.AtBats - gameStat.HittingStats.AtBats;
+                    AwayTotalHits += hittingStatSelectedItem.Hits - gameStat.HittingStats.Hits;
+                    AwayTotalTBs += hittingStatSelectedItem.TotalBases - gameStat.HittingStats.TotalBases;
+                    AwayTotalRuns += hittingStatSelectedItem.Runs - gameStat.HittingStats.Runs;
+                    AwayTotalDoubles += hittingStatSelectedItem.Doubles - gameStat.HittingStats.Doubles;
+                    AwayTotalTriples += hittingStatSelectedItem.Triples - gameStat.HittingStats.Triples;
+                    AwayTotalHomeRuns += hittingStatSelectedItem.HomeRuns - gameStat.HittingStats.HomeRuns;
+                    AwayTotalRBIs += hittingStatSelectedItem.RunsBattedIn - gameStat.HittingStats.RunsBattedIn;
+                    AwayTotalSBs += hittingStatSelectedItem.StolenBases - gameStat.HittingStats.StolenBases;
+                    AwayTotalWalks += hittingStatSelectedItem.Walks - gameStat.HittingStats.Walks;
+                    AwayTotalHBPs += hittingStatSelectedItem.HitByPitch - gameStat.HittingStats.HitByPitch;
+                    AwayTotalSFs += hittingStatSelectedItem.SacrificeFly - gameStat.HittingStats.SacrificeFly;
+                    AwayTotalStrikeouts += hittingStatSelectedItem.Strikeouts - gameStat.HittingStats.Strikeouts;
+                }
+                else
+                {
+                    HomeTotalAtBats += hittingStatSelectedItem.AtBats - gameStat.HittingStats.AtBats;
+                    HomeTotalHits += hittingStatSelectedItem.Hits - gameStat.HittingStats.Hits;
+                    HomeTotalTBs += hittingStatSelectedItem.TotalBases - gameStat.HittingStats.TotalBases;
+                    HomeTotalRuns += hittingStatSelectedItem.Runs - gameStat.HittingStats.Runs;
+                    HomeTotalDoubles += hittingStatSelectedItem.Doubles - gameStat.HittingStats.Doubles;
+                    HomeTotalTriples += hittingStatSelectedItem.Triples - gameStat.HittingStats.Triples;
+                    HomeTotalHomeRuns += hittingStatSelectedItem.HomeRuns - gameStat.HittingStats.HomeRuns;
+                    HomeTotalRBIs += hittingStatSelectedItem.RunsBattedIn - gameStat.HittingStats.RunsBattedIn;
+                    HomeTotalSBs += hittingStatSelectedItem.StolenBases - gameStat.HittingStats.StolenBases;
+                    HomeTotalWalks += hittingStatSelectedItem.Walks - gameStat.HittingStats.Walks;
+                    HomeTotalHBPs += hittingStatSelectedItem.HitByPitch - gameStat.HittingStats.HitByPitch;
+                    HomeTotalSFs += hittingStatSelectedItem.SacrificeFly - gameStat.HittingStats.SacrificeFly;
+                    HomeTotalStrikeouts += hittingStatSelectedItem.Strikeouts - gameStat.HittingStats.Strikeouts;
+                }
+
+                Snackbar.Add("Players Hitting Stats have been saved.", Severity.Success);
+                StateHasChanged();
+            }
+            else
+            {
+                CreateBaseballHittingStatsModel hittingStatsModel = new CreateBaseballHittingStatsModel(hittingStatSelectedItem.AtBats, hittingStatSelectedItem.Hits,
+                                                                            hittingStatSelectedItem.TotalBases, hittingStatSelectedItem.Runs,
+                                                                            hittingStatSelectedItem.Doubles, hittingStatSelectedItem.Triples,
+                                                                            hittingStatSelectedItem.HomeRuns, hittingStatSelectedItem.RunsBattedIn,
+                                                                            hittingStatSelectedItem.StolenBases, hittingStatSelectedItem.Strikeouts, hittingStatSelectedItem.Walks, hittingStatSelectedItem.HitByPitch,
+                                                                            hittingStatSelectedItem.SacrificeFly);
+
+                CreateBaseballPitchingStatsModel pitchingStatsModel = new CreateBaseballPitchingStatsModel(form.Wins, form.Losses, form.PitchingRuns,
+                                                                                                            form.Start, form.Saves, form.Innings,
+                                                                                                            form.HitsAllowed, form.WalksAllowed, form.PitchingStrikeouts);
+
+                CreateBaseballStatsModel baseballStatsModel = new CreateBaseballStatsModel(hittingStatSelectedItem.LeagueId, hittingStatSelectedItem.TeamId,
+                                                                                           hittingStatSelectedItem.PlayerId, hittingStatSelectedItem.SeasonId,
+                                                                                           hittingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
+
+                CreateBaseballStatsRequest request = new CreateBaseballStatsRequest(baseballStatsModel);
+                await StatsService.CreateBaseballStats(request);
+
+                if (hittingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
+                {
+                    AwayTotalAtBats += hittingStatSelectedItem.AtBats;
+                    AwayTotalHits += hittingStatSelectedItem.Hits;
+                    AwayTotalTBs += hittingStatSelectedItem.TotalBases;
+                    AwayTotalRuns += hittingStatSelectedItem.Runs;
+                    AwayTotalDoubles += hittingStatSelectedItem.Doubles;
+                    AwayTotalTriples += hittingStatSelectedItem.Triples;
+                    AwayTotalHomeRuns += hittingStatSelectedItem.HomeRuns;
+                    AwayTotalRBIs += hittingStatSelectedItem.RunsBattedIn;
+                    AwayTotalSBs += hittingStatSelectedItem.StolenBases;
+                    AwayTotalWalks += hittingStatSelectedItem.Walks;
+                    AwayTotalHBPs += hittingStatSelectedItem.HitByPitch;
+                    AwayTotalSFs += hittingStatSelectedItem.SacrificeFly;
+                    AwayTotalStrikeouts += hittingStatSelectedItem.Strikeouts;
+                }
+                else
+                {
+                    HomeTotalAtBats += hittingStatSelectedItem.AtBats;
+                    HomeTotalHits += hittingStatSelectedItem.Hits;
+                    HomeTotalTBs += hittingStatSelectedItem.TotalBases;
+                    HomeTotalRuns += hittingStatSelectedItem.Runs;
+                    HomeTotalDoubles += hittingStatSelectedItem.Doubles;
+                    HomeTotalTriples += hittingStatSelectedItem.Triples;
+                    HomeTotalHomeRuns += hittingStatSelectedItem.HomeRuns;
+                    HomeTotalRBIs += hittingStatSelectedItem.RunsBattedIn;
+                    HomeTotalSBs += hittingStatSelectedItem.StolenBases;
+                    HomeTotalWalks += hittingStatSelectedItem.Walks;
+                    HomeTotalHBPs += hittingStatSelectedItem.HitByPitch;
+                    HomeTotalSFs += hittingStatSelectedItem.SacrificeFly;
+                    HomeTotalStrikeouts += hittingStatSelectedItem.Strikeouts;
+                }
+
+                Snackbar.Add("Players Hitting Stats have been saved.", Severity.Success);
+                StateHasChanged();
+
+            }
+        }
+    }
+
+    private async Task SubmitPitchingStats()
+    {
+        if (pitchingStatSelectedItem is not null)
+        {
+            var form = Model.FirstOrDefault(x => x.PlayerId == pitchingStatSelectedItem.PlayerId);
+
+            var playerStats = await StatsService.GetBaseballStatsByPlayer(pitchingStatSelectedItem.PlayerId);
+
+            var isStatCreated = playerStats.BaseballStats.Any(x => x.GameId == pitchingStatSelectedItem.GameId);
+
+            if (isStatCreated)
+            {
+                var gameStat = playerStats.BaseballStats.FirstOrDefault(x => x.GameId == pitchingStatSelectedItem.GameId);
+                UpdateBaseballHittingStatsModel hittingStatsModel = new UpdateBaseballHittingStatsModel(form.AtBats, form.Hits,
+                                                                            form.TotalBases, form.Runs,
+                                                                            form.Doubles, form.Triples,
+                                                                            form.HomeRuns, form.RunsBattedIn,
+                                                                            form.StolenBases, form.Strikeouts, form.Walks, form.HitByPitch, form.SacrificeFly);
+
+                UpdateBaseballPitchingStatsModel pitchingStatsModel = new UpdateBaseballPitchingStatsModel(pitchingStatSelectedItem.Wins, pitchingStatSelectedItem.Losses, pitchingStatSelectedItem.PitchingRuns,
+                                                                                                            pitchingStatSelectedItem.Start, pitchingStatSelectedItem.Saves, pitchingStatSelectedItem.Innings,
+                                                                                                            pitchingStatSelectedItem.HitsAllowed, pitchingStatSelectedItem.WalksAllowed, pitchingStatSelectedItem.PitchingStrikeouts);
+
+                UpdateBaseballStatsModel baseballStatsModel = new UpdateBaseballStatsModel(gameStat.Id, pitchingStatSelectedItem.LeagueId, pitchingStatSelectedItem.TeamId,
+                                                                                           pitchingStatSelectedItem.PlayerId, pitchingStatSelectedItem.SeasonId,
+                                                                                           pitchingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
+
+                UpdateBaseballStatsRequest request = new UpdateBaseballStatsRequest(baseballStatsModel);
+                await StatsService.UpdateBaseballStats(request);
+
+                if(pitchingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
+                {
+                    AwayTotalWins += pitchingStatSelectedItem.Wins - gameStat.PitchingStats.Wins;
+                    AwayTotalLosses += pitchingStatSelectedItem.Losses - gameStat.PitchingStats.Losses;
+                    AwayTotalPitchingRuns += pitchingStatSelectedItem.PitchingRuns - gameStat.PitchingStats.Runs;
+                    AwayTotalSaves += pitchingStatSelectedItem.Saves - gameStat.PitchingStats.Saves;
+                    AwayTotalInnings += pitchingStatSelectedItem.Innings - gameStat.PitchingStats.Innings;
+                    AwayTotalHitsAllowed += pitchingStatSelectedItem.HitsAllowed - gameStat.PitchingStats.HitsAllowed;
+                    AwayTotalWalksAllowed += pitchingStatSelectedItem.WalksAllowed - gameStat.PitchingStats.WalksAllowed;
+                    AwayTotalPitchingStrikeouts += pitchingStatSelectedItem.PitchingStrikeouts - gameStat.PitchingStats.PitchingStrikeouts;
+                }
+                else
+                {
+                    HomeTotalWins += pitchingStatSelectedItem.Wins - gameStat.PitchingStats.Wins;
+                    HomeTotalLosses += pitchingStatSelectedItem.Losses - gameStat.PitchingStats.Losses;
+                    HomeTotalPitchingRuns += pitchingStatSelectedItem.Runs - gameStat.PitchingStats.Runs;
+                    HomeTotalSaves += pitchingStatSelectedItem.Saves - gameStat.PitchingStats.Saves;
+                    HomeTotalInnings += pitchingStatSelectedItem.Innings - gameStat.PitchingStats.Innings;
+                    HomeTotalHitsAllowed += pitchingStatSelectedItem.HitsAllowed - gameStat.PitchingStats.HitsAllowed;
+                    HomeTotalWalksAllowed += pitchingStatSelectedItem.WalksAllowed - gameStat.PitchingStats.WalksAllowed;
+                    HomeTotalPitchingStrikeouts += pitchingStatSelectedItem.PitchingStrikeouts - gameStat.PitchingStats.PitchingStrikeouts;
+                }
+
+                Snackbar.Add("Players Pitching Stats have been saved.", Severity.Success);
+                StateHasChanged();
+            }
+            else
+            {
+                CreateBaseballHittingStatsModel hittingStatsModel = new CreateBaseballHittingStatsModel(form.AtBats, form.Hits,
+                                                                            form.TotalBases, form.Runs,
+                                                                            form.Doubles, form.Triples,
+                                                                            form.HomeRuns, form.RunsBattedIn,
+                                                                            form.StolenBases, form.Strikeouts, form.Walks, form.HitByPitch, form.SacrificeFly);
+
+                CreateBaseballPitchingStatsModel pitchingStatsModel = new CreateBaseballPitchingStatsModel(pitchingStatSelectedItem.Wins, pitchingStatSelectedItem.Losses, pitchingStatSelectedItem.PitchingRuns,
+                                                                                                            pitchingStatSelectedItem.Start, pitchingStatSelectedItem.Saves, pitchingStatSelectedItem.Innings,
+                                                                                                            pitchingStatSelectedItem.HitsAllowed, pitchingStatSelectedItem.WalksAllowed, pitchingStatSelectedItem.PitchingStrikeouts);
+
+                CreateBaseballStatsModel baseballStatsModel = new CreateBaseballStatsModel(pitchingStatSelectedItem.LeagueId, pitchingStatSelectedItem.TeamId,
+                                                                                           pitchingStatSelectedItem.PlayerId, pitchingStatSelectedItem.SeasonId,
+                                                                                           pitchingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
+
+                CreateBaseballStatsRequest request = new CreateBaseballStatsRequest(baseballStatsModel);
+                await StatsService.CreateBaseballStats(request);
+
+                if (pitchingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
+                {
+                    AwayTotalWins += pitchingStatSelectedItem.Wins;
+                    AwayTotalLosses += pitchingStatSelectedItem.Losses;
+                    AwayTotalPitchingRuns += pitchingStatSelectedItem.Runs;
+                    AwayTotalSaves += pitchingStatSelectedItem.Saves;
+                    AwayTotalInnings += pitchingStatSelectedItem.Innings;
+                    AwayTotalHitsAllowed += pitchingStatSelectedItem.HitsAllowed;
+                    AwayTotalWalksAllowed += pitchingStatSelectedItem.WalksAllowed;
+                    AwayTotalPitchingStrikeouts += pitchingStatSelectedItem.PitchingStrikeouts;
+                }
+                else
+                {
+                    HomeTotalWins += pitchingStatSelectedItem.Wins;
+                    HomeTotalLosses += pitchingStatSelectedItem.Losses;
+                    HomeTotalPitchingRuns += pitchingStatSelectedItem.Runs;
+                    HomeTotalSaves += pitchingStatSelectedItem.Saves;
+                    HomeTotalInnings += pitchingStatSelectedItem.Innings;
+                    HomeTotalHitsAllowed += pitchingStatSelectedItem.HitsAllowed;
+                    HomeTotalWalksAllowed += pitchingStatSelectedItem.WalksAllowed;
+                    HomeTotalPitchingStrikeouts += pitchingStatSelectedItem.PitchingStrikeouts;
+                }
+
+                Snackbar.Add("Players Pitching Stats have been saved.", Severity.Success);
+                StateHasChanged();
+            }
+        }
+    }
+
+
+    public class CreateBaseballStatsForm
+    {
+        public CreateBaseballStatsForm()
+        {
+
+        }
+
+        public CreateBaseballStatsForm(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName)
+        {
+            LeagueId = leagueId;
+            TeamId = teamId;
+            PlayerId = playerId;
+            SeasonId = seasonId;
+            GameId = gameId;
+            PlayerName = String.Concat(firstName + " " + lastName);
+        }
+
+        public CreateBaseballStatsForm(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName,
+                                       int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn,
+                                        int stolenBases, int strikeouts, int walks, int hitByPitch, int sacrificeFly, int wins, int losses, int pitchingRuns, bool start, int saves, decimal innings,
+                                        int hitsAllowed, int walksAllowed, int pitchingStrikeouts)
+        {
+            LeagueId = leagueId;
+            TeamId = teamId;
+            PlayerId = playerId;
+            SeasonId = seasonId;
+            GameId = gameId;
+            PlayerName = String.Concat(firstName + " " + lastName);
+            AtBats = atBats;
+            Hits = hits;
+            TotalBases = totalBases;
+            Runs = runs;
+            Doubles = doubles;
+            Triples = triples;
+            HomeRuns = homeRuns;
+            RunsBattedIn = runsBattedIn;
+            StolenBases = stolenBases;
+            Strikeouts = strikeouts;
+            Walks = walks;
+            HitByPitch = hitByPitch;
+            SacrificeFly = sacrificeFly;
+            Wins = wins;
+            Losses = losses;
+            PitchingRuns = pitchingRuns;
+            Start = start;
+            Saves = saves;
+            Innings = innings;
+            HitsAllowed = hitsAllowed;
+            WalksAllowed = walksAllowed;
+            PitchingStrikeouts = pitchingStrikeouts;
+        }
+
+        public Guid LeagueId { get; set; }
+        public Guid TeamId { get; set; }
+        public Guid PlayerId { get; set; }
+        public Guid SeasonId { get; set; }
+        public Guid GameId { get; set; }
+        public string PlayerName { get; set; }
+        public int AtBats { get; set; }
+        public int Hits { get; set; }
+        public int TotalBases { get; set; }
+        public int Runs { get; set; }
+        public int Doubles { get; set; }
+        public int Triples { get; set; }
+        public int HomeRuns { get; set; }
+        public int RunsBattedIn { get; set; }
+        public int StolenBases { get; set; }
+        public int Strikeouts { get; set; }
+        public int Walks { get; set; }
+        public int HitByPitch { get; set; }
+        public int SacrificeFly { get; set; }
+        public int Wins { get; set; }
+        public int Losses { get; set; }
+        public int PitchingRuns { get; set; }
+        public bool Start { get; set; }
+        public int Saves { get; set; }
+        public decimal Innings { get; set; }
+        public int HitsAllowed { get; set; }
+        public int WalksAllowed { get; set; }
+        public int PitchingStrikeouts { get; set; }
+    }
+}

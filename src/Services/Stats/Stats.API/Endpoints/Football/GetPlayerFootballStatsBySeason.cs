@@ -21,6 +21,7 @@ public class GetPlayerFootballStatsBySeason : ICarterModule
        .ProducesProblem(StatusCodes.Status400BadRequest)
        .ProducesProblem(StatusCodes.Status404NotFound)
        .WithSummary("Get Player Football Stats By Season")
-       .WithDescription("Get Player Football Stats By Season");
+       .WithDescription("Get Player Football Stats By Season")
+       .RequireAuthorization(KeycloakPolicy.ReadStatPolicy);
     }
 }

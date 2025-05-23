@@ -5,265 +5,274 @@
 @inject IGameService GameService
 @inject ITeamService TeamService
 @inject IDialogService DialogService
+@inject NavigationManager NavManager;
+@inject IHttpContextAccessor HttpContextAccessor
 
-@if (PageLoad)
-{
-    <div style="padding-top: 100px;">
-        <MudItem xs="12" md="12" lg="12" Style="padding-bottom: 25px;">
-            <MudCard>
-                <MudCardContent>
-                    <MudStack Row="true">
-                        <MudItem xs="4" md="4" lg="4">
-                            <MudImage Src="@imageFile" Width="225" Height="225" Alt="Swedish Farm House" Elevation="25" Class="rounded-lg ma-4" />
-                        </MudItem>
-                        <MudItem xs="4" md="4" lg="4" Class="ma-4">
-                            <MudText Typo="Typo.h4" Align="Align.Start" Style="font-weight:bold; " Color="Color.Primary">@PlayerModel.Player.FirstName @PlayerModel.Player.LastName</MudText>
-                            <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">@TeamModel.Team.TeamName</MudText>
-                            <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">#@PlayerModel.Player.PlayerDetail.Number</MudText>
-                            <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">@address</MudText>
-                            <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Birthday: @PlayerModel.Player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
-                            <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Height: @PlayerModel.Player.PlayerDetail.Height in</MudText>
-                            <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Weight: @PlayerModel.Player.PlayerDetail.Weight lbs</MudText>
-                            <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Positions: @PlayerModel.Player.PlayerDetail.Position</MudText>
-                        </MudItem>
-                    </MudStack>
-                </MudCardContent>
-                <MudCardActions Class="ma-4">
-                    <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="OpenContactDialogAsync">Contact Info</MudButton>
-                </MudCardActions>
-            </MudCard>
+<AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames, ", ", Roles.ReadTeams)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <div style="padding-top: 100px;">
+                <MudItem xs="12" md="12" lg="12" Style="padding-bottom: 25px;">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudStack Row="true">
+                                <MudItem xs="4" md="4" lg="4">
+                                    <MudImage Src="@imageFile" Width="225" Height="225" Alt="Swedish Farm House" Elevation="25" Class="rounded-lg ma-4" />
+                                </MudItem>
+                                <MudItem xs="4" md="4" lg="4" Class="ma-4">
+                                    <MudText Typo="Typo.h4" Align="Align.Start" Style="font-weight:bold; " Color="Color.Primary">@PlayerModel.Player.FirstName @PlayerModel.Player.LastName</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">@TeamModel.Team.TeamName</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">#@PlayerModel.Player.PlayerDetail.Number</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">@address</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Birthday: @PlayerModel.Player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Height: @PlayerModel.Player.PlayerDetail.Height in</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Weight: @PlayerModel.Player.PlayerDetail.Weight lbs</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Positions: @PlayerModel.Player.PlayerDetail.Position</MudText>
+                                </MudItem>
+                            </MudStack>
+                        </MudCardContent>
+                        <MudCardActions Class="ma-4">
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="OpenContactDialogAsync">Contact Info</MudButton>
+                        </MudCardActions>
+                    </MudCard>
 
-        </MudItem>
-        <MudPaper Style="padding-right: 25px; padding-left: 25px;" Elevation="2">
-            <div style="padding-bottom: 25px;">
-                <div style="padding-top: 50px;">
-                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@SeasonModel.Season.Year Stats</MudText>
-                    <MudSpacer />
-                    <MudStack Justify="Justify.FlexStart" Row="true" Style="padding-top: 25px;">
-                        <MudItem xs="6" md="6" lg="6">
+                </MudItem>
+                <MudPaper Style="padding-right: 25px; padding-left: 25px;" Elevation="2">
+                    <div style="padding-bottom: 25px;">
+                        <div style="padding-top: 50px;">
+                            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@SeasonModel.Season.Year Stats</MudText>
+                            <MudSpacer />
+                            <MudStack Justify="Justify.FlexStart" Row="true" Style="padding-top: 25px;">
+                                <MudItem xs="6" md="6" lg="6">
 
-                        </MudItem>
-                        <MudItem xs="3" md="3" lg="3">
-                            <MudSelect @bind-Value="seasonValue" Placeholder="@seasonPlaceholder" Label="@seasonPlaceholder">
-                                @foreach (var season in SeasonsModel.Seasons)
-                                {
-                                    <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
-                                }
-                            </MudSelect>
-                        </MudItem>
-                        <MudItem xs="3" md="3" lg="3" Style="align-content: center; padding: 10px;">
-                            <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetPlayerStatsBySeason" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 150px;">Search</MudButton>
-                        </MudItem>
-                    </MudStack>
-                </div>
+                                </MudItem>
+                                <MudItem xs="3" md="3" lg="3">
+                                    <MudSelect @bind-Value="seasonValue" Placeholder="@seasonPlaceholder" Label="@seasonPlaceholder">
+                                        @foreach (var season in SeasonsModel.Seasons)
+                                        {
+                                            <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="3" md="3" lg="3" Style="align-content: center; padding: 10px;">
+                                    <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetPlayerStatsBySeason" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 150px;">Search</MudButton>
+                                </MudItem>
+                            </MudStack>
+                        </div>
+                    </div>
+                    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
+                        <MudTabPanel Text="Stats">
+                            <div style="padding-top: 25px; padding-bottom: 25px;">
+                                <MudStack Row="true">
+                                    <MudItem sm="3" md="3" lg="3">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">PTS</MudText>
+                                                </CardHeaderContent>
+                                            </MudCardHeader>
+                                            <MudCardContent>
+                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonPointsAverage.ToString("#0.0")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions Style="justify-content: end;">
+                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate batting average in baseball, divide the total number of hits by the total number of at-bats. Formula: Batting Average = Total Hits / Total At-Bats"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+                                    <MudItem sm="3" md="3" lg="3">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">REB</MudText>
+                                                </CardHeaderContent>
+                                            </MudCardHeader>
+                                            <MudCardContent>
+                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonReboundsAverage.ToString("#0.0")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions Style="justify-content: end;">
+                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate slugging percentage (SLG) in baseball, you divide the total bases a player gets by their total at-bats. Formula: (1B + 2Bx2 + 3Bx3 + HRx4) / AB"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+                                    <MudItem sm="3" md="3" lg="3">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">AST</MudText>
+                                                </CardHeaderContent>
+                                            </MudCardHeader>
+                                            <MudCardContent>
+                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonAssistsAverage.ToString("#0.0")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions Style="justify-content: end;">
+                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate On-Base Percentage (OBP), divide the sum of hits, walks, and hit-by-pitches by the sum of at-bats, walks, hit-by-pitches, and sacrifice flies. Formula: (Hits + BBs + HBPs) / (ABs + BBs + HBPs + Sacrifice Flies)"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+                                    <MudItem sm="3" md="3" lg="3">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">FG%</MudText>
+                                                </CardHeaderContent>
+                                            </MudCardHeader>
+                                            <MudCardContent>
+                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonFieldGoalPercentage.ToString("#0.0")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions Style="justify-content: end;">
+                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("On-base plus slugging (OPS) is calculated by adding a batter's on-base percentage (OBP) and slugging percentage (SLG). Formula: OBP (See Stat for More Info) + SLG (See Stat for More Info)"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+
+                                </MudStack>
+                            </div>
+                            <div style="padding-bottom: 50px;">
+                                <MudStack Row="true">
+                                    <MudItem sm="3" md="3" lg="3">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">3P%</MudText>
+                                                </CardHeaderContent>
+                                            </MudCardHeader>
+                                            <MudCardContent>
+                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonThreePointerPercentage.ToString("#0.0")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions Style="justify-content: end;">
+                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate batting average in baseball, divide the total number of hits by the total number of at-bats. Formula: Batting Average = Total Hits / Total At-Bats"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+                                    <MudItem sm="3" md="3" lg="3">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">FT%</MudText>
+                                                </CardHeaderContent>
+                                            </MudCardHeader>
+                                            <MudCardContent>
+                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonFreeThrowPercentage.ToString("#0.0")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions Style="justify-content: end;">
+                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate slugging percentage (SLG) in baseball, you divide the total bases a player gets by their total at-bats. Formula: (1B + 2Bx2 + 3Bx3 + HRx4) / AB"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+                                    <MudItem sm="3" md="3" lg="3">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">BLK</MudText>
+                                                </CardHeaderContent>
+                                            </MudCardHeader>
+                                            <MudCardContent>
+                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonBlocksAverage.ToString("#0.0")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions Style="justify-content: end;">
+                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate On-Base Percentage (OBP), divide the sum of hits, walks, and hit-by-pitches by the sum of at-bats, walks, hit-by-pitches, and sacrifice flies. Formula: (Hits + BBs + HBPs) / (ABs + BBs + HBPs + Sacrifice Flies)"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+                                    <MudItem sm="3" md="3" lg="3">
+                                        <MudCard>
+                                            <MudCardHeader>
+                                                <CardHeaderContent>
+                                                    <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">STL</MudText>
+                                                </CardHeaderContent>
+                                            </MudCardHeader>
+                                            <MudCardContent>
+                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonStealsAverage.ToString("#0.0")</MudText>
+                                            </MudCardContent>
+                                            <MudCardActions Style="justify-content: end;">
+                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("On-base plus slugging (OPS) is calculated by adding a batter's on-base percentage (OBP) and slugging percentage (SLG). Formula: OBP (See Stat for More Info) + SLG (See Stat for More Info)"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+
+                                </MudStack>
+                            </div>
+
+                            <div style="padding-bottom: 50px;">
+                                <MudTable Items="@PlayerStats" Hover="true">
+                                    <ColGroup>
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                    </ColGroup>
+                                    <HeaderContent>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">VS</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">MIN</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">REB</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">AST</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">BLK</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">STL</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">TO</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGM</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PM</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PA</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTM</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="Away Team">@context.OpposingTeam</MudTd>
+                                        @if (context.StatsModel.Stats.Start)
+                                        {
+                                            <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
+                                        }
+                                        else
+                                        {
+                                            <MudTd DataLabel="S"></MudTd>
+                                        }
+                                        <MudTd DataLabel="MIN">@context.StatsModel.Stats.Minutes</MudTd>
+                                        <MudTd DataLabel="PTS">@context.StatsModel.Stats.Points</MudTd>
+                                        <MudTd DataLabel="REB">@context.StatsModel.Stats.Rebounds</MudTd>
+                                        <MudTd DataLabel="AST">@context.StatsModel.Stats.Assists</MudTd>
+                                        <MudTd DataLabel="BLK">@context.StatsModel.Stats.Blocks</MudTd>
+                                        <MudTd DataLabel="STL">@context.StatsModel.Stats.Steals</MudTd>
+                                        <MudTd DataLabel="TO">@context.StatsModel.Stats.Turnovers</MudTd>
+                                        <MudTd DataLabel="FGM">@context.StatsModel.Stats.FieldGoalsMade</MudTd>
+                                        <MudTd DataLabel="FGA">@context.StatsModel.Stats.FieldGoalsAttempted</MudTd>
+                                        <MudTd DataLabel="3PM">@context.StatsModel.Stats.ThreePointersMade</MudTd>
+                                        <MudTd DataLabel="3PA">@context.StatsModel.Stats.ThreePointersAttempted</MudTd>
+                                        <MudTd DataLabel="FTM">@context.StatsModel.Stats.FreeThrowsMade</MudTd>
+                                        <MudTd DataLabel="FTA">@context.StatsModel.Stats.FreeThrowsAttempted</MudTd>
+                                    </RowTemplate>
+                                </MudTable>
+
+                            </div>
+                        </MudTabPanel>
+                    </MudTabs>
+                </MudPaper>
+
             </div>
-            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
-                <MudTabPanel Text="Stats">
-                    <div style="padding-top: 25px; padding-bottom: 25px;">
-                        <MudStack Row="true">
-                            <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
-                                    <MudCardHeader>
-                                        <CardHeaderContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">PTS</MudText>
-                                        </CardHeaderContent>
-                                    </MudCardHeader>
-                                    <MudCardContent>
-                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonPointsAverage.ToString("#0.0")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions Style="justify-content: end;">
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate batting average in baseball, divide the total number of hits by the total number of at-bats. Formula: Batting Average = Total Hits / Total At-Bats"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            </MudItem>
-                            <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
-                                    <MudCardHeader>
-                                        <CardHeaderContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">REB</MudText>
-                                        </CardHeaderContent>
-                                    </MudCardHeader>
-                                    <MudCardContent>
-                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonReboundsAverage.ToString("#0.0")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions Style="justify-content: end;">
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate slugging percentage (SLG) in baseball, you divide the total bases a player gets by their total at-bats. Formula: (1B + 2Bx2 + 3Bx3 + HRx4) / AB"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            </MudItem>
-                            <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
-                                    <MudCardHeader>
-                                        <CardHeaderContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">AST</MudText>
-                                        </CardHeaderContent>
-                                    </MudCardHeader>
-                                    <MudCardContent>
-                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonAssistsAverage.ToString("#0.0")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions Style="justify-content: end;">
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate On-Base Percentage (OBP), divide the sum of hits, walks, and hit-by-pitches by the sum of at-bats, walks, hit-by-pitches, and sacrifice flies. Formula: (Hits + BBs + HBPs) / (ABs + BBs + HBPs + Sacrifice Flies)"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            </MudItem>
-                            <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
-                                    <MudCardHeader>
-                                        <CardHeaderContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">FG%</MudText>
-                                        </CardHeaderContent>
-                                    </MudCardHeader>
-                                    <MudCardContent>
-                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonFieldGoalPercentage.ToString("#0.0")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions Style="justify-content: end;">
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("On-base plus slugging (OPS) is calculated by adding a batter's on-base percentage (OBP) and slugging percentage (SLG). Formula: OBP (See Stat for More Info) + SLG (See Stat for More Info)"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            </MudItem>
+        }
+        else
+        {
+            <Loading />
+        }
 
-                        </MudStack>
-                    </div>
-                    <div style="padding-bottom: 50px;">
-                        <MudStack Row="true">
-                            <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
-                                    <MudCardHeader>
-                                        <CardHeaderContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">3P%</MudText>
-                                        </CardHeaderContent>
-                                    </MudCardHeader>
-                                    <MudCardContent>
-                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonThreePointerPercentage.ToString("#0.0")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions Style="justify-content: end;">
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate batting average in baseball, divide the total number of hits by the total number of at-bats. Formula: Batting Average = Total Hits / Total At-Bats"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            </MudItem>
-                            <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
-                                    <MudCardHeader>
-                                        <CardHeaderContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">FT%</MudText>
-                                        </CardHeaderContent>
-                                    </MudCardHeader>
-                                    <MudCardContent>
-                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonFreeThrowPercentage.ToString("#0.0")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions Style="justify-content: end;">
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate slugging percentage (SLG) in baseball, you divide the total bases a player gets by their total at-bats. Formula: (1B + 2Bx2 + 3Bx3 + HRx4) / AB"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            </MudItem>
-                            <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
-                                    <MudCardHeader>
-                                        <CardHeaderContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">BLK</MudText>
-                                        </CardHeaderContent>
-                                    </MudCardHeader>
-                                    <MudCardContent>
-                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonBlocksAverage.ToString("#0.0")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions Style="justify-content: end;">
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate On-Base Percentage (OBP), divide the sum of hits, walks, and hit-by-pitches by the sum of at-bats, walks, hit-by-pitches, and sacrifice flies. Formula: (Hits + BBs + HBPs) / (ABs + BBs + HBPs + Sacrifice Flies)"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            </MudItem>
-                            <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
-                                    <MudCardHeader>
-                                        <CardHeaderContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">STL</MudText>
-                                        </CardHeaderContent>
-                                    </MudCardHeader>
-                                    <MudCardContent>
-                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonStealsAverage.ToString("#0.0")</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions Style="justify-content: end;">
-                                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("On-base plus slugging (OPS) is calculated by adding a batter's on-base percentage (OBP) and slugging percentage (SLG). Formula: OBP (See Stat for More Info) + SLG (See Stat for More Info)"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            </MudItem>
-
-                        </MudStack>
-                    </div>
-
-                    <div style="padding-bottom: 50px;">
-                        <MudTable Items="@PlayerStats" Hover="true">
-                            <ColGroup>
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                            </ColGroup>
-                            <HeaderContent>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">VS</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">MIN</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">REB</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">AST</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">BLK</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">STL</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TO</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGM</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PM</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PA</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTM</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Away Team">@context.OpposingTeam</MudTd>
-                                @if (context.StatsModel.Stats.Start)
-                                {
-                                    <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
-                                }
-                                else
-                                {
-                                    <MudTd DataLabel="S"></MudTd>
-                                }
-                                <MudTd DataLabel="MIN">@context.StatsModel.Stats.Minutes</MudTd>
-                                <MudTd DataLabel="PTS">@context.StatsModel.Stats.Points</MudTd>
-                                <MudTd DataLabel="REB">@context.StatsModel.Stats.Rebounds</MudTd>
-                                <MudTd DataLabel="AST">@context.StatsModel.Stats.Assists</MudTd>
-                                <MudTd DataLabel="BLK">@context.StatsModel.Stats.Blocks</MudTd>
-                                <MudTd DataLabel="STL">@context.StatsModel.Stats.Steals</MudTd>
-                                <MudTd DataLabel="TO">@context.StatsModel.Stats.Turnovers</MudTd>
-                                <MudTd DataLabel="FGM">@context.StatsModel.Stats.FieldGoalsMade</MudTd>
-                                <MudTd DataLabel="FGA">@context.StatsModel.Stats.FieldGoalsAttempted</MudTd>
-                                <MudTd DataLabel="3PM">@context.StatsModel.Stats.ThreePointersMade</MudTd>
-                                <MudTd DataLabel="3PA">@context.StatsModel.Stats.ThreePointersAttempted</MudTd>
-                                <MudTd DataLabel="FTM">@context.StatsModel.Stats.FreeThrowsMade</MudTd>
-                                <MudTd DataLabel="FTA">@context.StatsModel.Stats.FreeThrowsAttempted</MudTd>
-                            </RowTemplate>
-                        </MudTable>
-
-                    </div>
-                </MudTabPanel>
-            </MudTabs>
-        </MudPaper>
-
-    </div>
-}
-else
-{
-    <Loading />
-}
-
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     [Parameter]
@@ -305,6 +314,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
         int year = DateTime.Now.Year;
         SeasonsModel = await SeasonService.GetSeasons();
         seasonValue = SeasonsModel.Seasons.FirstOrDefault(x => x.Year == year).Year;
