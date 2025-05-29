@@ -3,6 +3,7 @@
 @inject ITeamService TeamService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IAWSService AWSService
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -23,12 +24,11 @@
                     <MudStack Justify="@_justify" Row="true">
                         @foreach (var team in GetTeamsForRow(TeamCounter))
                         {
-                            string imageFile = String.Concat("images/", team.ImageFile);
                             string updateTeamLink = String.Concat("/updateteam/", team.Id);
                             string playerLink = String.Concat("/playersbyteam/", team.Id);
                             string address = String.Concat(team.TeamAddress.AddressLine, ", ", team.TeamAddress.State, ", ", team.TeamAddress.ZipCode);
                             <MudCard>
-                                <MudCardMedia Image="@imageFile" Height="200" />
+                                <MudCardMedia Image="@team.Image" Height="200" />
                                 <MudCardContent>
                                     <MudText Typo="Typo.h5" Style="font-weight: bold;">@team.TeamName</MudText>
                                     <MudText Typo="Typo.body2">@address</MudText>
@@ -87,6 +87,7 @@
         var leagueId = Guid.Parse(Id);
         League = await LeagueService.GetLeague(leagueId);
         Teams = await TeamService.GetTeamsByLeague(leagueId);
+        await GetImageAsync();
         TeamCount = (int)Teams.Teams.Count();
         Console.WriteLine(TeamCount);
         PageSize = 4;
@@ -112,5 +113,13 @@
         return teams;
     }
 
+    private async Task GetImageAsync()
+    {
+        foreach (var team in Teams.Teams)
+        {
+            var keyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{team.TeamName}/{team.ImageFile}";
+            team.Image = await AWSService.GetImage(keyPath);
+        }
+    }
 
 }

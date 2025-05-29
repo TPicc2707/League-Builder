@@ -7,6 +7,7 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
 @inject IWebHostEnvironment env
+@inject IAWSService AWSService
 
 <AuthorizeView Roles="@String.Concat(Roles.CreateTeams, ", ", Roles.CreateStandings, ", ", Roles.ReadSeasons, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -194,13 +195,10 @@
 
     private async Task OnValidSubmit(EditContext context)
     {
+        var league = LeaguesResponse.Leagues.FirstOrDefault(l => l.Id == Guid.Parse(Id));
         model.ImageFile = model.File.Name;
-        var rootpath = Path.Combine(env.WebRootPath, "images", model.ImageFile);
-        using(var stream = new FileStream(rootpath, FileMode.Create))
-        {
-            await model.File.OpenReadStream().CopyToAsync(stream);
-
-        }
+        var keyPath = $"/{league.Sport}/{league.Name}/teams/{model.TeamName}/{model.ImageFile}";
+        var s3Success = await AWSService.UploadImages(keyPath, model.File);
         Models.Team.AddressModel address = new Models.Team.AddressModel(model.FirstName, model.LastName, model.EmailAddress, model.AddressLine, model.Country, model.State, model.ZipCode);
         CreateTeamRequest request = new CreateTeamRequest(new CreateTeamModel(leagueId, model.TeamName, address, model.Description, model.ImageFile));
         var response = await TeamService.CreateTeam(request);

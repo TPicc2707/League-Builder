@@ -6,10 +6,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Version>1.1</Version>
     <Version>1.1</Version>
+    <UserSecretsId>a5118bf2-37bb-455b-b2dd-4377de3b5c61</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Aspire.Keycloak.Authentication" Version="9.2.1-preview.1.25222.1" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.1" />
+    <PackageReference Include="AWSSDK.S3" Version="4.0.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />

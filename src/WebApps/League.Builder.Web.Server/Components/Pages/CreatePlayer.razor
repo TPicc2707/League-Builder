@@ -7,6 +7,7 @@
 @inject IWebHostEnvironment env
 @inject NavigationManager NavManager;
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IAWSService AWSService
 
 
 <AuthorizeView Roles="@String.Concat(Roles.CreatePlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
@@ -148,6 +149,8 @@
 
     CreatePlayerForm model = new CreatePlayerForm();
     private GetTeamsResponse TeamsResponse { get; set; }
+    private GetTeamByIdResponse TeamById { get; set; }
+    private GetLeagueByIdResponse LeagueById { get; set; }
     private string teamValue;
     DateTime? date;
     string sport = string.Empty;
@@ -223,12 +226,12 @@
         {
             NavManager.NavigateTo("authentication/logout");
         }
-        
+
         teamId = Guid.Parse(Id);
         TeamsResponse = await TeamService.GetTeams();
-        var team = await TeamService.GetTeamById(teamId);
-        var league = await LeagueService.GetLeague(team.Team.LeagueId);
-        sport = league.League.Sport;
+        TeamById = await TeamService.GetTeamById(teamId);
+        LeagueById = await LeagueService.GetLeague(TeamById.Team.LeagueId);
+        sport = LeagueById.League.Sport;
         states = Constants.States();
         PageLoad = true;
     }
@@ -236,11 +239,8 @@
     private async Task OnValidSubmit(EditContext context)
     {
         model.ImageFile = model.File.Name;
-        var rootpath = Path.Combine(env.WebRootPath, "images", model.ImageFile);
-        using (var stream = new FileStream(rootpath, FileMode.Create))
-        {
-            await model.File.OpenReadStream().CopyToAsync(stream);
-        }
+        var keyPath = $"/{LeagueById.League.Sport}/{LeagueById.League.Name}/teams/{TeamById.Team.TeamName}/players/{String.Concat(model.FirstName, " ", model.LastName)}/{model.ImageFile}";
+        var s3Success = await AWSService.UploadImages(keyPath, model.File);
         model.BirthDate = (DateTime)date;
         Models.Player.AddressModel address = new Models.Player.AddressModel(model.AddressLine, model.Country, model.State, model.ZipCode);
         Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(model.EmailAddress, model.PhoneNumber, model.BirthDate, model.Height, model.Weight, model.Position, model.Number);

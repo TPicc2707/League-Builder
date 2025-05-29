@@ -4,6 +4,7 @@
 @inject ILeagueService LeagueService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IAWSService AWSService
 
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)">
@@ -21,12 +22,11 @@
                         <MudStack Justify="@_justify" Row="true">
                             @foreach (var player in GetPlayersForRow(PlayerCounter))
                             {
-                                string imageFile = String.Concat("images/", player.ImageFile);
                                 string statsLink = GetStatLink(player);
                                 string address = String.Concat(player.PlayerAddress.AddressLine, ", ", player.PlayerAddress.State, ", ", player.PlayerAddress.ZipCode);
                                 string teamName = GetTeamName(player.TeamId);
                                 <MudCard>
-                                    <MudCardMedia Image="@imageFile" Height="200" />
+                                    <MudCardMedia Image="@player.Image" Height="200" />
                                     <MudCardContent>
                                         <MudText Typo="Typo.h5" Style="font-weight: bold;">@player.FirstName @player.LastName</MudText>
                                         <MudText Typo="Typo.body1" Style="padding-bottom: 5px;">@teamName</MudText>
@@ -85,6 +85,7 @@
         PlayersResponse = await PlayerService.GetPlayersByLastName(LastName);
         TeamsResponse = await TeamService.GetTeams(0, 100);
         LeaguesResponse = await LeagueService.GetLeagues();
+        await GetImageAsync();
         PlayerCount = (int)PlayersResponse.Players.Count();
         Console.WriteLine(PlayerCount);
         PageSize = 4;
@@ -128,6 +129,17 @@
         return players;
     }
 
+    private async Task GetImageAsync()
+    {
+        foreach (var player in PlayersResponse.Players)
+        {
+            var team = TeamsResponse.Teams.Data.FirstOrDefault(t => t.Id == player.TeamId);
+            var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == team.LeagueId);
+
+            var keyPath = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
+            player.Image = await AWSService.GetImage(keyPath);
+        }
+    }
 
     // private async void PageChanged(int i)
     // {

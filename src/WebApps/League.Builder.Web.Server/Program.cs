@@ -1,3 +1,5 @@
+using Amazon.S3;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,6 +9,10 @@ builder.Services.AddHttpContextAccessor()
 builder.Services.AddMudServices();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+
+builder.Services.AddAWSService<IAmazonS3>();
 
 var oidcScheme = OpenIdConnectDefaults.AuthenticationScheme;
 
@@ -25,6 +31,8 @@ builder.Services.AddAuthentication(oidcScheme)
                 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme);
 
 builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddScoped<IAWSService, AWSService>();
 
 builder.Services.AddRefitClient<ILeagueService>().ConfigureHttpClient(x =>
 {

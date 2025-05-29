@@ -5,6 +5,7 @@
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
+@inject IAWSService AWSService
 
 <AuthorizeView Roles="@String.Concat(Roles.UpdatePlayers, ", ", Roles.ReadPlayers, ", ", Roles.ReadTeams)" Context="auth">
     <Authorized>
@@ -148,6 +149,8 @@
     private bool PageLoad = false;
     private GetPlayerByIdResponse PlayerByIdResponse { get; set; }
     private GetTeamsResponse TeamsResponse { get; set; }
+    private GetTeamByIdResponse TeamById { get; set; }
+    private GetLeagueByIdResponse LeagueById { get; set; }
     private List<string> states;
     UpdatePlayerForm model = new UpdatePlayerForm();
     bool success;
@@ -231,9 +234,9 @@
         var playerId = Guid.Parse(Id);
         PlayerByIdResponse = await PlayerService.GetPlayerById(playerId);
         TeamsResponse = await TeamService.GetTeams();
-        var team = await TeamService.GetTeamById(PlayerByIdResponse.Player.TeamId);
-        var league = await LeagueService.GetLeague(team.Team.LeagueId);
-        sport = league.League.Sport;
+        TeamById = await TeamService.GetTeamById(PlayerByIdResponse.Player.TeamId);
+        LeagueById = await LeagueService.GetLeague(TeamById.Team.LeagueId);
+        sport = LeagueById.League.Sport;
         states = Constants.States();
         model.Id = PlayerByIdResponse.Player.Id;
         model.TeamId = PlayerByIdResponse.Player.TeamId;
@@ -258,12 +261,11 @@
 
     private async Task OnValidSubmit(EditContext context)
     {
-        if(uploadFile == true)
+        if (uploadFile == true)
         {
             model.ImageFile = model.File.Name;
-            string rootpath = @"C:\Development\league-builder\src\WebApps\League.Builder.Web\wwwroot\images";
-            FileStream filestream = new FileStream(rootpath, FileMode.Create, FileAccess.Write);
-            await model.File.OpenReadStream().CopyToAsync(filestream);
+            var keyPath = $"/{LeagueById.League.Sport}/{LeagueById.League.Name}/teams/{TeamById.Team.TeamName}/players/{String.Concat(model.FirstName, " ", model.LastName)}/{model.ImageFile}";
+            var s3Success = await AWSService.UploadImages(keyPath, model.File);
         }
         model.BirthDate = (DateTime)date;
         Models.Player.AddressModel address = new Models.Player.AddressModel(model.AddressLine, model.Country, model.State, model.ZipCode);

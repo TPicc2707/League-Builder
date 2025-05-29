@@ -1,7 +1,7 @@
 ﻿namespace Standings.Application.Leagues.Integrations;
 
-public class LeagueCreationEventHandler
-    (ISender sender, ILogger<LeagueCreationEventHandler> logger)
+public class StandingsLeagueCreationEventHandler
+    (ISender sender, ILogger<StandingsLeagueCreationEventHandler> logger)
     : IConsumer<LeagueCreationEvent>
 {
     public async Task Consume(ConsumeContext<LeagueCreationEvent> context)

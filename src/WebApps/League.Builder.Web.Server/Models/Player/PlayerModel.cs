@@ -1,16 +1,18 @@
 ﻿namespace League.Builder.Web.Server.Models.Player;
 
-public record PlayerModel(
-    Guid Id,
-    Guid TeamId,
-    string FirstName,
-    string LastName,
-    AddressModel PlayerAddress,
-    PlayerDetailModel PlayerDetail,
-    string Description,
-    string ImageFile,
-    PlayerStatus PlayerStatus
-);
+public class PlayerModel
+{
+    public Guid Id { get; set; }
+    public Guid TeamId { get; set; }
+    public string FirstName { get; set; } = default!;
+    public string LastName { get; set; } = default!;
+    public AddressModel PlayerAddress { get; set; } = default!;
+    public PlayerDetailModel PlayerDetail { get; set; } = default!;
+    public string Description { get; set; } = default!;
+    public string ImageFile { get; set; } = default!;
+    public string Image { get; set; } = default!;
+    public PlayerStatus PlayerStatus { get; set; } = default!;
+}
 
 public record CreatePlayerModel(
     Guid TeamId,

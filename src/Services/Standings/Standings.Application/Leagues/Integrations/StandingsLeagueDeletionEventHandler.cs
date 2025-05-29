@@ -1,7 +1,7 @@
 ﻿namespace Standings.Application.Leagues.Integrations;
 
-public class LeagueDeletionEventHandler
-    (ISender sender, ILogger<LeagueDeletionEventHandler> logger)
+public class StandingsLeagueDeletionEventHandler
+    (ISender sender, ILogger<StandingsLeagueDeletionEventHandler> logger)
     : IConsumer<LeagueDeletionEvent>
 {
     public async Task Consume(ConsumeContext<LeagueDeletionEvent> context)

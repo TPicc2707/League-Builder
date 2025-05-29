@@ -32,9 +32,9 @@
                     <div style="padding-bottom: 50px;">
                         <MudTable Items="@Model.Standings.Where(x => x.SeasonId == Season.Id)" Hover="true" SortLabel="Sort By">
                             <HeaderContent>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<StandingsModel, object>(x=>x.Team.TeamName)">Team Name</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x=>x.Team.TeamName)">Team Name</MudTableSortLabel></MudTh>
                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x=>x.StandingsDetail.GamesPlayed)">GP</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x=>x.StandingsDetail.Wins)">W</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<StandingsModel, object>(x=>x.StandingsDetail.Wins)">W</MudTableSortLabel></MudTh>
                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x=>x.StandingsDetail.Losses)">L</MudTableSortLabel></MudTh>
                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x=>x.StandingsDetail.Ties)">T</MudTableSortLabel></MudTh>
                             </HeaderContent>

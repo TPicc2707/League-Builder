@@ -7,6 +7,7 @@ public class LeagueModel
     public string Sport { get; set; } = default!;
     public string Description { get; set; } = default!;
     public string ImageFile { get; set; } = default!;
+    public string Image { get; set; } = default!;
     public string EmailAddress { get; set; } = default!;
 }
 

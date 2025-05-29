@@ -3,6 +3,7 @@
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
+@inject IAWSService AWSService
 
 <AuthorizeView Roles="@String.Concat(Roles.UpdateLeagues, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -151,9 +152,11 @@
         if (uploadFile == true)
         {
             model.ImageFile = model.File.Name;
-            string rootpath = @"C:\Development\league-builder\src\WebApps\League.Builder.Web\wwwroot\images";
-            FileStream filestream = new FileStream(rootpath, FileMode.Create, FileAccess.Write);
-            await model.File.OpenReadStream().CopyToAsync(filestream);
+            // string rootpath = @"C:\Development\league-builder\src\WebApps\League.Builder.Web\wwwroot\images";
+            string keyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
+            var s3Success = await AWSService.UploadImages(keyPath, model.File);
+            // FileStream filestream = new FileStream(rootpath, FileMode.Create, FileAccess.Write);
+            // await model.File.OpenReadStream().CopyToAsync(filestream);
         }
 
         UpdateLeagueRequest request = new UpdateLeagueRequest(model.Id, model.Name, model.Sport, model.Description, model.ImageFile, model.EmailAddress);

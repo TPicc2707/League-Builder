@@ -1,6 +1,6 @@
 ﻿namespace Game.Application.Leagues.Integrations;
 
-public class LeagueUpdatedEventHandler(ISender sender, ILogger<LeagueUpdatedEventHandler> logger)
+public class StandingsLeagueUpdatedEventHandler(ISender sender, ILogger<StandingsLeagueUpdatedEventHandler> logger)
     : IConsumer<LeagueUpdatedEvent>
 {
     public async Task Consume(ConsumeContext<LeagueUpdatedEvent> context)

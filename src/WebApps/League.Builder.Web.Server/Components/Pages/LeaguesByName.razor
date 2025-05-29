@@ -2,6 +2,7 @@
 @inject ILeagueService LeagueService
 @inject NavigationManager NavManager;
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IAWSService AWSService
 
 <AuthorizeView Roles="@Roles.ReadLeagues">
     <Authorized>
@@ -15,12 +16,11 @@
                     <MudStack Justify="@_justify" Row="true">
                         @foreach (var league in GetLeaguesForRow(LeagueCounter))
                         {
-                            string imageFile = String.Concat("images/", league.ImageFile);
                             string teamsLink = String.Concat("/teamsbyleague/", league.Id);
                             string standingsLink = String.Concat("/leaguestandings/", league.Id);
                             string gamesLink = String.Concat("/leaguegames/", league.Id);
                             <MudCard>
-                                <MudCardMedia Image="@imageFile" Height="200" />
+                                <MudCardMedia Image="@league.Image" Height="200" />
                                 <MudCardContent>
                                     <MudText Typo="Typo.h5" Style="font-weight: bold;">@league.Name</MudText>
                                     <MudText Typo="Typo.body2">@league.EmailAddress</MudText>
@@ -37,11 +37,11 @@
                 </div>
 
             </div>
-    }
-    else
-    {
-        <Loading />
-    }
+        }
+        else
+        {
+            <Loading />
+        }
 
     </Authorized>
     <NotAuthorized>
@@ -69,6 +69,7 @@
         }
 
         LeaguesByNameResponse = await LeagueService.GetLeaguesByName(Name);
+        await GetImageAsync();
         LeagueCount = (int)LeaguesByNameResponse.Leagues.Count();
         Console.WriteLine(LeagueCount);
         PageSize = 4;
@@ -76,6 +77,15 @@
         Counter = (int)Math.Ceiling((decimal)LeagueCount / (decimal)PageSize);
         Console.WriteLine(Counter);
         PageLoad = true;
+    }
+
+    private async Task GetImageAsync()
+    {
+        foreach (var league in LeaguesByNameResponse.Leagues)
+        {
+            string keyPath = $"/{league.Sport}/{league.Name}/{league.ImageFile}";
+            league.Image = await AWSService.GetImage(keyPath);
+        }
     }
 
     private IEnumerable<LeagueModel> GetLeaguesForRow(int count)

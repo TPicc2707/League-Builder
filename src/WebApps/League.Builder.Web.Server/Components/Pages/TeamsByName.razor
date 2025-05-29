@@ -3,7 +3,7 @@
 @inject ITeamService TeamService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
-
+@inject IAWSService AWSService
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadLeagues)">
     <Authorized>
@@ -20,12 +20,11 @@
                         <MudStack Justify="@_justify" Row="true">
                             @foreach (var team in GetTeamsForRow(TeamCounter))
                             {
-                                string imageFile = String.Concat("images/", team.ImageFile);
                                 string playerLink = String.Concat("/playersbyteam/", team.Id);
                                 string address = String.Concat(team.TeamAddress.AddressLine, ", ", team.TeamAddress.State, ", ", team.TeamAddress.ZipCode);
                                 string leagueName = GetLeagueName(team.LeagueId);
                                 <MudCard>
-                                    <MudCardMedia Image="@imageFile" Height="200" />
+                                    <MudCardMedia Image="@team.Image" Height="200" />
                                     <MudCardContent>
                                         <MudText Typo="Typo.h5" Style="font-weight: bold; padding-bottom: 5px;">@team.TeamName</MudText>
                                         <MudText Typo="Typo.body1" Style="padding-bottom: 5px;">@leagueName</MudText>
@@ -77,6 +76,7 @@
 
         TeamsResponse = await TeamService.GetTeamsByName(TeamName);
         LeaguesResponse = await LeagueService.GetLeagues();
+        await GetImageAsync();
         TeamCount = (int)TeamsResponse.Teams.Count();
         Console.WriteLine(TeamCount);
         PageSize = 4;
@@ -101,10 +101,14 @@
         return teams;
     }
 
+    private async Task GetImageAsync()
+    {
+        foreach (var team in TeamsResponse.Teams)
+        {
+            var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == team.LeagueId);
+            var keyPath = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/{team.ImageFile}";
+            team.Image = await AWSService.GetImage(keyPath);
+        }
+    }
 
-    // private async void PageChanged(int i)
-    // {
-    //     i = i - 1;
-    //     PlayersResponse = await PlayerService.GetPlayers(i, PageSize);
-    // }
 }

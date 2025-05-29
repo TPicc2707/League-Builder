@@ -1,14 +1,16 @@
 ﻿namespace League.Builder.Web.Server.Models.Team;
 
-public record TeamModel(
-    Guid Id,
-    Guid LeagueId,
-    string TeamName,
-    AddressModel TeamAddress,
-    string Description,
-    string ImageFile,
-    TeamStatus TeamStatus
-);
+public class TeamModel
+{
+    public Guid Id { get; set; }
+    public Guid LeagueId { get; set; }
+    public string TeamName { get; set; } = default!;
+    public AddressModel TeamAddress { get; set; } = default!;
+    public string Description { get; set; } = default!;
+    public string ImageFile { get; set; } = default!;
+    public string Image { get; set; } = default!;
+    public TeamStatus TeamStatus { get; set; } = default!;
+}
 
 public record CreateTeamModel(
     Guid LeagueId,

@@ -1,10 +1,9 @@
 ﻿@page "/createleague"
 @inject ILeagueService LeagueService
-@inject NavigationManager NavManager
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager;
 @inject IHttpContextAccessor HttpContextAccessor
-
+@inject IAWSService AWSService
 <AuthorizeView Roles="@Roles.CreateLeagues" Context="auth">
     <Authorized>
         <div style="padding-top: 150px; padding-bottom: 175px;">
@@ -17,23 +16,23 @@
                             <MudCardContent>
                                 <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">League Information:</MudText>
                                 <MudTextField Label="League Name" HelperText="Max. 150 characters"
-                                @bind-Value="model.Name" For="@(() => model.Name)" />
+                                              @bind-Value="model.Name" For="@(() => model.Name)" />
                                 <MudTextField Label="Sport" Class="mt-3"
-                                @bind-Value="model.Sport" For="@(() => model.Sport)" />
+                                              @bind-Value="model.Sport" For="@(() => model.Sport)" />
                                 <MudTextField Label="Email Address" Class="mt-3"
-                                @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
+                                              @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
                                 <MudTextField Label="Description" Class="mt-3"
-                                @bind-Value="model.Description" For="@(() => model.Description)" />
+                                              @bind-Value="model.Description" For="@(() => model.Description)" />
                                 <MudItem Style="padding-top: 20px;">
                                     <MudStack Row="true">
                                         <MudFileUpload @ref="@_fileUpload"
-                                        T="IBrowserFile"
-                                        For="@(() => model.File)"
-                                        @bind-Files="model.File">
+                                                       T="IBrowserFile"
+                                                       For="@(() => model.File)"
+                                                       @bind-Files="model.File">
                                             <ActivatorContent>
                                                 <MudButton Variant="Variant.Filled"
-                                                Color="Color.Primary"
-                                                StartIcon="@Icons.Material.Filled.CloudUpload">
+                                                           Color="Color.Primary"
+                                                           StartIcon="@Icons.Material.Filled.CloudUpload">
                                                     League Image
                                                 </MudButton>
                                             </ActivatorContent>
@@ -120,9 +119,8 @@
     private async Task OnValidSubmit(EditContext context)
     {
         model.ImageFile = model.File.Name;
-        string rootpath = @"C:\Development\league-builder\src\WebApps\League.Builder.Web\wwwroot\images";
-        FileStream filestream = new FileStream(rootpath, FileMode.Create, FileAccess.Write);
-        await model.File.OpenReadStream().CopyToAsync(filestream);
+        string keyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
+        var s3Success = await AWSService.UploadImages(keyPath, model.File);
 
         CreateLeagueRequest request = new CreateLeagueRequest(model.Name, model.Sport, model.Description, model.ImageFile, model.EmailAddress);
         await LeagueService.CreateLeague(request);
