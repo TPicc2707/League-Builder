@@ -79,6 +79,8 @@ public record FootballKickingStatsModel(
     int ExtraPointsMade,
     int ExtraPointsAttempted,
     decimal ExtraPointPercentage,
+    int LongestKick,
+    int Points,
     int Punts,
     int PuntingYards,
     int LongestPunt);
@@ -122,6 +124,8 @@ public record CreateFootballKickingStatsModel(
     int FieldGoalsAttempted,
     int ExtraPointsMade,
     int ExtraPointsAttempted,
+    int LongestKick,
+    int Points,
     int Punts,
     int PuntingYards,
     int LongestPunt);
@@ -165,6 +169,8 @@ public record UpdateFootballKickingStatsModel(
     int FieldGoalsAttempted,
     int ExtraPointsMade,
     int ExtraPointsAttempted,
+    int LongestKick,
+    int Points,
     int Punts,
     int PuntingYards,
     int LongestPunt);

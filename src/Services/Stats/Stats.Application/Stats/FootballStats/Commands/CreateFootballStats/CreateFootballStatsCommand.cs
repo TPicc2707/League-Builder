@@ -54,6 +54,8 @@ public class CreateFootballStatsCommandValidator : AbstractValidator<CreateFootb
         RuleFor(x => x.FootballStats.KickingStats.FieldGoalsAttempted).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Field Goals Attempted is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.KickingStats.ExtraPointsMade).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Extra Points Made is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.KickingStats.ExtraPointsAttempted).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Extra Points Attempted is required and is greater than or equal to 0.");
+        RuleFor(x => x.FootballStats.KickingStats.LongestKick).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Longest Kick is required and is greater than or equal to 0.");
+        RuleFor(x => x.FootballStats.KickingStats.Points).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Points is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.KickingStats.Punts).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Punts is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.KickingStats.PuntingYards).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Punting Yards is required and is greater than or equal to 0.");
         RuleFor(x => x.FootballStats.KickingStats.LongestPunt).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Longest Punt is required and is greater than or equal to 0.");

@@ -7,6 +7,8 @@ public record FootballKickingStatsDto(
     int ExtraPointsMade, 
     int ExtraPointsAttempted, 
     decimal ExtraPointPercentage, 
+    int LongestKick, 
+    int Points, 
     int Punts, 
     int PuntingYards, 
     int LongestPunt

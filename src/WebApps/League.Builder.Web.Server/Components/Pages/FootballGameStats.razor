@@ -273,13 +273,17 @@
                                     <col />
                                     <col />
                                     <col />
+                                    <col />
+                                    <col />
                                 </ColGroup>
                                 <HeaderContent>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">FG</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNGK</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPM</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">PUNTS</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
@@ -288,8 +292,10 @@
                                     <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
                                     <MudTd DataLabel="FG">@context.FieldGoalsMade</MudTd>
                                     <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
+                                    <MudTd DataLabel="LNGK">@context.LongestKick</MudTd>
                                     <MudTd DataLabel="XPM">@context.ExtraPointsMade</MudTd>
                                     <MudTd DataLabel="XPA">@context.ExtraPointsAttempted</MudTd>
+                                    <MudTd DataLabel="PTS">@context.Points</MudTd>
                                     <MudTd DataLabel="PUNTS">@context.Punts</MudTd>
                                     <MudTd DataLabel="YDS">@context.PuntingYards</MudTd>
                                     <MudTd DataLabel="LNG">@context.LongestPunt</MudTd>
@@ -305,6 +311,7 @@
                                         <th>FGA</th>
                                         <th>XPM</th>
                                         <th>XPA</th>
+                                        <th>PTS</th>
                                         <th>PUNTS</th>
                                         <th>YDS</th>
                                     </tr>
@@ -316,6 +323,7 @@
                                         <td>@AwayTotalFieldGoalsAttempted</td>
                                         <td>@AwayTotalExtraPointsMade</td>
                                         <td>@AwayTotalExtraPointsAttempted</td>
+                                        <td>@AwayTotalPoints</td>
                                         <td>@AwayTotalPunts</td>
                                         <td>@AwayTotalPuntingYards</td>
                                     </tr>
@@ -580,23 +588,29 @@
                                     <col />
                                     <col />
                                     <col />
+                                    <col />
+                                    <col />
                                 </ColGroup>
                                 <HeaderContent>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">FG</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNGK</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPM</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">PUNTS</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNGP</MudTh>
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
                                     <MudTd DataLabel="FG">@context.FieldGoalsMade</MudTd>
                                     <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
+                                    <MudTd DataLabel="LNGK">@context.LongestKick</MudTd>
                                     <MudTd DataLabel="XPM">@context.ExtraPointsMade</MudTd>
                                     <MudTd DataLabel="XPA">@context.ExtraPointsAttempted</MudTd>
+                                    <MudTd DataLabel="PTS">@context.Points</MudTd>
                                     <MudTd DataLabel="PUNTS">@context.Punts</MudTd>
                                     <MudTd DataLabel="YDS">@context.PuntingYards</MudTd>
                                     <MudTd DataLabel="LNG">@context.LongestPunt</MudTd>
@@ -612,6 +626,7 @@
                                         <th>FGA</th>
                                         <th>XPM</th>
                                         <th>XPA</th>
+                                        <th>PTS</th>
                                         <th>PUNTS</th>
                                         <th>YDS</th>
                                     </tr>
@@ -623,6 +638,7 @@
                                         <td>@HomeTotalFieldGoalsAttempted</td>
                                         <td>@HomeTotalExtraPointsMade</td>
                                         <td>@HomeTotalExtraPointsAttempted</td>
+                                        <td>@HomeTotalPoints</td>
                                         <td>@HomeTotalPunts</td>
                                         <td>@HomeTotalPuntingYards</td>
                                     </tr>
@@ -685,6 +701,7 @@
     private int AwayTotalFieldGoalsAttempted = 0;
     private int AwayTotalExtraPointsMade = 0;
     private int AwayTotalExtraPointsAttempted = 0;
+    private int AwayTotalPoints = 0;
     private int AwayTotalPunts = 0;
     private int AwayTotalPuntingYards = 0;
 
@@ -719,6 +736,7 @@
     private int HomeTotalFieldGoalsAttempted = 0;
     private int HomeTotalExtraPointsMade = 0;
     private int HomeTotalExtraPointsAttempted = 0;
+    private int HomeTotalPoints = 0;
     private int HomeTotalPunts = 0;
     private int HomeTotalPuntingYards = 0;
 
@@ -753,6 +771,7 @@
                                                    playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
                                                    playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
                                                    playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
+                                                   playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
                                                    playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
 
                 AwayTotalPassingCompletions += playerStat.OffensiveStats.PassingCompletions;
@@ -786,6 +805,7 @@
                 AwayTotalFieldGoalsAttempted += playerStat.KickingStats.FieldGoalsAttempted;
                 AwayTotalExtraPointsMade += playerStat.KickingStats.ExtraPointsMade;
                 AwayTotalExtraPointsAttempted += playerStat.KickingStats.ExtraPointsAttempted;
+                AwayTotalPoints += playerStat.KickingStats.Points;
                 AwayTotalPunts += playerStat.KickingStats.Punts;
                 AwayTotalPuntingYards += playerStat.KickingStats.PuntingYards;
 
@@ -812,6 +832,7 @@
                                                    playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
                                                    playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
                                                    playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
+                                                   playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
                                                    playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
 
                 HomeTotalPassingCompletions += playerStat.OffensiveStats.PassingCompletions;
@@ -845,6 +866,7 @@
                 HomeTotalFieldGoalsAttempted += playerStat.KickingStats.FieldGoalsAttempted;
                 HomeTotalExtraPointsMade += playerStat.KickingStats.ExtraPointsMade;
                 HomeTotalExtraPointsAttempted += playerStat.KickingStats.ExtraPointsAttempted;
+                HomeTotalPoints += playerStat.KickingStats.Points;
                 HomeTotalPunts += playerStat.KickingStats.Punts;
                 HomeTotalPuntingYards += playerStat.KickingStats.PuntingYards;
 
@@ -879,7 +901,7 @@
                                        int receptions, int targets, int receivingYards, int receivingTouchdowns, int receivingFumbles, int receivingFumblesLost, int yardsAfterCatch,
                                        int tackles, int defensiveSacks, int tacklesForLoss, int passesDefended, int defensiveInterceptions, int defensiveInterceptionYards,
                                        int longestDefensiveInterceptionPlay, int defensiveTouchdowns, int forcedFumbles, int recoveredFumbles,
-                                       int fieldGoalsMade, int fieldGoalsAttempted, int extraPointsMade, int extraPointsAttempted, int punts, int puntingYards,
+                                       int fieldGoalsMade, int fieldGoalsAttempted, int extraPointsMade, int extraPointsAttempted, int longestKick, int points, int punts, int puntingYards,
                                        int longestPunt)
         {
             LeagueId = leagueId;
@@ -922,6 +944,8 @@
             FieldGoalsAttempted = fieldGoalsAttempted;
             ExtraPointsMade = extraPointsMade;
             ExtraPointsAttempted = extraPointsAttempted;
+            LongestKick = longestKick;
+            Points = points;
             Punts = punts;
             PuntingYards = puntingYards;
             LongestPunt = longestPunt;
@@ -967,6 +991,8 @@
         public int FieldGoalsAttempted { get; set; }
         public int ExtraPointsMade { get; set; }
         public int ExtraPointsAttempted { get; set; }
+        public int LongestKick { get; set; }
+        public int Points { get; set; }
         public int Punts { get; set; }
         public int PuntingYards { get; set; }
         public int LongestPunt { get; set; }

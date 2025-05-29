@@ -90,6 +90,8 @@ public class FootballStatsConfiguration : IEntityTypeConfiguration<FootballStats
             kickingStatsBuilder.Property(s => s.ExtraPointsMade);
             kickingStatsBuilder.Property(s => s.ExtraPointsAttempted);
             kickingStatsBuilder.Property(s => s.ExtraPointPercentage);
+            kickingStatsBuilder.Property(s => s.LongestKick);
+            kickingStatsBuilder.Property(s => s.Points);
             kickingStatsBuilder.Property(s => s.Punts);
             kickingStatsBuilder.Property(s => s.PuntingYards);
             kickingStatsBuilder.Property(s => s.LongestPunt);

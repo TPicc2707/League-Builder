@@ -57,6 +57,8 @@ public static class FootballStatsExtension
                 ExtraPointsMade: stats.KickingStats.ExtraPointsMade,
                 ExtraPointsAttempted: stats.KickingStats.ExtraPointsAttempted,
                 ExtraPointPercentage: stats.KickingStats.ExtraPointPercentage,
+                LongestKick: stats.KickingStats.LongestKick,
+                Points: stats.KickingStats.Points,
                 Punts: stats.KickingStats.Punts,
                 PuntingYards: stats.KickingStats.PuntingYards,
                 LongestPunt: stats.KickingStats.LongestPunt
@@ -120,6 +122,8 @@ public static class FootballStatsExtension
                 ExtraPointsMade: stats.KickingStats.ExtraPointsMade,
                 ExtraPointsAttempted: stats.KickingStats.ExtraPointsAttempted,
                 ExtraPointPercentage: stats.KickingStats.ExtraPointPercentage,
+                LongestKick: stats.KickingStats.LongestKick,
+                Points: stats.KickingStats.Points,
                 Punts: stats.KickingStats.Punts,
                 PuntingYards: stats.KickingStats.PuntingYards,
                 LongestPunt: stats.KickingStats.LongestPunt

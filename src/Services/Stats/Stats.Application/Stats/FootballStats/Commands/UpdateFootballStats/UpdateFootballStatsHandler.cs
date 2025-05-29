@@ -36,7 +36,7 @@ public class UpdateFootballStatsHandler(IApplicationDbContext dbContext)
                                                    footballStatsDto.DefensiveStats.ForcedFumbles, footballStatsDto.DefensiveStats.RecoveredFumbles);
 
         var kickingStats = FootballKickingStats.Of(footballStatsDto.KickingStats.FieldGoalsMade, footballStatsDto.KickingStats.FieldGoalsAttempted, footballStatsDto.KickingStats.ExtraPointsMade,
-                                                   footballStatsDto.KickingStats.ExtraPointsAttempted, footballStatsDto.KickingStats.Punts, footballStatsDto.KickingStats.PuntingYards,
+                                                   footballStatsDto.KickingStats.ExtraPointsAttempted, footballStatsDto.KickingStats.LongestKick, footballStatsDto.KickingStats.Points, footballStatsDto.KickingStats.Punts, footballStatsDto.KickingStats.PuntingYards,
                                                    footballStatsDto.KickingStats.LongestPunt);
 
         footballStats.Update(

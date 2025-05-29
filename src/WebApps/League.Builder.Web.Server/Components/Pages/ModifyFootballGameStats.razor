@@ -402,13 +402,16 @@
                                     <col />
                                     <col />
                                     <col />
+                                    <col />
                                 </ColGroup>
                                 <HeaderContent>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">FG</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNGK</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPM</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">PUNTS</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
@@ -417,8 +420,10 @@
                                     <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
                                     <MudTd DataLabel="FG">@context.FieldGoalsMade</MudTd>
                                     <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
+                                    <MudTd DataLabel="LNGK">@context.LongestKick</MudTd>
                                     <MudTd DataLabel="XPM">@context.ExtraPointsMade</MudTd>
                                     <MudTd DataLabel="XPA">@context.ExtraPointsAttempted</MudTd>
+                                    <MudTd DataLabel="PTS">@context.Points</MudTd>
                                     <MudTd DataLabel="PUNTS">@context.Punts</MudTd>
                                     <MudTd DataLabel="YDS">@context.PuntingYards</MudTd>
                                     <MudTd DataLabel="LNG">@context.LongestPunt</MudTd>
@@ -431,11 +436,17 @@
                                     <MudTd DataLabel="FGA">
                                         <MudTextField @bind-Value="context.FieldGoalsAttempted" Style="font-size: 12px;" Required />
                                     </MudTd>
+                                    <MudTd DataLabel="LNGK">
+                                        <MudTextField @bind-Value="context.LongestKick" Style="font-size: 12px;" Required />
+                                    </MudTd>
                                     <MudTd DataLabel="XPM">
                                         <MudTextField @bind-Value="context.ExtraPointsMade" Style="font-size: 12px;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="XPA">
                                         <MudTextField @bind-Value="context.ExtraPointsAttempted" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="PTS">
+                                        <MudTextField @bind-Value="context.Points" Style="font-size: 12px;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="PUNTS">
                                         <MudTextField @bind-Value="context.Punts" Style="font-size: 12px;" Required />
@@ -461,6 +472,7 @@
                                         <th>FGA</th>
                                         <th>XPM</th>
                                         <th>XPA</th>
+                                        <th>PTS</th>
                                         <th>PUNTS</th>
                                         <th>YDS</th>
                                     </tr>
@@ -472,6 +484,7 @@
                                         <td>@AwayTotalFieldGoalsAttempted</td>
                                         <td>@AwayTotalExtraPointsMade</td>
                                         <td>@AwayTotalExtraPointsAttempted</td>
+                                        <td>@AwayTotalPoints</td>
                                         <td>@AwayTotalPunts</td>
                                         <td>@AwayTotalPuntingYards</td>
                                     </tr>
@@ -865,13 +878,16 @@
                                     <col />
                                     <col />
                                     <col />
+                                    <col />
                                 </ColGroup>
                                 <HeaderContent>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">FG</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNGK</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPM</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPA</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">PUNTS</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
@@ -880,8 +896,10 @@
                                     <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
                                     <MudTd DataLabel="FG">@context.FieldGoalsMade</MudTd>
                                     <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
+                                    <MudTd DataLabel="LNGK">@context.LongestKick</MudTd>
                                     <MudTd DataLabel="XPM">@context.ExtraPointsMade</MudTd>
                                     <MudTd DataLabel="XPA">@context.ExtraPointsAttempted</MudTd>
+                                    <MudTd DataLabel="PTS">@context.Points</MudTd>
                                     <MudTd DataLabel="PUNTS">@context.Punts</MudTd>
                                     <MudTd DataLabel="YDS">@context.PuntingYards</MudTd>
                                     <MudTd DataLabel="LNG">@context.LongestPunt</MudTd>
@@ -894,11 +912,17 @@
                                     <MudTd DataLabel="FGA">
                                         <MudTextField @bind-Value="context.FieldGoalsAttempted" Style="font-size: 12px;" Required />
                                     </MudTd>
+                                    <MudTd DataLabel="LNGK">
+                                        <MudTextField @bind-Value="context.LongestKick" Style="font-size: 12px;" Required />
+                                    </MudTd>
                                     <MudTd DataLabel="XPM">
                                         <MudTextField @bind-Value="context.ExtraPointsMade" Style="font-size: 12px;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="XPA">
                                         <MudTextField @bind-Value="context.ExtraPointsAttempted" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="PTS">
+                                        <MudTextField @bind-Value="context.Points" Style="font-size: 12px;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="PUNTS">
                                         <MudTextField @bind-Value="context.Punts" Style="font-size: 12px;" Required />
@@ -924,6 +948,7 @@
                                         <th>FGA</th>
                                         <th>XPM</th>
                                         <th>XPA</th>
+                                        <th>PTS</th>
                                         <th>PUNTS</th>
                                         <th>YDS</th>
                                     </tr>
@@ -935,6 +960,7 @@
                                         <td>@HomeTotalFieldGoalsAttempted</td>
                                         <td>@HomeTotalExtraPointsMade</td>
                                         <td>@HomeTotalExtraPointsAttempted</td>
+                                        <td>@HomeTotalPoints</td>
                                         <td>@HomeTotalPunts</td>
                                         <td>@HomeTotalPuntingYards</td>
                                     </tr>
@@ -1009,6 +1035,7 @@
     private int AwayTotalFieldGoalsAttempted = 0;
     private int AwayTotalExtraPointsMade = 0;
     private int AwayTotalExtraPointsAttempted = 0;
+    private int AwayTotalPoints = 0;
     private int AwayTotalPunts = 0;
     private int AwayTotalPuntingYards = 0;
 
@@ -1043,6 +1070,7 @@
     private int HomeTotalFieldGoalsAttempted = 0;
     private int HomeTotalExtraPointsMade = 0;
     private int HomeTotalExtraPointsAttempted = 0;
+    private int HomeTotalPoints = 0;
     private int HomeTotalPunts = 0;
     private int HomeTotalPuntingYards = 0;
 
@@ -1077,6 +1105,7 @@
                                                    playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
                                                    playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
                                                    playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
+                                                   playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
                                                    playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
 
                 AwayTotalPassingCompletions += playerStat.OffensiveStats.PassingCompletions;
@@ -1110,6 +1139,7 @@
                 AwayTotalFieldGoalsAttempted += playerStat.KickingStats.FieldGoalsAttempted;
                 AwayTotalExtraPointsMade += playerStat.KickingStats.ExtraPointsMade;
                 AwayTotalExtraPointsAttempted += playerStat.KickingStats.ExtraPointsAttempted;
+                AwayTotalPoints += playerStat.KickingStats.Points;
                 AwayTotalPunts += playerStat.KickingStats.Punts;
                 AwayTotalPuntingYards += playerStat.KickingStats.PuntingYards;
 
@@ -1136,6 +1166,7 @@
                                                    playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
                                                    playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
                                                    playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
+                                                   playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
                                                    playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
 
                 HomeTotalPassingCompletions += playerStat.OffensiveStats.PassingCompletions;
@@ -1169,6 +1200,7 @@
                 HomeTotalFieldGoalsAttempted += playerStat.KickingStats.FieldGoalsAttempted;
                 HomeTotalExtraPointsMade += playerStat.KickingStats.ExtraPointsMade;
                 HomeTotalExtraPointsAttempted += playerStat.KickingStats.ExtraPointsAttempted;
+                HomeTotalPoints += playerStat.KickingStats.Points;
                 HomeTotalPunts += playerStat.KickingStats.Punts;
                 HomeTotalPuntingYards += playerStat.KickingStats.PuntingYards;
 
@@ -1276,6 +1308,8 @@
                 FieldGoalsAttempted = ((CreateFootballStatsForm)stats).FieldGoalsAttempted,
                 ExtraPointsMade = ((CreateFootballStatsForm)stats).ExtraPointsMade,
                 ExtraPointsAttempted = ((CreateFootballStatsForm)stats).ExtraPointsAttempted,
+                LongestKick = ((CreateFootballStatsForm)stats).LongestKick,
+                Points = ((CreateFootballStatsForm)stats).Points,
                 Punts = ((CreateFootballStatsForm)stats).Punts,
                 PuntingYards = ((CreateFootballStatsForm)stats).PuntingYards,
                 LongestPunt = ((CreateFootballStatsForm)stats).LongestPunt
@@ -1335,13 +1369,15 @@
     private void ResetKickingItemToOriginalValues(object stats)
     {
         ((CreateFootballStatsForm)stats).PlayerName = kickingStatBeforeEdit.PlayerName;
-        ((CreateFootballStatsForm)stats).Tackles = kickingStatBeforeEdit.FieldGoalsMade;
-        ((CreateFootballStatsForm)stats).DefensiveSacks = kickingStatBeforeEdit.FieldGoalsAttempted;
-        ((CreateFootballStatsForm)stats).TacklesForLoss = kickingStatBeforeEdit.ExtraPointsMade;
-        ((CreateFootballStatsForm)stats).PassesDefended = kickingStatBeforeEdit.ExtraPointsAttempted;
-        ((CreateFootballStatsForm)stats).DefensiveInterceptions = kickingStatBeforeEdit.Punts;
-        ((CreateFootballStatsForm)stats).DefensiveInterceptionYards = kickingStatBeforeEdit.PuntingYards;
-        ((CreateFootballStatsForm)stats).LongestDefensiveInterceptionPlay = kickingStatBeforeEdit.LongestPunt;
+        ((CreateFootballStatsForm)stats).FieldGoalsMade = kickingStatBeforeEdit.FieldGoalsMade;
+        ((CreateFootballStatsForm)stats).FieldGoalsAttempted = kickingStatBeforeEdit.FieldGoalsAttempted;
+        ((CreateFootballStatsForm)stats).ExtraPointsMade = kickingStatBeforeEdit.ExtraPointsMade;
+        ((CreateFootballStatsForm)stats).ExtraPointsAttempted = kickingStatBeforeEdit.ExtraPointsAttempted;
+        ((CreateFootballStatsForm)stats).LongestKick = kickingStatBeforeEdit.LongestKick;
+        ((CreateFootballStatsForm)stats).Points = kickingStatBeforeEdit.Points;
+        ((CreateFootballStatsForm)stats).Punts = kickingStatBeforeEdit.Punts;
+        ((CreateFootballStatsForm)stats).PuntingYards = kickingStatBeforeEdit.PuntingYards;
+        ((CreateFootballStatsForm)stats).LongestPunt = kickingStatBeforeEdit.LongestPunt;
     }
 
     private async Task SubmitPassingStats()
@@ -1371,7 +1407,7 @@
                                                                                                               form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                 UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
+                                                                                                        form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                 UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, passingStatSelectedItem.LeagueId, passingStatSelectedItem.TeamId,
                                                                                            passingStatSelectedItem.PlayerId, passingStatSelectedItem.SeasonId,
@@ -1417,7 +1453,7 @@
                                                                                                               form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                 CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
+                                                                                                        form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                 CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(passingStatSelectedItem.LeagueId, passingStatSelectedItem.TeamId,
                                                                                            passingStatSelectedItem.PlayerId, passingStatSelectedItem.SeasonId,
@@ -1480,7 +1516,7 @@
                                                                                                               form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                 UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
+                                                                                                        form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                 UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, rushingStatSelectedItem.LeagueId, rushingStatSelectedItem.TeamId,
                                                                                            rushingStatSelectedItem.PlayerId, rushingStatSelectedItem.SeasonId,
@@ -1524,7 +1560,7 @@
                                                                                                               form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                 CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
+                                                                                                        form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                 CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(rushingStatSelectedItem.LeagueId, rushingStatSelectedItem.TeamId,
                                                                                            rushingStatSelectedItem.PlayerId, rushingStatSelectedItem.SeasonId,
@@ -1585,7 +1621,7 @@
                                                                                                               form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                 UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
+                                                                                                        form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                 UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, receivingStatSelectedItem.LeagueId, receivingStatSelectedItem.TeamId,
                                                                                            receivingStatSelectedItem.PlayerId, receivingStatSelectedItem.SeasonId,
@@ -1633,7 +1669,7 @@
                                                                                                               form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                 CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
+                                                                                                        form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                 CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(receivingStatSelectedItem.LeagueId, receivingStatSelectedItem.TeamId,
                                                                                            receivingStatSelectedItem.PlayerId, receivingStatSelectedItem.SeasonId,
@@ -1699,7 +1735,7 @@
                                                                                                               defensiveStatSelectedItem.RecoveredFumbles);
 
                 UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
+                                                                                                        form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                 UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, defensiveStatSelectedItem.LeagueId, defensiveStatSelectedItem.TeamId,
                                                                                            defensiveStatSelectedItem.PlayerId, defensiveStatSelectedItem.SeasonId,
@@ -1752,7 +1788,7 @@
                                                                                                               defensiveStatSelectedItem.RecoveredFumbles);
 
                 CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                        form.ExtraPointsAttempted, form.Punts, form.PuntingYards, form.LongestPunt);
+                                                                                                        form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                 CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(defensiveStatSelectedItem.LeagueId, defensiveStatSelectedItem.TeamId,
                                                                                            defensiveStatSelectedItem.PlayerId, defensiveStatSelectedItem.SeasonId,
@@ -1822,7 +1858,7 @@
                                                                                                               form.RecoveredFumbles);
 
                 UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(kickingStatSelectedItem.FieldGoalsMade, kickingStatSelectedItem.FieldGoalsAttempted, kickingStatSelectedItem.ExtraPointsMade,
-                                                                                                        kickingStatSelectedItem.ExtraPointsAttempted, kickingStatSelectedItem.Punts, kickingStatSelectedItem.PuntingYards, kickingStatSelectedItem.LongestPunt);
+                                                                                                        kickingStatSelectedItem.ExtraPointsAttempted, kickingStatSelectedItem.LongestKick, kickingStatSelectedItem.Points, kickingStatSelectedItem.Punts, kickingStatSelectedItem.PuntingYards, kickingStatSelectedItem.LongestPunt);
 
                 UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, kickingStatSelectedItem.LeagueId, kickingStatSelectedItem.TeamId,
                                                                                            kickingStatSelectedItem.PlayerId, kickingStatSelectedItem.SeasonId,
@@ -1837,6 +1873,7 @@
                     AwayTotalFieldGoalsAttempted += kickingStatSelectedItem.FieldGoalsAttempted - gameStat.KickingStats.FieldGoalsAttempted;
                     AwayTotalExtraPointsMade += kickingStatSelectedItem.ExtraPointsMade - gameStat.KickingStats.ExtraPointsMade;
                     AwayTotalExtraPointsAttempted += kickingStatSelectedItem.ExtraPointsAttempted - gameStat.KickingStats.ExtraPointsAttempted;
+                    AwayTotalPoints += kickingStatSelectedItem.Points - gameStat.KickingStats.Points;
                     AwayTotalPunts += kickingStatSelectedItem.Punts - gameStat.KickingStats.Punts;
                     AwayTotalPuntingYards += kickingStatSelectedItem.PuntingYards - gameStat.KickingStats.PuntingYards;
                 }
@@ -1846,6 +1883,7 @@
                     HomeTotalFieldGoalsAttempted += kickingStatSelectedItem.FieldGoalsAttempted - gameStat.KickingStats.FieldGoalsAttempted;
                     HomeTotalExtraPointsMade += kickingStatSelectedItem.ExtraPointsMade - gameStat.KickingStats.ExtraPointsMade;
                     HomeTotalExtraPointsAttempted += kickingStatSelectedItem.ExtraPointsAttempted - gameStat.KickingStats.ExtraPointsAttempted;
+                    HomeTotalPoints += kickingStatSelectedItem.Points - gameStat.KickingStats.Points;
                     HomeTotalPunts += kickingStatSelectedItem.Punts - gameStat.KickingStats.Punts;
                     HomeTotalPuntingYards += kickingStatSelectedItem.PuntingYards - gameStat.KickingStats.PuntingYards;
                 }
@@ -1869,7 +1907,7 @@
                                                                                                               form.RecoveredFumbles);
 
                 CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(kickingStatSelectedItem.FieldGoalsMade, kickingStatSelectedItem.FieldGoalsAttempted, kickingStatSelectedItem.ExtraPointsMade,
-                                                                                                        kickingStatSelectedItem.ExtraPointsAttempted, kickingStatSelectedItem.Punts, kickingStatSelectedItem.PuntingYards, kickingStatSelectedItem.LongestPunt);
+                                                                                                        kickingStatSelectedItem.ExtraPointsAttempted, kickingStatSelectedItem.LongestKick, kickingStatSelectedItem.Points, kickingStatSelectedItem.Punts, kickingStatSelectedItem.PuntingYards, kickingStatSelectedItem.LongestPunt);
 
                 CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(kickingStatSelectedItem.LeagueId, kickingStatSelectedItem.TeamId,
                                                                                            kickingStatSelectedItem.PlayerId, kickingStatSelectedItem.SeasonId,
@@ -1885,6 +1923,7 @@
                     AwayTotalFieldGoalsAttempted += kickingStatSelectedItem.FieldGoalsAttempted;
                     AwayTotalExtraPointsMade += kickingStatSelectedItem.ExtraPointsMade;
                     AwayTotalExtraPointsAttempted += kickingStatSelectedItem.ExtraPointsAttempted;
+                    AwayTotalPoints += kickingStatSelectedItem.Points;
                     AwayTotalPunts += kickingStatSelectedItem.Punts;
                     AwayTotalPuntingYards += kickingStatSelectedItem.PuntingYards;
                 }
@@ -1894,6 +1933,7 @@
                     HomeTotalFieldGoalsAttempted += kickingStatSelectedItem.FieldGoalsAttempted;
                     HomeTotalExtraPointsMade += kickingStatSelectedItem.ExtraPointsMade;
                     HomeTotalExtraPointsAttempted += kickingStatSelectedItem.ExtraPointsAttempted;
+                    HomeTotalPoints += kickingStatSelectedItem.Points;
                     HomeTotalPunts += kickingStatSelectedItem.Punts;
                     HomeTotalPuntingYards += kickingStatSelectedItem.PuntingYards;
                 }
@@ -1928,7 +1968,7 @@
                                        int receptions, int targets, int receivingYards, int receivingTouchdowns, int receivingFumbles, int receivingFumblesLost, int yardsAfterCatch,
                                        int tackles, int defensiveSacks, int tacklesForLoss, int passesDefended, int defensiveInterceptions, int defensiveInterceptionYards,
                                        int longestDefensiveInterceptionPlay, int defensiveTouchdowns, int forcedFumbles, int recoveredFumbles,
-                                       int fieldGoalsMade, int fieldGoalsAttempted, int extraPointsMade, int extraPointsAttempted, int punts, int puntingYards,
+                                       int fieldGoalsMade, int fieldGoalsAttempted, int extraPointsMade, int extraPointsAttempted, int longestKick, int points, int punts, int puntingYards,
                                        int longestPunt)
         {
             LeagueId = leagueId;
@@ -1971,6 +2011,8 @@
             FieldGoalsAttempted = fieldGoalsAttempted;
             ExtraPointsMade = extraPointsMade;
             ExtraPointsAttempted = extraPointsAttempted;
+            LongestKick = longestKick;
+            Points = points;
             Punts = punts;
             PuntingYards = puntingYards;
             LongestPunt = longestPunt;
@@ -2016,6 +2058,8 @@
         public int FieldGoalsAttempted { get; set; }
         public int ExtraPointsMade { get; set; }
         public int ExtraPointsAttempted { get; set; }
+        public int LongestKick { get; set; }
+        public int Points { get; set; }
         public int Punts { get; set; }
         public int PuntingYards { get; set; }
         public int LongestPunt { get; set; }
