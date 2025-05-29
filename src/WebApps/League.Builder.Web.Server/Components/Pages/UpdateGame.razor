@@ -66,9 +66,9 @@
                                             }
                                         </MudSelect>
                                     }
-                                    <MudNumericField Label="Away Team Score" Class="mt-3"
+                                    <MudTextField Label="Away Team Score" Class="mt-3"
                                                      @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
-                                    <MudNumericField Label="Home Team Score" Class="mt-3"
+                                    <MudTextField Label="Home Team Score" Class="mt-3"
                                                      @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
                                     <MudSelect Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
                                         @foreach (var status in Enum.GetValues<GameStatus>())
@@ -167,8 +167,9 @@
 
         public DateTime? EndTime { get; set; }
 
+        [Range(0, int.MaxValue, ErrorMessage = "Please enter valid Away Team Score")]
         public int AwayTeamScore { get; set; }
-
+        [Range(0, int.MaxValue, ErrorMessage = "Please enter valid Home Team Score")]
         public int HomeTeamScore { get; set; }
 
         public GameStatus GameStatus { get; set; }

@@ -18,7 +18,7 @@
                         <MudCard>
                             <MudCardContent>
                                 <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Season Information:</MudText>
-                                <MudNumericField Label="Season Year"
+                                <MudTextField Label="Season Year"
                                                  @bind-Value="model.Year" For="@(() => model.Year)" />
                                 <MudTextField Label="Description" Class="mt-3"
                                               @bind-Value="model.Description" For="@(() => model.Description)" />
@@ -79,6 +79,7 @@
     public class CreateSeasonForm
     {
         [Required]
+        [Range(1900, 2500, ErrorMessage = "Please enter valid Year")]
         public int Year { get; set; } = DateTime.Now.Year;
         public string Description { get; set; }
 

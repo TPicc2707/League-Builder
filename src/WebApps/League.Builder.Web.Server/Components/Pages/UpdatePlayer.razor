@@ -84,11 +84,11 @@
                                     <MudTextField Label="Phone Number" Class="mt-3"
                                                   @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" />
                                     <MudDatePicker Class="mt-3" Label="Birth Date" Editable="true" @bind-Date="date" />
-                                    <MudNumericField Label="Height" Class="mt-3"
+                                    <MudTextField Label="Height" Class="mt-3"
                                                      @bind-Value="model.Height" For="@(() => model.Height)" />
-                                    <MudNumericField Label="Weight" Class="mt-3"
+                                    <MudTextField Label="Weight" Class="mt-3"
                                                      @bind-Value="model.Weight" For="@(() => model.Weight)" />
-                                    <MudNumericField Label="Number" Class="mt-3"
+                                    <MudTextField Label="Number" Class="mt-3"
                                                      @bind-Value="model.Number" For="@(() => model.Number)" />
                                     <MudSelect Class="mt-3" Label="Position" @bind-Value="model.Position">
                                         @foreach (var position in Constants.Positions(sport))
@@ -201,12 +201,15 @@
         public DateTime BirthDate { get; set; }
 
         [Required]
+        [Range(48, 96, ErrorMessage = "Please enter valid Height")]
         public int Height { get; set; }
 
         [Required]
+        [Range(75, 450, ErrorMessage = "Please enter valid Weight")]
         public int Weight { get; set; }
 
         [Required]
+        [Range(0, 100, ErrorMessage = "Please enter valid Number")]
         public int Number { get; set; }
 
         [Required]
