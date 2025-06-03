@@ -18,6 +18,7 @@
                         {
                             string teamsLink = String.Concat("/teamsbyleague/", league.Id);
                             string standingsLink = String.Concat("/leaguestandings/", league.Id);
+                            string statsLeadersLink = String.Concat("/leaguestatsleaders/", league.Id);
                             string gamesLink = String.Concat("/leaguegames/", league.Id);
                             <MudCard>
                                 <MudCardMedia Image="@league.Image" Height="200" />
@@ -30,6 +31,7 @@
                                     <MudButton Href="@gamesLink" Variant="Variant.Text" Color="Color.Primary">Games</MudButton>
                                     <MudButton Href="@standingsLink" Variant="Variant.Text" Color="Color.Primary">Standings</MudButton>
                                     <MudButton Href="@teamsLink" Variant="Variant.Text" Color="Color.Primary">Teams</MudButton>
+                                    <MudButton Href="@statsLeadersLink" Variant="Variant.Text" Color="Color.Primary">Leaders</MudButton>
                                 </MudCardActions>
                             </MudCard>
                         }

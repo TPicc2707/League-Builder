@@ -28,6 +28,19 @@
                                 string updateLeagueLink = String.Concat("/updateleague/", league.Id);
                                 string teamsLink = String.Concat("/teamsbyleague/", league.Id);
                                 string standingsLink = String.Concat("/leaguestandings/", league.Id);
+                                string statsLeadersLink = string.Empty;
+                                if(league.Sport == SportName.BASEBALL)
+                                {
+                                    statsLeadersLink = String.Concat("/baseballleaguestatsleaders/", league.Id);
+                                }
+                                if(league.Sport == SportName.BASKETBALL)
+                                {
+                                    statsLeadersLink = String.Concat("/basketballleaguestatsleaders/", league.Id);
+                                }
+                                if (league.Sport == SportName.FOOTBALL)
+                                {
+                                    statsLeadersLink = String.Concat("/footballleaguestatsleaders/", league.Id);
+                                }
                                 string gamesLink = String.Concat("/leaguegames/", league.Id);
                                 <MudCard>
                                     <MudCardMedia Image="@league.Image" Height="200" />
@@ -40,6 +53,7 @@
                                         <MudButton Href="@gamesLink" Variant="Variant.Text" Color="Color.Primary">Games</MudButton>
                                         <MudButton Href="@standingsLink" Variant="Variant.Text" Color="Color.Primary">Standings</MudButton>
                                         <MudButton Href="@teamsLink" Variant="Variant.Text" Color="Color.Primary">Teams</MudButton>
+                                        <MudButton Href="@statsLeadersLink" Variant="Variant.Text" Color="Color.Primary">Leaders</MudButton>
                                         <AuthorizeView Roles="@Roles.UpdateLeagues">
                                             <MudButton Href="@updateLeagueLink" Variant="Variant.Text" Color="Color.Primary">Update</MudButton>
                                         </AuthorizeView>

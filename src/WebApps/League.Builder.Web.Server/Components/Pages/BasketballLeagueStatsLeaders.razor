@@ -1,0 +1,299 @@
+﻿@page "/basketballleaguestatsleaders/{id}"
+@inject NavigationManager NavManager;
+@inject ISeasonService SeasonService
+@inject IStatsService StatsService
+@inject ITeamService TeamService
+@inject IPlayerService PlayerService
+@inject ILeagueService LeagueService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IAWSService AWSService
+
+
+<AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.ReadLeagues)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <div style="padding-top: 100px;">
+                <MudPaper Style="padding: 50px;" Elevation="2">
+                    <div style="padding-bottom: 25px;">
+                        <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@Season.Year Stat Leaders</MudText>
+                        <MudSpacer />
+                        <MudStack Row="true">
+                            <MudItem xs="8" md="8" lg="8">
+                                <MudSelect @bind-Value="seasonValue" Placeholder="@placeholder" Label="@placeholder">
+                                    @foreach (var season in SeasonsModel.Seasons)
+                                    {
+                                        <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
+                                <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStatLeaders" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                            </MudItem>
+                        </MudStack>
+                    </div>
+                    <MudTable Items="@StatLeaders" Hover="true">
+                        <ColGroup>
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                            <col />
+                        </ColGroup>
+                        <HeaderContent>
+                            <MudTh Class="mud-theme-primary"></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Team</MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Starts)">S</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Minutes)">MIN</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<StatLeaderModel, object>(x=>x.PointsPerGame)">PTS</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.ReboundsPerGame)">REB</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Assists)">AST</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Blocks)">BLK</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Steals)">STL</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Turnovers)">TO</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.FieldGoalsMade)">FGM</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.FieldGoalsAttempted)">FGA</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.FieldGoalPercentage)">FG%</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.ThreePointersMade)">3PM</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.ThreePointersAttempted)">3PA</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.ThreePointerPercentage)">3P%</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.FreeThrowsMade)">FTM</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.FreeThrowsAttempted)">FTA</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.FreeThrowPercentage)">FT%</MudTableSortLabel></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                <MudAvatar Size="Size.Small">
+                                    <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
+                                </MudAvatar>
+                            </MudTd>
+                            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                            <MudTd DataLabel="Team" Style="font-size: 12px;">@context.Team</MudTd>
+                            <MudTd DataLabel="Starts">@context.Starts</MudTd>
+                            <MudTd DataLabel="MIN">@context.Minutes</MudTd>
+                            <MudTd DataLabel="PTS">@context.PointsPerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="REB">@context.ReboundsPerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="AST">@context.AssistsPerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="BLK">@context.BlocksPerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="STL">@context.StealsPerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="TO">@context.TurnoversPerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="FGM">@context.FieldGoalsMadePerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="FGA">@context.FieldGoalsAttemptedPerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="FG%">@context.FieldGoalPercentage.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="3PM">@context.ThreePointersMadePerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="3PA">@context.ThreePointersAttemptedPerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="3P%">@context.ThreePointerPercentage.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="FTM">@context.FreeThrowsMadePerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="FTA">@context.FreeThrowsAttemptedPerGame.ToString("#0.0")</MudTd>
+                            <MudTd DataLabel="FT%">@context.FreeThrowPercentage.ToString("#0.0")</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudPaper>
+            </div>
+        }
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private bool PageLoad = false;
+    private Justify _justify = Justify.SpaceEvenly;
+    private SeasonModel Season;
+    private List<StatLeaderModel> StatLeaders = new List<StatLeaderModel>();
+    private string placeholder = "Season";
+    private int seasonValue;
+
+    private GetPlayerByIdResponse PlayerModel { get; set; }
+    private GetTeamByIdResponse TeamModel { get; set; }
+    private GetLeagueByIdResponse LeagueModel { get; set; }
+    private GetLeagueBasketballStatsBySeasonResponse StatsModel { get; set; }
+    private GetSeasonsResponse SeasonsModel { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
+        SeasonsModel = await SeasonService.GetSeasons();
+        Season = SeasonsModel.Seasons.First();
+        var leagueId = Guid.Parse(Id);
+        LeagueModel = await LeagueService.GetLeague(leagueId);
+        await CreateStatsLeadersByLeague(leagueId);
+        seasonValue = Season.Year;
+        PageLoad = true;
+    }
+
+    private async Task CreateStatsLeadersByLeague(Guid leagueId)
+    {
+        StatsModel = await StatsService.GetLeagueBasketballStatsBySeason(leagueId, Season.Id);
+        await BuildStatLeaders();
+    }
+
+
+    public async Task GetSeasonStatLeaders()
+    {
+        PageLoad = false;
+        Season = SeasonsModel.Seasons.FirstOrDefault(s => s.Year == seasonValue);
+
+        StatsModel = await StatsService.GetLeagueBasketballStatsBySeason(LeagueModel.League.Id, Season.Id);
+        await BuildStatLeaders();
+        PageLoad = true;
+    }
+
+    private async Task GetImageAsync(StatLeaderModel stat)
+    {
+        var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamModel.Team.TeamName}/players/{String.Concat(PlayerModel.Player.FirstName, " ", PlayerModel.Player.LastName)}/{PlayerModel.Player.ImageFile}";
+        stat.Image = await AWSService.GetImage(keyPath);
+    }
+
+    private async Task BuildStatLeaders()
+    {
+        if (StatLeaders.Any())
+            StatLeaders.RemoveRange(0, StatLeaders.Count);
+
+        foreach (var stat in StatsModel.BasketballStats)
+        {
+            if (!StatLeaders.Any(s => s.PlayerId == stat.PlayerId))
+            {
+                PlayerModel = await PlayerService.GetPlayerById(stat.PlayerId);
+                TeamModel = await TeamService.GetTeamById(stat.TeamId);
+                var statLeader = new StatLeaderModel
+                    {
+                        PlayerId = PlayerModel.Player.Id,
+                        PlayerName = String.Concat(PlayerModel.Player.FirstName, " ", PlayerModel.Player.LastName),
+                        Team = TeamModel.Team.TeamName,
+                        GamesPlayed = stat.Stats.Minutes > 0 ? 1 : 0,
+                        Starts = stat.Stats.Start ? 1 : 0,
+                        Points = stat.Stats.Points,
+                        Minutes = stat.Stats.Minutes,
+                        FieldGoalsMade = stat.Stats.FieldGoalsMade,
+                        FieldGoalsAttempted = stat.Stats.FieldGoalsAttempted,
+                        FieldGoalPercentage = stat.Stats.FieldGoalsAttempted == 0 || stat.Stats.FieldGoalsMade == 0 ? 0 : ((decimal)stat.Stats.FieldGoalsMade / stat.Stats.FieldGoalsAttempted) * 100,
+                        ThreePointersMade = stat.Stats.ThreePointersMade,
+                        ThreePointersAttempted = stat.Stats.ThreePointersAttempted,
+                        ThreePointerPercentage = stat.Stats.ThreePointersAttempted == 0 || stat.Stats.ThreePointersMade == 0 ? 0 : ((decimal)stat.Stats.ThreePointersMade / stat.Stats.ThreePointersAttempted) * 100,
+                        FreeThrowsMade = stat.Stats.FreeThrowsMade,
+                        FreeThrowsAttempted = stat.Stats.FreeThrowsAttempted,
+                        FreeThrowPercentage = stat.Stats.FreeThrowsAttempted == 0 || stat.Stats.FreeThrowsMade == 0 ? 0 : ((decimal)stat.Stats.FreeThrowsMade / stat.Stats.FreeThrowsAttempted) * 100,
+                        Rebounds = stat.Stats.Rebounds,
+                        Assists = stat.Stats.Assists,
+                        Steals = stat.Stats.Steals,
+                        Blocks = stat.Stats.Blocks,
+                        Turnovers = stat.Stats.Turnovers,
+                    };
+                statLeader.PointsPerGame = statLeader.GamesPlayed == 0 || statLeader.Points == 0 ? 0 : (decimal)statLeader.Points / statLeader.GamesPlayed;
+                statLeader.ReboundsPerGame = statLeader.GamesPlayed == 0 || statLeader.Rebounds == 0 ? 0 : (decimal)statLeader.Rebounds / statLeader.GamesPlayed;
+                statLeader.AssistsPerGame = statLeader.GamesPlayed == 0 || statLeader.Assists == 0 ? 0 : (decimal)statLeader.Assists / statLeader.GamesPlayed;
+                statLeader.StealsPerGame = statLeader.GamesPlayed == 0 || statLeader.Steals == 0 ? 0 : (decimal)statLeader.Steals / statLeader.GamesPlayed;
+                statLeader.BlocksPerGame = statLeader.GamesPlayed == 0 || statLeader.Blocks == 0 ? 0 : (decimal)statLeader.Blocks / statLeader.GamesPlayed;
+                statLeader.TurnoversPerGame = statLeader.GamesPlayed == 0 || statLeader.Turnovers == 0 ? 0 : (decimal)statLeader.Turnovers / statLeader.GamesPlayed;
+                statLeader.FieldGoalsMadePerGame = statLeader.GamesPlayed == 0 || statLeader.FieldGoalsMade == 0 ? 0 : (decimal)statLeader.FieldGoalsMade / statLeader.GamesPlayed;
+                statLeader.FieldGoalsAttemptedPerGame = statLeader.GamesPlayed == 0 || statLeader.FieldGoalsAttempted == 0 ? 0 : (decimal)statLeader.FieldGoalsAttempted / statLeader.GamesPlayed;
+                statLeader.ThreePointersMadePerGame = statLeader.GamesPlayed == 0 || statLeader.ThreePointersMade == 0 ? 0 : (decimal)statLeader.ThreePointersMade / statLeader.GamesPlayed;
+                statLeader.ThreePointersAttemptedPerGame = statLeader.GamesPlayed == 0 || statLeader.ThreePointersAttempted == 0 ? 0 : (decimal)statLeader.ThreePointersAttempted / statLeader.GamesPlayed;
+                statLeader.FreeThrowsMadePerGame = statLeader.GamesPlayed == 0 || statLeader.FreeThrowsMade == 0 ? 0 : (decimal)statLeader.FreeThrowsMade / statLeader.GamesPlayed;
+                statLeader.FreeThrowsAttemptedPerGame = statLeader.GamesPlayed == 0 || statLeader.FreeThrowsAttempted == 0 ? 0 : (decimal)statLeader.FreeThrowsAttempted / statLeader.GamesPlayed;
+
+                await GetImageAsync(statLeader);
+                StatLeaders.Add(statLeader);
+            }
+            else
+            {
+                var statLeader = StatLeaders.FirstOrDefault(s => s.PlayerId == stat.PlayerId);
+                statLeader.GamesPlayed += stat.Stats.Minutes > 0 ? 1 : 0;
+                statLeader.Starts += stat.Stats.Start ? 1 : 0;
+                statLeader.Minutes += stat.Stats.Minutes;
+                statLeader.Points += stat.Stats.Points;
+                statLeader.PointsPerGame = statLeader.GamesPlayed == 0 || statLeader.Points == 0 ? 0 : (decimal)statLeader.Points / statLeader.GamesPlayed;
+                statLeader.FieldGoalsMade += stat.Stats.FieldGoalsMade;
+                statLeader.FieldGoalsMadePerGame = statLeader.GamesPlayed == 0 || statLeader.FieldGoalsMade == 0 ? 0 : (decimal)statLeader.FieldGoalsMade / statLeader.GamesPlayed;
+                statLeader.FieldGoalsAttempted += stat.Stats.FieldGoalsAttempted;
+                statLeader.FieldGoalsAttemptedPerGame = statLeader.GamesPlayed == 0 || statLeader.FieldGoalsAttempted == 0 ? 0 : (decimal)statLeader.FieldGoalsAttempted / statLeader.GamesPlayed;
+                statLeader.FieldGoalPercentage = statLeader.FieldGoalsAttempted == 0 || statLeader.FieldGoalsMade == 0 ? 0 : ((decimal)statLeader.FieldGoalsMade / statLeader.FieldGoalsAttempted) * 100;
+                statLeader.ThreePointersMade += stat.Stats.ThreePointersMade;
+                statLeader.ThreePointersMadePerGame = statLeader.GamesPlayed == 0 || statLeader.ThreePointersMade == 0 ? 0 : (decimal)statLeader.ThreePointersMade / statLeader.GamesPlayed;
+                statLeader.ThreePointersAttempted += stat.Stats.ThreePointersAttempted;
+                statLeader.ThreePointersAttemptedPerGame = statLeader.GamesPlayed == 0 || statLeader.ThreePointersAttempted == 0 ? 0 : (decimal)statLeader.ThreePointersAttempted / statLeader.GamesPlayed;
+                statLeader.ThreePointerPercentage = statLeader.ThreePointersAttempted == 0 || statLeader.ThreePointersMade == 0 ? 0 : ((decimal)statLeader.ThreePointersMade / statLeader.ThreePointersAttempted) * 100;
+                statLeader.FreeThrowsMade += stat.Stats.FreeThrowsMade;
+                statLeader.FreeThrowsMadePerGame = statLeader.GamesPlayed == 0 || statLeader.FreeThrowsMade == 0 ? 0 : (decimal)statLeader.FreeThrowsMade / statLeader.GamesPlayed;
+                statLeader.FreeThrowsAttempted += stat.Stats.FreeThrowsAttempted;
+                statLeader.FreeThrowsAttemptedPerGame = statLeader.GamesPlayed == 0 || statLeader.FreeThrowsAttempted == 0 ? 0 : (decimal)statLeader.FreeThrowsAttempted / statLeader.GamesPlayed;
+                statLeader.ThreePointerPercentage = statLeader.FreeThrowsAttempted == 0 || statLeader.FreeThrowsMade == 0 ? 0 : ((decimal)statLeader.FreeThrowsMade / statLeader.FreeThrowsAttempted) * 100;
+                statLeader.Rebounds += stat.Stats.Rebounds;
+                statLeader.ReboundsPerGame = statLeader.GamesPlayed == 0 || statLeader.Rebounds == 0 ? 0 : (decimal)statLeader.Rebounds / statLeader.GamesPlayed;
+                statLeader.Assists += stat.Stats.Assists;
+                statLeader.AssistsPerGame = statLeader.GamesPlayed == 0 || statLeader.Assists == 0 ? 0 : (decimal)statLeader.Assists / statLeader.GamesPlayed;
+                statLeader.Steals += stat.Stats.Steals;
+                statLeader.StealsPerGame = statLeader.GamesPlayed == 0 || statLeader.Steals == 0 ? 0 : (decimal)statLeader.Steals / statLeader.GamesPlayed;
+                statLeader.Blocks += stat.Stats.Blocks;
+                statLeader.BlocksPerGame = statLeader.GamesPlayed == 0 || statLeader.Blocks == 0 ? 0 : (decimal)statLeader.Blocks / statLeader.GamesPlayed;
+                statLeader.Turnovers += stat.Stats.Turnovers;
+                statLeader.TurnoversPerGame = statLeader.GamesPlayed == 0 || statLeader.Turnovers == 0 ? 0 : (decimal)statLeader.Turnovers / statLeader.GamesPlayed;
+            }
+        }
+    }
+
+    public class StatLeaderModel
+    {
+        public Guid PlayerId { get; set; }
+        public string PlayerName { get; set; }
+        public string Team { get; set; }
+        public string Image { get; set; }
+        public int GamesPlayed { get; set; }
+        public int Starts { get; set; }
+        public int Minutes { get; set; }
+        public int Points { get; set; }
+        public decimal PointsPerGame { get; set; }
+        public int FieldGoalsMade { get; set; }
+        public decimal FieldGoalsMadePerGame { get; set; }
+        public int FieldGoalsAttempted { get; set; }
+        public decimal FieldGoalsAttemptedPerGame { get; set; }
+        public decimal FieldGoalPercentage { get; set; }
+        public int ThreePointersMade { get; set; }
+        public decimal ThreePointersMadePerGame { get; set; }
+        public int ThreePointersAttempted { get; set; }
+        public decimal ThreePointersAttemptedPerGame { get; set; }
+        public decimal ThreePointerPercentage { get; set; }
+        public int FreeThrowsMade { get; set; }
+        public decimal FreeThrowsMadePerGame { get; set; }
+        public int FreeThrowsAttempted { get; set; }
+        public decimal FreeThrowsAttemptedPerGame { get; set; }
+        public decimal FreeThrowPercentage { get; set; }
+        public int Rebounds { get; set; }
+        public decimal ReboundsPerGame { get; set; }
+        public int Assists { get; set; }
+        public decimal AssistsPerGame { get; set; }
+        public int Steals { get; set; }
+        public decimal StealsPerGame { get; set; }
+        public int Blocks { get; set; }
+        public decimal BlocksPerGame { get; set; }
+        public int Turnovers { get; set; }
+        public decimal TurnoversPerGame { get; set; }
+    }
+}
