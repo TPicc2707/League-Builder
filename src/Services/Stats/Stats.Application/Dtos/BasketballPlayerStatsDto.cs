@@ -17,4 +17,5 @@ public record BasketballPlayerStatsDto(
     int Assists, 
     int Steals, 
     int Blocks, 
-    int Turnovers);
+    int Turnovers,
+    int Fouls);

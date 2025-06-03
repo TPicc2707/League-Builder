@@ -18,7 +18,7 @@ public class CreateBasketballStatsHandler(IApplicationDbContext dbContext)
         var stats = BasketballPlayerStats.Of(basketballStatsDto.Stats.Start, basketballStatsDto.Stats.Minutes, basketballStatsDto.Stats.Points, basketballStatsDto.Stats.FieldGoalsMade,
                                                    basketballStatsDto.Stats.FieldGoalsAttempted, basketballStatsDto.Stats.ThreePointersMade, basketballStatsDto.Stats.ThreePointersAttempted,
                                                    basketballStatsDto.Stats.FreeThrowsMade, basketballStatsDto.Stats.FreeThrowsAttempted, basketballStatsDto.Stats.Rebounds,
-                                                   basketballStatsDto.Stats.Assists, basketballStatsDto.Stats.Steals, basketballStatsDto.Stats.Blocks, basketballStatsDto.Stats.Turnovers);
+                                                   basketballStatsDto.Stats.Assists, basketballStatsDto.Stats.Steals, basketballStatsDto.Stats.Blocks, basketballStatsDto.Stats.Turnovers, basketballStatsDto.Stats.Fouls);
 
         var newBasketballStat = Domain.Models.BasketballStats.Create(
                 id: BasketballStatsId.Of(Guid.NewGuid()),

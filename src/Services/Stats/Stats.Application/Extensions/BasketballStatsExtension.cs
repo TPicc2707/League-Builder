@@ -28,7 +28,8 @@ public static class BasketballStatsExtension
                 stats.Stats.Assists,
                 stats.Stats.Steals,
                 stats.Stats.Blocks,
-                stats.Stats.Turnovers
+                stats.Stats.Turnovers,
+                stats.Stats.Fouls
             )));
     }
 
@@ -58,7 +59,8 @@ public static class BasketballStatsExtension
                 stats.Stats.Assists,
                 stats.Stats.Steals,
                 stats.Stats.Blocks,
-                stats.Stats.Turnovers
+                stats.Stats.Turnovers,
+                stats.Stats.Fouls
             ));
     }
 

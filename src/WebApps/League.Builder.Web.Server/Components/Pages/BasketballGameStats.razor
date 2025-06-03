@@ -32,6 +32,7 @@
                                 <col />
                                 <col />
                                 <col />
+                                <col />
                             </ColGroup>
                             <HeaderContent>
                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
@@ -49,6 +50,8 @@
                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PA</MudTh>
                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTM</MudTh>
                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FOUL</MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
@@ -73,6 +76,7 @@
                                 <MudTd DataLabel="3PA">@context.ThreePointersAttempted</MudTd>
                                 <MudTd DataLabel="FTM">@context.FreeThrowsMade</MudTd>
                                 <MudTd DataLabel="FTA">@context.FreeThrowsAttempted</MudTd>
+                                <MudTd DataLabel="FoUL">@context.Fouls</MudTd>
                             </RowTemplate>
                         </MudTable>
                         <div style="padding-top: 25px;">
@@ -92,6 +96,7 @@
                                         <th>3PA</th>
                                         <th>FTM</th>
                                         <th>FTA</th>
+                                        <th>FOUL</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -109,6 +114,7 @@
                                         <td>@AwayTotalThreePointersAttempted</td>
                                         <td>@AwayTotalFreeThrowsMade</td>
                                         <td>@AwayTotalFreeThrowsAttempted</td>
+                                        <td>@AwayTotalFouls</td>
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
@@ -131,6 +137,7 @@
                                 <col />
                                 <col />
                                 <col />
+                                <col />
                             </ColGroup>
                             <HeaderContent>
                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
@@ -148,6 +155,7 @@
                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PA</MudTh>
                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTM</MudTh>
                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">FOUL</MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
@@ -172,6 +180,7 @@
                                 <MudTd DataLabel="3PA">@context.ThreePointersAttempted</MudTd>
                                 <MudTd DataLabel="FTM">@context.FreeThrowsMade</MudTd>
                                 <MudTd DataLabel="FTA">@context.FreeThrowsAttempted</MudTd>
+                                <MudTd DataLabel="FOUL">@context.Fouls</MudTd>
                             </RowTemplate>
                         </MudTable>
                         <div style="padding-top: 25px;">
@@ -191,6 +200,7 @@
                                         <th>3PA</th>
                                         <th>FTM</th>
                                         <th>FTA</th>
+                                        <th>FOUL</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -208,6 +218,7 @@
                                         <td>@HomeTotalThreePointersAttempted</td>
                                         <td>@HomeTotalFreeThrowsMade</td>
                                         <td>@HomeTotalFreeThrowsAttempted</td>
+                                        <td>@HomeTotalFouls</td>
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
@@ -249,6 +260,7 @@
     private int AwayTotalSteals = 0;
     private int AwayTotalBlocks = 0;
     private int AwayTotalTurnovers = 0;
+    private int AwayTotalFouls = 0;
 
     private int HomeTotalPoints = 0;
     private int HomeTotalFieldGoalsMade = 0;
@@ -262,6 +274,7 @@
     private int HomeTotalSteals = 0;
     private int HomeTotalBlocks = 0;
     private int HomeTotalTurnovers = 0;
+    private int HomeTotalFouls = 0;
 
 
     protected override async Task OnInitializedAsync()
@@ -285,7 +298,7 @@
                 Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
                                                     playerStat.Stats.Start, playerStat.Stats.Minutes, playerStat.Stats.Points, playerStat.Stats.FieldGoalsMade, playerStat.Stats.FieldGoalsAttempted, playerStat.Stats.ThreePointersMade, playerStat.Stats.ThreePointersAttempted,
                                                     playerStat.Stats.FreeThrowsMade, playerStat.Stats.FreeThrowsAttempted, playerStat.Stats.Rebounds, playerStat.Stats.Assists, playerStat.Stats.Steals,
-                                                    playerStat.Stats.Blocks, playerStat.Stats.Turnovers));
+                                                    playerStat.Stats.Blocks, playerStat.Stats.Turnovers, playerStat.Stats.Fouls));
 
                 AwayTotalPoints += playerStat.Stats.Points;
                 AwayTotalFieldGoalsMade += playerStat.Stats.FieldGoalsMade;
@@ -299,6 +312,7 @@
                 AwayTotalSteals += playerStat.Stats.Steals;
                 AwayTotalBlocks += playerStat.Stats.Blocks;
                 AwayTotalTurnovers += playerStat.Stats.Turnovers;
+                AwayTotalFouls += playerStat.Stats.Fouls;
             }
             else if (GameModel.Game.GameStatus == GameStatus.Completed)
                 Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
@@ -311,7 +325,7 @@
                 Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
                                                     playerStat.Stats.Start, playerStat.Stats.Minutes, playerStat.Stats.Points, playerStat.Stats.FieldGoalsMade, playerStat.Stats.FieldGoalsAttempted, playerStat.Stats.ThreePointersMade, playerStat.Stats.ThreePointersAttempted,
                                                     playerStat.Stats.FreeThrowsMade, playerStat.Stats.FreeThrowsAttempted, playerStat.Stats.Rebounds, playerStat.Stats.Assists, playerStat.Stats.Steals,
-                                                    playerStat.Stats.Blocks, playerStat.Stats.Turnovers));
+                                                    playerStat.Stats.Blocks, playerStat.Stats.Turnovers, playerStat.Stats.Fouls));
 
                 HomeTotalPoints += playerStat.Stats.Points;
                 HomeTotalFieldGoalsMade += playerStat.Stats.FieldGoalsMade;
@@ -325,6 +339,7 @@
                 HomeTotalSteals += playerStat.Stats.Steals;
                 HomeTotalBlocks += playerStat.Stats.Blocks;
                 HomeTotalTurnovers += playerStat.Stats.Turnovers;
+                HomeTotalFouls += playerStat.Stats.Fouls;
 
 
             }
@@ -354,7 +369,7 @@
         public BasketballStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName,
                                        bool start, int minutes, int points, int fieldGoalsMade, int fieldGoalsAttempted, int threePointersMade,
                                        int threePointersAttempted, int freeThrowsMade, int freeThrowsAttempted, int rebounds, int assists, int steals,
-                                       int blocks, int turnovers)
+                                       int blocks, int turnovers, int fouls)
         {
             LeagueId = leagueId;
             TeamId = teamId;
@@ -376,6 +391,7 @@
             Steals = steals;
             Blocks = blocks;
             Turnovers = turnovers;
+            Fouls = fouls;
         }
 
         public Guid LeagueId { get; set; }
@@ -398,6 +414,7 @@
         public int Steals { get; set; }
         public int Blocks { get; set; }
         public int Turnovers { get; set; }
+        public int Fouls { get; set; }
     }
 }
 

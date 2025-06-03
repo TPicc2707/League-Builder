@@ -212,6 +212,7 @@
                                         <col />
                                         <col />
                                         <col />
+                                        <col />
                                     </ColGroup>
                                     <HeaderContent>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">VS</MudTh>
@@ -229,6 +230,7 @@
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PA</MudTh>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTM</MudTh>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">FOUL</MudTh>
                                     </HeaderContent>
                                     <RowTemplate>
                                         <MudTd DataLabel="Away Team">@context.OpposingTeam</MudTd>
@@ -253,6 +255,7 @@
                                         <MudTd DataLabel="3PA">@context.StatsModel.Stats.ThreePointersAttempted</MudTd>
                                         <MudTd DataLabel="FTM">@context.StatsModel.Stats.FreeThrowsMade</MudTd>
                                         <MudTd DataLabel="FTA">@context.StatsModel.Stats.FreeThrowsAttempted</MudTd>
+                                        <MudTd DataLabel="FOUL">@context.StatsModel.Stats.Fouls</MudTd>
                                     </RowTemplate>
                                 </MudTable>
 
@@ -296,6 +299,7 @@
     private int seasonSteals;
     private int seasonBlocks;
     private int seasonTurnovers;
+    private int seasonFouls;
     private decimal seasonPointsAverage;
     private decimal seasonReboundsAverage;
     private decimal seasonAssistsAverage;
@@ -341,6 +345,7 @@
         seasonSteals = 0;
         seasonBlocks = 0;
         seasonTurnovers = 0;
+        seasonFouls = 0;
         PlayerStats.RemoveRange(0, PlayerStats.Count);
         await CreatePlayerStats(seasonValue);
         PageLoad = true;
@@ -370,6 +375,7 @@
             seasonSteals += stat.Stats.Steals;
             seasonBlocks += stat.Stats.Blocks;
             seasonTurnovers += stat.Stats.Turnovers;
+            seasonFouls += stat.Stats.Fouls;
             var game = GameModel.Games.FirstOrDefault(g => g.Id == stat.GameId);
             var opposingTeam = game.AwayTeam.Id != PlayerModel.Player.TeamId ? game.AwayTeam.TeamName : game.HomeTeam.TeamName;
             var playerStat = new PlayerStatRecord(opposingTeam, stat);

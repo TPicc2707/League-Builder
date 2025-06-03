@@ -49,6 +49,7 @@
                                     <col />
                                     <col />
                                     <col />
+                                    <col />
                                 </ColGroup>
                                 <HeaderContent>
                                     <MudTh Class="mud-theme-primary"></MudTh>
@@ -61,6 +62,7 @@
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<StatLeaderModel, object>(x=>x.PassingYards)">YDS</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PassingYardsPerPlay)">AVG</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.LongestPassingPlay)">LNG</MudTableSortLabel></MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PassingYardsPerGame)">YDS/G</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PassingTouchdowns)">TD</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PassingInterceptions)">INT</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Sacks)">SACK</MudTableSortLabel></MudTh>
@@ -80,6 +82,7 @@
                                     <MudTd DataLabel="Passing Yards">@context.PassingYards</MudTd>
                                     <MudTd DataLabel="Passing Yards Per Play">@context.PassingYardsPerPlay.ToString("#0.0")</MudTd>
                                     <MudTd DataLabel="Longest Passing Play">@context.LongestPassingPlay</MudTd>
+                                    <MudTd DataLabel="Passing Yards Per Game">@context.PassingYardsPerGame.ToString("#0.0")</MudTd>
                                     <MudTd DataLabel="Passing Touchdowns">@context.PassingTouchdowns</MudTd>
                                     <MudTd DataLabel="Passing Interceptions">@context.PassingInterceptions</MudTd>
                                     <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
@@ -89,6 +92,7 @@
                         <MudTabPanel Text="Rushing">
                             <MudTable Items="@StatLeaders" Hover="true">
                                 <ColGroup>
+                                    <col />
                                     <col />
                                     <col />
                                     <col />
@@ -111,6 +115,7 @@
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.RushingYardsAverage)">AVG</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.RushingTouchdowns)">TD</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.LongestRushingPlay)">LNG</MudTableSortLabel></MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.RushingYardsPerGame)">YDS/G</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.RushingFumbles)">FUM</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.RushingFumblesLost)">LST</MudTableSortLabel></MudTh>
                                 </HeaderContent>
@@ -128,6 +133,7 @@
                                     <MudTd DataLabel="Rushing Yards Average">@context.RushingYardsAverage.ToString("#0.0")</MudTd>
                                     <MudTd DataLabel="Rushing Touchdowns">@context.RushingTouchdowns</MudTd>
                                     <MudTd DataLabel="Longest Rushing Play">@context.LongestRushingPlay</MudTd>
+                                    <MudTd DataLabel="Rushing Yards Per Game">@context.RushingYardsPerGame.ToString("#0.0")</MudTd>
                                     <MudTd DataLabel="Rushing Fumbles">@context.RushingFumbles</MudTd>
                                     <MudTd DataLabel="Rushing Fumbles Lost">@context.RushingFumblesLost</MudTd>
                                 </RowTemplate>
@@ -136,6 +142,7 @@
                         <MudTabPanel Text="Receiving">
                             <MudTable Items="@StatLeaders" Hover="true">
                                 <ColGroup>
+                                    <col />
                                     <col />
                                     <col />
                                     <col />
@@ -159,6 +166,7 @@
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<StatLeaderModel, object>(x=>x.ReceivingYards)">YDS</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.ReceivingYardsPerPlay)">AVG</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.ReceivingTouchdowns)">TD</MudTableSortLabel></MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.ReceivingYardsPerGame)">YDS/G</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.YardsAfterCatch)">YAC</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.ReceivingFumbles)">FUM</MudTableSortLabel></MudTh>
                                     <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.ReceivingFumblesLost)">LST</MudTableSortLabel></MudTh>
@@ -177,6 +185,7 @@
                                     <MudTd DataLabel="Receiving Yards">@context.ReceivingYards</MudTd>
                                     <MudTd DataLabel="Receiving Yards Per Play">@context.ReceivingYardsPerPlay.ToString("#0.0")</MudTd>
                                     <MudTd DataLabel="Receiving Touchdowns">@context.ReceivingTouchdowns</MudTd>
+                                    <MudTd DataLabel="Receiving Yards Per Game">@context.ReceivingYardsPerGame.ToString("#0.0")</MudTd>
                                     <MudTd DataLabel="Yards After Catch">@context.YardsAfterCatch</MudTd>
                                     <MudTd DataLabel="Receiving Fumbles">@context.ReceivingFumbles</MudTd>
                                     <MudTd DataLabel="Receiving Fumbles Lost">@context.ReceivingFumblesLost</MudTd>
@@ -428,6 +437,9 @@
                         LongestPunt = stat.KickingStats.LongestPunt,
                     };
                 statLeader.GamesPlayed = statLeader.PassingAttempts > 0 || statLeader.RushingAttempts > 0 || statLeader.Targets > 0 || statLeader.Tackles > 0 || statLeader.ExtraPointsAttempted > 0 || statLeader.FieldGoalsAttempted > 0 || statLeader.Punts > 0 ? 1 : 0;
+                statLeader.PassingYardsPerGame = stat.OffensiveStats.PassingYards == 0 || statLeader.GamesPlayed == 0 ? 0 : (decimal)statLeader.PassingYards / statLeader.GamesPlayed;
+                statLeader.RushingYardsPerGame = stat.OffensiveStats.RushingYards == 0 || statLeader.GamesPlayed == 0 ? 0 : (decimal)statLeader.RushingYards / statLeader.GamesPlayed;
+                statLeader.ReceivingYardsPerGame = stat.OffensiveStats.ReceivingYards == 0 || statLeader.GamesPlayed == 0 ? 0 : (decimal)statLeader.ReceivingYards / statLeader.GamesPlayed;
                 await GetImageAsync(statLeader);
                 StatLeaders.Add(statLeader);
             }
@@ -438,6 +450,7 @@
                 statLeader.PassingAttempts += stat.OffensiveStats.PassingAttempts;
                 statLeader.PassingCompletionPercentage = statLeader.PassingCompletions == 0 || statLeader.PassingAttempts == 0 ? 0 : (decimal)(statLeader.PassingCompletions / statLeader.PassingAttempts) * 100;
                 statLeader.PassingYards += stat.OffensiveStats.PassingYards;
+                statLeader.PassingYardsPerGame = statLeader.PassingYards == 0 || statLeader.GamesPlayed == 0 ? 0 : (decimal)statLeader.PassingYards / statLeader.GamesPlayed;
                 statLeader.LongestPassingPlay += stat.OffensiveStats.LongestPassingPlay;
                 statLeader.PassingYardsPerPlay = statLeader.PassingYards == 0 || statLeader.PassingAttempts == 0 ? 0 : (decimal)statLeader.PassingYards / statLeader.PassingAttempts;
                 statLeader.PassingTouchdowns += stat.OffensiveStats.PassingTouchdowns;
@@ -445,6 +458,7 @@
                 statLeader.Sacks += stat.OffensiveStats.Sacks;
                 statLeader.RushingAttempts += stat.OffensiveStats.RushingAttempts;
                 statLeader.RushingYards += stat.OffensiveStats.RushingYards;
+                statLeader.RushingYardsPerGame = statLeader.RushingYards == 0 || statLeader.GamesPlayed == 0 ? 0 : (decimal)statLeader.RushingYards / statLeader.GamesPlayed;
                 statLeader.RushingYardsAverage = statLeader.RushingYards == 0 || statLeader.RushingAttempts == 0 ? 0 : (decimal)statLeader.RushingYards / statLeader.RushingAttempts;
                 statLeader.LongestRushingPlay += stat.OffensiveStats.LongestRushingPlay;
                 statLeader.RushingTouchdowns += stat.OffensiveStats.RushingTouchdowns;
@@ -453,6 +467,7 @@
                 statLeader.Receptions += stat.OffensiveStats.Receptions;
                 statLeader.Targets += stat.OffensiveStats.Targets;
                 statLeader.ReceivingYards += stat.OffensiveStats.ReceivingYards;
+                statLeader.ReceivingYardsPerGame = statLeader.ReceivingYards == 0 || statLeader.GamesPlayed == 0 ? 0 : (decimal)statLeader.ReceivingYards / statLeader.GamesPlayed;
                 statLeader.ReceivingYardsPerPlay = statLeader.ReceivingYards == 0 || statLeader.Receptions == 0 ? 0 : (decimal)statLeader.ReceivingYards / statLeader.Receptions;
                 statLeader.ReceivingTouchdowns += stat.OffensiveStats.ReceivingTouchdowns;
                 statLeader.ReceivingFumbles += stat.OffensiveStats.ReceivingFumbles;
@@ -493,6 +508,7 @@
         public int PassingAttempts { get; set; }
         public decimal PassingCompletionPercentage { get; set; }
         public int PassingYards { get; set; }
+        public decimal PassingYardsPerGame { get; set; }
         public decimal PassingYardsPerPlay { get; set; }
         public int LongestPassingPlay { get; set; }
         public int PassingTouchdowns { get; set; }
@@ -500,6 +516,7 @@
         public int Sacks { get; set; }
         public int RushingAttempts { get; set; }
         public int RushingYards { get; set; }
+        public decimal RushingYardsPerGame { get; set; }
         public decimal RushingYardsAverage { get; set; }
         public int LongestRushingPlay { get; set; }
         public int RushingTouchdowns { get; set; }
@@ -508,6 +525,7 @@
         public int Receptions { get; set; }
         public int Targets { get; set; }
         public int ReceivingYards { get; set; }
+        public decimal ReceivingYardsPerGame { get; set; }
         public decimal ReceivingYardsPerPlay { get; set; }
         public int ReceivingTouchdowns { get; set; }
         public int ReceivingFumbles { get; set; }

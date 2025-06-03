@@ -554,6 +554,7 @@
                                         <col />
                                         <col />
                                         <col />
+                                        <col />
                                     </ColGroup>
                                     <HeaderContent>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">VS</MudTh>
@@ -561,6 +562,7 @@
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPM</MudTh>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPA</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">PUNTS</MudTh>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
@@ -571,6 +573,7 @@
                                         <MudTd DataLabel="ATT">@context.StatsModel.KickingStats.FieldGoalsAttempted</MudTd>
                                         <MudTd DataLabel="YDS">@context.StatsModel.KickingStats.ExtraPointsMade</MudTd>
                                         <MudTd DataLabel="TD">@context.StatsModel.KickingStats.ExtraPointsAttempted</MudTd>
+                                        <MudTd DataLabel="TD">@context.StatsModel.KickingStats.Points</MudTd>
                                         <MudTd DataLabel="INT">@context.StatsModel.KickingStats.Punts</MudTd>
                                         <MudTd DataLabel="S">@context.StatsModel.KickingStats.PuntingYards</MudTd>
                                         <MudTd DataLabel="S">@context.StatsModel.KickingStats.LongestPunt</MudTd>
@@ -633,6 +636,7 @@
     private int seasonExtraPointsAttempted = 0;
     private decimal seasonFieldGoalPercentage = 0;
     private decimal seasonExtraPointPercentage = 0;
+    private decimal seasonPoints = 0;
     private int seasonPunts = 0;
     private int seasonLongestPunt = 0;
 
@@ -707,6 +711,7 @@
             seasonFieldGoalsAttempted += stat.KickingStats.FieldGoalsAttempted;
             seasonExtraPointsMade += stat.KickingStats.ExtraPointsMade;
             seasonExtraPointsAttempted += stat.KickingStats.ExtraPointsAttempted;
+            seasonPoints += stat.KickingStats.Points;
             seasonPunts += stat.KickingStats.Punts;
 
             if (seasonLongestPunt <= stat.KickingStats.LongestPunt)

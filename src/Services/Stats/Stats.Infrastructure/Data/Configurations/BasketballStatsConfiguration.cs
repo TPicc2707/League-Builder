@@ -55,6 +55,7 @@ public class BasketballStatsConfiguration : IEntityTypeConfiguration<BasketballS
                statsBuilder.Property(s => s.Steals);
                statsBuilder.Property(s => s.Blocks);
                statsBuilder.Property(s => s.Turnovers);
+               statsBuilder.Property(s => s.Fouls);
            });
     }
 }

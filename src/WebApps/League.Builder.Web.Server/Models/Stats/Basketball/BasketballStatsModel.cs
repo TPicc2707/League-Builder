@@ -45,7 +45,8 @@ public record BasketballPlayerStatsModel(
     int Assists,
     int Steals,
     int Blocks,
-    int Turnovers);
+    int Turnovers,
+    int Fouls);
 
 public record CreateBasketballPlayerStatsModel(
     bool Start,
@@ -61,7 +62,8 @@ public record CreateBasketballPlayerStatsModel(
     int Assists,
     int Steals,
     int Blocks,
-    int Turnovers);
+    int Turnovers,
+    int Fouls);
 
 public record UpdateBasketballPlayerStatsModel(
     bool Start,
@@ -77,7 +79,8 @@ public record UpdateBasketballPlayerStatsModel(
     int Assists,
     int Steals,
     int Blocks,
-    int Turnovers);
+    int Turnovers,
+    int Fouls);
 
 
 //Request Records

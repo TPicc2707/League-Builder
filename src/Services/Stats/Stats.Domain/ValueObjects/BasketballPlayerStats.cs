@@ -19,13 +19,14 @@ public record BasketballPlayerStats
     public int Steals { get; } = default!;
     public int Blocks { get; } = default!;
     public int Turnovers { get; } = default!;
+    public int Fouls { get; } = default!;
 
     protected BasketballPlayerStats()
     {
 
     }
 
-    private BasketballPlayerStats(bool start, int minutes, int points, int fieldGoalsMade, int fieldGoalsAttempted, int threePointersMade, int threePointersAttempted, int freeThrowsMade, int freeThrowsAttempted, int rebounds, int assists, int steals, int blocks, int turnovers)
+    private BasketballPlayerStats(bool start, int minutes, int points, int fieldGoalsMade, int fieldGoalsAttempted, int threePointersMade, int threePointersAttempted, int freeThrowsMade, int freeThrowsAttempted, int rebounds, int assists, int steals, int blocks, int turnovers, int fouls)
     {
         Start = start;
         Minutes = minutes;
@@ -53,10 +54,11 @@ public record BasketballPlayerStats
         Steals = steals;
         Blocks = blocks;
         Turnovers = turnovers;
+        Fouls = fouls;
     }
 
-    public static BasketballPlayerStats Of(bool start, int minutes, int points, int fieldGoalsMade, int fieldGoalsAttempted, int threePointersMade, int threePointersAttempted, int freeThrowsMade, int freeThrowsAttempted, int rebounds, int assists, int steals, int blocks, int turnovers)
+    public static BasketballPlayerStats Of(bool start, int minutes, int points, int fieldGoalsMade, int fieldGoalsAttempted, int threePointersMade, int threePointersAttempted, int freeThrowsMade, int freeThrowsAttempted, int rebounds, int assists, int steals, int blocks, int turnovers, int fouls)
     {
-        return new BasketballPlayerStats(start, minutes, points, fieldGoalsMade, fieldGoalsAttempted, threePointersMade, threePointersAttempted, freeThrowsMade, freeThrowsAttempted, rebounds, assists, steals, blocks, turnovers);
+        return new BasketballPlayerStats(start, minutes, points, fieldGoalsMade, fieldGoalsAttempted, threePointersMade, threePointersAttempted, freeThrowsMade, freeThrowsAttempted, rebounds, assists, steals, blocks, turnovers, fouls);
     }
 }

@@ -30,5 +30,6 @@ public class UpdateBasketballStatsCommandValidator : AbstractValidator<UpdateBas
         RuleFor(x => x.BasketballStats.Stats.Assists).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Assists is required and is greater than or equal to 0.");
         RuleFor(x => x.BasketballStats.Stats.Blocks).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Blocks is required and is greater than or equal to 0.");
         RuleFor(x => x.BasketballStats.Stats.Turnovers).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Turnovers is required and is greater than or equal to 0.");
+        RuleFor(x => x.BasketballStats.Stats.Fouls).NotEmpty().GreaterThanOrEqualTo(0).WithMessage("Fouls is required and is greater than or equal to 0.");
     }
 }
