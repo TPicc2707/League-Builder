@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider Theme="MyCustomTheme" />
+<MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="MyCustomTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -9,6 +9,7 @@
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
+        <MudSwitch @bind-Value="_isDarkMode" Color="Color.Secondary" Class="ma-4" T="bool" />
         <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Inherit" OnClick="@ToggleOpen" />
         <MudPopover Open="_open" Style="padding-top: 30px;" Fixed="true" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterRight" Paper="false">
             <MudPaper Outlined="true" Class="d-flex flex-column pa-1">
@@ -49,11 +50,30 @@
     private string version = string.Empty;
     private string date = DateTime.Now.Year.ToString();
     private bool _open = false;
+    private bool _isDarkMode;
+    private MudThemeProvider _mudThemeProvider;
 
     protected override async Task OnInitializedAsync()
     {
         var assembly = Assembly.GetExecutingAssembly();
         version = assembly.GetName().Version.ToString();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+            await _mudThemeProvider.WatchSystemPreference(OnSystemDarkModeChanged);
+            StateHasChanged();
+        }
+    }
+
+    private Task OnSystemDarkModeChanged(bool newValue)
+    {
+        _isDarkMode = newValue;
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private void ToggleOpen() => _open = !_open;
@@ -70,10 +90,17 @@
             Primary = "#0d0a5a",
             Secondary = "#98dc24",
             AppbarBackground = "#0d0a5a",
+            TextPrimary = "#0d0a5a"
         },
         PaletteDark = new PaletteDark()
         {
-            Primary = Colors.Blue.Lighten1
+            Primary = "#826387",
+            Secondary = "#FFC1CC",
+            Tertiary = "#E4016B",
+            AppbarBackground = "#826387",
+            TextPrimary = "#FFFFFF",
+            
         },
     };
+
 }

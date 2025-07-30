@@ -4,17 +4,13 @@ public class FootballOffensiveStats
 {
     public int PassingCompletions { get; set; }
     public int PassingAttempts { get; set; }
-    public decimal PassingCompletionPercentage { get; set; }
     public int PassingYards { get; set; }
-    public decimal PassingYardsPerPlay { get; set; }
     public int LongestPassingPlay {  get; set; }
     public int PassingTouchdowns { get; set; }
     public int PassingInterceptions { get; set; }
     public int Sacks { get; set; }
-    public decimal PasserRating { get; set; }
     public int RushingAttempts { get; set; } 
     public int RushingYards { get; set; }
-    public decimal RushingYardsAverage { get; set; }  
     public int LongestRushingPlay { get; set; } 
     public int RushingTouchdowns { get; set; }
     public int RushingFumbles { get; set; }
@@ -22,7 +18,6 @@ public class FootballOffensiveStats
     public int Receptions { get; set; }
     public int Targets { get; set; }    
     public int ReceivingYards { get; set; }
-    public decimal ReceivingYardsPerPlay { get; set; }
     public int ReceivingTouchdowns { get; set; }
     public int ReceivingFumbles { get; set; }
     public int ReceivingFumblesLost { get; set; }
@@ -40,30 +35,12 @@ public class FootballOffensiveStats
     {
         PassingCompletions = passingCompletions;
         PassingAttempts = passingAttempts;
-        if (passingCompletions == 0 || passingAttempts == 0)
-            PassingCompletionPercentage = 0.00M;
-        else
-            PassingCompletionPercentage = (decimal)passingCompletions / passingAttempts;
-        PassingYards = passingYards;
-        if (passingYards == 0 || passingAttempts == 0)
-            PassingYardsPerPlay = 0.00M;
-        else
-            PassingYardsPerPlay = (decimal)passingYards / passingAttempts;
         LongestPassingPlay = longestPassingPlay;
         PassingTouchdowns = passingTouchdowns;
         PassingInterceptions = passingInterceptions;
         Sacks = sacks;
-        var passingCompletionsPasserRating = passingCompletions == 0 || passingAttempts == 0 ? 0 : (decimal)(passingCompletions / passingAttempts);
-        var passingYardsPasserRating = passingYards == 0 || passingAttempts == 0 ? 0 : (decimal)(passingYards / passingAttempts);
-        var passingTouchdownsPasserRating = passingTouchdowns == 0 || passingAttempts == 0 ? 0 : (decimal)(passingTouchdowns / passingAttempts);
-        var passingInterceptionsPasserRating = passingInterceptions == 0 || passingAttempts == 0 ? 0 : (decimal)(passingInterceptions / passingAttempts);
-        PasserRating = ((((passingCompletionsPasserRating - (decimal)0.3) * 5) + ((passingYardsPasserRating - 3) * (decimal)0.25) + (passingTouchdownsPasserRating * 20) + ((decimal)2.375 - passingInterceptionsPasserRating) / 6) * 100);
         RushingAttempts = rushingAttempts;
         RushingYards = rushingYards;
-        if (rushingYards == 0 || rushingAttempts == 0)
-            RushingYardsAverage = 0.00M;
-        else
-            RushingYardsAverage = (decimal)rushingYards / rushingAttempts;
         LongestRushingPlay = longestRushingPlay;
         RushingTouchdowns = rushingTouchdowns;
         RushingFumbles = rushingFumbles;
@@ -71,10 +48,6 @@ public class FootballOffensiveStats
         Receptions = receptions;
         Targets = targets;
         ReceivingYards = receivingYards;
-        if (receivingYards == 0 || receptions == 0)
-            ReceivingYardsPerPlay = 0.00M;
-        else
-            ReceivingYardsPerPlay = (decimal)receivingYards / receptions;
         ReceivingTouchdowns = receivingTouchdowns;
         ReceivingFumbles = receivingFumbles;
         ReceivingFumblesLost = receivingFumblesLost;

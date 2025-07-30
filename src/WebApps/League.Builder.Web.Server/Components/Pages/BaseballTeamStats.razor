@@ -1,0 +1,555 @@
+﻿@page "/baseballteamstats/{id}"
+@inject IPlayerService PlayerService
+@inject IStatsService StatService
+@inject ISeasonService SeasonService
+@inject IGameService GameService
+@inject ITeamService TeamService
+@inject ILeagueService LeagueService
+@inject IAWSService AWSService
+@inject IDialogService DialogService
+@inject NavigationManager NavManager;
+@inject IHttpContextAccessor HttpContextAccessor
+
+
+<AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames, ", ", Roles.ReadTeams, ", ", Roles.ReadPlayers)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
+                <MudExpansionPanels>
+                    <MudExpansionPanel Expanded="expandSearchPanel">
+                        <TitleContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@SeasonModel.Season.Year @TeamModel.Team.TeamName Stats</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudStack Justify="Justify.FlexStart" Row="true" Style="padding-top: 25px;">
+                                <MudItem xs="6" md="6" lg="6">
+                                    <MudSelect @bind-Value="seasonValue" Placeholder="@seasonPlaceholder" Label="@seasonPlaceholder">
+                                        @foreach (var season in SeasonsModel.Seasons)
+                                        {
+                                            <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="3" md="3" lg="3">
+
+                                </MudItem>
+                                <MudItem xs="3" md="3" lg="3" Style="align-content: center; padding: 10px;">
+                                    <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetTeamStatsBySeason" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 150px;">Search</MudButton>
+                                </MudItem>
+                            </MudStack>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true" Color="Color.Primary">
+                <MudTabPanel Text="Hitting Stats">
+                    <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
+                        <MudStack Row="true">
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">Average</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamSeasonAverage.ToString("#.000")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate batting average in baseball, divide the total number of hits by the total number of at-bats. Formula: Batting Average = Total Hits / Total At-Bats"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">Slugging</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamSlugging.ToString("#.000")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate slugging percentage (SLG) in baseball, you divide the total bases a player gets by their total at-bats. Formula: (1B + 2Bx2 + 3Bx3 + HRx4) / AB"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">OBP</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamOnBasePercentage.ToString("#.000")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate On-Base Percentage (OBP), divide the sum of hits, walks, and hit-by-pitches by the sum of at-bats, walks, hit-by-pitches, and sacrifice flies. Formula: (Hits + BBs + HBPs) / (ABs + BBs + HBPs + Sacrifice Flies)"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">OPS</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamOnBasePlusSlugging.ToString("#.000")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("On-base plus slugging (OPS) is calculated by adding a batter's on-base percentage (OBP) and slugging percentage (SLG). Formula: OBP (See Stat for More Info) + SLG (See Stat for More Info)"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+
+                        </MudStack>
+
+                    </MudItem>
+                    <MudItem Style="padding-bottom: 10px;">
+                        <MudTable Items="@TeamStats.Players" Hover="true">
+                            <ColGroup>
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                            </ColGroup>
+                            <HeaderContent>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.TotalGamesPlayed)">GP</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.AtBats)">AB</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.Runs)">R</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.Hits)">H</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.Doubles)">2B</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.Triples)">3B</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.HomeRuns)">HR</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.RunsBattedIn)">RBI</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.Walks)">BB</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.HitByPitch)">HBP</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.Strikeouts)">K</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.StolenBases)">SB</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.TotalBases)">TB</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.Average)">AVG</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.OnBasePercentage)">OBP</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.Slugging)">SLG</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.HittingStatsModel.OnBasePlusSlugging)">OPS</MudTableSortLabel></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="">
+                                    <MudAvatar Size="Size.Small">
+                                        <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
+                                    </MudAvatar>
+                                </MudTd>
+                                <MudTd DataLabel="Name" Style="font-size:smaller">@context.FirstName @context.LastName</MudTd>
+                                <MudTd DataLabel="GamesPlayed">@context.StatsModel.TotalGamesPlayed</MudTd>
+                                <MudTd DataLabel="AtBats">@context.StatsModel.HittingStatsModel.AtBats</MudTd>
+                                <MudTd DataLabel="Runs">@context.StatsModel.HittingStatsModel.Runs</MudTd>
+                                <MudTd DataLabel="Hits">@context.StatsModel.HittingStatsModel.Hits</MudTd>
+                                <MudTd DataLabel="2B">@context.StatsModel.HittingStatsModel.Doubles</MudTd>
+                                <MudTd DataLabel="3B">@context.StatsModel.HittingStatsModel.Triples</MudTd>
+                                <MudTd DataLabel="HR">@context.StatsModel.HittingStatsModel.HomeRuns</MudTd>
+                                <MudTd DataLabel="RBI">@context.StatsModel.HittingStatsModel.RunsBattedIn</MudTd>
+                                <MudTd DataLabel="BB">@context.StatsModel.HittingStatsModel.Walks</MudTd>
+                                <MudTd DataLabel="HBP">@context.StatsModel.HittingStatsModel.HitByPitch</MudTd>
+                                <MudTd DataLabel="K">@context.StatsModel.HittingStatsModel.Strikeouts</MudTd>
+                                <MudTd DataLabel="SB">@context.StatsModel.HittingStatsModel.StolenBases</MudTd>
+                                <MudTd DataLabel="TB">@context.StatsModel.HittingStatsModel.TotalBases</MudTd>
+                                <MudTd DataLabel="AVG">@context.StatsModel.HittingStatsModel.Average.ToString("#.000")</MudTd>
+                                <MudTd DataLabel="OBP">@context.StatsModel.HittingStatsModel.OnBasePercentage.ToString("#.000")</MudTd>
+                                <MudTd DataLabel="SLG">@context.StatsModel.HittingStatsModel.Slugging.ToString("#.000")</MudTd>
+                                <MudTd DataLabel="OPS">@context.StatsModel.HittingStatsModel.OnBasePlusSlugging.ToString("#.000")</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudItem>
+                </MudTabPanel>
+                <MudTabPanel Text="Pitching Stats">
+                    <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
+                        <MudStack Row="true">
+                            <MudItem sm="6" md="6" lg="6">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">ERA</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamEarnedRunAverage.ToString("#0.00")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate a pitcher's Earned Run Average (ERA), divide the number of earned runs allowed by the number of innings pitched, and then multiply that result by 9. Formula: (Earned Runs / Innings Pitched) * 9"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                            <MudItem sm="6" md="6" lg="6">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">WHIP</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamWalksHitsPerInning.ToString("#0.00")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate Walks and Hits per Inning Pitched (WHIP) in baseball, you add the total number of walks and hits a pitcher has allowed, then divide that sum by the total number of innings they have pitched.  Formula: (Total Hits + Total Walks) / Innings Pitched"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                        </MudStack>
+                    </MudItem>
+                    <MudItem Style="padding-bottom: 50px;">
+                        <MudTable Items="@TeamStats.Players" Hover="true">
+                            <ColGroup>
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                            </ColGroup>
+                            <HeaderContent>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.TotalGamesPlayed)">GP</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.TotalPitchingStarts)">GS</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.PitchingStatsModel.EarnedRunAverage)">ERA</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.PitchingStatsModel.Wins)">W</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.PitchingStatsModel.Losses)">L</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.PitchingStatsModel.Saves)">SV</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.PitchingStatsModel.Innings)">IP</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.PitchingStatsModel.HitsAllowed)">H</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.PitchingStatsModel.Runs)">R</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.PitchingStatsModel.WalksAllowed)">BB</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.PitchingStatsModel.PitchingStrikeouts)">K</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.PitchingStatsModel.WalksHitsPerInning)">WHIP</MudTableSortLabel></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="">
+                                    <MudAvatar Size="Size.Small">
+                                        <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
+                                    </MudAvatar>
+                                </MudTd>
+                                <MudTd DataLabel="Name" Style="font-size:smaller">@context.FirstName @context.LastName</MudTd>
+                                <MudTd DataLabel="GamesPlayed">@context.StatsModel.TotalGamesPlayed</MudTd>
+                                <MudTd DataLabel="Starts">@context.StatsModel.TotalPitchingStarts</MudTd>
+                                <MudTd DataLabel="Earned Run Average">@context.StatsModel.PitchingStatsModel.EarnedRunAverage.ToString("#0.00")</MudTd>
+                                <MudTd DataLabel="Wins">@context.StatsModel.PitchingStatsModel.Wins</MudTd>
+                                <MudTd DataLabel="Losses">@context.StatsModel.PitchingStatsModel.Losses</MudTd>
+                                <MudTd DataLabel="Saves">@context.StatsModel.PitchingStatsModel.Saves</MudTd>
+                                <MudTd DataLabel="Innings Pitched">@context.StatsModel.PitchingStatsModel.Innings</MudTd>
+                                <MudTd DataLabel="Hits">@context.StatsModel.PitchingStatsModel.HitsAllowed</MudTd>
+                                <MudTd DataLabel="Runs">@context.StatsModel.PitchingStatsModel.Runs</MudTd>
+                                <MudTd DataLabel="Walks">@context.StatsModel.PitchingStatsModel.WalksAllowed</MudTd>
+                                <MudTd DataLabel="Strikeouts">@context.StatsModel.PitchingStatsModel.PitchingStrikeouts</MudTd>
+                                <MudTd DataLabel="Walks Hits Per Inning">@context.StatsModel.PitchingStatsModel.WalksHitsPerInning.ToString("#0.00")</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudItem>
+                </MudTabPanel>
+            </MudTabs>
+        }
+        else
+        {
+            <Loading />
+        }
+
+
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private bool PageLoad = false;
+    private int seasonValue;
+    private string seasonPlaceholder = "Season";
+    private string imageFile = string.Empty;
+    private bool expandSearchPanel = false;
+
+    private int teamSeasonHits;
+    private int teamSeasonWalks;
+    private int teamSeasonHBPs;
+    private int teamSeasonAtBats;
+    private int teamSeasonTotalBases;
+    private int teamSeasonSFs;
+    private int teamWalksAllowed;
+    private int teamRunsAllowed;
+    private int teamHitsAllowed;
+    private decimal teamInnings;
+    private decimal teamSeasonAverage;
+    private decimal teamEarnedRunAverage;
+    private decimal teamWalksHitsPerInning;
+    private decimal teamSlugging;
+    private decimal teamOnBasePercentage;
+    private decimal teamOnBasePlusSlugging;
+    private int playerSeasonHits;
+    private int playerSeasonWalks;
+    private int playerSeasonHBPs;
+    private int playerSeasonAtBats;
+    private int playerSeasonTotalBases;
+    private int playerSeasonRuns;
+    private int playerSeasonDoubles;
+    private int playerSeasonTriples;
+    private int playerSeasonHomeRuns;
+    private int playerSeasonRunsBattedIn;
+    private int playerSeasonSteals;
+    private int playerSeasonStrikeouts;
+    private int playerSeasonSFs;
+    private int playerWalksAllowed;
+    private int playerRunsAllowed;
+    private int playerHitsAllowed;
+    private int playerWins;
+    private int playerLosses;
+    private int playerStarts;
+    private int playerSaves;
+    private int playerPitchingStrikeouts;
+    private int playerGamesPlayed;
+    private decimal playerInnings;
+    private decimal playerSeasonAverage;
+    private decimal playerEarnedRunAverage;
+    private decimal playerWalksHitsPerInning;
+    private decimal playerSlugging;
+    private decimal playerOnBasePercentage;
+    private decimal playerOnBasePlusSlugging;
+
+
+    private TeamStatRecord TeamStats { get; set; } = new TeamStatRecord();
+    GetSeasonsResponse SeasonsModel { get; set; }
+    GetSeasonByYearResponse SeasonModel { get; set; }
+    GetTeamByIdResponse TeamModel { get; set; }
+    GetPlayerBaseballStatsBySeasonResponse StatsModel { get; set; }
+    GetLeagueByIdResponse LeagueModel { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
+        var teamId = Guid.Parse(Id);
+        int year = DateTime.Now.Year;
+        SeasonsModel = await SeasonService.GetSeasons();
+        seasonValue = SeasonsModel.Seasons.FirstOrDefault(x => x.Year == year).Year;
+        TeamModel = await TeamService.GetTeamById(teamId);
+        LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+        await CreatePlayerStats(year, teamId);
+        PageLoad = true;
+    }
+
+    private async Task GetTeamStatsBySeason()
+    {
+        PageLoad = false;
+        var teamId = Guid.Parse(Id);
+        teamSeasonAtBats = 0;
+        teamSeasonHits = 0;
+        teamSeasonTotalBases = 0;
+        teamSeasonHBPs = 0;
+        teamSeasonSFs = 0;
+        teamSeasonWalks = 0;
+        teamWalksAllowed = 0;
+        teamRunsAllowed = 0;
+        teamHitsAllowed = 0;
+        teamInnings = 0;
+        teamOnBasePercentage = 0;
+        teamOnBasePlusSlugging = 0;
+        TeamStats.Players.RemoveRange(0, TeamStats.Players.Count());
+        await CreatePlayerStats(seasonValue, teamId);
+        PageLoad = true;
+    }
+
+    private async Task CreatePlayerStats(int year, Guid teamId)
+    {
+        var players = await PlayerService.GetPlayersByTeam(teamId);
+        await GetImageAsync(players.Players);
+        SeasonModel = await SeasonService.GetSeasonByYear(year);
+        foreach(var player in players.Players)
+        {
+            playerSeasonHits = 0;
+            playerSeasonWalks = 0;
+            playerSeasonHBPs = 0;
+            playerSeasonAtBats = 0;
+            playerSeasonTotalBases = 0;
+            playerSeasonSFs = 0;
+            playerWalksAllowed = 0;
+            playerRunsAllowed = 0;
+            playerHitsAllowed = 0;
+            playerInnings = 0;
+            playerSeasonAverage = 0;
+            playerEarnedRunAverage = 0;
+            playerWalksHitsPerInning = 0;
+            playerSlugging = 0;
+            playerOnBasePercentage = 0;
+            playerOnBasePlusSlugging = 0;
+            playerSeasonRuns = 0;
+            playerSeasonDoubles = 0;
+            playerSeasonTriples = 0;
+            playerSeasonHomeRuns = 0;
+            playerSeasonStrikeouts = 0;
+            playerSeasonSteals = 0;
+            playerSeasonRunsBattedIn = 0;
+            playerGamesPlayed = 0;
+            playerStarts = 0;
+            playerWins = 0;
+            playerLosses = 0;
+            playerPitchingStrikeouts = 0;
+            StatsModel = await StatService.GetPlayerBaseballStatsBySeason(player.Id, SeasonModel.Season.Id);
+            foreach (var stat in StatsModel.BaseballStats)
+            {
+                teamSeasonAtBats += stat.HittingStats.AtBats;
+                teamSeasonHits += stat.HittingStats.Hits;
+                teamSeasonTotalBases += stat.HittingStats.TotalBases;
+                teamSeasonWalks += stat.HittingStats.Walks;
+                teamSeasonHBPs += stat.HittingStats.HitByPitch;
+                teamSeasonSFs += stat.HittingStats.SacrificeFly;
+                teamWalksAllowed += stat.PitchingStats.WalksAllowed;
+                teamRunsAllowed += stat.PitchingStats.Runs;
+                teamHitsAllowed += stat.PitchingStats.HitsAllowed;
+                teamInnings += stat.PitchingStats.Innings;
+
+                playerSeasonAtBats += stat.HittingStats.AtBats;
+                playerSeasonHits += stat.HittingStats.Hits;
+                playerSeasonTotalBases += stat.HittingStats.TotalBases;
+                playerSeasonRuns += stat.HittingStats.Runs;
+                playerSeasonDoubles += stat.HittingStats.Doubles;
+                playerSeasonTriples += stat.HittingStats.Triples;
+                playerSeasonHomeRuns += stat.HittingStats.HomeRuns;
+                playerSeasonRunsBattedIn += stat.HittingStats.RunsBattedIn;
+                playerSeasonSteals += stat.HittingStats.StolenBases;
+                playerSeasonStrikeouts += stat.HittingStats.Strikeouts;
+                playerSeasonWalks += stat.HittingStats.Walks;
+                playerSeasonHBPs += stat.HittingStats.HitByPitch;
+                playerSeasonSFs += stat.HittingStats.SacrificeFly;
+                playerWalksAllowed += stat.PitchingStats.WalksAllowed;
+                playerRunsAllowed += stat.PitchingStats.Runs;
+                playerHitsAllowed += stat.PitchingStats.HitsAllowed;
+                playerInnings += stat.PitchingStats.Innings;
+                playerWins += stat.PitchingStats.Wins;
+                playerLosses += stat.PitchingStats.Losses;
+                playerStarts += stat.PitchingStats.Start ? 1 : 0;
+                playerSaves += stat.PitchingStats.Saves;
+                playerPitchingStrikeouts += stat.PitchingStats.PitchingStrikeouts;
+
+                playerSeasonAverage = playerSeasonHits == 0 || playerSeasonAtBats == 0 ? 0 : (decimal)playerSeasonHits / playerSeasonAtBats;
+                playerSlugging = playerSeasonTotalBases == 0 || playerSeasonAtBats == 0 ? 0 : (decimal)playerSeasonTotalBases / playerSeasonAtBats;
+                playerOnBasePercentage = (playerSeasonHits + playerSeasonWalks + playerSeasonHBPs) == 0 || (playerSeasonAtBats + playerSeasonWalks + playerSeasonHBPs + playerSeasonSFs) == 0 ? 0 : (decimal)(playerSeasonHits + playerSeasonWalks + playerSeasonHBPs) / (playerSeasonAtBats + playerSeasonWalks + playerSeasonHBPs + playerSeasonSFs);
+                playerOnBasePlusSlugging = playerOnBasePercentage + playerSlugging;
+                playerEarnedRunAverage = playerRunsAllowed == 0 || playerInnings == 0 ? 0 : (decimal)(playerRunsAllowed / playerInnings) * 9;
+                playerGamesPlayed += stat.HittingStats.AtBats > 0 || stat.PitchingStats.Innings > 0 ? 1 : 0;
+                playerWalksHitsPerInning = (playerWalksAllowed + playerHitsAllowed) == 0 || playerInnings == 0 ? 0 : (decimal)(playerWalksAllowed + playerHitsAllowed) / playerInnings;
+
+            }
+
+            var hittingStat = new BaseballHittingStatsModel(playerSeasonAtBats, playerSeasonHits,
+                                                            playerSeasonTotalBases, playerSeasonRuns,
+                                                            playerSeasonDoubles, playerSeasonTriples,
+                                                            playerSeasonHomeRuns, playerSeasonRunsBattedIn,
+                                                            playerSeasonSteals, playerSeasonStrikeouts, playerSeasonWalks,
+                                                            playerSeasonHBPs, playerSeasonSFs, playerSeasonAverage, playerSlugging,
+                                                            playerOnBasePercentage, playerOnBasePlusSlugging);
+
+            var pitchingStat = new BaseballPitchingStatsModel(playerWins, playerLosses, playerRunsAllowed, false, playerSaves, playerInnings, playerHitsAllowed, playerWalksAllowed, playerPitchingStrikeouts, playerWalksHitsPerInning, playerEarnedRunAverage);
+
+            var playerSeasonStats = new BaseballSeasonStats(hittingStat, pitchingStat, playerStarts, playerGamesPlayed);
+            var playerStat = new PlayerStatsRecord(player, playerSeasonStats);
+            TeamStats.Players.Add(playerStat);
+        }
+
+        teamSeasonAverage = teamSeasonHits == 0 || teamSeasonAtBats == 0 ? 0 : (decimal)teamSeasonHits / teamSeasonAtBats;
+        teamSlugging = teamSeasonTotalBases == 0 || teamSeasonAtBats == 0 ? 0 : (decimal)teamSeasonTotalBases / teamSeasonAtBats;
+        teamOnBasePercentage = (teamSeasonHits + teamSeasonWalks + teamSeasonHBPs) == 0 || (teamSeasonAtBats + teamSeasonWalks + teamSeasonHBPs + teamSeasonSFs) == 0 ? 0 : (decimal)(teamSeasonHits + teamSeasonWalks + teamSeasonHBPs) / (teamSeasonAtBats + teamSeasonWalks + teamSeasonHBPs + teamSeasonSFs);
+        teamOnBasePlusSlugging = teamOnBasePercentage + teamSlugging;
+        teamEarnedRunAverage = teamRunsAllowed == 0 || teamInnings == 0 ? 0 : (decimal)(teamRunsAllowed / teamInnings) * 9;
+        teamWalksHitsPerInning = (teamWalksAllowed + teamHitsAllowed) == 0 || teamInnings == 0 ? 0 : (decimal)(teamWalksAllowed + teamHitsAllowed) / teamInnings;
+    }
+
+
+    private async Task GetImageAsync(IEnumerable<PlayerModel> players)
+    {
+        foreach(var player in players)
+        {
+            var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamModel.Team.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
+            player.Image = await AWSService.GetImage(keyPath);
+        }
+    }
+
+    private Task OpenStatDialogAsync(string message)
+    {
+        var parameters = new DialogParameters<StatInfoMessageBox> { { x => x.Message, message } };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        return DialogService.ShowAsync<StatInfoMessageBox>("Stat Info", parameters, options);
+    }
+
+
+    public class TeamStatRecord
+    {
+        public List<PlayerStatsRecord> Players { get; set; } = new List<PlayerStatsRecord>();
+    }
+
+
+    public class PlayerStatsRecord
+    {
+        public PlayerStatsRecord(PlayerModel player, BaseballSeasonStats stats)
+        {
+            PlayerId = player.Id;
+            FirstName = player.FirstName;
+            LastName = player.LastName;
+            Number = player.PlayerDetail.Number;
+            Position = player.PlayerDetail.Position;
+            Image = player.Image;
+            StatsModel = stats;
+        }
+
+        public Guid PlayerId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int Number { get; set; }
+        public string Position { get; set; }
+        public string Image { get; set; }
+        public BaseballSeasonStats StatsModel { get; set; }
+    }
+
+    public class BaseballSeasonStats
+    {
+        public BaseballSeasonStats(BaseballHittingStatsModel hittingStatsModel, BaseballPitchingStatsModel pitchingStatsModel, int totalStarts, int totalGamesPlayed)
+        {
+            HittingStatsModel = hittingStatsModel;
+            PitchingStatsModel = pitchingStatsModel;
+            TotalPitchingStarts = totalStarts;
+            TotalGamesPlayed = totalGamesPlayed;
+
+        }
+
+        public BaseballHittingStatsModel HittingStatsModel { get; set; }
+        public BaseballPitchingStatsModel PitchingStatsModel { get; set; }
+        public int TotalPitchingStarts {get; set;} //pitching model has it as a bool.
+        public int TotalGamesPlayed { get; set; }
+    }
+}

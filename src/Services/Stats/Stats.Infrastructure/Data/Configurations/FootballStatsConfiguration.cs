@@ -40,17 +40,13 @@ public class FootballStatsConfiguration : IEntityTypeConfiguration<FootballStats
            {
                offensiveStatsBuilder.Property(s => s.PassingCompletions);
                offensiveStatsBuilder.Property(s => s.PassingAttempts);
-               offensiveStatsBuilder.Property(s => s.PassingCompletionPercentage);
                offensiveStatsBuilder.Property(s => s.PassingYards);
-               offensiveStatsBuilder.Property(s => s.PassingYardsPerPlay);
                offensiveStatsBuilder.Property(s => s.LongestPassingPlay);
                offensiveStatsBuilder.Property(s => s.PassingTouchdowns);
                offensiveStatsBuilder.Property(s => s.PassingInterceptions);
                offensiveStatsBuilder.Property(s => s.Sacks);
-               offensiveStatsBuilder.Property(s => s.PasserRating);
                offensiveStatsBuilder.Property(s => s.RushingAttempts);
                offensiveStatsBuilder.Property(s => s.RushingYards);
-               offensiveStatsBuilder.Property(s => s.RushingYardsAverage);
                offensiveStatsBuilder.Property(s => s.LongestRushingPlay);
                offensiveStatsBuilder.Property(s => s.RushingTouchdowns);
                offensiveStatsBuilder.Property(s => s.RushingFumbles);
@@ -58,7 +54,6 @@ public class FootballStatsConfiguration : IEntityTypeConfiguration<FootballStats
                offensiveStatsBuilder.Property(s => s.Receptions);
                offensiveStatsBuilder.Property(s => s.Targets);
                offensiveStatsBuilder.Property(s => s.ReceivingYards);
-               offensiveStatsBuilder.Property(s => s.ReceivingYardsPerPlay);
                offensiveStatsBuilder.Property(s => s.ReceivingTouchdowns);
                offensiveStatsBuilder.Property(s => s.ReceivingFumbles);
                offensiveStatsBuilder.Property(s => s.ReceivingFumblesLost);
@@ -86,10 +81,8 @@ public class FootballStatsConfiguration : IEntityTypeConfiguration<FootballStats
         {
             kickingStatsBuilder.Property(s => s.FieldGoalsMade);
             kickingStatsBuilder.Property(s => s.FieldGoalsAttempted);
-            kickingStatsBuilder.Property(s => s.FieldGoalPercentage);
             kickingStatsBuilder.Property(s => s.ExtraPointsMade);
             kickingStatsBuilder.Property(s => s.ExtraPointsAttempted);
-            kickingStatsBuilder.Property(s => s.ExtraPointPercentage);
             kickingStatsBuilder.Property(s => s.LongestKick);
             kickingStatsBuilder.Property(s => s.Points);
             kickingStatsBuilder.Property(s => s.Punts);

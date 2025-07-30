@@ -33,6 +33,27 @@ public class AWSService : IAWSService
         return true;
     }
 
+    public async Task<bool> CopyObjectToNewFolder(string sourceKeyPath, string destinationKeyPath)
+    {
+        CopyObjectRequest s3Request = new CopyObjectRequest()
+        {
+            SourceKey = sourceKeyPath,
+            SourceBucket = Image_S3_Bucket_Name,
+            DestinationBucket = Image_S3_Bucket_Name,
+            DestinationKey = destinationKeyPath
+
+        };
+        CopyObjectResponse s3Response = await _awsS3.CopyObjectAsync(s3Request);
+
+        var response = s3Response.HttpStatusCode;
+
+        if (response != System.Net.HttpStatusCode.OK)
+            return false;
+
+
+        return true;
+    }
+
     public async Task<string> GetImage(string keyPath)
     {
         try
@@ -56,6 +77,56 @@ public class AWSService : IAWSService
         catch (Exception exception)
         {
             throw new Exception("Read object operation failed.", exception);
+        }
+    }
+
+    public async Task DeleteObject(string keyPath)
+    {
+        try
+        {
+            DeleteObjectRequest s3Request = new DeleteObjectRequest()
+            {
+                BucketName = Image_S3_Bucket_Name,
+                Key = keyPath
+            };
+
+            DeleteObjectResponse s3Response = await _awsS3.DeleteObjectAsync(s3Request);
+
+            var test = s3Response.DeleteMarker;
+        }
+        catch (Exception exception)
+        {
+            throw new Exception("Deleting folder operation failed.", exception);
+        }
+    }
+
+    public async Task DeleteObjects(string keyPath)
+    {
+        try
+        {
+            ListObjectsV2Request s3Request = new ListObjectsV2Request()
+            {
+                BucketName = Image_S3_Bucket_Name,
+                Prefix = keyPath
+            };
+
+            ListObjectsV2Response s3Response = await _awsS3.ListObjectsV2Async(s3Request);
+
+            foreach(var s3Object in s3Response.S3Objects)
+            {
+                DeleteObjectRequest deleteS3ObjectRequest = new DeleteObjectRequest()
+                {
+                    BucketName = Image_S3_Bucket_Name,
+                    Key = s3Object.Key
+                };
+
+                DeleteObjectResponse deleteS3ObjectResponse = await _awsS3.DeleteObjectAsync(deleteS3ObjectRequest);
+
+            }
+        }
+        catch (Exception exception)
+        {
+            throw new Exception("Deleting folder operation failed.", exception);
         }
     }
 

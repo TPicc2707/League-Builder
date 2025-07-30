@@ -9,7 +9,5 @@ public record BaseballPitchingStatsDto(
     decimal Innings, 
     int HitsAllowed, 
     int WalksAllowed, 
-    int PitchingStrikeouts, 
-    decimal WalksHitsPerInning,
-    decimal EarnedRunAverage
+    int PitchingStrikeouts
     );

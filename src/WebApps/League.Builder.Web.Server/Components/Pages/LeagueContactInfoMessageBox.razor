@@ -1,0 +1,37 @@
+﻿@inject ILeagueService LeagueService
+
+<MudDialog>
+    <TitleContent>
+        <MudText Align="Align.Center" Typo="Typo.h4" Style="font-weight: bold;">Contact Info</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (DataLoad)
+        {
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
+                <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                <MudText Typo="Typo.h6">@League.League.EmailAddress</MudText>
+            </MudStack>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Ok">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public Guid Id { get; set; }
+    private bool DataLoad;
+
+    GetLeagueByIdResponse League { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        League = await LeagueService.GetLeague(Id);
+        DataLoad = true;
+    }
+
+    private void Ok() => MudDialog.Cancel();
+}

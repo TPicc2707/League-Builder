@@ -1,4 +1,8 @@
-﻿namespace League.Builder.Web.Server;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
+using System.Security.Claims;
+
+namespace League.Builder.Web.Server;
 
 internal static class LoginLogoutEndpointRouteBuilderExtensions
 {
@@ -24,14 +28,22 @@ internal static class LoginLogoutEndpointRouteBuilderExtensions
                 ]);
         });
 
+        group.MapPost("/refresh", (RefreshRequest refreshRequest) =>
+        {
+            var refreshPrincipal = new ClaimsPrincipal(new ClaimsIdentity(IdentityConstants.BearerScheme));
+            return TypedResults.SignIn(refreshPrincipal, properties: new AuthenticationProperties
+                {
+                    Items = { { "refresh_token", refreshRequest.RefreshToken } }
+                }, IdentityConstants.BearerScheme);
+        });
+
         return group;
     }
 
     static ChallengeHttpResult OnLogin() =>
         TypedResults.Challenge(properties: new AuthenticationProperties
         {
-            RedirectUri = "/",
-           
+            RedirectUri = "/"
         });
 
     static SignOutHttpResult OnLogout() =>

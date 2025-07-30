@@ -15,7 +15,7 @@
                 <MudPaper Style="padding-right: 25px; padding-left: 25px;" Elevation="2">
                     <div style="padding-bottom: 25px;">
                         <div style="padding-top: 50px;">
-                            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@Season.Year Schedule</MudText>
+                            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">@Season.Year Schedule</MudText>
                             <MudSpacer />
                             <MudStack Justify="Justify.FlexStart" Row="true">
                                 <MudItem xs="4" md="4" lg="4">
@@ -84,7 +84,7 @@
                                 <MudTd DataLabel="Status">@Constants.GameStatus(context.GameStatus)</MudTd>
                                 <AuthorizeView Roles="@Roles.UpdateGames" Context="updateAuth">
                                     <Authorized>
-                                        <MudTd DataLabel="Edit"><MudLink OnClick="@(() => NavigateToUpdateGame(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
+                                        <MudTd DataLabel="Edit"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
                                     </Authorized>
                                     <NotAuthorized>
                                         <MudTd></MudTd>
@@ -98,7 +98,7 @@
                                 {
                                     <AuthorizeView Roles="@Roles.DeleteGames" Context="deleteAuth">
                                         <Authorized>
-                                            <MudTd DataLabel="Delete"><MudLink OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                                            <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
                                         </Authorized>
                                         <NotAuthorized>
                                             <MudTd></MudTd>
@@ -109,7 +109,7 @@
                                 {
                                     <AuthorizeView Roles="@Roles.ReadStats" Context="statAuth">
                                         <Authorized>
-                                            <MudTd DataLabel="Stats"><MudLink OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))"><MudIcon Icon="@Icons.Material.Filled.QueryStats" /></MudLink></MudTd>
+                                            <MudTd DataLabel="Stats"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))"><MudIcon Icon="@Icons.Material.Filled.QueryStats" /></MudLink></MudTd>
                                         </Authorized>
                                         <NotAuthorized>
                                             <MudTd></MudTd>

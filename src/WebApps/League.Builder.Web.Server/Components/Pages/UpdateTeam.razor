@@ -216,10 +216,11 @@
 
     private async Task OnValidSubmit(EditContext context)
     {
+        var league = await LeagueService.GetLeague(TeamByIdResponse.Team.LeagueId);
+
         if (uploadFile == true)
         {
             model.ImageFile = model.File.Name;
-            var league = await LeagueService.GetLeague(TeamByIdResponse.Team.LeagueId);
             var keyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
             var s3Success = await AWSService.UploadImages(keyPath, model.File);
         }

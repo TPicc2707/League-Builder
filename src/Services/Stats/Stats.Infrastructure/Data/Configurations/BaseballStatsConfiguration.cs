@@ -51,10 +51,6 @@ public class BaseballStatsConfiguration : IEntityTypeConfiguration<BaseballStats
                hittingStatsBuilder.Property(s => s.Walks);
                hittingStatsBuilder.Property(s => s.HitByPitch);
                hittingStatsBuilder.Property(s => s.SacrificeFly);
-               hittingStatsBuilder.Property(s => s.Average);
-               hittingStatsBuilder.Property(s => s.Slugging);
-               hittingStatsBuilder.Property(s => s.OnBasePercentage);
-               hittingStatsBuilder.Property(s => s.OnBasePlusSlugging);
 
            });
 
@@ -70,8 +66,7 @@ public class BaseballStatsConfiguration : IEntityTypeConfiguration<BaseballStats
             pitchingStatsBuilder.Property(s => s.HitsAllowed);
             pitchingStatsBuilder.Property(s => s.WalksAllowed);
             pitchingStatsBuilder.Property(s => s.PitchingStrikeouts);
-            pitchingStatsBuilder.Property(s => s.WalksHitsPerInning);
-            pitchingStatsBuilder.Property(s => s.EarnedRunAverage);
+
         });
     }
 }

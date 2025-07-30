@@ -13,9 +13,5 @@ public record BaseballHittingStatsDto(
     int Strikeouts, 
     int Walks, 
     int HitByPitch,
-    int SacrificeFly,
-    decimal Average, 
-    decimal Slugging, 
-    decimal OnBasePercentage, 
-    decimal OnBasePlusSlugging
+    int SacrificeFly
     );

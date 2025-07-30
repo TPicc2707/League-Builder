@@ -24,11 +24,7 @@ public static class BaseballStatsExtension
                 stats.HittingStats.Strikeouts,
                 stats.HittingStats.Walks,
                 stats.HittingStats.HitByPitch,
-                stats.HittingStats.SacrificeFly,
-                stats.HittingStats.Average,
-                stats.HittingStats.Slugging,
-                stats.HittingStats.OnBasePercentage,
-                stats.HittingStats.OnBasePlusSlugging
+                stats.HittingStats.SacrificeFly
             ),
             PitchingStats: new BaseballPitchingStatsDto(
                 stats.PitchingStats.Wins,
@@ -39,9 +35,7 @@ public static class BaseballStatsExtension
                 stats.PitchingStats.Innings,
                 stats.PitchingStats.HitsAllowed,
                 stats.PitchingStats.WalksAllowed,
-                stats.PitchingStats.PitchingStrikeouts,
-                stats.PitchingStats.WalksHitsPerInning,
-                stats.PitchingStats.EarnedRunAverage)
+                stats.PitchingStats.PitchingStrikeouts)
             ));
     }
 
@@ -67,11 +61,7 @@ public static class BaseballStatsExtension
                 stats.HittingStats.Strikeouts,
                 stats.HittingStats.Walks,
                 stats.HittingStats.HitByPitch,
-                stats.HittingStats.SacrificeFly,
-                stats.HittingStats.Average,
-                stats.HittingStats.Slugging,
-                stats.HittingStats.OnBasePercentage,
-                stats.HittingStats.OnBasePlusSlugging
+                stats.HittingStats.SacrificeFly
             ),
             PitchingStats: new BaseballPitchingStatsDto(
                 stats.PitchingStats.Wins,
@@ -82,9 +72,7 @@ public static class BaseballStatsExtension
                 stats.PitchingStats.Innings,
                 stats.PitchingStats.HitsAllowed,
                 stats.PitchingStats.WalksAllowed,
-                stats.PitchingStats.PitchingStrikeouts,
-                stats.PitchingStats.WalksHitsPerInning,
-                stats.PitchingStats.EarnedRunAverage)
+                stats.PitchingStats.PitchingStrikeouts)
             );
     }
 }

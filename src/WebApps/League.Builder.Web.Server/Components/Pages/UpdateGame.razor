@@ -20,20 +20,20 @@
                             <MudCard>
                                 <MudCardContent>
                                     <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Game Information</MudText>
-                                    <MudSelect Class="mt-3" Label="Away Team" @bind-Value="awayTeamId">
+                                    <MudSelect Disabled="true" Class="mt-3" Label="Away Team" @bind-Value="awayTeamId">
                                         @foreach (var team in TeamsResponse.Teams)
                                         {
                                             <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
                                         }
                                     </MudSelect>
-                                    <MudSelect Class="mt-3" Label="Home Team" @bind-Value="homeTeamId">
+                                    <MudSelect Disabled="true" Class="mt-3" Label="Home Team" @bind-Value="homeTeamId">
                                         @foreach (var team in TeamsResponse.Teams)
                                         {
                                             <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
                                         }
                                     </MudSelect>
-                                    <MudDatePicker Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="startDate" />
-                                    <MudTimePicker Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="startTime" />
+                                    <MudDatePicker Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="startDate" />
+                                    <MudTimePicker Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="startTime" />
                                 </MudCardContent>
                             </MudCard>
                         </MudItem>
@@ -59,18 +59,18 @@
                                     <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Game Details</MudText>
                                     @if (model.GameStatus == GameStatus.Completed)
                                     {
-                                        <MudSelect Class="mt-3" Label="Winning Team" @bind-Value="winningTeamId">
+                                        <MudSelect Disabled="isGameCompleted" Class="mt-3" Label="Winning Team" @bind-Value="winningTeamId">
                                             @foreach (var team in TeamsInGame)
                                             {
                                                 <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
                                             }
                                         </MudSelect>
                                     }
-                                    <MudTextField Label="Away Team Score" Class="mt-3"
+                                    <MudTextField Disabled="isGameCompleted" Label="Away Team Score" Class="mt-3"
                                                      @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
-                                    <MudTextField Label="Home Team Score" Class="mt-3"
+                                    <MudTextField Disabled="isGameCompleted" Label="Home Team Score" Class="mt-3"
                                                      @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
-                                    <MudSelect Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
+                                    <MudSelect Disabled="isGameCompleted" Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
                                         @foreach (var status in Enum.GetValues<GameStatus>())
                                         {
                                             <MudSelectItem Value="status">@status</MudSelectItem>
@@ -78,12 +78,12 @@
                                     </MudSelect>
                                     @if (model.GameStatus == GameStatus.Completed)
                                     {
-                                        <MudDatePicker Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="endDate" />
-                                        <MudTimePicker Class="mt-3" Label="End Time" AmPm="true" Editable="true" @bind-Time="endTime" />
+                                        <MudDatePicker Disabled="isGameCompleted" Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="endDate" />
+                                        <MudTimePicker Disabled="isGameCompleted" Class="mt-3" Label="End Time" AmPm="true" Editable="true" @bind-Time="endTime" />
                                     }
                                 </MudCardContent>
                                 <MudCardActions>
-                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
+                                    <MudButton Disabled="isGameCompleted" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
                                 </MudCardActions>
                             </MudCard>
                         </MudItem>
@@ -121,6 +121,7 @@
     private TimeSpan? startTime;
     private DateTime? endDate;
     private TimeSpan? endTime;
+    private bool isGameCompleted = false;
     bool success;
     UpdateGameForm model = new UpdateGameForm();
     private GetGameByIdResponse GameModel { get; set; }
@@ -155,7 +156,7 @@
             endDate = GameModel.Game.GameDetail.EndTime.Value;
             endTime = GameModel.Game.GameDetail.EndTime.Value.TimeOfDay;
         }
-
+        isGameCompleted = model.GameStatus == GameStatus.Completed ? true : false;
         PageLoad = true;
     }
 
@@ -223,7 +224,7 @@
             errors.Add("Winning Team",
                            [" " + "Game is Completed, please select a winner."]);
 
-        if(model.GameStatus == GameStatus.Completed || model.GameStatus == GameStatus.InProgress)
+        if(model.GameStatus == GameStatus.Completed)
         {
             if (model.AwayTeamScore == model.HomeTeamScore)
                 errors.Add("Scores",

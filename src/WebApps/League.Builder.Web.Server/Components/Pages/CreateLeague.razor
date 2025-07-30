@@ -7,7 +7,7 @@
 <AuthorizeView Roles="@Roles.CreateLeagues" Context="auth">
     <Authorized>
         <div style="padding-top: 150px; padding-bottom: 175px;">
-            <MudText Typo="Typo.h3" Style="font-weight: bold; padding-bottom: 25px;" Align="Align.Center" Color="Color.Primary">Create League</MudText>
+            <MudText Typo="Typo.h3" Style="font-weight: bold; padding-bottom: 25px;" Align="Align.Center">Create League</MudText>
             <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
                 <DataAnnotationsValidator />
                 <MudGrid>

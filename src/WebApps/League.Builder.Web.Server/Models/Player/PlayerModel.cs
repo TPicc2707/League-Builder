@@ -4,6 +4,8 @@ public class PlayerModel
 {
     public Guid Id { get; set; }
     public Guid TeamId { get; set; }
+    public string TeamName { get; set; } = default!;
+    public string Sport { get; set; } = default!;
     public string FirstName { get; set; } = default!;
     public string LastName { get; set; } = default!;
     public AddressModel PlayerAddress { get; set; } = default!;

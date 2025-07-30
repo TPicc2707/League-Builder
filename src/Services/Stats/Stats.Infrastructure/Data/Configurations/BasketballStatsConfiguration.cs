@@ -43,13 +43,10 @@ public class BasketballStatsConfiguration : IEntityTypeConfiguration<BasketballS
                statsBuilder.Property(s => s.Points);
                statsBuilder.Property(s => s.FieldGoalsMade);
                statsBuilder.Property(s => s.FieldGoalsAttempted);
-               statsBuilder.Property(s => s.FieldGoalPercentage);
                statsBuilder.Property(s => s.ThreePointersMade);
                statsBuilder.Property(s => s.ThreePointersAttempted);
-               statsBuilder.Property(s => s.ThreePointPercentage);
                statsBuilder.Property(s => s.FreeThrowsMade);
                statsBuilder.Property(s => s.FreeThrowsAttempted);
-               statsBuilder.Property(s => s.FreeThrowPercentage);
                statsBuilder.Property(s => s.Rebounds);
                statsBuilder.Property(s => s.Assists);
                statsBuilder.Property(s => s.Steals);

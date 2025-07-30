@@ -1,53 +1,159 @@
 ﻿@page "/players"
-@inject IPlayerService PlayerService
-@inject ITeamService TeamService
-@inject ILeagueService LeagueService
 @inject NavigationManager NavManager
-@inject IHttpContextAccessor HttpContextAccessor
+@inject ILeagueService LeagueService
+@inject ITeamService TeamService
+@inject IPlayerService PlayerService
 @inject IAWSService AWSService
+@inject IHttpContextAccessor HttpContextAccessor
 
-<AuthorizeView Roles="@String.Concat(Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)">
+<AuthorizeView Roles="@Roles.ReadPlayers" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
-            <div style="padding-bottom: 200px;">
-                <div style="padding-top: 50px;">
-                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">All Players</MudText>
-                </div>
-
-                @for (var i = 1; i <= Counter; i++)
-                {
-                    <div style="padding-top: 25px;">
-                        <MudStack Justify="@_justify" Row="true">
-                            @foreach (var player in GetPlayersForRow(PlayerCounter))
-                            {
-                                string statsLink = GetStatLink(player);
-                                string address = String.Concat(player.PlayerAddress.AddressLine, ", ", player.PlayerAddress.State, ", ", player.PlayerAddress.ZipCode);
-                                string teamName = GetTeamName(player.TeamId);
-                                <MudCard>
-                                    <MudCardMedia Image="@player.Image" Height="200" />
-                                    <MudCardContent>
-                                        <MudText Typo="Typo.h5" Style="font-weight: bold;">@player.FirstName @player.LastName</MudText>
-                                        <MudText Typo="Typo.body1" Style="padding-bottom: 5px;">@teamName</MudText>
-                                        <MudText Typo="Typo.body2">@address</MudText>
-                                        <MudText Typo="Typo.body2">Birthday: @player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
-                                        <MudText Typo="Typo.body2">Height: @player.PlayerDetail.Height (inches)</MudText>
-                                        <MudText Typo="Typo.body2">Weight: @player.PlayerDetail.Weight (lbs)</MudText>
-                                        <MudText Typo="Typo.body2">@player.PlayerDetail.EmailAddress</MudText>
-                                        <MudText Typo="Typo.body2">@player.PlayerDetail.PhoneNumber</MudText>
-                                        <MudText Typo="Typo.body2">Postion: @player.PlayerDetail.Position</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions Style="align-content: center">
-                                        <MudButton Href="@statsLink" Variant="Variant.Text" Color="Color.Primary">Stats</MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            }
-                        </MudStack>
-                    </div>
-
-                }
-
-            </div>
+            <MudItem Style="padding-top: 50px;">
+                <MudExpansionPanels>
+                    <MudExpansionPanel Expanded="expandSearchPanel">
+                        <TitleContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Search Players</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudItem>
+                                <MudTabs Elevation="2" Centered="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="Color.Primary">
+                                    <MudTabPanel Text="Search All">
+                                        <MudButton OnClick="SearchAll" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Search All</MudButton>
+                                    </MudTabPanel>
+                                    <MudTabPanel Text="First Name">
+                                        <MudStack Row="true">
+                                            <MudItem xs="9" md="9" lg="9">
+                                                <MudTextField @bind-Value="firstName" Placeholder="First Name" />
+                                            </MudItem>
+                                            <MudItem xs="3" md="3" lg="3">
+                                                <MudButton Disabled="@(firstName == string.Empty ? true : false)" OnClick="SearchByFirstName" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                            </MudItem>
+                                        </MudStack>
+                                    </MudTabPanel>
+                                    <MudTabPanel Text="Last Name">
+                                        <MudStack Row="true">
+                                            <MudItem xs="9" md="9" lg="9">
+                                                <MudTextField @bind-Value="lastName" Placeholder="Last Name" />
+                                            </MudItem>
+                                            <MudItem xs="3" md="3" lg="3">
+                                                <MudButton Disabled="@(lastName == string.Empty ? true : false)" OnClick="SearchByLastName" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                            </MudItem>
+                                        </MudStack>
+                                    </MudTabPanel>
+                                    <MudTabPanel Text="Position">
+                                        <MudStack Row="true">
+                                            <MudItem xs="4" md="4" lg="4">
+                                                <MudSelect @bind-Value="sport" Label="Sport">
+                                                    @foreach (var sport in Constants.Sports())
+                                                    {
+                                                        <MudSelectItem Value="sport">@sport</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </MudItem>
+                                            <MudItem xs="4" md="4" lg="4">
+                                                <MudSelect @bind-Value="position" Label="Position" Disabled="@(sport == string.Empty ? true : false)">
+                                                    @foreach (var position in Constants.Positions(sport))
+                                                    {
+                                                        <MudSelectItem Value="position">@position</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </MudItem>
+                                            <MudItem xs="4" md="4" lg="4" Style="align-content: center">
+                                                <MudButton Disabled="@(position == string.Empty ? true : false)" OnClick="SearchByPosition" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                            </MudItem>
+                                        </MudStack>
+                                    </MudTabPanel>
+                                    <MudTabPanel Text="Birth Date">
+                                        <MudStack Row="true">
+                                            <MudItem xs="4" md="4" lg="4">
+                                                <MudSelect @bind-Value="_when" Label="When">
+                                                    @foreach (var when in Constants.When())
+                                                    {
+                                                        <MudSelectItem Value="when">@when</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </MudItem>
+                                            <MudItem xs="4" md="4" lg="4">
+                                                <MudDatePicker Label="Birth Date" Disabled="@(_when == string.Empty ? true : false)" Editable="true" @bind-Date="birthdate" />
+                                            </MudItem>
+                                            <MudItem xs="4" md="4" lg="4" Style="align-content: center">
+                                                <MudButton Disabled="@(birthdate is null ? true : false)" OnClick="SearchBirthdate" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                            </MudItem>
+                                        </MudStack>
+                                    </MudTabPanel>
+                                </MudTabs>
+                            </MudItem>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+            @if (Model != null)
+            {
+                <MudItem Style="padding-top: 25px;">
+                    <MudExpansionPanels>
+                        <MudExpansionPanel Expanded="true">
+                            <TitleContent>
+                                <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Results</MudText>
+                            </TitleContent>
+                            <ChildContent>
+                                <MudItem>
+                                    <MudTable Items="@Model" Hover="true" SortLabel="Sort By">
+                                        <HeaderContent>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.FirstName)">First Name</MudTableSortLabel></MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.LastName)">Last Name</MudTableSortLabel></MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.TeamName)">Team</MudTableSortLabel></MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Position</MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Description</MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
+                                        </HeaderContent>
+                                        <RowTemplate>
+                                            <MudTd DataLabel="">
+                                                <MudAvatar Size="Size.Small">
+                                                    <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
+                                                </MudAvatar>
+                                            </MudTd>
+                                            <MudTd DataLabel="First Name">@context.FirstName</MudTd>
+                                            <MudTd DataLabel="Last Name">@context.LastName</MudTd>
+                                            <MudTd DataLabel="Team">@context.TeamName</MudTd>
+                                            <MudTd DataLabel="Position">@context.PlayerDetail.Position</MudTd>
+                                            <MudTd DataLabel="Description">@context.Description</MudTd>
+                                            <MudTd DataLabel="Links">
+                                                <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
+                                                    @if (context.Sport == SportName.BASEBALL)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/baseballplayerstats/", context.Id)" />
+                                                    }
+                                                    @if (context.Sport == SportName.BASKETBALL)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/basketballplayerstats/", context.Id)" />
+                                                    }
+                                                    @if (context.Sport == SportName.FOOTBALL)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/footballplayerstats/", context.Id)" />
+                                                    }
+                                                </AuthorizeView>
+                                                <AuthorizeView Roles="@Roles.UpdatePlayers" Context="updateAuth">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateplayer/", context.Id)" />
+                                                </AuthorizeView>
+                                            </MudTd>
+                                        </RowTemplate>
+                                        <PagerContent>
+                                            <MudTablePager />
+                                        </PagerContent>
+                                    </MudTable>
+                                </MudItem>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                </MudItem>
+            }
+            @if (isSearchLoading)
+            {
+                <Loading />
+            }
 
         }
         else
@@ -59,18 +165,28 @@
         <MudText>You are not authorized to view this page...</MudText>
     </NotAuthorized>
 </AuthorizeView>
-@code {
-    private bool PageLoad = false;
-    private int PlayerCount = 0;
-    private int PageSize = 0;
-    private int Counter = 0;
-    private Justify _justify = Justify.SpaceEvenly;
-    private int PlayerCounter = 0;
-    private int NumberPlayersToShow = 100;
 
-    private GetPlayersResponse PlayersResponse { get; set; }
-    private GetTeamsResponse TeamsResponse { get; set; }
+@code {
+    private string firstName = string.Empty;
+    private string lastName  = string.Empty;
+    private string sport = string.Empty;
+    private string position = string.Empty;
+    private string _when = string.Empty;
+    private DateTime? birthdate;
+    private bool expandSearchPanel = true;
+    private bool isSearchLoading = false;
+    private bool PageLoad = false;
+
+    private List<PlayerModel> Model { get; set; }
     private GetLeaguesResponse LeaguesResponse { get; set; }
+    private GetPlayersResponse PlayersResponse { get; set; }
+    private GetPlayersByFirstNameResponse PlayersByFirstNameResponse { get; set; }
+    private GetPlayersByLastNameResponse PlayersbyLastNameResponse { get; set; }
+    private GetPlayersByPositionResponse PlayersByPositionResponse { get; set; }
+    private GetPlayersByBirthDateResponse PlayersByBirthdateResponse { get; set; }
+    private GetPlayersBeforeBirthDateResponse PlayersBeforeBirthDateResponse { get; set; }
+    private GetPlayersAfterBirthDateResponse PlayersAfterBirthDateResponse { get; set; }
+    private GetTeamsResponse TeamsResponse { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -78,85 +194,89 @@
         {
             NavManager.NavigateTo("authentication/logout");
         }
-
-        PlayersResponse = await PlayerService.GetPlayers(0, 100);
-        TeamsResponse = await TeamService.GetTeams(0, 100);
+        TeamsResponse = await TeamService.GetTeams(0, 1000);
         LeaguesResponse = await LeagueService.GetLeagues();
+        PageLoad = true;
+    }
+
+    private async Task SearchAll()
+    {
+        isSearchLoading = true;
+        PlayersResponse = await PlayerService.GetPlayers(0, 1000);
+        Model = PlayersResponse.Players.Data.ToList();
         await GetImageAsync();
-        PlayerCount = (int)PlayersResponse.Players.Count;
-        Console.WriteLine(PlayerCount);
-        PageSize = 4;
-        Console.WriteLine(PageSize);
-        Counter = (int)Math.Ceiling((decimal)PlayerCount / (decimal)PageSize);
-        Console.WriteLine(Counter);
-        PageLoad = true;
+        expandSearchPanel = false;
+        isSearchLoading = false;
     }
 
-    private string GetTeamName(Guid id)
+    private async Task SearchByFirstName()
     {
-        var team = TeamsResponse.Teams.Data.FirstOrDefault(t => t.Id == id);
-
-        if (team == null)
-            return string.Empty;
-
-        return team.TeamName;
+        isSearchLoading = true;
+        PlayersByFirstNameResponse = await PlayerService.GetPlayersByFirstName(firstName);
+        Model = PlayersByFirstNameResponse.Players.ToList();
+        await GetImageAsync();
+        expandSearchPanel = false;
+        isSearchLoading = false;
     }
 
-    private string GetStatLink(PlayerModel player)
+    private async Task SearchByLastName()
     {
-        var team = TeamsResponse.Teams.Data.FirstOrDefault(t => t.Id == player.TeamId);
-        var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == team.LeagueId);
-
-        if (league == null)
-            return string.Empty;
-
-        if (league.Sport == SportName.BASEBALL)
-            return String.Concat("/baseballplayerstats/", player.Id);
-        else if (league.Sport == SportName.FOOTBALL)
-            return String.Concat("/footballplayerstats/", player.Id);
-        else
-            return String.Concat("/basketballplayerstats/", player.Id);
+        isSearchLoading = true;
+        PlayersbyLastNameResponse = await PlayerService.GetPlayersByLastName(lastName);
+        Model = PlayersbyLastNameResponse.Players.ToList();
+        await GetImageAsync();
+        expandSearchPanel = false;
+        isSearchLoading = false;
     }
 
-    private IEnumerable<PlayerModel> GetPlayersForRow(int count)
+    private async Task SearchByPosition()
     {
-        Console.WriteLine(count);
-        var players = PlayersResponse.Players.Data.OrderBy(p => p.LastName).ThenBy(p => p.FirstName).Skip(4 * count).Take(4);
-        PlayerCounter++;
-        return players;
+        isSearchLoading = true;
+        PlayersByPositionResponse = await PlayerService.GetPlayersByPosition(position);
+        Model = PlayersByPositionResponse.Players.ToList();
+        await GetImageAsync();
+        expandSearchPanel = false;
+        isSearchLoading = false;
     }
 
-    private async Task ChangeSizePlayerCount()
+    private async Task SearchBirthdate()
     {
-        PageLoad = false;
-        PlayersResponse = await PlayerService.GetPlayers(0, NumberPlayersToShow);
-        TeamsResponse = await TeamService.GetTeams();
-        PlayerCount = (int)PlayersResponse.Players.Count;
-        Console.WriteLine(PlayerCount);
-        PageSize = 4;
-        Console.WriteLine(PageSize);
-        Counter = (int)Math.Ceiling((decimal)PlayerCount / (decimal)PageSize);
-        Console.WriteLine(Counter);
-        PageLoad = true;
-        StateHasChanged();
+        isSearchLoading = true;
+        DateTime date = (DateTime)birthdate;
+        string birthDate = date.ToString("yyyy-MM-dd");
+        if (_when == "By")
+        {
+            PlayersByBirthdateResponse = await PlayerService.GetPlayersByBirthDate(birthDate);
+            Model = PlayersByBirthdateResponse.Players.ToList();
+
+        }
+        if (_when == "Before")
+        {
+            PlayersBeforeBirthDateResponse = await PlayerService.GetPlayersBeforeBirthDate(birthDate);
+            Model = PlayersBeforeBirthDateResponse.Players.ToList();
+
+        }
+        if (_when == "After")
+        {
+            PlayersAfterBirthDateResponse = await PlayerService.GetPlayersAfterBirthDate(birthDate);
+            Model = PlayersAfterBirthDateResponse.Players.ToList();
+
+        }
+        await GetImageAsync();
+        expandSearchPanel = false;
+        isSearchLoading = false;
     }
 
     private async Task GetImageAsync()
     {
-        foreach (var player in PlayersResponse.Players.Data)
+        foreach (var player in Model)
         {
             var team = TeamsResponse.Teams.Data.FirstOrDefault(t => t.Id == player.TeamId);
+            player.TeamName = team.TeamName;
             var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == team.LeagueId);
-
+            player.Sport = league.Sport;
             var keyPath = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
             player.Image = await AWSService.GetImage(keyPath);
         }
     }
-
-
-    // private async void PageChanged(int i)
-    // {
-    //     i = i - 1;
-    //     PlayersResponse = await PlayerService.GetPlayers(i, PageSize);
-    // }
 }

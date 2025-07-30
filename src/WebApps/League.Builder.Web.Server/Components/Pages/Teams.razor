@@ -1,69 +1,121 @@
 ﻿@page "/teams"
-@inject ITeamService TeamService
-@inject ILeagueService LeagueService
 @inject NavigationManager NavManager
-@inject IHttpContextAccessor HttpContextAccessor
+@inject ILeagueService LeagueService
+@inject ITeamService TeamService
 @inject IAWSService AWSService
+@inject IHttpContextAccessor HttpContextAccessor
 
-<AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadLeagues)">
+<AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
-            <div style="padding-bottom: 250px;">
-                <div style="padding-top: 50px;">
-                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Teams</MudText>
-                </div>
+            <MudItem Style="padding-top: 50px;">
+                <MudExpansionPanels>
+                    <MudExpansionPanel Expanded="expandSearchPanel">
+                        <TitleContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Teams Search</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudItem>
+                                <MudTabs Elevation="2" Centered="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="Color.Primary">
+                                    <MudTabPanel Text="Search All">
+                                        <MudButton OnClick="SearchAll" Variant="Variant.Filled" Class="ml-auto" FullWidth="true" Color="Color.Primary">Search All</MudButton>
+                                    </MudTabPanel>
+                                    <MudTabPanel Text="Team Name">
+                                        <MudStack Row="true">
+                                            <MudItem xs="9" md="9" lg="9">
+                                                <MudTextField @bind-Value="teamName" Placeholder="Team Name" />
+                                            </MudItem>
+                                            <MudItem xs="3" md="3" lg="3">
+                                                <MudButton Disabled="@(teamName == string.Empty ? true : false)" OnClick="SearchByTeamName" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                            </MudItem>
+                                        </MudStack>
+                                    </MudTabPanel>
+                                </MudTabs>
+                            </MudItem>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+            @if (Model != null)
+            {
+                <MudItem Style="padding-top: 25px;">
+                    <MudExpansionPanels>
+                        <MudExpansionPanel Expanded="true">
+                            <TitleContent>
+                                <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Results</MudText>
+                            </TitleContent>
+                            <ChildContent>
+                                <MudItem>
+                                    <MudTable Items="@Model" Hover="true" SortLabel="Sort By">
+                                        <HeaderContent>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<TeamModel, object>(x => x.TeamName)">Name</MudTableSortLabel></MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<TeamModel, object>(x => x.LeagueName)">League</MudTableSortLabel></MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Description</MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
+                                        </HeaderContent>
+                                        <RowTemplate>
+                                            <MudTd DataLabel="">
+                                                <MudAvatar Size="Size.Small">
+                                                    <MudImage Src="@context.Image" Alt="Team Image"></MudImage>
+                                                </MudAvatar>
+                                            </MudTd>
+                                            <MudTd DataLabel="Team Name"><MudLink Color="Color.Tertiary" Href="@($"/playersbyteam/{context.Id}")">@context.TeamName</MudLink></MudTd>
+                                            <MudTd DataLabel="League">@context.LeagueName</MudTd>
+                                            <MudTd DataLabel="Description">@context.Description</MudTd>
+                                            <MudTd DataLabel="Links">
+                                                <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
+                                                    @if (context.Sport == SportName.BASEBALL)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/baseballteamstats/", context.Id)" />
+                                                    }
+                                                    @if (context.Sport == SportName.BASKETBALL)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/basketballteamstats/", context.Id)" />
+                                                    }
+                                                    @if (context.Sport == SportName.FOOTBALL)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/footballteamstats/", context.Id)" />
+                                                    }
+                                                </AuthorizeView>
+                                                <AuthorizeView Roles="@Roles.UpdateTeams" Context="updateAuth">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateteam/", context.Id)" />
+                                                </AuthorizeView>
+                                            </MudTd>
+                                        </RowTemplate>
+                                        <PagerContent>
+                                            <MudTablePager />
+                                        </PagerContent>
+                                    </MudTable>
 
-                @for (var i = 1; i <= Counter; i++)
-                {
-                    <div style="padding-top: 25px;">
-                        <MudStack Justify="@_justify" Row="true">
-                            @foreach (var team in GetTeamsForRow(TeamCounter))
-                            {
-                                string playerLink = String.Concat("/playersbyteam/", team.Id);
-                                string address = String.Concat(team.TeamAddress.AddressLine, ", ", team.TeamAddress.State, ", ", team.TeamAddress.ZipCode);
-                                string leagueName = GetLeagueName(team.LeagueId);
-                                <MudCard>
-                                    <MudCardMedia Image="@team.Image" Height="200" />
-                                    <MudCardContent>
-                                        <MudText Typo="Typo.h5" Style="font-weight: bold; padding-bottom: 5px;">@team.TeamName</MudText>
-                                        <MudText Typo="Typo.body1" Style="padding-bottom: 5px;">@leagueName</MudText>
-                                        <MudText Typo="Typo.body2" Style="padding-bottom: 5px;">@address</MudText>
-                                        <MudText Typo="Typo.body2" Style="padding-bottom: 5px;">@team.Description</MudText>
-                                    </MudCardContent>
-                                    <MudCardActions Style="align-content: center">
-                                        <MudButton Href="@playerLink" Variant="Variant.Text" Color="Color.Primary">Players</MudButton>
-                                    </MudCardActions>
-                                </MudCard>
-                            }
-                        </MudStack>
-                    </div>
-
-                }
-
-            </div>
-
-        }
-        else
-        {
-            <Loading />
+                                </MudItem>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                </MudItem>
+            }
+            @if (isSearchLoading)
+            {
+                <Loading />
+            }
         }
     </Authorized>
     <NotAuthorized>
         <MudText>You are not authorized to view this page...</MudText>
     </NotAuthorized>
 </AuthorizeView>
+
 @code {
-
     private bool PageLoad = false;
-    private int TeamCount = 0;
-    private int PageSize = 0;
-    private int Counter = 0;
-    private Justify _justify = Justify.SpaceEvenly;
-    private int TeamCounter = 0;
-
+    private string teamName = string.Empty;
     private GetTeamsResponse TeamsResponse { get; set; }
+    private GetTeamsByNameResponse TeamsByNameResponse { get; set; }
     private GetLeaguesResponse LeaguesResponse { get; set; }
+    private List<TeamModel> Model { get; set; }
+    private bool expandSearchPanel = true;
+    private bool isSearchLoading = false;
+    private string sport = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,40 +123,37 @@
         {
             NavManager.NavigateTo("authentication/logout");
         }
-
-        TeamsResponse = await TeamService.GetTeams(0, 100);
         LeaguesResponse = await LeagueService.GetLeagues();
-        await GetImageAsync();
-        TeamCount = (int)TeamsResponse.Teams.Count;
-        Console.WriteLine(TeamCount);
-        PageSize = 4;
-        Console.WriteLine(PageSize);
-        Counter = (int)Math.Ceiling((decimal)TeamCount / (decimal)PageSize);
-        Console.WriteLine(Counter);
         PageLoad = true;
-
     }
 
-    private string GetLeagueName(Guid id)
+    private async Task SearchAll()
     {
-        var leagueName = LeaguesResponse.Leagues.FirstOrDefault(l => l.Id == id).Name;
-
-        return leagueName;
+        isSearchLoading = true;
+        TeamsResponse = await TeamService.GetTeams(0, 100);
+        Model = TeamsResponse.Teams.Data.ToList();
+        await GetImageAsync();
+        expandSearchPanel = false;
+        isSearchLoading = false;
     }
 
-    private IEnumerable<TeamModel> GetTeamsForRow(int count)
+    private async Task SearchByTeamName()
     {
-        Console.WriteLine(count);
-        var teams = TeamsResponse.Teams.Data.OrderBy(p => p.TeamName).Skip(4 * count).Take(4);
-        TeamCounter++;
-        return teams;
+        isSearchLoading = true;
+        TeamsByNameResponse = await TeamService.GetTeamsByName(teamName);
+        Model = TeamsByNameResponse.Teams.ToList();
+        await GetImageAsync();
+        expandSearchPanel = false;
+        isSearchLoading = false;
     }
 
     private async Task GetImageAsync()
     {
-        foreach (var team in TeamsResponse.Teams.Data)
+        foreach (var team in Model)
         {
             var league = LeaguesResponse.Leagues.FirstOrDefault(l => l.Id == team.LeagueId);
+            team.LeagueName = league.Name;
+            team.Sport = league.Sport;
             var keyPath = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/{team.ImageFile}";
             team.Image = await AWSService.GetImage(keyPath);
         }

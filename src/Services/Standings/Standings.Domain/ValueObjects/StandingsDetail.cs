@@ -20,7 +20,7 @@ public class StandingsDetail
         Losses = losses;
         Ties = ties;
         if (wins <= 0 || gamesPlayed <= 0)
-            WinPercentage = .000M;
+            WinPercentage = .000M; //not working might need to delete
         else
             WinPercentage = (decimal)wins / gamesPlayed;
     }

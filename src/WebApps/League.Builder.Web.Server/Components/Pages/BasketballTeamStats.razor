@@ -1,0 +1,593 @@
+﻿@page "/basketballteamstats/{id}"
+@inject IPlayerService PlayerService
+@inject IStatsService StatService
+@inject ISeasonService SeasonService
+@inject IGameService GameService
+@inject ITeamService TeamService
+@inject ILeagueService LeagueService
+@inject IStandingsService StandingsService
+@inject IAWSService AWSService
+@inject IDialogService DialogService
+@inject NavigationManager NavManager;
+@inject IHttpContextAccessor HttpContextAccessor
+
+<AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames, ", ", Roles.ReadTeams, ", ", Roles.ReadPlayers)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
+                <MudExpansionPanels>
+                    <MudExpansionPanel Expanded="expandSearchPanel">
+                        <TitleContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@SeasonModel.Season.Year @TeamModel.Team.TeamName Stats</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudStack Justify="Justify.FlexStart" Row="true" Style="padding-top: 25px;">
+                                <MudItem xs="6" md="6" lg="6">
+                                    <MudSelect @bind-Value="seasonValue" Placeholder="@seasonPlaceholder" Label="@seasonPlaceholder">
+                                        @foreach (var season in SeasonsModel.Seasons)
+                                        {
+                                            <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="3" md="3" lg="3">
+
+                                </MudItem>
+                                <MudItem xs="3" md="3" lg="3" Style="align-content: center; padding: 10px;">
+                                    <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetTeamStatsBySeason" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 150px;">Search</MudButton>
+                                </MudItem>
+                            </MudStack>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>       
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true" Color="Color.Primary">
+                <MudTabPanel Text="Stats">
+                    <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
+                        <MudStack Row="true">
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">PTS</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamSeasonPointsAverage.ToString("#0.0")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate batting average in baseball, divide the total number of hits by the total number of at-bats. Formula: Batting Average = Total Hits / Total At-Bats"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">REB</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamSeasonReboundsAverage.ToString("#0.0")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate slugging percentage (SLG) in baseball, you divide the total bases a player gets by their total at-bats. Formula: (1B + 2Bx2 + 3Bx3 + HRx4) / AB"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">AST</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamSeasonAssistsAverage.ToString("#0.0")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate On-Base Percentage (OBP), divide the sum of hits, walks, and hit-by-pitches by the sum of at-bats, walks, hit-by-pitches, and sacrifice flies. Formula: (Hits + BBs + HBPs) / (ABs + BBs + HBPs + Sacrifice Flies)"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">FG%</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamSeasonFieldGoalPercentage.ToString("#0.0")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("On-base plus slugging (OPS) is calculated by adding a batter's on-base percentage (OBP) and slugging percentage (SLG). Formula: OBP (See Stat for More Info) + SLG (See Stat for More Info)"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+
+                        </MudStack>
+                    </MudItem>
+                    <MudItem Style="padding-bottom: 25px;">
+                        <MudStack Row="true">
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">3P%</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamSeasonThreePointerPercentage.ToString("#0.0")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate batting average in baseball, divide the total number of hits by the total number of at-bats. Formula: Batting Average = Total Hits / Total At-Bats"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">FT%</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamSeasonFreeThrowPercentage.ToString("#0.0")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate slugging percentage (SLG) in baseball, you divide the total bases a player gets by their total at-bats. Formula: (1B + 2Bx2 + 3Bx3 + HRx4) / AB"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">BLK</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamSeasonBlocksAverage.ToString("#0.0")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate On-Base Percentage (OBP), divide the sum of hits, walks, and hit-by-pitches by the sum of at-bats, walks, hit-by-pitches, and sacrifice flies. Formula: (Hits + BBs + HBPs) / (ABs + BBs + HBPs + Sacrifice Flies)"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+                            <MudItem sm="3" md="3" lg="3">
+                                <MudCard>
+                                    <MudCardHeader>
+                                        <CardHeaderContent>
+                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">STL</MudText>
+                                        </CardHeaderContent>
+                                    </MudCardHeader>
+                                    <MudCardContent>
+                                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@teamSeasonStealsAverage.ToString("#0.0")</MudText>
+                                    </MudCardContent>
+                                    <MudCardActions Style="justify-content: end;">
+                                        <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("On-base plus slugging (OPS) is calculated by adding a batter's on-base percentage (OBP) and slugging percentage (SLG). Formula: OBP (See Stat for More Info) + SLG (See Stat for More Info)"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                    </MudCardActions>
+                                </MudCard>
+                            </MudItem>
+
+                        </MudStack>
+                    </MudItem>
+                    <MudItem Style="padding-bottom: 10px;">
+                        <MudTable Items="@TeamStats.Players" Hover="true">
+                            <ColGroup>
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                            </ColGroup>
+                            <HeaderContent>
+                                <MudTh Class="mud-theme-primary"></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.TotalGamesStarted)">S</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.MinutesPerGame)">MIN</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.PointsPerGame)">PTS</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.ReboundsPerGame)">REB</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.AssistsPerGame)">AST</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.BlocksPerGame)">BLK</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.StealsPerGame)">STL</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.TurnoversPerGame)">TO</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.FieldGoalsMadePerGame)">FGM</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.FieldGoalsAttemptedPerGame)">FGA</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.FieldGoalPercentage)">FG%</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.ThreePointersMadePerGame)">3PM</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.ThreePointersAttemptedPerGame)">3PA</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.ThreePointPercentage)">3P%</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.FreeThrowsMadePerGame)">FTM</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.FreeThrowsAttemptedPerGame)">FTA</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerStatsRecord, object>(x => x.StatsModel.Stats.FreeThrowPercentage)">FT%</MudTableSortLabel></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>
+                                    <MudAvatar Size="Size.Small">
+                                        <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
+                                    </MudAvatar>
+                                </MudTd>
+                                <MudTd DataLabel="Name" Style="font-size:smaller">@context.FirstName @context.LastName</MudTd>
+                                <MudTd DataLabel="Starts">@context.StatsModel.TotalGamesStarted</MudTd>
+                                <MudTd DataLabel="MIN">@context.StatsModel.Stats.MinutesPerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="PTS">@context.StatsModel.Stats.PointsPerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="REB">@context.StatsModel.Stats.ReboundsPerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="AST">@context.StatsModel.Stats.AssistsPerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="BLK">@context.StatsModel.Stats.BlocksPerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="STL">@context.StatsModel.Stats.StealsPerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="TO">@context.StatsModel.Stats.TurnoversPerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="FGM">@context.StatsModel.Stats.FieldGoalsMadePerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="FGA">@context.StatsModel.Stats.FieldGoalsAttemptedPerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="FG%">@context.StatsModel.Stats.FieldGoalPercentage.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="3PM">@context.StatsModel.Stats.ThreePointersMadePerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="3PA">@context.StatsModel.Stats.ThreePointersAttemptedPerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="3P%">@context.StatsModel.Stats.ThreePointPercentage.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="FTM">@context.StatsModel.Stats.FreeThrowsMadePerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="FTA">@context.StatsModel.Stats.FreeThrowsAttemptedPerGame.ToString("#0.0")</MudTd>
+                                <MudTd DataLabel="FT%">@context.StatsModel.Stats.FreeThrowPercentage.ToString("#0.0")</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+
+                    </MudItem>
+                </MudTabPanel>
+            </MudTabs>
+        }
+        else
+        {
+            <Loading />
+        }
+
+
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private bool PageLoad = false;
+    private int seasonValue;
+    private string seasonPlaceholder = "Season";
+    private string imageFile = string.Empty;
+    private bool expandSearchPanel = false;
+
+    private int teamSeasonPoints;
+    private int teamSeasonFieldGoalsMade;
+    private int teamSeasonFieldGoalsAttempted;
+    private int teamSeasonThreePointersMade;
+    private int teamSeasonThreePointersAttempted;
+    private int teamSeasonFreeThrowsMade;
+    private int teamSeasonFreeThrowsAttempted;
+    private int teamSeasonRebounds;
+    private int teamSeasonAssists;
+    private int teamSeasonSteals;
+    private int teamSeasonBlocks;
+    private int teamSeasonTurnovers;
+    private int teamSeasonFouls;
+    private decimal teamSeasonPointsAverage;
+    private decimal teamSeasonReboundsAverage;
+    private decimal teamSeasonAssistsAverage;
+    private decimal teamSeasonStealsAverage;
+    private decimal teamSeasonBlocksAverage;
+    private decimal teamSeasonFieldGoalPercentage;
+    private decimal teamSeasonThreePointerPercentage;
+    private decimal teamSeasonFreeThrowPercentage;
+
+    private int playerSeasonPoints;
+    private int playerSeasonFieldGoalsMade;
+    private int playerSeasonFieldGoalsAttempted;
+    private int playerSeasonThreePointersMade;
+    private int playerSeasonThreePointersAttempted;
+    private int playerSeasonFreeThrowsMade;
+    private int playerSeasonFreeThrowsAttempted;
+    private int playerSeasonRebounds;
+    private int playerSeasonAssists;
+    private int playerSeasonSteals;
+    private int playerSeasonBlocks;
+    private int playerSeasonTurnovers;
+    private int playerSeasonFouls;
+    private int playerGamesPlayed;
+    private int playerGamesStarted;
+    private int playerSeasonMinutes;
+    private decimal playerSeasonMinutesAverage;
+    private decimal playerSeasonPointsAverage;
+    private decimal playerSeasonReboundsAverage;
+    private decimal playerSeasonAssistsAverage;
+    private decimal playerSeasonStealsAverage;
+    private decimal playerSeasonBlocksAverage;
+    private decimal playerSeasonTurnoversAverage;
+    private decimal playerSeasonFoulsAverage;
+    private decimal playerSeasonFieldGoalMadeAverage;
+    private decimal playerSeasonFieldGoalAttemptedAverage;
+    private decimal playerSeasonFieldGoalPercentage;
+    private decimal playerSeasonThreePointerMadeAverage;    
+    private decimal playerSeasonThreePointerAttemptedAverage;
+    private decimal playerSeasonThreePointerPercentage;
+    private decimal playerSeasonFreeThrowMadeAverage;
+    private decimal playerSeasonFreeThrowAttemptedAverage;
+    private decimal playerSeasonFreeThrowPercentage;
+
+    private TeamStatRecord TeamStats { get; set; } = new TeamStatRecord();
+    private SeasonModel Season { get; set; } = new SeasonModel();
+    GetSeasonsResponse SeasonsModel { get; set; }
+    GetSeasonByYearResponse SeasonModel { get; set; }
+    GetTeamByIdResponse TeamModel { get; set; }
+    GetPlayerBasketballStatsBySeasonResponse StatsModel { get; set; }
+    GetLeagueByIdResponse LeagueModel { get; set; }
+ 
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
+        var teamId = Guid.Parse(Id);
+        int year = DateTime.Now.Year;
+        SeasonsModel = await SeasonService.GetSeasons();
+        Season = SeasonsModel.Seasons.FirstOrDefault(x => x.Year == year);
+        seasonValue = Season.Year;
+        TeamModel = await TeamService.GetTeamById(teamId);
+        LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+        await CreatePlayerStats(year, teamId);
+        PageLoad = true;
+    }
+
+    private async Task GetTeamStatsBySeason()
+    {
+        PageLoad = false;
+        var teamId = Guid.Parse(Id);
+        teamSeasonPoints = 0;
+        teamSeasonFieldGoalsMade = 0;
+        teamSeasonFieldGoalsAttempted = 0;
+        teamSeasonThreePointersMade = 0;
+        teamSeasonThreePointersAttempted = 0;
+        teamSeasonFreeThrowsMade = 0;
+        teamSeasonFreeThrowsAttempted = 0;
+        teamSeasonRebounds = 0;
+        teamSeasonAssists = 0;
+        teamSeasonSteals = 0;
+        teamSeasonBlocks = 0;
+        teamSeasonTurnovers = 0;
+        teamSeasonFouls = 0;
+        TeamStats.Players.RemoveRange(0, TeamStats.Players.Count);
+        Season = SeasonsModel.Seasons.FirstOrDefault(x => x.Year == seasonValue);
+        await CreatePlayerStats(seasonValue, teamId);
+        PageLoad = true;
+    }
+
+    private async Task CreatePlayerStats(int year, Guid teamId)
+    {
+        var standings = await StandingsService.GetStandingsByTeam(teamId);
+        var teamGames = standings.Standings.FirstOrDefault(s => s.SeasonId == Season.Id).StandingsDetail.GamesPlayed;
+        var players = await PlayerService.GetPlayersByTeam(teamId);
+        await GetImageAsync(players.Players);
+        SeasonModel = await SeasonService.GetSeasonByYear(year);
+        foreach (var player in players.Players)
+        {
+            var playerStats = new BasketballPlayerStats();
+
+            playerSeasonPoints = 0;
+            playerSeasonFieldGoalsMade = 0;
+            playerSeasonFieldGoalsAttempted = 0;
+            playerSeasonThreePointersMade = 0;
+            playerSeasonThreePointersAttempted = 0;
+            playerSeasonFreeThrowsMade = 0;
+            playerSeasonFreeThrowsAttempted = 0;
+            playerSeasonRebounds = 0;
+            playerSeasonAssists = 0;
+            playerSeasonSteals = 0;
+            playerSeasonBlocks = 0;
+            playerSeasonTurnovers = 0;
+            playerSeasonFouls = 0;
+            playerGamesPlayed = 0;
+            playerGamesStarted = 0;
+            playerSeasonMinutes = 0;
+            playerSeasonMinutesAverage = 0;
+            playerSeasonPointsAverage = 0;
+            playerSeasonReboundsAverage = 0;
+            playerSeasonAssistsAverage = 0;
+            playerSeasonStealsAverage = 0;
+            playerSeasonBlocksAverage = 0;
+            playerSeasonTurnoversAverage = 0;
+            playerSeasonFoulsAverage = 0;
+            playerSeasonFieldGoalMadeAverage = 0;
+            playerSeasonFieldGoalAttemptedAverage = 0;
+            playerSeasonFieldGoalPercentage = 0;
+            playerSeasonThreePointerMadeAverage = 0;
+            playerSeasonThreePointerAttemptedAverage = 0;
+            playerSeasonThreePointerPercentage = 0;
+            playerSeasonFreeThrowMadeAverage = 0;
+            playerSeasonFreeThrowAttemptedAverage = 0;
+            playerSeasonFreeThrowPercentage = 0;
+            StatsModel = await StatService.GetPlayerBasketballStatsBySeason(player.Id, SeasonModel.Season.Id);
+            foreach (var stat in StatsModel.BasketballStats)
+            {
+                teamSeasonPoints += stat.Stats.Points;
+                teamSeasonFieldGoalsMade += stat.Stats.FieldGoalsMade;
+                teamSeasonFieldGoalsAttempted += stat.Stats.FieldGoalsAttempted;
+                teamSeasonThreePointersMade += stat.Stats.ThreePointersMade;
+                teamSeasonThreePointersAttempted += stat.Stats.ThreePointersAttempted;
+                teamSeasonFreeThrowsMade += stat.Stats.FreeThrowsMade;
+                teamSeasonFreeThrowsAttempted += stat.Stats.FreeThrowsAttempted;
+                teamSeasonRebounds += stat.Stats.Rebounds;
+                teamSeasonAssists += stat.Stats.Assists;
+                teamSeasonSteals += stat.Stats.Steals;
+                teamSeasonBlocks += stat.Stats.Blocks;
+                teamSeasonTurnovers += stat.Stats.Turnovers;
+                teamSeasonFouls += stat.Stats.Fouls;
+
+                playerSeasonPoints += stat.Stats.Points;
+                playerSeasonFieldGoalsMade += stat.Stats.FieldGoalsMade;
+                playerSeasonFieldGoalsAttempted += stat.Stats.FieldGoalsAttempted;
+                playerSeasonThreePointersMade += stat.Stats.ThreePointersMade;
+                playerSeasonThreePointersAttempted += stat.Stats.ThreePointersAttempted;
+                playerSeasonFreeThrowsMade += stat.Stats.FreeThrowsMade;
+                playerSeasonFreeThrowsAttempted += stat.Stats.FreeThrowsAttempted;
+                playerSeasonRebounds += stat.Stats.Rebounds;
+                playerSeasonAssists += stat.Stats.Assists;
+                playerSeasonSteals += stat.Stats.Steals;
+                playerSeasonBlocks += stat.Stats.Blocks;
+                playerSeasonTurnovers += stat.Stats.Turnovers;
+                playerSeasonFouls += stat.Stats.Fouls;
+                playerSeasonMinutes += stat.Stats.Minutes;
+                playerGamesPlayed += stat.Stats.Minutes > 0 ? 1 : 0;
+                playerGamesStarted += stat.Stats.Start ? 1 : 0;
+
+                playerSeasonMinutesAverage = playerSeasonMinutes == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonMinutes / playerGamesPlayed;
+                playerSeasonPointsAverage = playerSeasonPoints == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonPoints / playerGamesPlayed;
+                playerSeasonReboundsAverage = playerSeasonRebounds == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonRebounds / playerGamesPlayed;
+                playerSeasonAssistsAverage = playerSeasonAssists == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonAssists / playerGamesPlayed;
+                playerSeasonStealsAverage = playerSeasonSteals == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonSteals / playerGamesPlayed;
+                playerSeasonBlocksAverage = playerSeasonBlocks == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonBlocks / playerGamesPlayed;
+                playerSeasonTurnoversAverage = playerSeasonTurnovers == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonTurnovers / playerGamesPlayed;
+                playerSeasonFoulsAverage = playerSeasonFouls == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonFouls / playerGamesPlayed;
+                playerSeasonFieldGoalMadeAverage = playerSeasonFieldGoalsMade == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonFieldGoalsMade / playerGamesPlayed;
+                playerSeasonFieldGoalAttemptedAverage = playerSeasonFieldGoalsAttempted == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonFieldGoalsAttempted / playerGamesPlayed;
+                playerSeasonFieldGoalPercentage = playerSeasonFieldGoalsMade == 0 || playerSeasonFieldGoalsAttempted == 0 ? 0 : (decimal)((decimal)playerSeasonFieldGoalsMade / playerSeasonFieldGoalsAttempted) * 100;
+                playerSeasonThreePointerMadeAverage = playerSeasonThreePointersMade == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonThreePointersMade / playerGamesPlayed;
+                playerSeasonThreePointerAttemptedAverage = playerSeasonThreePointersAttempted == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonThreePointersAttempted / playerGamesPlayed;
+                playerSeasonThreePointerPercentage = playerSeasonThreePointersMade == 0 || playerSeasonThreePointersAttempted == 0 ? 0 : (decimal)((decimal)playerSeasonThreePointersMade / playerSeasonThreePointersAttempted) * 100;
+                playerSeasonFreeThrowMadeAverage = playerSeasonFreeThrowsMade == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonFreeThrowsMade / playerGamesPlayed;
+                playerSeasonFreeThrowAttemptedAverage = playerSeasonFreeThrowsAttempted == 0 || playerGamesPlayed == 0 ? 0 : (decimal)playerSeasonFreeThrowsAttempted / playerGamesPlayed;
+                playerSeasonFreeThrowPercentage = playerSeasonFreeThrowsMade == 0 || playerSeasonFreeThrowsAttempted == 0 ? 0 : (decimal)((decimal)playerSeasonFreeThrowsMade / playerSeasonFreeThrowsAttempted) * 100;
+
+            }
+
+            playerStats.MinutesPerGame = playerSeasonMinutesAverage;
+            playerStats.PointsPerGame = playerSeasonPointsAverage;
+            playerStats.ReboundsPerGame = playerSeasonReboundsAverage;
+            playerStats.AssistsPerGame = playerSeasonAssistsAverage;
+            playerStats.StealsPerGame = playerSeasonStealsAverage;
+            playerStats.BlocksPerGame = playerSeasonBlocksAverage;
+            playerStats.TurnoversPerGame = playerSeasonTurnoversAverage;
+            playerStats.FoulsPerGame = playerSeasonFoulsAverage;
+            playerStats.FieldGoalsMadePerGame = playerSeasonFieldGoalMadeAverage;
+            playerStats.FieldGoalsAttemptedPerGame = playerSeasonFieldGoalAttemptedAverage;
+            playerStats.FieldGoalPercentage = playerSeasonFieldGoalPercentage;
+            playerStats.ThreePointersMadePerGame = playerSeasonThreePointerMadeAverage;
+            playerStats.ThreePointersAttemptedPerGame = playerSeasonThreePointerAttemptedAverage;
+            playerStats.ThreePointPercentage = playerSeasonThreePointerPercentage;
+            playerStats.FreeThrowsMadePerGame = playerSeasonFreeThrowMadeAverage;
+            playerStats.FreeThrowsAttemptedPerGame = playerSeasonFreeThrowAttemptedAverage;
+            playerStats.FreeThrowPercentage = playerSeasonFreeThrowPercentage;
+
+            var playerSeasonStats = new BasketballSeasonStats(playerStats, playerGamesStarted, playerGamesPlayed);
+            var playerStat = new PlayerStatsRecord(player, playerSeasonStats);
+            TeamStats.Players.Add(playerStat);
+        }
+
+        teamSeasonPointsAverage = teamSeasonPoints == 0 || teamGames == 0 ? 0 : (decimal)teamSeasonPoints / teamGames;
+        teamSeasonReboundsAverage = teamSeasonRebounds == 0 || teamGames == 0 ? 0 : (decimal)teamSeasonRebounds / teamGames;
+        teamSeasonAssistsAverage = teamSeasonAssists == 0 || teamGames == 0 ? 0 : (decimal)teamSeasonAssists / teamGames;
+        teamSeasonStealsAverage = teamSeasonSteals == 0 || teamGames == 0 ? 0 : (decimal)teamSeasonSteals / teamGames;
+        teamSeasonBlocksAverage = teamSeasonBlocks == 0 || teamGames == 0 ? 0 : (decimal)teamSeasonBlocks / teamGames;
+        teamSeasonFieldGoalPercentage = teamSeasonFieldGoalsMade == 0 || teamSeasonFieldGoalsAttempted == 0 ? 0 : (decimal)((decimal)teamSeasonFieldGoalsMade / teamSeasonFieldGoalsAttempted) * 100;
+        teamSeasonThreePointerPercentage = teamSeasonThreePointersMade == 0 || teamSeasonThreePointersAttempted == 0 ? 0 : (decimal)((decimal)teamSeasonThreePointersMade / teamSeasonThreePointersAttempted) * 100;
+        teamSeasonFreeThrowPercentage = teamSeasonFreeThrowsMade == 0 || teamSeasonFreeThrowsAttempted == 0 ? 0 : (decimal)((decimal)teamSeasonFreeThrowsMade / teamSeasonFreeThrowsAttempted) * 100;
+    }
+
+
+    private async Task GetImageAsync(IEnumerable<PlayerModel> players)
+    {
+        foreach (var player in players)
+        {
+            var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamModel.Team.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
+            player.Image = await AWSService.GetImage(keyPath);
+        }
+    }
+
+    private Task OpenStatDialogAsync(string message)
+    {
+        var parameters = new DialogParameters<StatInfoMessageBox> { { x => x.Message, message } };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        return DialogService.ShowAsync<StatInfoMessageBox>("Stat Info", parameters, options);
+    }
+
+    public class TeamStatRecord
+    {
+        public List<PlayerStatsRecord> Players { get; set; } = new List<PlayerStatsRecord>();
+    }
+
+
+    public class PlayerStatsRecord
+    {
+        public PlayerStatsRecord(PlayerModel player, BasketballSeasonStats stats)
+        {
+            PlayerId = player.Id;
+            FirstName = player.FirstName;
+            LastName = player.LastName;
+            Number = player.PlayerDetail.Number;
+            Position = player.PlayerDetail.Position;
+            Image = player.Image;
+            StatsModel = stats;
+        }
+
+        public Guid PlayerId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int Number { get; set; }
+        public string Position { get; set; }
+        public string Image { get; set; }
+        public BasketballSeasonStats StatsModel { get; set; }
+    }
+
+    public class BasketballSeasonStats
+    {
+        public BasketballSeasonStats(BasketballPlayerStats stats, int totalGamesStarted, int totalGamesPlayed)
+        {
+            Stats = stats;
+            TotalGamesStarted = totalGamesStarted;
+            TotalGamesPlayed = totalGamesPlayed;
+        }
+
+        public BasketballPlayerStats Stats { get; set; }
+        public int TotalGamesStarted { get; set; }
+        public int TotalGamesPlayed { get; set; }
+
+    }
+
+    public class BasketballPlayerStats
+    {
+        public decimal MinutesPerGame { get; set; }
+        public decimal PointsPerGame { get; set; }
+        public decimal ReboundsPerGame { get; set; }
+        public decimal AssistsPerGame { get; set; }
+        public decimal StealsPerGame { get; set; }
+        public decimal TurnoversPerGame { get; set; }
+        public decimal BlocksPerGame { get; set; }
+        public decimal FoulsPerGame { get; set; }
+        public decimal FieldGoalsMadePerGame { get; set; }
+        public decimal FieldGoalsAttemptedPerGame { get; set; }
+        public decimal FieldGoalPercentage { get; set; }
+        public decimal ThreePointersMadePerGame { get; set; }
+        public decimal ThreePointersAttemptedPerGame { get; set; }
+        public decimal ThreePointPercentage { get; set; }
+        public decimal FreeThrowsMadePerGame { get; set; }
+        public decimal FreeThrowsAttemptedPerGame { get; set; }
+        public decimal FreeThrowPercentage { get; set; }
+    }
+}

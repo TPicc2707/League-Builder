@@ -11,8 +11,6 @@ public record BaseballPitchingStats
     public int HitsAllowed { get; } = default!;
     public int WalksAllowed { get; } = default!;
     public int PitchingStrikeouts { get; } = default!;
-    public decimal WalksHitsPerInning { get; } = default!;
-    public decimal EarnedRunAverage { get; } = default!;
 
     protected BaseballPitchingStats()
     {
@@ -30,14 +28,6 @@ public record BaseballPitchingStats
         HitsAllowed = hitsAllowed;
         WalksAllowed = walksAllowed;
         PitchingStrikeouts = pitchingStrikeouts;
-        if (walksAllowed + hitsAllowed == 0 || innings == 0)
-            WalksHitsPerInning = 0.00M;
-        else
-            WalksHitsPerInning = (decimal)(walksAllowed + hitsAllowed) / innings;
-        if (runs == 0 || innings == 0)
-            EarnedRunAverage = 0.00M;
-        else
-            EarnedRunAverage = (decimal)(runs / innings) * 9;
     }
 
     public static BaseballPitchingStats Of(int wins, int losses, int runs, bool start, int saves, decimal innings, int hitsAllowed, int walksAllowed, int pitchingStrikeouts)

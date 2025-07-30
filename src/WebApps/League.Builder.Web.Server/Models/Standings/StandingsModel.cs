@@ -1,12 +1,16 @@
 ﻿namespace League.Builder.Web.Server.Models.Standings;
 
-public record StandingsModel(
-    Guid Id,
-    Guid LeagueId,
-    Guid SeasonId,
-    StandingsDetailModel StandingsDetail,
-    StandingsStatus StandingsStatus,
-    TeamDetailModel Team);
+public class StandingsModel
+{
+    public Guid Id { get; set; }
+    public Guid LeagueId { get; set; }
+    public Guid SeasonId { get; set; }
+    public string Image { get; set; } = default!;
+    public decimal WinPercentage { get; set; } = default!;
+    public StandingsDetailModel StandingsDetail { get ; set; } = default!;
+    public StandingsStatus StandingsStatus { get; set; } = default!;
+    public TeamDetailModel Team { get; set; } = default!;
+}
 
 public record CreateStandingsModel(
     Guid LeagueId,

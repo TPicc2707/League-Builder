@@ -4,6 +4,8 @@
 @inject ISeasonService SeasonService
 @inject IGameService GameService
 @inject ITeamService TeamService
+@inject ILeagueService LeagueService
+@inject IAWSService AWSService
 @inject IDialogService DialogService
 @inject NavigationManager NavManager;
 @inject IHttpContextAccessor HttpContextAccessor
@@ -21,19 +23,19 @@
                                     <MudImage Src="@imageFile" Width="225" Height="225" Alt="Swedish Farm House" Elevation="25" Class="rounded-lg ma-4" />
                                 </MudItem>
                                 <MudItem xs="4" md="4" lg="4" Class="ma-4">
-                                    <MudText Typo="Typo.h4" Align="Align.Start" Style="font-weight:bold; " Color="Color.Primary">@PlayerModel.Player.FirstName @PlayerModel.Player.LastName</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">@TeamModel.Team.TeamName</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">#@PlayerModel.Player.PlayerDetail.Number</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">@address</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Birthday: @PlayerModel.Player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Height: @PlayerModel.Player.PlayerDetail.Height in</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Weight: @PlayerModel.Player.PlayerDetail.Weight lbs</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Color="Color.Primary">Positions: @PlayerModel.Player.PlayerDetail.Position</MudText>
+                                    <MudText Typo="Typo.h4" Align="Align.Start" Style="font-weight:bold;">@PlayerModel.Player.FirstName @PlayerModel.Player.LastName</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start">@TeamModel.Team.TeamName</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start">#@PlayerModel.Player.PlayerDetail.Number</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start">@address</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start">Birthday: @PlayerModel.Player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start">Height: @PlayerModel.Player.PlayerDetail.Height in</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start">Weight: @PlayerModel.Player.PlayerDetail.Weight lbs</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start">Positions: @PlayerModel.Player.PlayerDetail.Position</MudText>
                                 </MudItem>
                             </MudStack>
                         </MudCardContent>
                         <MudCardActions Class="ma-4">
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="OpenContactDialogAsync">Contact Info</MudButton>
+                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="OpenContactDialogAsync">Contact Info</MudButton>
                         </MudCardActions>
                     </MudCard>
 
@@ -41,7 +43,7 @@
                 <MudPaper Style="padding-right: 25px; padding-left: 25px;" Elevation="2">
                     <div style="padding-bottom: 25px;">
                         <div style="padding-top: 50px;">
-                            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@SeasonModel.Season.Year Stats</MudText>
+                            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">@SeasonModel.Season.Year Stats</MudText>
                             <MudSpacer />
                             <MudStack Justify="Justify.FlexStart" Row="true" Style="padding-top: 25px;">
                                 <MudItem xs="6" md="6" lg="6">
@@ -61,7 +63,7 @@
                             </MudStack>
                         </div>
                     </div>
-                    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
+                    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true" Color="Color.Primary">
                         <MudTabPanel Text="Hitting Stats">
                             <div style="padding-top: 25px; padding-bottom: 50px;">
                                 <MudStack Row="true">
@@ -76,7 +78,7 @@
                                                 <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonAverage.ToString("#.000")</MudText>
                                             </MudCardContent>
                                             <MudCardActions Style="justify-content: end;">
-                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate batting average in baseball, divide the total number of hits by the total number of at-bats. Formula: Batting Average = Total Hits / Total At-Bats"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                                <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate batting average in baseball, divide the total number of hits by the total number of at-bats. Formula: Batting Average = Total Hits / Total At-Bats"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
                                             </MudCardActions>
                                         </MudCard>
                                     </MudItem>
@@ -91,7 +93,7 @@
                                                 <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@slugging.ToString("#.000")</MudText>
                                             </MudCardContent>
                                             <MudCardActions Style="justify-content: end;">
-                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate slugging percentage (SLG) in baseball, you divide the total bases a player gets by their total at-bats. Formula: (1B + 2Bx2 + 3Bx3 + HRx4) / AB"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                                <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate slugging percentage (SLG) in baseball, you divide the total bases a player gets by their total at-bats. Formula: (1B + 2Bx2 + 3Bx3 + HRx4) / AB"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
                                             </MudCardActions>
                                         </MudCard>
                                     </MudItem>
@@ -106,7 +108,7 @@
                                                 <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@onBasePercentage.ToString("#.000")</MudText>
                                             </MudCardContent>
                                             <MudCardActions Style="justify-content: end;">
-                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate On-Base Percentage (OBP), divide the sum of hits, walks, and hit-by-pitches by the sum of at-bats, walks, hit-by-pitches, and sacrifice flies. Formula: (Hits + BBs + HBPs) / (ABs + BBs + HBPs + Sacrifice Flies)"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                                <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate On-Base Percentage (OBP), divide the sum of hits, walks, and hit-by-pitches by the sum of at-bats, walks, hit-by-pitches, and sacrifice flies. Formula: (Hits + BBs + HBPs) / (ABs + BBs + HBPs + Sacrifice Flies)"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
                                             </MudCardActions>
                                         </MudCard>
                                     </MudItem>
@@ -121,7 +123,7 @@
                                                 <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@onBasePlusSlugging.ToString("#.000")</MudText>
                                             </MudCardContent>
                                             <MudCardActions Style="justify-content: end;">
-                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("On-base plus slugging (OPS) is calculated by adding a batter's on-base percentage (OBP) and slugging percentage (SLG). Formula: OBP (See Stat for More Info) + SLG (See Stat for More Info)"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                                <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("On-base plus slugging (OPS) is calculated by adding a batter's on-base percentage (OBP) and slugging percentage (SLG). Formula: OBP (See Stat for More Info) + SLG (See Stat for More Info)"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
                                             </MudCardActions>
                                         </MudCard>
                                     </MudItem>
@@ -197,7 +199,7 @@
                                                 <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@earnedRunAverage.ToString("#0.00")</MudText>
                                             </MudCardContent>
                                             <MudCardActions Style="justify-content: end;">
-                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate a pitcher's Earned Run Average (ERA), divide the number of earned runs allowed by the number of innings pitched, and then multiply that result by 9. Formula: (Earned Runs / Innings Pitched) * 9"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                                <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate a pitcher's Earned Run Average (ERA), divide the number of earned runs allowed by the number of innings pitched, and then multiply that result by 9. Formula: (Earned Runs / Innings Pitched) * 9"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
                                             </MudCardActions>
                                         </MudCard>
                                     </MudItem>
@@ -212,7 +214,7 @@
                                                 <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@walksHitsPerInning.ToString("#0.00")</MudText>
                                             </MudCardContent>
                                             <MudCardActions Style="justify-content: end;">
-                                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => OpenStatDialogAsync("To calculate Walks and Hits per Inning Pitched (WHIP) in baseball, you add the total number of walks and hits a pitcher has allowed, then divide that sum by the total number of innings they have pitched.  Formula: (Total Hits + Total Walks) / Innings Pitched"))"><MudIcon Size="Size.Small" Color="Color.Primary" Icon="@Icons.Material.Filled.Info" /></MudButton>
+                                                <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("To calculate Walks and Hits per Inning Pitched (WHIP) in baseball, you add the total number of walks and hits a pitcher has allowed, then divide that sum by the total number of innings they have pitched.  Formula: (Total Hits + Total Walks) / Innings Pitched"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
                                             </MudCardActions>
                                         </MudCard>
                                     </MudItem>
@@ -315,6 +317,7 @@
     GetSeasonByYearResponse SeasonModel { get; set; }
     GetGamesByTeamResponse GameModel { get; set; }
     GetTeamByIdResponse TeamModel { get; set; }
+    GetLeagueByIdResponse LeagueModel { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -352,7 +355,8 @@
         var playerId = Guid.Parse(Id);
         PlayerModel = await PlayerService.GetPlayerById(playerId);
         TeamModel = await TeamService.GetTeamById(PlayerModel.Player.TeamId);
-        imageFile = String.Concat("images/", PlayerModel.Player.ImageFile);
+        LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+        await GetImageAsync();
         address = String.Concat(PlayerModel.Player.PlayerAddress.AddressLine, ", ", PlayerModel.Player.PlayerAddress.State, ", ", PlayerModel.Player.PlayerAddress.ZipCode);
         SeasonModel = await SeasonService.GetSeasonByYear(year);
         StatsModel = await StatService.GetPlayerBaseballStatsBySeason(playerId, SeasonModel.Season.Id);
@@ -384,10 +388,10 @@
 
     private Task OpenContactDialogAsync()
     {
-        var parameters = new DialogParameters<ContactInfoMessageBox> { { x => x.Id, PlayerModel.Player.Id } };
+        var parameters = new DialogParameters<PlayerContactInfoMessageBox> { { x => x.Id, PlayerModel.Player.Id } };
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true };
 
-        return DialogService.ShowAsync<ContactInfoMessageBox>("Contact Info", parameters, options);
+        return DialogService.ShowAsync<PlayerContactInfoMessageBox>("Contact Info", parameters, options);
     }
 
     private Task OpenStatDialogAsync(string message)
@@ -396,6 +400,12 @@
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
 
         return DialogService.ShowAsync<StatInfoMessageBox>("Stat Info", parameters, options);
+    }
+
+    private async Task GetImageAsync()
+    {
+        var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamModel.Team.TeamName}/players/{String.Concat(PlayerModel.Player.FirstName, " ", PlayerModel.Player.LastName)}/{PlayerModel.Player.ImageFile}";
+        imageFile = await AWSService.GetImage(keyPath);
     }
 
     public class PlayerStatRecord
@@ -409,4 +419,5 @@
         public string OpposingTeam { get; set; }
         public BaseballStatsModel StatsModel { get; set; }
     }
+
 }

@@ -4,10 +4,8 @@ public class FootballKickingStats
 {
     public int FieldGoalsMade { get; set; }
     public int FieldGoalsAttempted { get; set; }
-    public decimal FieldGoalPercentage { get; set; }
     public int ExtraPointsMade { get; set; }
     public int ExtraPointsAttempted { get;set; }
-    public decimal ExtraPointPercentage { get; set; }
     public int LongestKick { get; set; }
     public int Points { get; set; }
     public int Punts { get; set; }
@@ -23,16 +21,6 @@ public class FootballKickingStats
     {
         FieldGoalsMade = fieldGoalsMade;
         FieldGoalsAttempted = fieldGoalsAttempted;
-        if (fieldGoalsMade == 0 || fieldGoalsAttempted == 0)
-            FieldGoalPercentage = 0.00M;
-        else
-            FieldGoalPercentage = fieldGoalsMade/ fieldGoalsAttempted;
-        ExtraPointsMade = extraPointsMade;
-        ExtraPointsAttempted = extraPointsAttempted;
-        if (extraPointsMade == 0 || extraPointsAttempted == 0)
-            ExtraPointPercentage = 0.00M;
-        else
-            ExtraPointPercentage = extraPointsMade / extraPointsAttempted;
         LongestKick = longestKick;
         Points = points;
         Punts = punts;

@@ -4,15 +4,15 @@
             <MudNavMenu Rounded="true" Margin="Margin.Dense" Color="Color.Primary" Bordered="true">
                 <MudText Typo="Typo.h6" Class="px-4">League Builder</MudText>
                 <MudDivider Class="my-2" />
-                <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+                <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">Home</MudNavLink>
                 <AuthorizeView Roles="@Roles.ReadLeagues">
-                    <MudNavLink Href="/leaguesearch" Icon="@Icons.Material.Filled.Public">Leagues</MudNavLink>
+                    <MudNavLink Href="/leagues" Icon="@Icons.Material.Filled.Public">Leagues</MudNavLink>
                 </AuthorizeView>
                 <AuthorizeView Roles="@Roles.ReadTeams">
-                    <MudNavLink Href="/teamsearch" Icon="@Icons.Material.Filled.Groups2">Teams</MudNavLink>
+                    <MudNavLink Href="/teams" Icon="@Icons.Material.Filled.Groups2">Teams</MudNavLink>
                 </AuthorizeView>
                 <AuthorizeView Roles="@Roles.ReadPlayers">
-                    <MudNavLink Href="/playersearch" Icon="@Icons.Material.Filled.Person">Players</MudNavLink>
+                    <MudNavLink Href="/players" Icon="@Icons.Material.Filled.Person">Players</MudNavLink>
                 </AuthorizeView>
                 <AuthorizeView Roles="@Roles.CreateSeasons">
                     <MudNavLink Href="/seasons" Icon="@Icons.Material.Filled.CalendarMonth">Seasons</MudNavLink>

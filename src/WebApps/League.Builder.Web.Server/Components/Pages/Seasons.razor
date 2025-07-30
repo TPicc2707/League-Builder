@@ -10,9 +10,9 @@
     {
     <div style="padding-top: 100px;">
         <MudPaper Style="padding-right: 25px; padding-left: 25px;" Elevation="2">
-            <div style="padding-bottom: 25px;">
+            <div style="padding-bottom: 15px;">
                 <div style="padding-top: 50px;">
-                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">Seasons</MudText>
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">Seasons</MudText>
                 </div>
             </div>
             <div style="padding-bottom: 50px;">
@@ -33,7 +33,7 @@
                         <MudTd DataLabel="Team Name">@context.Year</MudTd>
                         <AuthorizeView Roles="@Roles.UpdateSeasons" Context="updateAuth">
                             <Authorized>
-                                <MudTd DataLabel="Edit"><MudLink OnClick="@(() => NavigateToUpdateSeason(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
+                                <MudTd DataLabel="Edit"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateSeason(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
                             </Authorized>
                             <NotAuthorized>
                                 <MudTd></MudTd>
@@ -41,7 +41,7 @@
                         </AuthorizeView>
                         <AuthorizeView Roles="@Roles.DeleteSeasons" Context="deleteAuth">
                             <Authorized>
-                                <MudTd DataLabel="Delete"><MudLink OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                                <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
                             </Authorized>
                             <NotAuthorized>
                                 <MudTd></MudTd>

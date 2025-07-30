@@ -13,10 +13,11 @@
         {
             <div style="padding-top: 100px;">
                 <div style="padding-bottom: 25px;">
-                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold" Color="Color.Primary">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
+                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
                 </div>
-                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true" Color="Color.Primary">
                     <MudTabPanel Text="@String.Concat(GameModel.Game.AwayTeam.TeamName + " Stats")">
+                        <div style="padding-top: 25px;">
                         <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" CanCancelEdit="true"
                         @bind-SelectedItem="passingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitPassingStats"
                         RowEditPreview="BackupPassingItem" RowEditCancel="ResetPassingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
@@ -78,6 +79,7 @@
                                 <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
                             </EditButtonContent>
                         </MudTable>
+                        </div>
                         <div style="padding-top: 25px;">
                             <MudSimpleTable>
                                 <thead>
@@ -493,67 +495,70 @@
                         </div>
                     </MudTabPanel>
                     <MudTabPanel Text="@String.Concat(GameModel.Game.HomeTeam.TeamName + " Stats")">
-                        <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
-                        @bind-SelectedItem="passingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitPassingStats"
-                        RowEditPreview="BackupPassingItem" RowEditCancel="ResetPassingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
-                            <ColGroup>
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                            </ColGroup>
-                            <HeaderContent>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                <MudTd DataLabel="Completions">@context.PassingCompletions</MudTd>
-                                <MudTd DataLabel="Attempts">@context.PassingAttempts</MudTd>
-                                <MudTd DataLabel="Yards">@context.PassingYards</MudTd>
-                                <MudTd DataLabel="Touchdowns">@context.PassingTouchdowns</MudTd>
-                                <MudTd DataLabel="Interceptions">@context.PassingInterceptions</MudTd>
-                                <MudTd DataLabel="Longest">@context.LongestPassingPlay</MudTd>
-                                <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
-                            </RowTemplate>
-                            <RowEditingTemplate>
-                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                <MudTd DataLabel="Completions">
-                                    <MudTextField @bind-Value="context.PassingCompletions" Style="font-size: 12px;" Required />
-                                </MudTd>
-                                <MudTd DataLabel="Attempts">
-                                    <MudTextField @bind-Value="context.PassingAttempts" Style="font-size: 12px;" Required />
-                                </MudTd>
-                                <MudTd DataLabel="Yards">
-                                    <MudTextField @bind-Value="context.PassingYards" Style="font-size: 12px;" Required />
-                                </MudTd>
-                                <MudTd DataLabel="Touchdowns">
-                                    <MudTextField @bind-Value="context.PassingTouchdowns" Style="font-size: 12px;" Required />
-                                </MudTd>
-                                <MudTd DataLabel="Interceptions">
-                                    <MudTextField @bind-Value="context.PassingInterceptions" Style="font-size: 12px;" Required />
-                                </MudTd>
-                                <MudTd DataLabel="Longest">
-                                    <MudTextField @bind-Value="context.LongestPassingPlay" Style="font-size: 12px;" Required />
-                                </MudTd>
-                                <MudTd DataLabel="Sacks">
-                                    <MudTextField @bind-Value="context.Sacks" Style="font-size: 12px;" Required />
-                                </MudTd>
-                            </RowEditingTemplate>
-                            <EditButtonContent Context="button">
-                                <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
-                            </EditButtonContent>
-                        </MudTable>
+                        <div style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
+                                      @bind-SelectedItem="passingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitPassingStats"
+                                      RowEditPreview="BackupPassingItem" RowEditCancel="ResetPassingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="Completions">@context.PassingCompletions</MudTd>
+                                    <MudTd DataLabel="Attempts">@context.PassingAttempts</MudTd>
+                                    <MudTd DataLabel="Yards">@context.PassingYards</MudTd>
+                                    <MudTd DataLabel="Touchdowns">@context.PassingTouchdowns</MudTd>
+                                    <MudTd DataLabel="Interceptions">@context.PassingInterceptions</MudTd>
+                                    <MudTd DataLabel="Longest">@context.LongestPassingPlay</MudTd>
+                                    <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
+                                </RowTemplate>
+                                <RowEditingTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="Completions">
+                                        <MudTextField @bind-Value="context.PassingCompletions" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="Attempts">
+                                        <MudTextField @bind-Value="context.PassingAttempts" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="Yards">
+                                        <MudTextField @bind-Value="context.PassingYards" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="Touchdowns">
+                                        <MudTextField @bind-Value="context.PassingTouchdowns" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="Interceptions">
+                                        <MudTextField @bind-Value="context.PassingInterceptions" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="Longest">
+                                        <MudTextField @bind-Value="context.LongestPassingPlay" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                    <MudTd DataLabel="Sacks">
+                                        <MudTextField @bind-Value="context.Sacks" Style="font-size: 12px;" Required />
+                                    </MudTd>
+                                </RowEditingTemplate>
+                                <EditButtonContent Context="button">
+                                    <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
+                                </EditButtonContent>
+                            </MudTable>
+
+                        </div>
                         <div style="padding-top: 25px;">
                             <MudSimpleTable>
                                 <thead>
