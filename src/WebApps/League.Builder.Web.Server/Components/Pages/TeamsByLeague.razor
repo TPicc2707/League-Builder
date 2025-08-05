@@ -11,7 +11,7 @@
         {
             <MudItem Style="padding-top: 100px;">
                 <MudItem xs="12" md="12" lg="12" Style="padding-bottom: 25px;">
-                    <MudCard>
+                    <MudCard Class="border border-solid" Style="border-color: #000000">
                         <MudCardContent>
                             <MudStack Row="true">
                                 <MudItem xs="4" md="4" lg="4">
@@ -33,13 +33,13 @@
             </MudItem>
             <MudItem Style="padding-top: 25px;">
                 <MudExpansionPanels>
-                    <MudExpansionPanel Expanded="true">
+                    <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000">
                         <TitleContent>
                             <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Teams</MudText>
                         </TitleContent>
                         <ChildContent>
                             <MudItem>
-                                <MudTable Items="@Teams.Teams" Hover="true" SortLabel="Sort By">
+                                <MudTable Items="@Teams.Teams" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                     <ToolBarContent>
                                         <AuthorizeView Roles="@Roles.CreateTeams">
                                             <MudStack Justify="Justify.FlexStart">

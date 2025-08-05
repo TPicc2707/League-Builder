@@ -8,13 +8,13 @@
     <Authorized>
         <MudItem Style="padding-top: 50px;">
             <MudExpansionPanels>
-                <MudExpansionPanel Expanded="expandSearchPanel">
+                <MudExpansionPanel Class="border border-solid" style="border-color: #000000" Expanded="expandSearchPanel">
                     <TitleContent>
                         <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">League Search</MudText>
                     </TitleContent>
                     <ChildContent>
                         <MudItem>
-                            <MudTabs Elevation="2" Centered="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="Color.Primary">
+                            <MudTabs Elevation="2" Centered="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000">
                                 <MudTabPanel Text="Search All">
                                     <MudButton OnClick="SearchAll" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Search All</MudButton>
                                 </MudTabPanel>
@@ -53,13 +53,13 @@
         {
             <MudItem Style="padding-top: 25px;">
                 <MudExpansionPanels>
-                    <MudExpansionPanel Expanded="true">
+                    <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000; padding-left: 25px; padding-right: 25px;">
                         <TitleContent>
                             <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Results</MudText>
                         </TitleContent>
                         <ChildContent>
                             <MudItem>
-                                <MudTable Items="@Model" Hover="true" SortLabel="Sort By">
+                                <MudTable Items="@Model" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                     <ToolBarContent>
                                         <AuthorizeView Roles="@Roles.CreateLeagues">
                                             <MudStack Justify="Justify.FlexStart">
@@ -88,9 +88,6 @@
                                             </AuthorizeView>
                                             <AuthorizeView Roles="@Roles.ReadStandings" Context="readStandingsAuth">
                                                 <MudIconButton Icon="@Icons.Material.Filled.BarChart" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/leaguestandings/", context.Id)" />
-                                            </AuthorizeView>
-                                            <AuthorizeView Roles="@Roles.ReadTeams" Context="readTeamsAuth">
-                                                <MudIconButton Icon="@Icons.Material.Filled.Groups" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/teamsbyleague/", context.Id)" />
                                             </AuthorizeView>
                                             <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
                                                 @if (context.Sport == SportName.BASEBALL)

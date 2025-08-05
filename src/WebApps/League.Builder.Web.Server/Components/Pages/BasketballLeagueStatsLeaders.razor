@@ -13,26 +13,34 @@
     <Authorized>
         @if (PageLoad)
         {
-            <div style="padding-top: 100px;">
-                <MudPaper Style="padding: 50px;" Elevation="2">
-                    <div style="padding-bottom: 25px;">
-                        <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">@Season.Year Stat Leaders</MudText>
-                        <MudSpacer />
-                        <MudStack Row="true">
-                            <MudItem xs="8" md="8" lg="8">
-                                <MudSelect @bind-Value="seasonValue" Placeholder="@placeholder" Label="@placeholder">
-                                    @foreach (var season in SeasonsModel.Seasons)
-                                    {
-                                        <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </MudItem>
-                            <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
-                                <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStatLeaders" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
-                            </MudItem>
-                        </MudStack>
-                    </div>
-                    <MudTable Items="@StatLeaders" Hover="true">
+            <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
+                <MudExpansionPanels>
+                    <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid" Style="border-color: #000000">
+                        <TitleContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@Season.Year Stat Leaders</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudStack Row="true">
+                                <MudItem xs="8" md="8" lg="8">
+                                    <MudSelect @bind-Value="seasonValue" Placeholder="@placeholder" Label="@placeholder">
+                                        @foreach (var season in SeasonsModel.Seasons)
+                                        {
+                                            <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
+                                    <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStatLeaders" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                </MudItem>
+                            </MudStack>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+
+            <MudItem>
+                <MudPaper Elevation="2" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudTable Items="@StatLeaders" Hover="true" Class="border border-solid" Style="border-color: #000000">
                         <ColGroup>
                             <col />
                             <col />
@@ -105,7 +113,7 @@
                         </RowTemplate>
                     </MudTable>
                 </MudPaper>
-            </div>
+            </MudItem>
         }
         else
         {
@@ -125,6 +133,7 @@
     private List<StatLeaderModel> StatLeaders = new List<StatLeaderModel>();
     private string placeholder = "Season";
     private int seasonValue;
+    private bool expandSearchPanel = false;
 
     private GetPlayerByIdResponse PlayerModel { get; set; }
     private GetTeamByIdResponse TeamModel { get; set; }

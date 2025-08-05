@@ -13,161 +13,166 @@
     <Authorized>
         @if (PageLoad)
         {
-            <div style="padding-top: 100px;">
-                <MudPaper Style="padding: 50px;" Elevation="2">
-                    <div style="padding-bottom: 25px;">
-                        <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">@Season.Year Stat Leaders</MudText>
-                        <MudSpacer />
-                        <MudStack Row="true">
-                            <MudItem xs="8" md="8" lg="8">
-                                <MudSelect @bind-Value="seasonValue" Placeholder="@placeholder" Label="@placeholder">
-                                    @foreach (var season in SeasonsModel.Seasons)
-                                    {
-                                        <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </MudItem>
-                            <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
-                                <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStatLeaders" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
-                            </MudItem>
-                        </MudStack>
-                    </div>
-                    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
-                        <MudTabPanel Text="Hitting">
-                            <MudTable Items="@StatLeaders" Hover="true">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh Class="mud-theme-primary"></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Team</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.GamesPlayed)">GP</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.AtBats)">AB</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Runs)">R</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Hits)">H</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<StatLeaderModel, object>(x=>x.Average)">AVG</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Doubles)">2B</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Triples)">3B</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.HomeRuns)">HR</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.RunsBattedIn)">RBI</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.TotalBases)">TB</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Walks)">BB</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Strikeouts)">K</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.StolenBases)">SB</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.OnBasePercentage)">OBP</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Slugging)">SLG</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.OnBasePlusSlugging)">OPS</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.SacrificeFly)">SF</MudTableSortLabel></MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd>
-                                        <MudAvatar Size="Size.Small">
-                                            <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
-                                        </MudAvatar>
-                                    </MudTd>
-                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                    <MudTd DataLabel="Team" Style="font-size: 12px;">@context.Team</MudTd>
-                                    <MudTd DataLabel="Games Played">@context.GamesPlayed</MudTd>
-                                    <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
-                                    <MudTd DataLabel="Runs">@context.Runs</MudTd>
-                                    <MudTd DataLabel="Hits">@context.Hits</MudTd>
-                                    <MudTd DataLabel="Average">@context.Average.ToString("#.000")</MudTd>
-                                    <MudTd DataLabel="Doubles">@context.Doubles</MudTd>
-                                    <MudTd DataLabel="Triples">@context.Triples</MudTd>
-                                    <MudTd DataLabel="Home Runs">@context.HomeRuns</MudTd>
-                                    <MudTd DataLabel="Runs Batted In">@context.RunsBattedIn</MudTd>
-                                    <MudTd DataLabel="Total Bases">@context.TotalBases</MudTd>
-                                    <MudTd DataLabel="Walks">@context.Walks</MudTd>
-                                    <MudTd DataLabel="Strikeouts">@context.Strikeouts</MudTd>
-                                    <MudTd DataLabel="Stolen Bases">@context.StolenBases</MudTd>
-                                    <MudTd DataLabel="On Base Percentage">@context.OnBasePercentage.ToString("#.000")</MudTd>
-                                    <MudTd DataLabel="Slugging">@context.Slugging.ToString("#.000")</MudTd>
-                                    <MudTd DataLabel="On Base Plus Slugging">@context.OnBasePlusSlugging.ToString("#.000")</MudTd>
-                                    <MudTd DataLabel="Sacrifice Fly">@context.SacrificeFly</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudTabPanel>
-                        <MudTabPanel Text="Pitching">
-                            <MudTable Items="@StatLeaders" Hover="true">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh Class="mud-theme-primary"></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Team</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.GamesPlayed)">GP</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingStarts)">GS</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<StatLeaderModel, object>(x=>x.EarnedRunAverage)">ERA</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingWins)">W</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingLosses)">L</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Saves)">SV</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.InningsPitched)">IP</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.HitsAllowed)">H</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.RunsAllowed)">ER</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.WalksAllowed)">BB</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingStrikeouts)">K</MudTableSortLabel></MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.WalksHitsPerInning)">WHIP</MudTableSortLabel></MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd>
-                                        <MudAvatar Size="Size.Small">
-                                            <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
-                                        </MudAvatar>
-                                    </MudTd>
-                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                    <MudTd DataLabel="Team" Style="font-size: 12px;">@context.Team</MudTd>
-                                    <MudTd DataLabel="Games Played">@context.GamesPlayed</MudTd>
-                                    <MudTd DataLabel="Starts">@context.PitchingStarts</MudTd>
-                                    <MudTd DataLabel="Earned Run Average">@context.EarnedRunAverage.ToString("#0.00")</MudTd>
-                                    <MudTd DataLabel="Wins">@context.PitchingWins</MudTd>
-                                    <MudTd DataLabel="Losses">@context.PitchingLosses</MudTd>
-                                    <MudTd DataLabel="Saves">@context.Saves</MudTd>
-                                    <MudTd DataLabel="Innings Pitched">@context.InningsPitched</MudTd>
-                                    <MudTd DataLabel="Hits">@context.HitsAllowed</MudTd>
-                                    <MudTd DataLabel="Runs">@context.RunsAllowed</MudTd>
-                                    <MudTd DataLabel="Walks">@context.WalksAllowed</MudTd>
-                                    <MudTd DataLabel="Strikeouts">@context.PitchingStrikeouts</MudTd>
-                                    <MudTd DataLabel="Walks Hits Per Inning">@context.WalksHitsPerInning.ToString("#0.00")</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudTabPanel>
-                    </MudTabs>
-                </MudPaper>
-            </div> 
+            <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
+                <MudExpansionPanels>
+                    <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid" Style="border-color: #000000">
+                        <TitleContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@Season.Year Stat Leaders</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudStack Row="true">
+                                <MudItem xs="8" md="8" lg="8">
+                                    <MudSelect @bind-Value="seasonValue" Placeholder="@placeholder" Label="@placeholder">
+                                        @foreach (var season in SeasonsModel.Seasons)
+                                        {
+                                            <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
+                                    <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStatLeaders" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                </MudItem>
+                            </MudStack>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+            <MudItem>
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudTabPanel Text="Hitting">
+                        <MudTable Items="@StatLeaders" Hover="true">
+                            <ColGroup>
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                            </ColGroup>
+                            <HeaderContent>
+                                <MudTh Class="mud-theme-primary"></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Team</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.GamesPlayed)">GP</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.AtBats)">AB</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Runs)">R</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Hits)">H</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<StatLeaderModel, object>(x=>x.Average)">AVG</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Doubles)">2B</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Triples)">3B</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.HomeRuns)">HR</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.RunsBattedIn)">RBI</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.TotalBases)">TB</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Walks)">BB</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Strikeouts)">K</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.StolenBases)">SB</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.OnBasePercentage)">OBP</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Slugging)">SLG</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.OnBasePlusSlugging)">OPS</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.SacrificeFly)">SF</MudTableSortLabel></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>
+                                    <MudAvatar Size="Size.Small">
+                                        <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
+                                    </MudAvatar>
+                                </MudTd>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                <MudTd DataLabel="Team" Style="font-size: 12px;">@context.Team</MudTd>
+                                <MudTd DataLabel="Games Played">@context.GamesPlayed</MudTd>
+                                <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
+                                <MudTd DataLabel="Runs">@context.Runs</MudTd>
+                                <MudTd DataLabel="Hits">@context.Hits</MudTd>
+                                <MudTd DataLabel="Average">@context.Average.ToString("#.000")</MudTd>
+                                <MudTd DataLabel="Doubles">@context.Doubles</MudTd>
+                                <MudTd DataLabel="Triples">@context.Triples</MudTd>
+                                <MudTd DataLabel="Home Runs">@context.HomeRuns</MudTd>
+                                <MudTd DataLabel="Runs Batted In">@context.RunsBattedIn</MudTd>
+                                <MudTd DataLabel="Total Bases">@context.TotalBases</MudTd>
+                                <MudTd DataLabel="Walks">@context.Walks</MudTd>
+                                <MudTd DataLabel="Strikeouts">@context.Strikeouts</MudTd>
+                                <MudTd DataLabel="Stolen Bases">@context.StolenBases</MudTd>
+                                <MudTd DataLabel="On Base Percentage">@context.OnBasePercentage.ToString("#.000")</MudTd>
+                                <MudTd DataLabel="Slugging">@context.Slugging.ToString("#.000")</MudTd>
+                                <MudTd DataLabel="On Base Plus Slugging">@context.OnBasePlusSlugging.ToString("#.000")</MudTd>
+                                <MudTd DataLabel="Sacrifice Fly">@context.SacrificeFly</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudTabPanel>
+                    <MudTabPanel Text="Pitching">
+                        <MudTable Items="@StatLeaders" Hover="true">
+                            <ColGroup>
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                                <col />
+                            </ColGroup>
+                            <HeaderContent>
+                                <MudTh Class="mud-theme-primary"></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Team</MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.GamesPlayed)">GP</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingStarts)">GS</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<StatLeaderModel, object>(x=>x.EarnedRunAverage)">ERA</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingWins)">W</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingLosses)">L</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Saves)">SV</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.InningsPitched)">IP</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.HitsAllowed)">H</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.RunsAllowed)">ER</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.WalksAllowed)">BB</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingStrikeouts)">K</MudTableSortLabel></MudTh>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.WalksHitsPerInning)">WHIP</MudTableSortLabel></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>
+                                    <MudAvatar Size="Size.Small">
+                                        <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
+                                    </MudAvatar>
+                                </MudTd>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                <MudTd DataLabel="Team" Style="font-size: 12px;">@context.Team</MudTd>
+                                <MudTd DataLabel="Games Played">@context.GamesPlayed</MudTd>
+                                <MudTd DataLabel="Starts">@context.PitchingStarts</MudTd>
+                                <MudTd DataLabel="Earned Run Average">@context.EarnedRunAverage.ToString("#0.00")</MudTd>
+                                <MudTd DataLabel="Wins">@context.PitchingWins</MudTd>
+                                <MudTd DataLabel="Losses">@context.PitchingLosses</MudTd>
+                                <MudTd DataLabel="Saves">@context.Saves</MudTd>
+                                <MudTd DataLabel="Innings Pitched">@context.InningsPitched</MudTd>
+                                <MudTd DataLabel="Hits">@context.HitsAllowed</MudTd>
+                                <MudTd DataLabel="Runs">@context.RunsAllowed</MudTd>
+                                <MudTd DataLabel="Walks">@context.WalksAllowed</MudTd>
+                                <MudTd DataLabel="Strikeouts">@context.PitchingStrikeouts</MudTd>
+                                <MudTd DataLabel="Walks Hits Per Inning">@context.WalksHitsPerInning.ToString("#0.00")</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudTabPanel>
+                </MudTabs>
+            </MudItem> 
         }
         else
         {
@@ -187,6 +192,7 @@
     private List<StatLeaderModel> StatLeaders = new List<StatLeaderModel>();
     private string placeholder = "Season";
     private int seasonValue;
+    private bool expandSearchPanel = false;
 
     private GetPlayerByIdResponse PlayerModel { get; set; }
     private GetTeamByIdResponse TeamModel { get; set; }

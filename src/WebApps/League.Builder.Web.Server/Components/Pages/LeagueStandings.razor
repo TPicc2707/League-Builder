@@ -13,7 +13,7 @@
         {
             <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
                 <MudExpansionPanels>
-                    <MudExpansionPanel Expanded="expandSearchPanel">
+                    <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid" Style="border-color: #000000">
                         <TitleContent>
                             <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@Season.Year Standings</MudText>
                         </TitleContent>
@@ -38,9 +38,9 @@
                     </MudExpansionPanel>
                 </MudExpansionPanels>
             </MudItem>
-            <MudPaper Style="padding: 25px 25px 50px 25px;">
+            <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px 25px 50px 25px;">
                 <MudItem>
-                    <MudTable Items="@Model.Standings.Where(x => x.SeasonId == Season.Id)" Hover="true" SortLabel="Sort By">
+                    <MudTable Items="@Model.Standings.Where(x => x.SeasonId == Season.Id)" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                         <HeaderContent>
                             <MudTh Class="mud-theme-primary"></MudTh>
                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.Team.TeamName)">Team Name</MudTableSortLabel></MudTh>

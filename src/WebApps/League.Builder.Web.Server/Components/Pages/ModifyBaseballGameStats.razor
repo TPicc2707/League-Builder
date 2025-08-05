@@ -11,16 +11,19 @@
     <Authorized>
         @if (PageLoad)
         {
-            <div style="padding-top: 100px;">
-                <div style="padding-bottom: 25px;">
-                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
-                </div>
-                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true" Color="Color.Primary">
+            <MudItem Style="padding-top: 50px;">
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem Style="padding-top: 25px;">
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
                     <MudTabPanel Text="@String.Concat(GameModel.Game.AwayTeam.TeamName + " Stats")">
-                        <div style="padding-top: 25px;">
+                        <MudItem Style="padding-top: 25px;">
                             <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" CanCancelEdit="true"
                                       @bind-SelectedItem="hittingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitHittingStats"
-                                      RowEditPreview="BackupHittingItem" RowEditCancel="ResetHittingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+                                      RowEditPreview="BackupHittingItem" RowEditCancel="ResetHittingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger"
+                                      Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -117,9 +120,9 @@
                                 </EditButtonContent>
                             </MudTable>
 
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -157,11 +160,12 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
                             <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" CanCancelEdit="true"
                                       @bind-SelectedItem="pitchingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitPitchingStats"
-                                      RowEditPreview="BackupPitchingItem" RowEditCancel="ResetPitchingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+                                      RowEditPreview="BackupPitchingItem" RowEditCancel="ResetPitchingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger"
+                                      Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -234,9 +238,9 @@
                                     <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
                                 </EditButtonContent>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -264,13 +268,14 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
+                        </MudItem>
                     </MudTabPanel>
                     <MudTabPanel Text="@String.Concat(GameModel.Game.HomeTeam.TeamName + " Stats")">
-                        <div style="padding-top: 25px;">
+                        <MudItem Style="padding-top: 25px;">
                             <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
                                       @bind-SelectedItem="hittingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitHittingStats"
-                                      RowEditPreview="BackupHittingItem" RowEditCancel="ResetHittingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+                                      RowEditPreview="BackupHittingItem" RowEditCancel="ResetHittingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger"
+                                      Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -366,9 +371,9 @@
                                     <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
                                 </EditButtonContent>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -406,11 +411,12 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
                             <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" CanCancelEdit="true"
                                       @bind-SelectedItem="pitchingStatSelectedItem" CommitEditTooltip="Commit Edit" OnCommitEditClick="SubmitPitchingStats"
-                                      RowEditPreview="BackupPitchingItem" RowEditCancel="ResetPitchingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger">
+                                      RowEditPreview="BackupPitchingItem" RowEditCancel="ResetPitchingItemToOriginalValues" IsEditRowSwitchingBlocked="true" EditButtonPosition="@editButtonPosition" EditTrigger="@editTrigger"
+                                      Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -483,9 +489,9 @@
                                     <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
                                 </EditButtonContent>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -513,11 +519,11 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
+                        </MudItem>
                     </MudTabPanel>
                 </MudTabs>
 
-            </div>
+            </MudItem>
         }
         else
         {

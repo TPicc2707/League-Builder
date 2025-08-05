@@ -11,12 +11,13 @@
     <Authorized>
         @if (PageLoad)
         {
-            <div style="padding-top: 100px;">
-                <MudPaper Style="padding-right: 25px; padding-left: 25px;" Elevation="2">
-                    <div style="padding-bottom: 25px;">
-                        <div style="padding-top: 50px;">
-                            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">@Season.Year Schedule</MudText>
-                            <MudSpacer />
+            <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
+                <MudExpansionPanels>
+                    <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid" Style="border-color: #000000">
+                        <TitleContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@Season.Year Schedule</MudText>
+                        </TitleContent>
+                        <ChildContent>
                             <MudStack Justify="Justify.FlexStart" Row="true">
                                 <MudItem xs="4" md="4" lg="4">
                                     <MudSelect @bind-Value="monthValue" Placeholder="@monthPlaceholder" Label="@monthPlaceholder">
@@ -38,10 +39,14 @@
                                     <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStandings" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
                                 </MudItem>
                             </MudStack>
-                        </div>
-                    </div>
-                    <div style="padding-bottom: 50px;">
-                        <MudTable Items="@Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month)" Hover="true" SortLabel="Sort By">
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+            <MudItem>
+                <MudPaper Elevation="2" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudItem>
+                        <MudTable Items="@Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month)" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                             <ColGroup>
                                 <col />
                                 <col />
@@ -123,11 +128,11 @@
                             </RowTemplate>
                         </MudTable>
 
-                    </div>
+                    </MudItem>
 
                 </MudPaper>
 
-            </div>
+            </MudItem>
         }
         else
         {
@@ -150,6 +155,8 @@
     private int monthValue = DateTime.Now.Month;
     private int Month;
     private int GameCount = 0;
+    private bool expandSearchPanel = false;
+
 
     private GetSeasonsResponse SeasonsModel { get; set; }
     private GetSeasonByYearResponse SeasonModel { get; set; }

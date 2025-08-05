@@ -11,45 +11,49 @@
     <Authorized>
         @if (PageLoad)
         {
-            <div style="padding-top: 100px;">
-                <div style="padding-bottom: 25px;">
-                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
-                </div>
-                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
+            <MudItem Style="padding-top: 50px;">
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem Style="padding-top: 25px;">
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Color="Color.Primary" Centered="true" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
                     <MudTabPanel Text="@String.Concat(GameModel.Game.AwayTeam.TeamName + " Stats")">
-                        <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
-                            <ColGroup>
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                            </ColGroup>
-                            <HeaderContent>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                <MudTd DataLabel="Completions">@context.PassingCompletions</MudTd>
-                                <MudTd DataLabel="Attempts">@context.PassingAttempts</MudTd>
-                                <MudTd DataLabel="Yards">@context.PassingYards</MudTd>
-                                <MudTd DataLabel="Touchdowns">@context.PassingTouchdowns</MudTd>
-                                <MudTd DataLabel="Interceptions">@context.PassingInterceptions</MudTd>
-                                <MudTd DataLabel="Longest">@context.LongestPassingPlay</MudTd>
-                                <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
-                            </RowTemplate>
-                        </MudTable>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        <MudItem style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="Completions">@context.PassingCompletions</MudTd>
+                                    <MudTd DataLabel="Attempts">@context.PassingAttempts</MudTd>
+                                    <MudTd DataLabel="Yards">@context.PassingYards</MudTd>
+                                    <MudTd DataLabel="Touchdowns">@context.PassingTouchdowns</MudTd>
+                                    <MudTd DataLabel="Interceptions">@context.PassingInterceptions</MudTd>
+                                    <MudTd DataLabel="Longest">@context.LongestPassingPlay</MudTd>
+                                    <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -73,9 +77,9 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -103,9 +107,9 @@
                                     <MudTd DataLabel="Fumbles Lost">@context.RushingFumblesLost</MudTd>
                                 </RowTemplate>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -127,9 +131,9 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -160,9 +164,9 @@
                                     <MudTd DataLabel="Fumbles Lost">@context.ReceivingFumblesLost</MudTd>
                                 </RowTemplate>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -188,9 +192,9 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -230,9 +234,9 @@
                                     <MudTd DataLabel="PD">@context.PassesDefended</MudTd>
                                 </RowTemplate>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -262,9 +266,9 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -301,9 +305,9 @@
                                     <MudTd DataLabel="LNG">@context.LongestPunt</MudTd>
                                 </RowTemplate>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -329,42 +333,44 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
+                        </MudItem>
                     </MudTabPanel>
                     <MudTabPanel Text="@String.Concat(GameModel.Game.HomeTeam.TeamName + " Stats")">
-                        <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
-                            <ColGroup>
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                            </ColGroup>
-                            <HeaderContent>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                <MudTd DataLabel="Completions">@context.PassingCompletions</MudTd>
-                                <MudTd DataLabel="Attempts">@context.PassingAttempts</MudTd>
-                                <MudTd DataLabel="Yards">@context.PassingYards</MudTd>
-                                <MudTd DataLabel="Touchdowns">@context.PassingTouchdowns</MudTd>
-                                <MudTd DataLabel="Interceptions">@context.PassingInterceptions</MudTd>
-                                <MudTd DataLabel="Longest">@context.LongestPassingPlay</MudTd>
-                                <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
-                            </RowTemplate>
-                        </MudTable>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="Completions">@context.PassingCompletions</MudTd>
+                                    <MudTd DataLabel="Attempts">@context.PassingAttempts</MudTd>
+                                    <MudTd DataLabel="Yards">@context.PassingYards</MudTd>
+                                    <MudTd DataLabel="Touchdowns">@context.PassingTouchdowns</MudTd>
+                                    <MudTd DataLabel="Interceptions">@context.PassingInterceptions</MudTd>
+                                    <MudTd DataLabel="Longest">@context.LongestPassingPlay</MudTd>
+                                    <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -388,9 +394,9 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -418,9 +424,9 @@
                                     <MudTd DataLabel="Fumbles Lost">@context.RushingFumblesLost</MudTd>
                                 </RowTemplate>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -442,9 +448,9 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -475,9 +481,9 @@
                                     <MudTd DataLabel="Fumbles Lost">@context.ReceivingFumblesLost</MudTd>
                                 </RowTemplate>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -503,9 +509,9 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -545,9 +551,9 @@
                                     <MudTd DataLabel="PD">@context.PassesDefended</MudTd>
                                 </RowTemplate>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -577,9 +583,9 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -616,9 +622,9 @@
                                     <MudTd DataLabel="LNG">@context.LongestPunt</MudTd>
                                 </RowTemplate>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -644,10 +650,10 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
+                        </MudItem>
                     </MudTabPanel>
                 </MudTabs>
-            </div>
+            </MudItem>
         }
         else
         {

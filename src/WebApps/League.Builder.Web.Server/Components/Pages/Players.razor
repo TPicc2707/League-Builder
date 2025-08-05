@@ -12,13 +12,13 @@
         {
             <MudItem Style="padding-top: 50px;">
                 <MudExpansionPanels>
-                    <MudExpansionPanel Expanded="expandSearchPanel">
+                    <MudExpansionPanel Class="border border-solid" Style="border-color: #000000" Expanded="expandSearchPanel">
                         <TitleContent>
                             <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Search Players</MudText>
                         </TitleContent>
                         <ChildContent>
                             <MudItem>
-                                <MudTabs Elevation="2" Centered="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="Color.Primary">
+                                <MudTabs Elevation="2" Centered="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000">
                                     <MudTabPanel Text="Search All">
                                         <MudButton OnClick="SearchAll" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Search All</MudButton>
                                     </MudTabPanel>
@@ -93,13 +93,13 @@
             {
                 <MudItem Style="padding-top: 25px;">
                     <MudExpansionPanels>
-                        <MudExpansionPanel Expanded="true">
+                        <MudExpansionPanel Class="border border-solid" Style="border-color: #000000" Expanded="true">
                             <TitleContent>
                                 <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Results</MudText>
                             </TitleContent>
                             <ChildContent>
                                 <MudItem>
-                                    <MudTable Items="@Model" Hover="true" SortLabel="Sort By">
+                                    <MudTable Items="@Model" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                         <HeaderContent>
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.FirstName)">First Name</MudTableSortLabel></MudTh>

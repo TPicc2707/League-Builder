@@ -12,9 +12,9 @@
                 <DataAnnotationsValidator />
                 <MudGrid>
                     <MudItem xs="12" sm="7">
-                        <MudCard>
+                        <MudCard Class="border border-solid" Style="border-color: #000000">
                             <MudCardContent>
-                                <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">League Information:</MudText>
+                                <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">League Information</MudText>
                                 <MudTextField Label="League Name" HelperText="Max. 150 characters"
                                               @bind-Value="model.Name" For="@(() => model.Name)" />
                                 <MudTextField Label="Sport" Class="mt-3"
@@ -50,7 +50,7 @@
                         </MudCard>
                     </MudItem>
                     <MudItem xs="12" sm="5">
-                        <MudPaper Class="pa-4 mud-height-full">
+                        <MudPaper Class="pa-4 mud-height-full border border-solid" Style="border-color: #000000">
                             <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
                             @if (success)
                             {

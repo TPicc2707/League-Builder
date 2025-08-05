@@ -8,50 +8,51 @@
     <Authorized>
     @if (PageLoad)
     {
-    <div style="padding-top: 100px;">
-        <MudPaper Style="padding-right: 25px; padding-left: 25px;" Elevation="2">
-            <div style="padding-bottom: 15px;">
-                <div style="padding-top: 50px;">
-                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">Seasons</MudText>
-                </div>
-            </div>
-            <div style="padding-bottom: 50px;">
-                <MudTable Items="@Model.Seasons" Hover="true" SortLabel="Sort By">
-                    <ToolBarContent>
-                        <AuthorizeView Roles="@Roles.CreateSeasons">
-                            <MudStack Justify="Justify.FlexStart">
-                                <MudButton OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
-                            </MudStack>
-                        </AuthorizeView>
-                    </ToolBarContent>
-                    <HeaderContent>
-                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<SeasonModel, object>(x=>x.Year)">Year</MudTableSortLabel></MudTh>
-                        <MudTh Class="mud-theme-primary"></MudTh>
-                        <MudTh Class="mud-theme-primary"></MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Team Name">@context.Year</MudTd>
-                        <AuthorizeView Roles="@Roles.UpdateSeasons" Context="updateAuth">
-                            <Authorized>
-                                <MudTd DataLabel="Edit"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateSeason(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
-                            </Authorized>
-                            <NotAuthorized>
-                                <MudTd></MudTd>
-                            </NotAuthorized>
-                        </AuthorizeView>
-                        <AuthorizeView Roles="@Roles.DeleteSeasons" Context="deleteAuth">
-                            <Authorized>
-                                <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
-                            </Authorized>
-                            <NotAuthorized>
-                                <MudTd></MudTd>
-                            </NotAuthorized>
-                        </AuthorizeView>
-                    </RowTemplate>
-                </MudTable>
-            </div>
-        </MudPaper>
-    </div>
+            <MudItem Style="padding-top: 50px;">
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                        <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Seasons</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem Style="padding-top: 25px;">
+                <MudPaper Elevation="2" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudItem>
+                        <MudTable Items="@Model.Seasons" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000;">
+                            <ToolBarContent>
+                                <AuthorizeView Roles="@Roles.CreateSeasons">
+                                    <MudStack Justify="Justify.FlexStart">
+                                        <MudButton OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
+                                    </MudStack>
+                                </AuthorizeView>
+                            </ToolBarContent>
+                            <HeaderContent>
+                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<SeasonModel, object>(x => x.Year)">Year</MudTableSortLabel></MudTh>
+                                <MudTh Class="mud-theme-primary"></MudTh>
+                                <MudTh Class="mud-theme-primary"></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Team Name">@context.Year</MudTd>
+                                <AuthorizeView Roles="@Roles.UpdateSeasons" Context="updateAuth">
+                                    <Authorized>
+                                        <MudTd DataLabel="Edit"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateSeason(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
+                                    </Authorized>
+                                    <NotAuthorized>
+                                        <MudTd></MudTd>
+                                    </NotAuthorized>
+                                </AuthorizeView>
+                                <AuthorizeView Roles="@Roles.DeleteSeasons" Context="deleteAuth">
+                                    <Authorized>
+                                        <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                                    </Authorized>
+                                    <NotAuthorized>
+                                        <MudTd></MudTd>
+                                    </NotAuthorized>
+                                </AuthorizeView>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudItem>
+                </MudPaper>
+
+            </MudItem>
     }
     else
     {
@@ -66,6 +67,7 @@
 @code {
     private bool PageLoad = false;
     GetSeasonsResponse Model { get; set; }
+    private bool expandSearchPanel = false;
 
     protected override async Task OnInitializedAsync()
     {

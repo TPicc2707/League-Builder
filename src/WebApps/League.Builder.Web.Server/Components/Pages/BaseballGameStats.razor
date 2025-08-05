@@ -11,64 +11,68 @@
     <Authorized>
         @if (PageLoad)
         {
-            <div style="padding-top: 100px;">
-                <div style="padding-bottom: 25px;">
-                    <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
-                </div>
-                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true">
+            <MudItem Style="padding-top: 50px;">
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem Style="padding-top: 25px;">
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
                     <MudTabPanel Text="@String.Concat(GameModel.Game.AwayTeam.TeamName + " Stats")">
-                        <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
-                            <ColGroup>
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                            </ColGroup>
-                            <HeaderContent>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">AB</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">RBI</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">HBP</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">SB</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TB</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">2B</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">3B</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">HR</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">SF</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
-                                <MudTd DataLabel="Runs">@context.Runs</MudTd>
-                                <MudTd DataLabel="Hits">@context.Hits</MudTd>
-                                <MudTd DataLabel="RBI">@context.RunsBattedIn</MudTd>
-                                <MudTd DataLabel="BB">@context.Walks</MudTd>
-                                <MudTd DataLabel="HBP">@context.HitByPitch</MudTd>
-                                <MudTd DataLabel="K">@context.Strikeouts</MudTd>
-                                <MudTd DataLabel="SB">@context.StolenBases</MudTd>
-                                <MudTd DataLabel="TB">@context.TotalBases</MudTd>
-                                <MudTd DataLabel="2B">@context.Doubles</MudTd>
-                                <MudTd DataLabel="3B">@context.Triples</MudTd>
-                                <MudTd DataLabel="HR">@context.HomeRuns</MudTd>
-                                <MudTd DataLabel="SF">@context.SacrificeFly</MudTd>
-                            </RowTemplate>
-                        </MudTable>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">AB</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">RBI</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">HBP</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">SB</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TB</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">2B</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">3B</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">HR</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">SF</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
+                                    <MudTd DataLabel="Runs">@context.Runs</MudTd>
+                                    <MudTd DataLabel="Hits">@context.Hits</MudTd>
+                                    <MudTd DataLabel="RBI">@context.RunsBattedIn</MudTd>
+                                    <MudTd DataLabel="BB">@context.Walks</MudTd>
+                                    <MudTd DataLabel="HBP">@context.HitByPitch</MudTd>
+                                    <MudTd DataLabel="K">@context.Strikeouts</MudTd>
+                                    <MudTd DataLabel="SB">@context.StolenBases</MudTd>
+                                    <MudTd DataLabel="TB">@context.TotalBases</MudTd>
+                                    <MudTd DataLabel="2B">@context.Doubles</MudTd>
+                                    <MudTd DataLabel="3B">@context.Triples</MudTd>
+                                    <MudTd DataLabel="HR">@context.HomeRuns</MudTd>
+                                    <MudTd DataLabel="SF">@context.SacrificeFly</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -106,9 +110,9 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -150,9 +154,9 @@
                                     <MudTd DataLabel="K">@context.PitchingStrikeouts</MudTd>
                                 </RowTemplate>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -180,61 +184,63 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
+                        </MudItem>
                     </MudTabPanel>
                     <MudTabPanel Text="@String.Concat(GameModel.Game.HomeTeam.TeamName + " Stats")">
-                        <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
-                            <ColGroup>
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                            </ColGroup>
-                            <HeaderContent>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">AB</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">RBI</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">HBP</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">SB</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">TB</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">2B</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">3B</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">HR</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">SF</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
-                                <MudTd DataLabel="Runs">@context.Runs</MudTd>
-                                <MudTd DataLabel="Hits">@context.Hits</MudTd>
-                                <MudTd DataLabel="RBI">@context.RunsBattedIn</MudTd>
-                                <MudTd DataLabel="BB">@context.Walks</MudTd>
-                                <MudTd DataLabel="HBP">@context.HitByPitch</MudTd>
-                                <MudTd DataLabel="K">@context.Strikeouts</MudTd>
-                                <MudTd DataLabel="SB">@context.StolenBases</MudTd>
-                                <MudTd DataLabel="TB">@context.TotalBases</MudTd>
-                                <MudTd DataLabel="2B">@context.Doubles</MudTd>
-                                <MudTd DataLabel="3B">@context.Triples</MudTd>
-                                <MudTd DataLabel="HR">@context.HomeRuns</MudTd>
-                                <MudTd DataLabel="SF">@context.SacrificeFly</MudTd>
-                            </RowTemplate>
-                        </MudTable>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
+                                <ColGroup>
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                    <col />
+                                </ColGroup>
+                                <HeaderContent>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">AB</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">RBI</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">HBP</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">SB</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TB</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">2B</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">3B</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">HR</MudTh>
+                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">SF</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                    <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
+                                    <MudTd DataLabel="Runs">@context.Runs</MudTd>
+                                    <MudTd DataLabel="Hits">@context.Hits</MudTd>
+                                    <MudTd DataLabel="RBI">@context.RunsBattedIn</MudTd>
+                                    <MudTd DataLabel="BB">@context.Walks</MudTd>
+                                    <MudTd DataLabel="HBP">@context.HitByPitch</MudTd>
+                                    <MudTd DataLabel="K">@context.Strikeouts</MudTd>
+                                    <MudTd DataLabel="SB">@context.StolenBases</MudTd>
+                                    <MudTd DataLabel="TB">@context.TotalBases</MudTd>
+                                    <MudTd DataLabel="2B">@context.Doubles</MudTd>
+                                    <MudTd DataLabel="3B">@context.Triples</MudTd>
+                                    <MudTd DataLabel="HR">@context.HomeRuns</MudTd>
+                                    <MudTd DataLabel="SF">@context.SacrificeFly</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -272,9 +278,9 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true">
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
                                 <ColGroup>
                                     <col />
                                     <col />
@@ -316,9 +322,9 @@
                                     <MudTd DataLabel="K">@context.PitchingStrikeouts</MudTd>
                                 </RowTemplate>
                             </MudTable>
-                        </div>
-                        <div style="padding-top: 25px;">
-                            <MudSimpleTable>
+                        </MudItem>
+                        <MudItem Style="padding-top: 25px;">
+                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
                                 <thead>
                                     <tr class="mud-theme-primary">
                                         <th></th>
@@ -346,11 +352,11 @@
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
-                        </div>
+                        </MudItem>
                     </MudTabPanel>
                 </MudTabs>
 
-            </div>
+            </MudItem>
         }
         else
         {

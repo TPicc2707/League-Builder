@@ -19,9 +19,9 @@
                     <DataAnnotationsValidator />
                     <MudGrid>
                         <MudItem xs="12" sm="7">
-                            <MudCard>
+                            <MudCard Class="border border-solid" Style="border-color: #000000">
                                 <MudCardContent>
-                                    <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Team Information:</MudText>
+                                    <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Team Information</MudText>
                                     <MudTextField Label="Team Name" HelperText="Max. 150 characters"
                                                   @bind-Value="model.TeamName" For="@(() => model.TeamName)" />
                                     <MudSelect Class="mt-3" Label="League" @bind-Value="leagueId">
@@ -62,7 +62,7 @@
                             </MudCard>
                         </MudItem>
                         <MudItem xs="12" sm="5">
-                            <MudPaper Class="pa-4 mud-height-full">
+                            <MudPaper Class="pa-4 mud-height-full border border-solid" Style="border-color: #000000">
                                 <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
                                 @if (success)
                                 {
@@ -77,9 +77,9 @@
                             </MudPaper>
                         </MudItem>
                         <MudItem xs="12" sm="7">
-                            <MudCard>
+                            <MudCard Class="border border-solid" Style="border-color: #000000">
                                 <MudCardContent>
-                                    <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Address:</MudText>
+                                    <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Address</MudText>
                                     <MudTextField Label="Address Line" Class="mt-3"
                                                   @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" />
                                     <MudSelect Class="mt-3" Label="State" @bind-Value="model.State">

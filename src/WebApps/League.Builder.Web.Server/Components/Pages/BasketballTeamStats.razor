@@ -17,7 +17,7 @@
         {
             <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
                 <MudExpansionPanels>
-                    <MudExpansionPanel Expanded="expandSearchPanel">
+                    <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid" Style="border-color: #000000">
                         <TitleContent>
                             <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@SeasonModel.Season.Year @TeamModel.Team.TeamName Stats</MudText>
                         </TitleContent>
@@ -41,13 +41,13 @@
                         </ChildContent>
                     </MudExpansionPanel>
                 </MudExpansionPanels>
-            </MudItem>       
-            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Style="padding: 25px;" Centered="true" Color="Color.Primary">
+            </MudItem>
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
                 <MudTabPanel Text="Stats">
                     <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
                         <MudStack Row="true">
                             <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
+                                <MudCard Class="border border-solid" Style="border-color: #000000">
                                     <MudCardHeader>
                                         <CardHeaderContent>
                                             <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">PTS</MudText>
@@ -62,7 +62,7 @@
                                 </MudCard>
                             </MudItem>
                             <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
+                                <MudCard Class="border border-solid" Style="border-color: #000000">
                                     <MudCardHeader>
                                         <CardHeaderContent>
                                             <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">REB</MudText>
@@ -77,7 +77,7 @@
                                 </MudCard>
                             </MudItem>
                             <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
+                                <MudCard Class="border border-solid" Style="border-color: #000000">
                                     <MudCardHeader>
                                         <CardHeaderContent>
                                             <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">AST</MudText>
@@ -92,7 +92,7 @@
                                 </MudCard>
                             </MudItem>
                             <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
+                                <MudCard Class="border border-solid" Style="border-color: #000000">
                                     <MudCardHeader>
                                         <CardHeaderContent>
                                             <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">FG%</MudText>
@@ -106,13 +106,12 @@
                                     </MudCardActions>
                                 </MudCard>
                             </MudItem>
-
                         </MudStack>
                     </MudItem>
-                    <MudItem Style="padding-bottom: 25px;">
+                    <MudItem Style="padding-bottom: 50px;">
                         <MudStack Row="true">
                             <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
+                                <MudCard Class="border border-solid" Style="border-color: #000000">
                                     <MudCardHeader>
                                         <CardHeaderContent>
                                             <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">3P%</MudText>
@@ -127,7 +126,7 @@
                                 </MudCard>
                             </MudItem>
                             <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
+                                <MudCard Class="border border-solid" Style="border-color: #000000">
                                     <MudCardHeader>
                                         <CardHeaderContent>
                                             <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">FT%</MudText>
@@ -142,7 +141,7 @@
                                 </MudCard>
                             </MudItem>
                             <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
+                                <MudCard Class="border border-solid" Style="border-color: #000000">
                                     <MudCardHeader>
                                         <CardHeaderContent>
                                             <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">BLK</MudText>
@@ -157,7 +156,7 @@
                                 </MudCard>
                             </MudItem>
                             <MudItem sm="3" md="3" lg="3">
-                                <MudCard>
+                                <MudCard Class="border border-solid" Style="border-color: #000000">
                                     <MudCardHeader>
                                         <CardHeaderContent>
                                             <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">STL</MudText>
@@ -171,11 +170,10 @@
                                     </MudCardActions>
                                 </MudCard>
                             </MudItem>
-
                         </MudStack>
                     </MudItem>
-                    <MudItem Style="padding-bottom: 10px;">
-                        <MudTable Items="@TeamStats.Players" Hover="true">
+                    <MudItem>
+                        <MudTable Items="@TeamStats.Players" Hover="true" Class="border border-solid" Style="border-color: #000000">
                             <ColGroup>
                                 <col />
                                 <col />
@@ -245,7 +243,6 @@
                                 <MudTd DataLabel="FT%">@context.StatsModel.Stats.FreeThrowPercentage.ToString("#0.0")</MudTd>
                             </RowTemplate>
                         </MudTable>
-
                     </MudItem>
                 </MudTabPanel>
             </MudTabs>
