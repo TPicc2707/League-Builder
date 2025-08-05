@@ -1,14 +1,20 @@
 ﻿namespace League.Builder.Web.Server.Models.Game;
 
-public record GameModel(
-    Guid Id,
-    Guid LeagueId,
-    Guid? WinningTeamId,
-    Guid SeasonId,
-    GameDetailModel GameDetail,
-    GameStatus GameStatus,
-    AwayTeamDetailModel AwayTeam,
-    HomeTeamDetailModel HomeTeam);
+public class GameModel
+{
+    public Guid Id { get; set; }
+    public Guid LeagueId { get; set; }
+    public Guid? WinningTeamId { get; set; }
+    public Guid SeasonId { get; set; }
+    public GameDetailModel GameDetail { get; set; } = default!;
+    public GameStatus GameStatus { get; set; } = default!;
+    public AwayTeamDetailModel AwayTeam { get; set; } = default!;
+    public HomeTeamDetailModel HomeTeam { get; set; } = default!;
+
+    public string AwayTeamImage { get; set; } = default!;
+
+    public string HomeTeamImage { get; set; } = default!;
+}
 
 public record CreateGameModel(
     Guid LeagueId,

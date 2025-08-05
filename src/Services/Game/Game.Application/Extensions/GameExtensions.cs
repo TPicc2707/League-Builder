@@ -18,7 +18,7 @@ public static class GameExtensions
                 game.AwayTeamId.Value,
                 teams.FirstOrDefault(t => t.Id == game.AwayTeamId).TeamName),
             HomeTeam: new TeamDto(
-                game.AwayTeamId.Value,
+                game.HomeTeamId.Value,
                 teams.FirstOrDefault(t => t.Id == game.HomeTeamId).TeamName)));
     }
 

@@ -1,7 +1,10 @@
 ﻿@page "/editbaseballgamestats/{id}"
 @inject IStatsService StatsService
 @inject IGameService GameService
+@inject ILeagueService LeagueService
+@inject ITeamService TeamService
 @inject IPlayerService PlayerService
+@inject IAWSService AWSService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
@@ -13,7 +16,17 @@
         {
             <MudItem Style="padding-top: 50px;">
                 <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName</MudText>
+                    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">
+                        <MudStack Row="true" Justify="Justify.Center">
+                            <MudAvatar Size="Size.Medium">
+                                <MudImage Src="@GameModel.Game.AwayTeamImage" Alt="Team Image"></MudImage>
+                            </MudAvatar>
+                            @GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName
+                            <MudAvatar Size="Size.Medium">
+                                <MudImage Src="@GameModel.Game.HomeTeamImage" Alt="Team Image"></MudImage>
+                            </MudAvatar>
+                        </MudStack>
+                    </MudText>
                 </MudPaper>
             </MudItem>
             <MudItem Style="padding-top: 25px;">
@@ -609,6 +622,7 @@
         HomePlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
         AwayPlayerStatsModel = await StatsService.GetBaseballStatsByTeam(GameModel.Game.AwayTeam.Id);
         HomePlayerStatsModel = await StatsService.GetBaseballStatsByTeam(GameModel.Game.HomeTeam.Id);
+        await GetImageAsync();
         foreach(var player in AwayPlayersModel.Players)
         {
             var playerStat = AwayPlayerStatsModel.BaseballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
@@ -996,6 +1010,18 @@
                 StateHasChanged();
             }
         }
+    }
+
+    private async Task GetImageAsync()
+    {
+        var league = await LeagueService.GetLeague(GameModel.Game.LeagueId);
+        var awayTeam = await TeamService.GetTeamById(GameModel.Game.AwayTeam.Id);
+        var homeTeam = await TeamService.GetTeamById(GameModel.Game.HomeTeam.Id);
+        var awayTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{awayTeam.Team.TeamName}/{awayTeam.Team.ImageFile}";
+        GameModel.Game.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
+
+        var homeTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{homeTeam.Team.TeamName}/{homeTeam.Team.ImageFile}";
+        GameModel.Game.HomeTeamImage = await AWSService.GetImage(homeTeamKeyPath);
     }
 
 

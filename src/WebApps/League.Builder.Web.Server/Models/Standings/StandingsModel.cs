@@ -5,7 +5,7 @@ public class StandingsModel
     public Guid Id { get; set; }
     public Guid LeagueId { get; set; }
     public Guid SeasonId { get; set; }
-    public string Image { get; set; } = default!;
+    public string TeamImage { get; set; } = default!;
     public decimal WinPercentage { get; set; } = default!;
     public StandingsDetailModel StandingsDetail { get ; set; } = default!;
     public StandingsStatus StandingsStatus { get; set; } = default!;

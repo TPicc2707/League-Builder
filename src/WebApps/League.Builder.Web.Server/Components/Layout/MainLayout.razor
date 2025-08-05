@@ -9,7 +9,7 @@
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        <MudSwitch @bind-Value="_isDarkMode" Color="Color.Secondary" Class="ma-4" T="bool" />
+        <MudSwitch @bind-Value="_isDarkMode" Color="Color.Secondary" Class="ma-4" T="bool" ThumbIcon="@(_isDarkMode ? Icons.Material.Filled.ModeNight : Icons.Material.Filled.WbSunny)"/>
         <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Inherit" OnClick="@ToggleOpen" />
         <MudPopover Open="_open" Style="padding-top: 30px;" Fixed="true" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterRight" Paper="false">
             <MudPaper Outlined="true" Class="d-flex flex-column pa-1">

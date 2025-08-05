@@ -2,7 +2,9 @@
 @inject IGameService GamesService
 @inject ISeasonService SeasonService
 @inject ILeagueService LeagueService
+@inject ITeamService TeamService
 @inject IDialogService DialogService
+@inject IAWSService AWSService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -74,8 +76,22 @@
                                 <MudTh Class="mud-theme-primary"></MudTh>
                             </HeaderContent>
                             <RowTemplate>
-                                <MudTd DataLabel="Away Team">@context.AwayTeam.TeamName</MudTd>
-                                <MudTd DataLabel="Home Team">@context.HomeTeam.TeamName</MudTd>
+                                <MudTd DataLabel="Away Team">
+                                    <MudStack Row="true">
+                                        <MudAvatar Size="Size.Small">
+                                            <MudImage Src="@context.AwayTeamImage" Alt="Team Image"></MudImage>
+                                        </MudAvatar>
+                                        @context.AwayTeam.TeamName
+                                    </MudStack>
+                                </MudTd>
+                                <MudTd DataLabel="Home Team">
+                                    <MudStack Row="true">
+                                        <MudAvatar Size="Size.Small">
+                                            <MudImage Src="@context.HomeTeamImage" Alt="Team Image"></MudImage>
+                                        </MudAvatar>
+                                        @context.HomeTeam.TeamName
+                                    </MudStack>
+                                </MudTd>                                
                                 <MudTd DataLabel="Score">@context.GameDetail.AwayTeamScore - @context.GameDetail.HomeTeamScore</MudTd>
                                 <MudTd DataLabel="Start Time">@context.GameDetail.StartTime.ToString("hh:mm tt")</MudTd>
                                 @if (context.GameStatus == GameStatus.Completed)
@@ -97,21 +113,6 @@
                                 </AuthorizeView>
                                 @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
                                 {
-                                    <MudTd></MudTd>
-                                }
-                                else
-                                {
-                                    <AuthorizeView Roles="@Roles.DeleteGames" Context="deleteAuth">
-                                        <Authorized>
-                                            <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
-                                        </Authorized>
-                                        <NotAuthorized>
-                                            <MudTd></MudTd>
-                                        </NotAuthorized>
-                                    </AuthorizeView>
-                                }
-                                @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
-                                {
                                     <AuthorizeView Roles="@Roles.ReadStats" Context="statAuth">
                                         <Authorized>
                                             <MudTd DataLabel="Stats"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))"><MudIcon Icon="@Icons.Material.Filled.QueryStats" /></MudLink></MudTd>
@@ -124,6 +125,21 @@
                                 else
                                 {
                                     <MudTd></MudTd>
+                                }
+                                @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
+                                {
+                                    <MudTd></MudTd>
+                                }
+                                else
+                                {
+                                    <AuthorizeView Roles="@Roles.DeleteGames" Context="deleteAuth">
+                                        <Authorized>
+                                            <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                                        </Authorized>
+                                        <NotAuthorized>
+                                            <MudTd></MudTd>
+                                        </NotAuthorized>
+                                    </AuthorizeView>
                                 }
                             </RowTemplate>
                         </MudTable>
@@ -176,6 +192,7 @@
         Month = monthValue;
         GameCount = Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month).Count();
         seasonValue = Season.Year;
+        await GetImageAsync();
         PageLoad = true;
     }
 
@@ -262,6 +279,23 @@
             seasonValue = Season.Year;
             PageLoad = true;
         }
-        
+
+    }
+
+    private async Task GetImageAsync()
+    {
+        var leagueId = Guid.Parse(Id);
+        var league = await LeagueService.GetLeague(leagueId);
+
+        foreach (var games in Model.Games)
+        {
+            var awayTeam = await TeamService.GetTeamById(games.AwayTeam.Id);
+            var homeTeam = await TeamService.GetTeamById(games.HomeTeam.Id);
+            var awayTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{awayTeam.Team.TeamName}/{awayTeam.Team.ImageFile}";
+            games.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
+
+            var homeTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{homeTeam.Team.TeamName}/{homeTeam.Team.ImageFile}";
+            games.HomeTeamImage = await AWSService.GetImage(homeTeamKeyPath);
+        }
     }
 }

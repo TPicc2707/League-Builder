@@ -52,7 +52,7 @@
                         <RowTemplate>
                             <MudTd>
                                 <MudAvatar Size="Size.Small">
-                                    <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
+                                    <MudImage Src="@context.TeamImage" Alt="Player Image"></MudImage>
                                 </MudAvatar>
                             </MudTd>
                             <MudTd DataLabel="Team Name">@context.Team.TeamName</MudTd>
@@ -123,7 +123,7 @@
             standing.WinPercentage = standing.StandingsDetail.Wins != 0 | standing.StandingsDetail.GamesPlayed != 0 ? (decimal)standing.StandingsDetail.Wins / standing.StandingsDetail.GamesPlayed : 0;
             var team = await TeamService.GetTeamById(standing.Team.Id);
             var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{team.Team.TeamName}/{team.Team.ImageFile}";
-            standing.Image = await AWSService.GetImage(keyPath);
+            standing.TeamImage = await AWSService.GetImage(keyPath);
         }
     }
 }
