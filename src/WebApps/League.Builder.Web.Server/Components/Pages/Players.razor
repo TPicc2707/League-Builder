@@ -115,26 +115,52 @@
                                                     <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
                                                 </MudAvatar>
                                             </MudTd>
-                                            <MudTd DataLabel="First Name">@context.FirstName</MudTd>
-                                            <MudTd DataLabel="Last Name">@context.LastName</MudTd>
+                                            <MudTd DataLabel="First Name">
+                                                <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
+                                                    <Authorized>
+                                                        @if (context.Sport == SportName.BASEBALL)
+                                                        {
+                                                            <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.FirstName</MudLink>
+                                                        }
+                                                        @if (context.Sport == SportName.BASKETBALL)
+                                                        {
+                                                            <MudLink Color="Color.Tertiary" Href="@($"/basketballplayerstats/{context.Id}")">@context.FirstName</MudLink>
+                                                        }
+                                                        @if (context.Sport == SportName.FOOTBALL)
+                                                        {
+                                                            <MudLink Color="Color.Tertiary" Href="@($"/footballplayerstats/{context.Id}")">@context.FirstName</MudLink>
+                                                        }
+                                                    </Authorized>
+                                                    <NotAuthorized>
+                                                        @context.FirstName
+                                                    </NotAuthorized>
+                                                </AuthorizeView>
+                                            </MudTd>
+                                            <MudTd DataLabel="Last Name">
+                                                <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
+                                                    <Authorized>
+                                                        @if (context.Sport == SportName.BASEBALL)
+                                                        {
+                                                            <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.LastName</MudLink>
+                                                        }
+                                                        @if (context.Sport == SportName.BASKETBALL)
+                                                        {
+                                                            <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.LastName</MudLink>
+                                                        }
+                                                        @if (context.Sport == SportName.FOOTBALL)
+                                                        {
+                                                            <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.LastName</MudLink>
+                                                        }
+                                                    </Authorized>
+                                                    <NotAuthorized>
+                                                        @context.LastName
+                                                    </NotAuthorized>
+                                                </AuthorizeView>
+                                            </MudTd>
                                             <MudTd DataLabel="Team">@context.TeamName</MudTd>
                                             <MudTd DataLabel="Position">@context.PlayerDetail.Position</MudTd>
                                             <MudTd DataLabel="Description">@context.Description</MudTd>
                                             <MudTd DataLabel="Links">
-                                                <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
-                                                    @if (context.Sport == SportName.BASEBALL)
-                                                    {
-                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/baseballplayerstats/", context.Id)" />
-                                                    }
-                                                    @if (context.Sport == SportName.BASKETBALL)
-                                                    {
-                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/basketballplayerstats/", context.Id)" />
-                                                    }
-                                                    @if (context.Sport == SportName.FOOTBALL)
-                                                    {
-                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/footballplayerstats/", context.Id)" />
-                                                    }
-                                                </AuthorizeView>
                                                 <AuthorizeView Roles="@Roles.UpdatePlayers" Context="updateAuth">
                                                     <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateplayer/", context.Id)" />
                                                 </AuthorizeView>

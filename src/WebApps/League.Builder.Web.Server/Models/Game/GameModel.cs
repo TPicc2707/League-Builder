@@ -14,6 +14,8 @@ public class GameModel
     public string AwayTeamImage { get; set; } = default!;
 
     public string HomeTeamImage { get; set; } = default!;
+    public int TeamSeasonWins { get; set; }
+    public int TeamSeasonLosses { get; set; }
 }
 
 public record CreateGameModel(

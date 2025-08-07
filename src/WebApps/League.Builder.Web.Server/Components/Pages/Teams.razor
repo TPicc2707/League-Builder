@@ -66,6 +66,9 @@
                                             <MudTd DataLabel="Description">@context.Description</MudTd>
                                             <MudTd DataLabel="Links">
                                                 <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
+                                                    <AuthorizeView Roles="@Roles.ReadGames" Context="teamGamesAuth">
+                                                        <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/teamgames/", context.Id)" />
+                                                    </AuthorizeView>
                                                     @if (context.Sport == SportName.BASEBALL)
                                                     {
                                                         <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/baseballteamstats/", context.Id)" />

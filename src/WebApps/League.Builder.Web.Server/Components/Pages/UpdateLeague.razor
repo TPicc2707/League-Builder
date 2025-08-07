@@ -1,5 +1,6 @@
 ﻿@page "/updateleague/{id}"
 @inject ILeagueService LeagueService
+@inject ITeamService TeamService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
@@ -21,8 +22,12 @@
                                     <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">League Information</MudText>
                                     <MudTextField Label="League Name" HelperText="Max. 150 characters"
                                                   @bind-Value="model.Name" For="@(() => model.Name)" />
-                                    <MudTextField Label="Sport" Class="mt-3"
-                                                  @bind-Value="model.Sport" For="@(() => model.Sport)" />
+                                    <MudSelect Class="mt-3" Label="Sport" @bind-Value="model.Sport" Disabled="disableSportDropdown">
+                                        @foreach (var sports in Constants.Sports())
+                                        {
+                                            <MudSelectItem Value="sports">@sports</MudSelectItem>
+                                        }
+                                    </MudSelect>
                                     <MudTextField Label="Email Address" Class="mt-3"
                                                   @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
                                     <MudTextField Label="Description" Class="mt-3"
@@ -98,9 +103,11 @@
 
     private bool PageLoad = false;
     private GetLeagueByIdResponse LeagueByIdResponse { get; set; }
+    private GetTeamsByLeagueResponse TeamsByLeagueResponse { get; set; }
     UpdateLeagueForm model = new UpdateLeagueForm();
     bool success;
     bool uploadFile = false;
+    bool disableSportDropdown = false;
     private MudFileUpload<IBrowserFile> _fileUpload;
 
 
@@ -138,6 +145,9 @@
 
         var leagueId = Guid.Parse(Id);
         LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
+        TeamsByLeagueResponse = await TeamService.GetTeamsByLeague(leagueId);
+        if (TeamsByLeagueResponse.Teams.Any())
+            disableSportDropdown = true;
         model.Id = LeagueByIdResponse.League.Id;
         model.Name = LeagueByIdResponse.League.Name;
         model.Sport = LeagueByIdResponse.League.Sport;

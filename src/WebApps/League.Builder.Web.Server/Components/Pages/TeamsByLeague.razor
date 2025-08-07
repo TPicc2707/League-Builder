@@ -61,7 +61,10 @@
                                         </MudTd>
                                         <MudTd DataLabel="Team Name"><MudLink Color="Color.Tertiary" Href="@($"/playersbyteam/{context.Id}")">@context.TeamName</MudLink></MudTd>
                                         <MudTd DataLabel="Description">@context.Description</MudTd>
-                                        <MudTd DataLabel="Links">                                   
+                                        <MudTd DataLabel="Links">
+                                            <AuthorizeView Roles="@Roles.ReadGames" Context="teamGamesAuth">
+                                                <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/teamgames/", context.Id)" />
+                                            </AuthorizeView>
                                             <AuthorizeView Roles="@Roles.UpdateTeams" Context="updateAuth">
                                                 <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateteam/", context.Id)" />
                                             </AuthorizeView>

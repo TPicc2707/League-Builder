@@ -19,7 +19,14 @@
                 <MudExpansionPanels>
                     <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid" Style="border-color: #000000">
                         <TitleContent>
-                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@SeasonModel.Season.Year @TeamModel.Team.TeamName Stats</MudText>
+                            <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">
+                                <MudStack Row="true" Justify="Justify.Center">
+                                    <MudAvatar Size="Size.Medium">
+                                        <MudImage Src="@TeamModel.Team.ImageFile" Alt="Team Image"></MudImage>
+                                    </MudAvatar>
+                                    @SeasonModel.Season.Year @TeamModel.Team.TeamName Stats
+                                </MudStack>
+                            </MudText>
                         </TitleContent>
                         <ChildContent>
                             <MudStack Justify="Justify.FlexStart" Row="true" Style="padding-top: 25px;">
@@ -360,6 +367,7 @@
         TeamModel = await TeamService.GetTeamById(teamId);
         LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
         await CreatePlayerStats(year, teamId);
+        await GetTeamImageAsync();
         PageLoad = true;
     }
 
@@ -487,6 +495,12 @@
         teamOnBasePlusSlugging = teamOnBasePercentage + teamSlugging;
         teamEarnedRunAverage = teamRunsAllowed == 0 || teamInnings == 0 ? 0 : (decimal)(teamRunsAllowed / teamInnings) * 9;
         teamWalksHitsPerInning = (teamWalksAllowed + teamHitsAllowed) == 0 || teamInnings == 0 ? 0 : (decimal)(teamWalksAllowed + teamHitsAllowed) / teamInnings;
+    }
+
+    private async Task GetTeamImageAsync()
+    {
+        var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamModel.Team.TeamName}/{TeamModel.Team.ImageFile}";
+        TeamModel.Team.ImageFile = await AWSService.GetImage(keyPath);
     }
 
 

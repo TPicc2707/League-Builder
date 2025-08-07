@@ -17,8 +17,12 @@
                                 <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">League Information</MudText>
                                 <MudTextField Label="League Name" HelperText="Max. 150 characters"
                                               @bind-Value="model.Name" For="@(() => model.Name)" />
-                                <MudTextField Label="Sport" Class="mt-3"
-                                              @bind-Value="model.Sport" For="@(() => model.Sport)" />
+                                <MudSelect Class="mt-3" Label="Sport" @bind-Value="model.Sport">
+                                    @foreach (var sports in Constants.Sports())
+                                    {
+                                        <MudSelectItem Value="sports">@sports</MudSelectItem>
+                                    }
+                                </MudSelect>
                                 <MudTextField Label="Email Address" Class="mt-3"
                                               @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
                                 <MudTextField Label="Description" Class="mt-3"

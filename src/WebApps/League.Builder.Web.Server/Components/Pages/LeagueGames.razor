@@ -38,7 +38,7 @@
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
-                                    <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStandings" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                    <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonGames" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
                                 </MudItem>
                             </MudStack>
                         </ChildContent>
@@ -196,7 +196,7 @@
         PageLoad = true;
     }
 
-    private async Task GetSeasonStandings()
+    private async Task GetSeasonGames()
     {
         PageLoad = false;
         SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
