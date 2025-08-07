@@ -45,9 +45,10 @@
                             <MudTh Class="mud-theme-primary"></MudTh>
                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.Team.TeamName)">Team Name</MudTableSortLabel></MudTh>
                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.GamesPlayed)">GP</MudTableSortLabel></MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.Wins)">W</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.Wins)">W</MudTableSortLabel></MudTh>
                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.Losses)">L</MudTableSortLabel></MudTh>
                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.WinPercentage)">PCT</MudTableSortLabel></MudTh>
+                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<StandingsModel, object>(x => x.GamesBack)">GB</MudTableSortLabel></MudTh>
                         </HeaderContent>
                         <RowTemplate>
                             <MudTd>
@@ -60,6 +61,16 @@
                             <MudTd DataLabel="Wins">@context.StandingsDetail.Wins</MudTd>
                             <MudTd DataLabel="Losses">@context.StandingsDetail.Losses</MudTd>
                             <MudTd DataLabel="Win Percentage">@context.WinPercentage.ToString("#0.000")</MudTd>
+                            <MudTd DataLabel="Games Back">
+                                @if(context.GamesBack != 0)
+                                {
+                                    @context.GamesBack.ToString("#0.0")
+                                }
+                                else
+                                {
+                                    @firstPlacePlaceholder
+                                }
+                                </MudTd>
                         </RowTemplate>
                     </MudTable>
 
@@ -82,6 +93,7 @@
     private Justify _justify = Justify.SpaceEvenly;
     private SeasonModel Season;
     private string placeholder = "Season";
+    private string firstPlacePlaceholder = "--";
     private int seasonValue;
     private bool expandSearchPanel = false;
 
@@ -103,6 +115,7 @@
         Model = await StandingsService.GetStandingsByLeague(leagueId);
         LeagueModel = await LeagueService.GetLeague(leagueId);
         await GetImageAsync();
+        CalculateGamesBack();
         seasonValue = Season.Year;
         PageLoad = true;
     }
@@ -112,6 +125,7 @@
         PageLoad = false;
         SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
         Season = SeasonModel.Season;
+        CalculateGamesBack();
         StateHasChanged();
         PageLoad = true;
     }
@@ -124,6 +138,19 @@
             var team = await TeamService.GetTeamById(standing.Team.Id);
             var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{team.Team.TeamName}/{team.Team.ImageFile}";
             standing.TeamImage = await AWSService.GetImage(keyPath);
+        }
+    }
+
+    private void CalculateGamesBack()
+    {
+        var firstPlaceTeam = Model.Standings.Where(x => x.SeasonId == Season.Id).OrderByDescending(x => x.WinPercentage).FirstOrDefault();
+
+        foreach (var standing in Model.Standings.Where(x => x.SeasonId == Season.Id))
+        {
+            var differenceWins = firstPlaceTeam.StandingsDetail.Wins - standing.StandingsDetail.Wins;
+            var differenceLosses = standing.StandingsDetail.Losses - firstPlaceTeam.StandingsDetail.Losses;
+            var difference = differenceWins + differenceLosses;
+            standing.GamesBack = difference != 0 ? (decimal)difference / 2 : 0;
         }
     }
 }

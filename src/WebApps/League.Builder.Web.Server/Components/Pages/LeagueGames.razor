@@ -47,105 +47,198 @@
             </MudItem>
             <MudItem>
                 <MudPaper Elevation="2" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudItem>
-                        <MudTable Items="@Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month)" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
-                            <ColGroup>
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col style="width: 60px;" />
-                            </ColGroup>
-                            <ToolBarContent>
-                                <AuthorizeView Roles="@Roles.CreateGames">
-                                    <MudStack Justify="Justify.FlexStart">
-                                        <MudButton OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
-                                    </MudStack>
-                                </AuthorizeView>
-                            </ToolBarContent>
-                            <HeaderContent>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<GameModel, object>(x=>x.AwayTeam.TeamName)">Away Team</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<GameModel, object>(x=>x.HomeTeam.TeamName)">Home Team</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Score</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<GameModel, object>(x=>x.GameDetail.StartTime)">Start Time</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">End Time</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
-                                <MudTh Class="mud-theme-primary"></MudTh>
-                                <MudTh Class="mud-theme-primary"></MudTh>
-                                <MudTh Class="mud-theme-primary"></MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Away Team">
-                                    <MudStack Row="true">
-                                        <MudAvatar Size="Size.Small">
-                                            <MudImage Src="@context.AwayTeamImage" Alt="Team Image"></MudImage>
-                                        </MudAvatar>
-                                        @context.AwayTeam.TeamName
-                                    </MudStack>
-                                </MudTd>
-                                <MudTd DataLabel="Home Team">
-                                    <MudStack Row="true">
-                                        <MudAvatar Size="Size.Small">
-                                            <MudImage Src="@context.HomeTeamImage" Alt="Team Image"></MudImage>
-                                        </MudAvatar>
-                                        @context.HomeTeam.TeamName
-                                    </MudStack>
-                                </MudTd>                                
-                                <MudTd DataLabel="Score">@context.GameDetail.AwayTeamScore - @context.GameDetail.HomeTeamScore</MudTd>
-                                <MudTd DataLabel="Start Time">@context.GameDetail.StartTime.ToString("hh:mm tt")</MudTd>
-                                @if (context.GameStatus == GameStatus.Completed)
-                                {
-                                    <MudTd DataLabel="Start Time">@context.GameDetail.EndTime.Value.ToString("hh:mm tt")</MudTd>
-                                }
-                                else
-                                {
-                                    <MudTd></MudTd>
-                                }
-                                <MudTd DataLabel="Status">@Constants.GameStatus(context.GameStatus)</MudTd>
-                                <AuthorizeView Roles="@Roles.UpdateGames" Context="updateAuth">
-                                    <Authorized>
-                                        <MudTd DataLabel="Edit"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
-                                    </Authorized>
-                                    <NotAuthorized>
-                                        <MudTd></MudTd>
-                                    </NotAuthorized>
-                                </AuthorizeView>
-                                @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
-                                {
-                                    <AuthorizeView Roles="@Roles.ReadStats" Context="statAuth">
-                                        <Authorized>
-                                            <MudTd DataLabel="Stats"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))"><MudIcon Icon="@Icons.Material.Filled.QueryStats" /></MudLink></MudTd>
-                                        </Authorized>
-                                        <NotAuthorized>
+                    <AuthorizeView Roles="@Roles.CreateGames" Context="createGameAuth">
+                        <Authorized>
+                            <MudItem>
+                                <MudTable Items="@Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month)" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                    <ColGroup>
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col style="width: 60px;" />
+                                    </ColGroup>
+                                    <ToolBarContent>
+                                        <MudStack Justify="Justify.FlexStart">
+                                            <MudButton OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
+                                        </MudStack>
+                                    </ToolBarContent>
+                                    <HeaderContent>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<GameModel, object>(x => x.AwayTeam.TeamName)">Away Team</MudTableSortLabel></MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<GameModel, object>(x => x.HomeTeam.TeamName)">Home Team</MudTableSortLabel></MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Score</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<GameModel, object>(x => x.GameDetail.StartTime)">Start Time</MudTableSortLabel></MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">End Time</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                        <MudTh Class="mud-theme-primary"></MudTh>
+                                        <MudTh Class="mud-theme-primary"></MudTh>
+                                        <MudTh Class="mud-theme-primary"></MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="Away Team">
+                                            <MudStack Row="true">
+                                                <MudAvatar Size="Size.Small">
+                                                    <MudImage Src="@context.AwayTeamImage" Alt="Team Image"></MudImage>
+                                                </MudAvatar>
+                                                @context.AwayTeam.TeamName
+                                            </MudStack>
+                                        </MudTd>
+                                        <MudTd DataLabel="Home Team">
+                                            <MudStack Row="true">
+                                                <MudAvatar Size="Size.Small">
+                                                    <MudImage Src="@context.HomeTeamImage" Alt="Team Image"></MudImage>
+                                                </MudAvatar>
+                                                @context.HomeTeam.TeamName
+                                            </MudStack>
+                                        </MudTd>
+                                        <MudTd DataLabel="Score">@context.GameDetail.AwayTeamScore - @context.GameDetail.HomeTeamScore</MudTd>
+                                        <MudTd DataLabel="Start Time">@context.GameDetail.StartTime.ToString("hh:mm tt")</MudTd>
+                                        @if (context.GameStatus == GameStatus.Completed)
+                                        {
+                                            <MudTd DataLabel="Start Time">@context.GameDetail.EndTime.Value.ToString("hh:mm tt")</MudTd>
+                                        }
+                                        else
+                                        {
                                             <MudTd></MudTd>
-                                        </NotAuthorized>
-                                    </AuthorizeView>
-                                }
-                                else
-                                {
-                                    <MudTd></MudTd>
-                                }
-                                @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
-                                {
-                                    <MudTd></MudTd>
-                                }
-                                else
-                                {
-                                    <AuthorizeView Roles="@Roles.DeleteGames" Context="deleteAuth">
-                                        <Authorized>
-                                            <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
-                                        </Authorized>
-                                        <NotAuthorized>
+                                        }
+                                        <MudTd DataLabel="Status">@Constants.GameStatus(context.GameStatus)</MudTd>
+                                        <AuthorizeView Roles="@Roles.UpdateGames" Context="updateAuth">
+                                            <Authorized>
+                                                <MudTd DataLabel="Edit"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
+                                            </Authorized>
+                                            <NotAuthorized>
+                                                <MudTd></MudTd>
+                                            </NotAuthorized>
+                                        </AuthorizeView>
+                                        @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
+                                        {
+                                            <AuthorizeView Roles="@Roles.ReadStats" Context="statAuth">
+                                                <Authorized>
+                                                    <MudTd DataLabel="Stats"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))"><MudIcon Icon="@Icons.Material.Filled.QueryStats" /></MudLink></MudTd>
+                                                </Authorized>
+                                                <NotAuthorized>
+                                                    <MudTd></MudTd>
+                                                </NotAuthorized>
+                                            </AuthorizeView>
+                                        }
+                                        else
+                                        {
                                             <MudTd></MudTd>
-                                        </NotAuthorized>
-                                    </AuthorizeView>
-                                }
-                            </RowTemplate>
-                        </MudTable>
+                                        }
+                                        @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
+                                        {
+                                            <MudTd></MudTd>
+                                        }
+                                        else
+                                        {
+                                            <AuthorizeView Roles="@Roles.DeleteGames" Context="deleteAuth">
+                                                <Authorized>
+                                                    <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                                                </Authorized>
+                                                <NotAuthorized>
+                                                    <MudTd></MudTd>
+                                                </NotAuthorized>
+                                            </AuthorizeView>
+                                        }
+                                    </RowTemplate>
+                                </MudTable>
 
-                    </MudItem>
-
+                            </MudItem>
+                        </Authorized>
+                        <NotAuthorized>
+                            <MudItem>
+                                <MudTable Items="@Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month)" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                    <ColGroup>
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col />
+                                        <col style="width: 60px;" />
+                                    </ColGroup>
+                                    <HeaderContent>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<GameModel, object>(x => x.AwayTeam.TeamName)">Away Team</MudTableSortLabel></MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<GameModel, object>(x => x.HomeTeam.TeamName)">Home Team</MudTableSortLabel></MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Score</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<GameModel, object>(x => x.GameDetail.StartTime)">Start Time</MudTableSortLabel></MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">End Time</MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                        <MudTh Class="mud-theme-primary"></MudTh>
+                                        <MudTh Class="mud-theme-primary"></MudTh>
+                                        <MudTh Class="mud-theme-primary"></MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="Away Team">
+                                            <MudStack Row="true">
+                                                <MudAvatar Size="Size.Small">
+                                                    <MudImage Src="@context.AwayTeamImage" Alt="Team Image"></MudImage>
+                                                </MudAvatar>
+                                                @context.AwayTeam.TeamName
+                                            </MudStack>
+                                        </MudTd>
+                                        <MudTd DataLabel="Home Team">
+                                            <MudStack Row="true">
+                                                <MudAvatar Size="Size.Small">
+                                                    <MudImage Src="@context.HomeTeamImage" Alt="Team Image"></MudImage>
+                                                </MudAvatar>
+                                                @context.HomeTeam.TeamName
+                                            </MudStack>
+                                        </MudTd>
+                                        <MudTd DataLabel="Score">@context.GameDetail.AwayTeamScore - @context.GameDetail.HomeTeamScore</MudTd>
+                                        <MudTd DataLabel="Start Time">@context.GameDetail.StartTime.ToString("hh:mm tt")</MudTd>
+                                        @if (context.GameStatus == GameStatus.Completed)
+                                        {
+                                            <MudTd DataLabel="Start Time">@context.GameDetail.EndTime.Value.ToString("hh:mm tt")</MudTd>
+                                        }
+                                        else
+                                        {
+                                            <MudTd></MudTd>
+                                        }
+                                        <MudTd DataLabel="Status">@Constants.GameStatus(context.GameStatus)</MudTd>
+                                        <AuthorizeView Roles="@Roles.UpdateGames" Context="updateAuth">
+                                            <Authorized>
+                                                <MudTd DataLabel="Edit"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
+                                            </Authorized>
+                                            <NotAuthorized>
+                                                <MudTd></MudTd>
+                                            </NotAuthorized>
+                                        </AuthorizeView>
+                                        @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
+                                        {
+                                            <AuthorizeView Roles="@Roles.ReadStats" Context="statAuth">
+                                                <Authorized>
+                                                    <MudTd DataLabel="Stats"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))"><MudIcon Icon="@Icons.Material.Filled.QueryStats" /></MudLink></MudTd>
+                                                </Authorized>
+                                                <NotAuthorized>
+                                                    <MudTd></MudTd>
+                                                </NotAuthorized>
+                                            </AuthorizeView>
+                                        }
+                                        else
+                                        {
+                                            <MudTd></MudTd>
+                                        }
+                                        @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
+                                        {
+                                            <MudTd></MudTd>
+                                        }
+                                        else
+                                        {
+                                            <AuthorizeView Roles="@Roles.DeleteGames" Context="deleteAuth">
+                                                <Authorized>
+                                                    <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                                                </Authorized>
+                                                <NotAuthorized>
+                                                    <MudTd></MudTd>
+                                                </NotAuthorized>
+                                            </AuthorizeView>
+                                        }
+                                    </RowTemplate>
+                                </MudTable>
+                            </MudItem>
+                        </NotAuthorized>
+                    </AuthorizeView>
                 </MudPaper>
 
             </MudItem>
