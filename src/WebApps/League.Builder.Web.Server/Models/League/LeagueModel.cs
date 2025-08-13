@@ -8,12 +8,14 @@ public class LeagueModel
     public string Description { get; set; } = default!;
     public string ImageFile { get; set; } = default!;
     public string Image { get; set; } = default!;
+    public string OwnerFirstName { get; set; } = default!;
+    public string OwnerLastName { get; set; } = default!;
     public string EmailAddress { get; set; } = default!;
 }
 
 // Request Records
-public record CreateLeagueRequest(string Name, string Sport, string Description, string ImageFile, string EmailAddress);
-public record UpdateLeagueRequest(Guid Id, string Name, string Sport, string Description, string ImageFile, string EmailAddress);
+public record CreateLeagueRequest(string Name, string Sport, string Description, string ImageFile, string OwnerFirstName, string OwnerLastName, string EmailAddress);
+public record UpdateLeagueRequest(Guid Id, string Name, string Sport, string Description, string ImageFile, string OwnerFirstName, string OwnerLastName, string EmailAddress);
 
 // Response Records
 public record GetLeaguesResponse(IEnumerable<LeagueModel> Leagues);

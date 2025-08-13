@@ -70,6 +70,7 @@
                                             <HeaderContent>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<LeagueModel, object>(x => x.Name)">Name</MudTableSortLabel></MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Owner</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Description</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
                                             </HeaderContent>
@@ -80,6 +81,7 @@
                                                     </MudAvatar>
                                                 </MudTd>
                                                 <MudTd DataLabel="League Name"><MudLink Color="Color.Tertiary" Href="@($"/teamsbyleague/{context.Id}")">@context.Name</MudLink></MudTd>
+                                                <MudTd DataLabel="Owner">@String.Concat(context.OwnerFirstName, " ", context.OwnerLastName)</MudTd>
                                                 <MudTd DataLabel="Description">@context.Description</MudTd>
                                                 <MudTd DataLabel="Links">
                                                     <MudIconButton Icon="@Icons.Material.Filled.Email" Color="Color.Tertiary" Edge="Edge.Start" />

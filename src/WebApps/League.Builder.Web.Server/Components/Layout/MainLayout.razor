@@ -46,7 +46,7 @@
     </MudScrollToTop>
 </MudLayout>
 @code {
-    bool _drawerOpen = true;
+    bool _drawerOpen = false;
     private string version = string.Empty;
     private string date = DateTime.Now.Year.ToString();
     private bool _open = false;
@@ -102,6 +102,13 @@
             TextPrimary = "#FFFFFF",
             
         },
+        Typography = new Typography()
+        {
+            Default = new DefaultTypography()
+            {
+                FontFamily = new[] { "Poppins", "Helvetica", "Arial", "sans-serif", "Pacifico", "cursive" }
+            }
+        }
     };
 
 }

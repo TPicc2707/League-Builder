@@ -1,66 +1,262 @@
 ﻿@page "/"
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
+@inject ILeagueService LeagueService
+@inject ITeamService TeamService
 
-
-<div style="padding-top: 25px; align-content: center;">
-    <MudCarousel Class="mud-width-full" Style="height:400px;" ShowArrows="false" ShowBullets="true" EnableSwipeGesture="true" AutoCycle="true" TData="object">
-        <MudCarouselItem Transition="transition">
-            <div class="d-flex" style="height:100%">
-                <MudImage Fluid="true" Src="images/league-builder.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
-            </div>
-        </MudCarouselItem>
-        <MudCarouselItem Transition="transition">
-            <div class="d-flex" style="height:100%">
-                <MudImage Fluid="true" Src="images/baseball-1.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
-            </div>
-        </MudCarouselItem>
-        <MudCarouselItem Transition="transition">
-            <div class="d-flex" style="height:100%">
-                <MudImage Fluid="true" Src="images/football.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
-            </div>
-        </MudCarouselItem>
-    </MudCarousel>
-
-</div>
-
-<AuthorizeView>
+<AuthorizeView Roles="@String.Concat(Roles.CreateLeagues, ", ", Roles.CreateTeams, ", ", Roles.CreatePlayers)" Context="auth">
     <Authorized>
-        <div style="padding-top: 50px;">
-            <MudText Typo="Typo.h3" Align="Align.Center" Style="font-weight:bold">Pick a Sport</MudText>
-        </div>
-        <div style="padding-top: 25px;">
-            <MudStack Justify="@_justify" Row="true">
-                <MudLink OnClick="@(() => GetLeaguesBySport("baseball"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/baseball.png" Alt="Baseball" Elevation="25" Class="rounded-lg" /></MudLink>
-                <MudLink OnClick="@(() => GetLeaguesBySport("football"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/football.png" Alt="Football" Elevation="25" Class="rounded-lg" /></MudLink>
-                <MudLink OnClick="@(() => GetLeaguesBySport("basketball"))"><MudImage ObjectFit="@ImageFit" Height="250" Width="250" Src="images/basketball.png" Alt="Baseball" Elevation="25" Class="rounded-lg" /></MudLink>
-            </MudStack>
-        </div>
-    </Authorized>
-</AuthorizeView>
+        <MudItem Style="margin-top: 2rem;">
+            <MudPaper Elevation="2" Class="border border-solid" style="border-color: #000000">
+                <MudText Typo="Typo.h3" Align="Align.Center" Style="font-family: Pacifico; padding-top: 1rem;">League Admin Instructors</MudText>
+                <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 1.5rem; padding-bottom: 1rem; padding-left: 1.5rem; padding-right: 1.5rem">
+                    Welcome, League Admin! As the backbone of your league, you have access to powerful tools to manage teams, schedules, and scores. Here's how to get started:
+                </MudText>
+                <MudText Typo="Typo.h6" Align="Align.Start" Style="padding-left: 2.25rem; margin-bottom: .5rem;">
+                    <MudIcon Icon="@Icons.Material.Filled.Build" Size="Size.Small" Color="@Color.Tertiary"></MudIcon>
+                    Setting Up Your League
+                </MudText>
+                <ul style="padding-left: 3rem;" class="mud-typography mud-typography-body1">
+                    <li>
+                        <MudText Style="margin-bottom: .5rem;">
+                            <span><strong>Create a League:</strong> Build your league by entering the name, sport, owner, and a league logo.</span>
+                        </MudText>
+                    </li>
+                    <li>
+                        <MudText Style="margin-bottom: .5rem;">
+                            <span><strong>Add Teams: </strong> Once your league is created, you can begin to add teams. You can assign team names, logos, and managers.</span>
+                        </MudText>
+                    </li>
+                    <li>
+                        <MudText Style="margin-bottom: .5rem;">
+                            <span><strong>Assign Players: </strong>Add players to each team in your league. Add profile pic, their name, and player details.</span>
+                        </MudText>
+                    </li>
+                    <li>
+                        <MudText Style="margin-bottom: .5rem;">
+                            <span><strong>Build League Schedules: </strong>Once the league is fully created, you can start to create games between teams each season.</span>
+                        </MudText>
+                    </li>
+                </ul>
+                <MudText Typo="Typo.h6" Align="Align.Start" Style="padding-left: 2.25rem; margin-top: .5rem; margin-bottom: .5rem;">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Color="@Color.Tertiary"></MudIcon>
+                    Managing League Operations
+                </MudText>
+                <ul style="padding-left: 3rem;" class="mud-typography mud-typography-body1">
+                    <li>
+                        <MudText Style="margin-bottom: .5rem;">
+                            <span><strong>Edit League:</strong> You continue to maintain your league via adding or updating teams, players, schedules, and stats.</span>
+                        </MudText>
+                    </li>
+                    <li>
+                        <MudText Style="margin-bottom: .5rem;">
+                            <span><strong>Track Stats: </strong> Over the course of each season, you can monitor team and player stats include league stat leaders.</span>
+                        </MudText>
+                    </li>
+                </ul>
+                <MudText Typo="Typo.h6" Align="Align.Start" Style="padding-left: 2.25rem; margin-top: .5rem; margin-bottom: .5rem;">
+                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Small" Color="@Color.Tertiary"></MudIcon>
+                    Scoring & Standings
+                </MudText>
+                <ul style="padding-left: 3rem;" class="mud-typography mud-typography-body1">
+                    <li>
+                        <MudText Style="margin-bottom: .5rem;">
+                            <span><strong>Enter Game Results:</strong> After each game played, you can enter scoring and stats for each team and players.</span>
+                        </MudText>
+                    </li>
+                    <li>
+                        <MudText Style="margin-bottom: .5rem;">
+                            <span><strong>Track Standings: </strong> After each game is played, you can check league standings to view each team's' performance.</span>
+                        </MudText>
+                    </li>
+                </ul>
+                <MudText Typo="Typo.h5" Align="Align.Center" Style="padding: 1.5rem; font-weight: bold; font-family: Pacifico;">
+                    Your league. Your rules. Your schedule. All free.
+                </MudText>
+            </MudPaper>
+        </MudItem>
 
+    </Authorized>
+    <NotAuthorized>
+        <MudItem Style="margin-top: 2rem;">
+            <MudPaper Elevation="2" Class="border border-solid" style="border-color: #000000">
+                <MudText Typo="Typo.h3" Align="Align.Center" Style="font-family: Pacifico; padding-top: 1rem;">Welcome to League Builder</MudText>
+                <MudText Typo="Typo.body1" Align="Align.Start" Style="padding: 1.5rem">
+                    LeagueBuilder is the ultimate free web app for sports league owners who want to streamline their operations without the hassle. Whether you're managing a youth baseball league, a local football tournament, or a weekend basketball club, LeagueBuilder gives you the tools to:
+                </MudText>
+                <ul style="padding-left: 3rem;" class="mud-typography mud-typography-body1">
+                    <li>
+                        <MudText Style="margin-bottom: .5rem;">
+                            <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Small" Color="@Color.Tertiary"></MudIcon>
+                            <span style="margin-left: .5rem;"><strong>Create and manage teams</strong> with full player roster</span>
+                        </MudText>
+                    </li>
+                    <li>
+                        <MudText Style="margin-bottom: .5rem;">
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" Color="@Color.Tertiary"></MudIcon>
+                            <span style="margin-left: .5rem;"><strong>Build game schedules</strong> for every season with ease</span>
+                        </MudText>
+                    </li>
+                    <li>
+                        <MudText Style="margin-bottom: .5rem;">
+                            <MudIcon Icon="@Icons.Material.Filled.QueryStats" Size="Size.Small" Color="@Color.Tertiary"></MudIcon>
+                            <span style="margin-left: .5rem;"><strong>Track stats and performance</strong> across teams and player</span>
+                        </MudText>
+                    </li>
+                    <li>
+                        <MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Public" Size="Size.Small" Color="@Color.Tertiary"></MudIcon>
+                            <span style="margin-left: .5rem;"><strong>Access everything online</strong> — no downloads, no fees</span>
+                        </MudText>
+                    </li>
+                </ul>
+                <MudText Typo="Typo.body1" Align="Align.Start" Style="padding: 1.5rem">
+                    Designed for simplicity and flexibility, LeagueBuilder is perfect for league organizers of all experience levels. No tech skills required, no hidden costs — just a clean, intuitive platform that helps you focus on the game.
+                </MudText>
+                <MudText Typo="Typo.h5" Align="Align.Center" Style="padding: 1.5rem; font-weight: bold; font-family: Pacifico;">
+                    Your league. Your rules. Your schedule. All free.
+                </MudText>
+            </MudPaper>
+        </MudItem>
+    </NotAuthorized>
+</AuthorizeView>
+<MudItem>
+    <AuthorizeView Roles="@String.Concat(Roles.CreateLeagues, ", ", Roles.CreateTeams, ", ", Roles.CreatePlayers)" Context="auth">
+        <Authorized>
+            @if (PageLoad)
+            {
+                <MudItem Style="margin-top: 2rem; margin-bottom: 2rem;">
+                    <MudPaper Elevation="2" Class="border border-solid" style="border-color: #000000; padding: 1rem;">
+                        <MudText Typo="Typo.h3" Align="Align.Center" Style="font-family: Pacifico; margin-top: 1rem; margin-bottom: 1rem;">Build Your League</MudText>
+                        <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Top" TimelineAlign="TimelineAlign.Default">
+                            <MudTimelineItem Color="Color.Primary" Variant="Variant.Filled">
+                                <ItemDot><MudIcon Icon="@Icons.Material.Filled.Public" Size="Size.Small"></MudIcon></ItemDot>
+                                <ItemContent>
+                                    <MudStack AlignItems="AlignItems.Center">
+                                        <MudButton Href="/createleague" Color="@Color.Primary" Variant="Variant.Filled">
+                                            Create League
+                                        </MudButton>
+                                    </MudStack>
+                                </ItemContent>
+                            </MudTimelineItem>
+                            <MudTimelineItem Color="Color.Primary" Variant="Variant.Filled">
+                                <ItemDot><MudIcon Icon="@Icons.Material.Filled.Groups2" Size="Size.Small"></MudIcon></ItemDot>
+                                <ItemContent>
+                                    <MudStack AlignItems="AlignItems.Center">
+                                        <MudSelect @bind-Value="leagueId" Label="League">                                            
+                                            @foreach (var league in LeagueModel.Leagues)
+                                            {
+                                                <MudSelectItem Value="@league.Id">@league.Name</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                        <MudButton Href="@String.Concat("/createteam/", leagueId.ToString())" Color="@Color.Primary" Variant="Variant.Filled">
+                                            Create Team
+                                        </MudButton>
+                                    </MudStack>
+                                </ItemContent>
+                            </MudTimelineItem>
+                            <MudTimelineItem Color="Color.Primary" Variant="Variant.Filled">
+                                <ItemDot><MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small"></MudIcon></ItemDot>
+                                <ItemContent>
+                                    <MudStack AlignItems="AlignItems.Center">
+                                        <MudSelect @bind-Value="teamId" Label="Team">
+                                            @foreach (var team in TeamModel.Teams.Data)
+                                            {
+                                                <MudSelectItem Value="@team.Id">@team.TeamName</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                        <MudButton Href="@String.Concat("/createplayer/", teamId.ToString())" Color="@Color.Primary" Variant="Variant.Filled">
+                                            Create Player
+                                        </MudButton>
+                                    </MudStack>
+                                </ItemContent>
+                            </MudTimelineItem>
+                        </MudTimeline>
+                    </MudPaper>
+                </MudItem>
+            }
+        </Authorized>
+        <NotAuthorized>
+            @if (HttpContextAccessor.HttpContext?.User?.Identity?.Name == null)
+            {
+                <MudItem Style="margin-top: 2rem; margin-bottom: 2rem;">
+                    <MudPaper Elevation="2" Class="border border-solid" style="border-color: #000000;">
+                        <MudText Typo="Typo.h3" Align="Align.Center" Style="font-family: Pacifico; margin-top: 1rem; margin-bottom: 1rem;">Get Started</MudText>
+                        <MudItem Style="margin-top: 25px; margin-bottom: 25px;">
+                            <MudStack Row="true" Justify="@Justify.Center">
+                                <MudButton Color="@Color.Primary" Variant="Variant.Filled">
+                                    Sign Up
+                                </MudButton>
+                                <MudButton Href="/authentication/login" Color="@Color.Primary" Variant="Variant.Filled">
+                                    Login
+                                </MudButton>
+                            </MudStack>
+                        </MudItem>
+                    </MudPaper>
+                </MudItem>
+            }
+        </NotAuthorized>
+    </AuthorizeView>
+</MudItem>
+@*     <MudCarousel Class="mud-width-full" Style="height: 75vh;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="true" AutoCycle="true" TData="object">
+        <MudCarouselItem Transition="transition">
+            <MudItem class="d-flex" style="height:50%">
+                <MudImage Fluid="true" Src="images/league-builder.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
+            </MudItem>
+        </MudCarouselItem>
+        <MudCarouselItem Transition="transition">
+            <MudItem class="d-flex" style="height:100%">
+                <MudImage Fluid="true" Src="images/baseball-1.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
+            </MudItem>
+        </MudCarouselItem>
+        <MudCarouselItem Transition="transition">
+            <MudItem class="d-flex" style="height:100%">
+                <MudImage Fluid="true" Src="images/basketball.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
+            </MudItem>
+        </MudCarouselItem>
+    </MudCarousel> *@
 
 @code {
     private Transition transition = Transition.Fade;
     private Justify _justify = Justify.SpaceEvenly;
 
     private ObjectFit ImageFit = ObjectFit.Cover;
+    private GetLeaguesResponse LeagueModel;
+    private GetTeamsResponse TeamModel;
+    private Guid leagueId;
+    private Guid teamId;
+    private bool PageLoad = false;
 
     protected override async Task OnInitializedAsync()
     {
+        var user = HttpContextAccessor.HttpContext.User;
+
         if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
         {
             NavManager.NavigateTo("authentication/logout");
         }
+
+        if(user != null)
+        {
+            if (user.IsInRole(Roles.ReadLeagues))
+            {
+                LeagueModel = await LeagueService.GetLeagues(1, 100);
+                leagueId = LeagueModel.Leagues.First().Id;
+            }
+
+            if (user.IsInRole(Roles.ReadTeams))
+            {
+                TeamModel = await TeamService.GetTeams(0, 100);
+                teamId = TeamModel.Teams.Data.First().Id;
+                
+            }
+        }
+
+        PageLoad = true;
     }
 
     void SetImageFit(ObjectFit value)
     {
         ImageFit = value;
-    }
-
-    private void GetLeaguesBySport(string sport)
-    {
-        NavManager.NavigateTo($"/leaguesbysport/{sport}");
     }
 }

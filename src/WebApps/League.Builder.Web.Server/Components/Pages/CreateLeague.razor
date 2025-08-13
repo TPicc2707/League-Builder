@@ -23,6 +23,10 @@
                                         <MudSelectItem Value="sports">@sports</MudSelectItem>
                                     }
                                 </MudSelect>
+                                <MudTextField Label="First Name" Class="mt-3"
+                                              @bind-Value="model.OwnerFirstName" For="@(() => model.OwnerFirstName)" />
+                                <MudTextField Label="Last Name Class="mt-3"
+                                              @bind-Value="model.OwnerLastName" For="@(() => model.OwnerLastName)" />
                                 <MudTextField Label="Email Address" Class="mt-3"
                                               @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
                                 <MudTextField Label="Description" Class="mt-3"
@@ -108,6 +112,14 @@
         public string Sport { get; set; }
 
         [Required]
+        [StringLength(150, ErrorMessage = "First Name length can't be more than 15.")]
+        public string OwnerFirstName { get; set; }
+
+        [Required]
+        [StringLength(150, ErrorMessage = "Last Name length can't be more than 15.")]
+        public string OwnerLastName { get; set; }
+
+        [Required]
         [EmailAddress]
         public string EmailAddress { get; set; }
 
@@ -126,7 +138,7 @@
         string keyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
         var s3Success = await AWSService.UploadImages(keyPath, model.File);
 
-        CreateLeagueRequest request = new CreateLeagueRequest(model.Name, model.Sport, model.Description, model.ImageFile, model.EmailAddress);
+        CreateLeagueRequest request = new CreateLeagueRequest(model.Name, model.Sport, model.Description, model.ImageFile, model.OwnerFirstName, model.OwnerLastName, model.EmailAddress);
         await LeagueService.CreateLeague(request);
         success = true;
         Snackbar.Add("League has been created.", Severity.Success);

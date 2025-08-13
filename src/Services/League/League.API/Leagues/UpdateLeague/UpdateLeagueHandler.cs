@@ -1,6 +1,6 @@
 ﻿namespace League.API.Leagues.UpdateLeague;
 
-public record UpdateLeagueCommand(Guid Id, string Name, string Sport, string Description, string EmailAddress, string ImageFile)
+public record UpdateLeagueCommand(Guid Id, string Name, string Sport, string Description, string OwnerFirstName, string OwnerLastName, string EmailAddress, string ImageFile)
     : ICommand<UpdateLeagueResult>;
 
 public record UpdateLeagueResult(bool IsSuccess);
@@ -12,6 +12,10 @@ public class UpdateLeagueCommandValidator : AbstractValidator<UpdateLeagueComman
         RuleFor(x => x.Id).NotEmpty().WithMessage("League Id is required");
         RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required")
             .Length(2, 150).WithMessage("Name must be between 2 and 150 characters");
+        RuleFor(x => x.OwnerFirstName).NotEmpty().WithMessage("First Name is required")
+            .Length(1, 15).WithMessage("First Name must be between 1 and 15 characters");
+        RuleFor(x => x.OwnerLastName).NotEmpty().WithMessage("Last Name is required")
+            .Length(1, 15).WithMessage("First Name must be between 1 and 15 characters");
         RuleFor(x => x.Sport).NotEmpty().WithMessage("Sport is required");
         RuleFor(x => x.EmailAddress).NotEmpty().WithMessage("Email Address is required");
         RuleFor(x => x.ImageFile).NotEmpty().WithMessage("ImageFile is required");
@@ -34,6 +38,8 @@ public class UpdateLeagueCommandHandler
         league.Name = command.Name;
         league.Sport = command.Sport;
         league.Description = command.Description;
+        league.OwnerFirstName = command.OwnerFirstName;
+        league.OwnerLastName = command.OwnerLastName;
         league.EmailAddress = command.EmailAddress;
         league.ImageFile = command.ImageFile;
         league.Modified_DateTime = DateTime.Now;
