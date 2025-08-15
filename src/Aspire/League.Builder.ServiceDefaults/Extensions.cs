@@ -26,7 +26,15 @@ namespace Microsoft.Extensions.Hosting
             builder.Services.ConfigureHttpClientDefaults(http =>
             {
                 // Turn on resilience by default
-                http.AddStandardResilienceHandler();
+                http.AddStandardResilienceHandler(config =>
+                {
+                    // Extend the HTTP Client timeout for Ollama
+                    config.AttemptTimeout.Timeout = TimeSpan.FromMinutes(3);
+
+                    // Must be at least double the AttemptTimeout to pass options validation
+                    config.CircuitBreaker.SamplingDuration = TimeSpan.FromMinutes(10);
+                    config.TotalRequestTimeout.Timeout = TimeSpan.FromMinutes(10);
+                });
 
                 // Turn on service discovery by default
                 http.AddServiceDiscovery();

@@ -25,6 +25,14 @@ var keycloak = builder
     .WithDataVolume()
     .WithLifetime(ContainerLifetime.Persistent);
 
+var ollama = builder
+      .AddOllama("ollama", 11434)
+      .WithDataVolume()
+      .WithLifetime(ContainerLifetime.Persistent)
+      .WithOpenWebUI();
+
+var llama = ollama.AddModel("llama3.2");
+
 //Postgress
 var leagueDb = postgres.AddDatabase("leagueDb");
 var seasonDb = postgres.AddDatabase("seasonDb");
@@ -201,8 +209,10 @@ builder.AddProject<Projects.League_Builder_Web_Server>("league-builder-web-serve
                 .WithExternalHttpEndpoints()
                 .WithReference(apiGateway)
                 .WithReference(keycloak)
+                .WithReference(llama)
                 .WaitFor(apiGateway)
-                .WaitFor(keycloak);
+                .WaitFor(keycloak)
+                .WaitFor(llama);
 
 
 builder.Build().Run();

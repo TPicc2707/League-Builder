@@ -19,7 +19,7 @@ public class AuthorizationHandler(IHttpContextAccessor httpContextAccessor)
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         }
-
+        
         return await base.SendAsync(request, cancellationToken);
     }
 }

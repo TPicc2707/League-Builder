@@ -1,0 +1,51 @@
+﻿@page "/support"
+@inject ISupportService SupportService
+
+<MudItem Style="padding-top: 50px;">
+    <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+        <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Support</MudText>
+    </MudPaper>
+</MudItem>
+<MudItem Style="margin-top: 25px;">
+    <MudPaper Elevation="2" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+        <MudText Typo="Typo.h6" Align="Align.Center" Style="font-weight:bold">Ask questions about our amazing league builder website.</MudText>
+        <MudItem Style="margin-top: 25px;">
+            <MudStack>
+                <MudTextField T="string" Variant="Variant.Filled" Text="@queryTerm" Lines="10"  @bind-Value="@queryTerm"/>
+                <MudButton OnClick="DoSend" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Send</MudButton>
+            </MudStack>
+        </MudItem>
+    </MudPaper>
+</MudItem>
+
+@if (!PageLoad)
+{
+    <Loading />
+}
+
+@if (Response != string.Empty)
+{
+    <MudItem Style="margin-top: 25px;">
+        <MudPaper Elevation="2" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Response</MudText>
+            <MudItem Style="margin-top: 25px;">
+                <MudStack>
+                    <MudTextField T="string" Variant="Variant.Filled" ReadOnly="true" Text="@Response" Lines="10" />
+                </MudStack>
+            </MudItem>
+        </MudPaper>
+    </MudItem>
+}
+
+@code {
+    private bool PageLoad = true;
+    private string queryTerm = default!;
+    private string Response = string.Empty;
+
+    private async Task DoSend(MouseEventArgs e)
+    {
+        PageLoad = false;
+        Response = await SupportService.SupportChat(queryTerm);
+        PageLoad = true;
+    }
+}

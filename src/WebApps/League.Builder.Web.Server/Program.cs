@@ -33,10 +33,12 @@ builder.Services.AddAuthentication(oidcScheme)
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<IAWSService, AWSService>();
+builder.Services.AddScoped<ISupportService, SupportService>();
 
 builder.Services.AddRefitClient<ILeagueService>().ConfigureHttpClient(x =>
 {
     x.BaseAddress = new Uri("https+http://league-builder-apigateway");
+
 }).AddHttpMessageHandler<AuthorizationHandler>();
 
 builder.Services.AddRefitClient<ITeamService>().ConfigureHttpClient(x =>
@@ -68,6 +70,9 @@ builder.Services.AddRefitClient<IGameService>().ConfigureHttpClient(x =>
 {
     x.BaseAddress = new Uri("https+http://league-builder-apigateway");
 }).AddHttpMessageHandler<AuthorizationHandler>();
+
+// Register Ollama-based chat & embedding
+builder.AddOllamaApiClient("ollama-llama3-2").AddChatClient();
 
 var app = builder.Build();
 

@@ -10,7 +10,7 @@
             <MudPaper Elevation="2" Class="border border-solid" style="border-color: #000000">
                 <MudText Typo="Typo.h3" Align="Align.Center" Style="font-family: Pacifico; padding-top: 1rem;">League Admin Instructors</MudText>
                 <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 1.5rem; padding-bottom: 1rem; padding-left: 1.5rem; padding-right: 1.5rem">
-                    Welcome, League Admin! As the backbone of your league, you have access to powerful tools to manage teams, schedules, and scores. Here's how to get started:
+                    Welcome, @UserName! As the backbone of your league, you have access to powerful tools to manage teams, schedules, and scores. Here's how to get started:
                 </MudText>
                 <MudText Typo="Typo.h6" Align="Align.Start" Style="padding-left: 2.25rem; margin-bottom: .5rem;">
                     <MudIcon Icon="@Icons.Material.Filled.Build" Size="Size.Small" Color="@Color.Tertiary"></MudIcon>
@@ -133,9 +133,11 @@
                                 <ItemDot><MudIcon Icon="@Icons.Material.Filled.Public" Size="Size.Small"></MudIcon></ItemDot>
                                 <ItemContent>
                                     <MudStack AlignItems="AlignItems.Center">
-                                        <MudButton Href="/createleague" Color="@Color.Primary" Variant="Variant.Filled">
-                                            Create League
-                                        </MudButton>
+                                        <MudItem Style="margin-top: 3.5rem">
+                                            <MudButton Href="/createleague" Color="@Color.Primary" Variant="Variant.Filled">
+                                                Create League
+                                            </MudButton>
+                                        </MudItem>
                                     </MudStack>
                                 </ItemContent>
                             </MudTimelineItem>
@@ -226,10 +228,12 @@
     private Guid leagueId;
     private Guid teamId;
     private bool PageLoad = false;
+    private string UserName = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         var user = HttpContextAccessor.HttpContext.User;
+        UserName = user.Identity.Name;
 
         if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
         {
