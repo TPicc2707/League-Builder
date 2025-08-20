@@ -10,6 +10,9 @@ public interface IStandingsService
     Task<GetStandingsByLeagueResponse> GetStandingsByLeague(Guid leagueId);
     [Get("/standings-service/standings/team/{teamId}")]
     Task<GetStandingsByTeamResponse> GetStandingsByTeam(Guid teamId);
+    [Get("/standings-service/healthz")]
+    Task<string> GetStandingsHealth();
+
     [Post("/standings-service/standings")]
     Task<CreateStandingsResponse> CreateStandings(CreateStandingsRequest standings);
     [Put("/standings-service/standings")]

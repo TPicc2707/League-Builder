@@ -14,4 +14,8 @@ public interface ISeasonService
     Task<UpdateSeasonResponse> UpdateSeason(UpdateSeasonRequest request);
     [Delete("/season-service/seasons/{id}")]
     Task<DeleteSeasonResponse> DeleteSeason(Guid id);
+
+    //Health
+    [Get("/season-service/healthz")]
+    Task<string> GetSeasonHealth();
 }

@@ -1,0 +1,352 @@
+﻿@page "/health"
+@inject ILeagueService LeagueService
+@inject ITeamService TeamService
+@inject IPlayerService PlayerService
+@inject IStandingsService StandingsService
+@inject IGameService GameService
+@inject IStatsService StatsService
+@inject ISeasonService SeasonService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavManager;
+
+@if(PageLoad)
+{
+    <AuthorizeView Roles="@Roles.SupportLeagues" Context="auth">
+        <Authorized>
+            <MudItem Style="margin-top: 50px;">
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Service Health</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem Style="margin-top: 25px;">
+                <MudExpansionPanels>
+                    <MudExpansionPanel Class="border border-solid" style="border-color: #000000" Expanded="false">
+                        <TitleContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">League Management Services</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                                <MudTabPanel Text="League API">
+                                    <MudItem Style="margin-top: 25px;">
+                                        <MudTable Items="@LeagueHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                            <HeaderContent>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                            </HeaderContent>
+                                            <RowTemplate>
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd DataLabel="Service">API</MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Service">@context.Key</MudTd>
+                                                }
+                                                <MudTd DataLabel="Time">
+                                                    @context.Value.Duration
+                                                </MudTd>
+                                                @if (context.Value.Status == Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy)
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                                    </MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                            </RowTemplate>
+                                        </MudTable>
+                                    </MudItem>
+                                </MudTabPanel>
+                                <MudTabPanel Text="Team API">
+                                    <MudItem Style="margin-top: 25px;">
+                                        <MudTable Items="@TeamHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                            <HeaderContent>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                            </HeaderContent>
+                                            <RowTemplate>
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd DataLabel="Service">API</MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Service">@context.Key</MudTd>
+                                                }
+                                                <MudTd DataLabel="Time">
+                                                    @context.Value.Duration
+                                                </MudTd>
+                                                @if (context.Value.Status == Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy)
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                                    </MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                            </RowTemplate>
+                                        </MudTable>
+                                    </MudItem>
+                                </MudTabPanel>
+                                <MudTabPanel Text="Player API">
+                                    <MudItem Style="margin-top: 25px;">
+                                        <MudTable Items="@PlayerHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                            <HeaderContent>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                            </HeaderContent>
+                                            <RowTemplate>
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd DataLabel="Service">API</MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Service">@context.Key</MudTd>
+                                                }
+                                                <MudTd DataLabel="Time">
+                                                    @context.Value.Duration
+                                                </MudTd>
+                                                @if (context.Value.Status == Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy)
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                                    </MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                            </RowTemplate>
+                                        </MudTable>
+                                    </MudItem>
+                                </MudTabPanel>
+                                <MudTabPanel Text="Season API">
+                                    <MudItem Style="margin-top: 25px;">
+                                        <MudTable Items="@SeasonHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                            <HeaderContent>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                            </HeaderContent>
+                                            <RowTemplate>
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd DataLabel="Service">API</MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Service">@context.Key</MudTd>
+                                                }
+                                                <MudTd DataLabel="Time">
+                                                    @context.Value.Duration
+                                                </MudTd>
+                                                @if (context.Value.Status == Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy)
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                                    </MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                            </RowTemplate>
+                                        </MudTable>
+                                    </MudItem>
+                                </MudTabPanel>
+                            </MudTabs>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+            <MudItem Style="margin-top: 25px;">
+                <MudExpansionPanels>
+                    <MudExpansionPanel Class="border border-solid" style="border-color: #000000" Expanded="false">
+                        <TitleContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Statistical Management Services</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                                <MudTabPanel Text="Standings API">
+                                    <MudItem Style="margin-top: 25px;">
+                                        <MudTable Items="@StandingsHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                            <HeaderContent>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                            </HeaderContent>
+                                            <RowTemplate>
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd DataLabel="Service">API</MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Service">@context.Key</MudTd>
+                                                }
+                                                <MudTd DataLabel="Time">
+                                                    @context.Value.Duration
+                                                </MudTd>
+                                                @if (context.Value.Status == Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy)
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                                    </MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                            </RowTemplate>
+                                        </MudTable>
+                                    </MudItem>
+                                </MudTabPanel>
+                                <MudTabPanel Text="Game API">
+                                    <MudItem Style="margin-top: 25px;">
+                                        <MudTable Items="@GameHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                            <HeaderContent>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                            </HeaderContent>
+                                            <RowTemplate>
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd DataLabel="Service">API</MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Service">@context.Key</MudTd>
+                                                }
+                                                <MudTd DataLabel="Time">
+                                                    @context.Value.Duration
+                                                </MudTd>
+                                                @if (context.Value.Status == Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy)
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                                    </MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                            </RowTemplate>
+                                        </MudTable>
+                                    </MudItem>
+                                </MudTabPanel>
+                                <MudTabPanel Text="Stats API">
+                                    <MudItem Style="margin-top: 25px;">
+                                        <MudTable Items="@StatsHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                            <HeaderContent>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                            </HeaderContent>
+                                            <RowTemplate>
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd DataLabel="Service">API</MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Service">@context.Key</MudTd>
+                                                }
+                                                <MudTd DataLabel="Time">
+                                                    @context.Value.Duration
+                                                </MudTd>
+                                                @if (context.Value.Status == Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Healthy)
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                                    </MudTd>
+                                                }
+                                                else
+                                                {
+                                                    <MudTd DataLabel="Status">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                            </RowTemplate>
+                                        </MudTable>
+                                    </MudItem>
+                                </MudTabPanel>
+                            </MudTabs>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+        </Authorized>
+        <NotAuthorized>
+            <MudText>You are not authorized to view this page...</MudText>
+        </NotAuthorized>
+        </AuthorizeView>
+}
+else
+{
+    <Loading />
+}
+
+@code {
+    private bool PageLoad = false;
+    private HealthReport LeagueHealth = default!;
+    private HealthReport TeamHealth = default!;
+    private HealthReport PlayerHealth = default!;
+    private HealthReport StandingsHealth = default!;
+    private HealthReport GameHealth = default!;
+    private HealthReport StatsHealth = default!;
+    private HealthReport SeasonHealth = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+        var leagueResult = await LeagueService.GetLeagueHealth();
+        var teamResult = await TeamService.GetTeamHealth();
+        var playerResult = await PlayerService.GetPlayerHealth();
+        var standingsResult = await StandingsService.GetStandingsHealth();
+        var gameResult = await GameService.GetGameHealth();
+        var statsResult = await StatsService.GetStatsHealth();
+        var seasonResult = await SeasonService.GetSeasonHealth();
+        LeagueHealth = DeserializeHealthResponse(leagueResult);
+        TeamHealth = DeserializeHealthResponse(teamResult);
+        PlayerHealth = DeserializeHealthResponse(playerResult);
+        PlayerHealth = DeserializeHealthResponse(playerResult);
+        StandingsHealth = DeserializeHealthResponse(standingsResult);
+        GameHealth = DeserializeHealthResponse(gameResult);
+        StatsHealth = DeserializeHealthResponse(statsResult);
+        SeasonHealth = DeserializeHealthResponse(seasonResult);
+        PageLoad = true;
+    }
+
+    public HealthReport DeserializeHealthResponse(string httpResponseContent)
+    {
+        var serializableHealthReport =
+            JsonConvert.DeserializeObject<HealthReport>(httpResponseContent);
+
+        return serializableHealthReport;
+
+    }
+}

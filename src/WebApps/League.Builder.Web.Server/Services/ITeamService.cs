@@ -14,6 +14,8 @@ public interface ITeamService
     Task<GetTeamsBySportResponse> GetTeamsBySport(string sport);
     [Get("/team-service/teams/state/{state}")]
     Task<GetTeamsByStateResponse> GetTeamsByState(string state);
+    [Get("/team-service/healthz")]
+    Task<string> GetTeamHealth();
     [Post("/team-service/teams")]
     Task<CreateTeamResponse> CreateTeam(CreateTeamRequest team);
     [Put("/team-service/teams")]

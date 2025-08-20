@@ -4,6 +4,7 @@
 @inject NavigationManager NavManager;
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IAWSService AWSService
+
 <AuthorizeView Roles="@Roles.CreateLeagues" Context="auth">
     <Authorized>
         <div style="padding-top: 150px; padding-bottom: 175px;">

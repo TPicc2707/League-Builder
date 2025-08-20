@@ -61,29 +61,39 @@
                                                     <MudImage Src="@context.Image" Alt="Team Image"></MudImage>
                                                 </MudAvatar>
                                             </MudTd>
-                                            <MudTd DataLabel="Team Name"><MudLink Color="Color.Tertiary" Href="@($"/playersbyteam/{context.Id}")">@context.TeamName</MudLink></MudTd>
+                                            <MudTd DataLabel="Team Name">
+                                                <MudTooltip Text="Team Details" Color="Color.Secondary">
+                                                    <MudLink Color="Color.Tertiary" Href="@($"/playersbyteam/{context.Id}")">@context.TeamName</MudLink>
+                                                </MudTooltip>
+                                             </MudTd>
                                             <MudTd DataLabel="League">@context.LeagueName</MudTd>
                                             <MudTd DataLabel="Description">@context.Description</MudTd>
                                             <MudTd DataLabel="Links">
                                                 <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
                                                     <AuthorizeView Roles="@Roles.ReadGames" Context="teamGamesAuth">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/teamgames/", context.Id)" />
+                                                        <MudTooltip Text="Schedule" Color="Color.Secondary">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/teamgames/", context.Id)" />
+                                                        </MudTooltip>
                                                     </AuthorizeView>
-                                                    @if (context.Sport == SportName.BASEBALL)
-                                                    {
-                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/baseballteamstats/", context.Id)" />
-                                                    }
-                                                    @if (context.Sport == SportName.BASKETBALL)
-                                                    {
-                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/basketballteamstats/", context.Id)" />
-                                                    }
-                                                    @if (context.Sport == SportName.FOOTBALL)
-                                                    {
-                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/footballteamstats/", context.Id)" />
-                                                    }
+                                                    <MudTooltip Text="Stats" Color="Color.Secondary">
+                                                        @if (context.Sport == SportName.BASEBALL)
+                                                        {
+                                                            <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/baseballteamstats/", context.Id)" />
+                                                        }
+                                                        @if (context.Sport == SportName.BASKETBALL)
+                                                        {
+                                                            <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/basketballteamstats/", context.Id)" />
+                                                        }
+                                                        @if (context.Sport == SportName.FOOTBALL)
+                                                        {
+                                                            <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/footballteamstats/", context.Id)" />
+                                                        }
+                                                    </MudTooltip>
                                                 </AuthorizeView>
                                                 <AuthorizeView Roles="@Roles.UpdateTeams" Context="updateAuth">
-                                                    <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateteam/", context.Id)" />
+                                                    <MudTooltip Text="Update" Color="Color.Secondary">
+                                                        <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateteam/", context.Id)" />
+                                                    </MudTooltip>
                                                 </AuthorizeView>
                                             </MudTd>
                                         </RowTemplate>

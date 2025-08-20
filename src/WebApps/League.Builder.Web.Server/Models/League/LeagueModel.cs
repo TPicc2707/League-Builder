@@ -1,4 +1,6 @@
-﻿namespace League.Builder.Web.Server.Models.League;
+﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+
+namespace League.Builder.Web.Server.Models.League;
 
 public class LeagueModel
 {

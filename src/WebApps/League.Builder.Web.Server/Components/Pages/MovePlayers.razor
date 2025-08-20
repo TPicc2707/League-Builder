@@ -1,0 +1,212 @@
+﻿@page "/moveplayers/{id}"
+@inject ILeagueService LeagueService
+@inject ITeamService TeamService
+@inject IPlayerService PlayerService
+@inject IAWSService AWSService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavManager;
+
+@if (PageLoad)
+{
+    <MudItem Style="padding-top: 50px;">
+        <MudExpansionPanels Class="border border-solid" Style="border-color: #000000">
+            <MudExpansionPanel Expanded="expandSearchPanel">
+                <TitleContent>
+                    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Move Players</MudText>
+                </TitleContent>
+                <ChildContent>
+                    <MudItem>
+                        <MudStack Row="true">
+                            <MudItem xs="8" md="8" lg="8">
+                                <MudSelect Class="mt-3" Label="Team" @bind-Value="SelectedTeamId">
+                                    @foreach (var team in TeamsByLeagueModel.Teams.Where(x => x.Id != TeamModel.Team.Id))
+                                    {
+                                        <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="4" md="4" lg="4" Style="align-content: center">
+                                <MudButton OnClick="GetTeamPlayers" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                            </MudItem>
+                        </MudStack>
+                    </MudItem>
+                </ChildContent>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </MudItem>
+    <MudItem Style="margin-top: 25px;">
+        <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+            <MudDropContainer T="DropItem" Items="_items" ItemsSelector="@((item, dropzone) => item.Identifier == dropzone)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1 border border-solid" Style="border-color: #000000">
+                <ChildContent>
+                    <MudDropZone T="DropItem" Identifier="@TeamModel.Team.TeamName" Class="rounded mud-background-gray pa-6 ma-8 flex-grow-1">
+                        <MudStack Row="true">
+                            <MudAvatar Size="Size.Small">
+                                <MudImage Src="@TeamModel.Team.Image" Alt="Team Image" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.h5" Class="mb-4">@TeamModel.Team.TeamName</MudText>
+                        </MudStack>
+                    </MudDropZone>
+                    <MudDropZone T="DropItem" Identifier="@SelectedTeamModel.Team.TeamName" Class="rounded mud-background-gray pa-6 ma-8 flex-grow-1">
+                        <MudStack Row="true">
+                            <MudAvatar Size="Size.Small">
+                                <MudImage Src="@SelectedTeamModel.Team.Image" Alt="Team Image" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.h5" Class="mb-4">@SelectedTeamModel.Team.TeamName</MudText>
+                        </MudStack>
+                    </MudDropZone>
+                </ChildContent>
+                <ItemRenderer>
+                    <MudPaper Elevation="25" Class="pa-4 my-4">
+                        <MudStack Row="true">
+                             <MudAvatar Size="Size.Small">
+                                <MudImage Src="@context.PlayerImage" Alt="Player Image" />
+                             </MudAvatar>
+                            <MudText Typo="Typo.body1">
+                                @context.Name
+                            </MudText>
+                        </MudStack>
+                    </MudPaper>
+                </ItemRenderer>
+            </MudDropContainer>
+            <MudStack Style="margin-top: 25px;" AlignItems="AlignItems.End">
+                <MudButton OnClick="SubmitTrade" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Submit</MudButton>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+
+}
+else
+{
+    <Loading />
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private GetLeagueByIdResponse LeagueModel {get; set;} = default!;
+    private GetTeamsByLeagueResponse TeamsByLeagueModel {get; set;} = default!;
+    private GetTeamByIdResponse TeamModel {get; set;} = default!;
+    private GetTeamByIdResponse SelectedTeamModel {get; set;} = default!;
+    private IEnumerable<TeamModel> LeagueTeamsModel {get; set;} = default!;
+    private GetPlayersByTeamResponse PlayerModel {get; set;} = default!;
+    private GetPlayersByTeamResponse SelectedTeamPlayerModel {get; set;} = default!;
+    private List<DropItem> _items = new List<DropItem>();
+    private bool PageLoad = false;
+    private bool expandSearchPanel = true;
+    private Guid SelectedTeamId;
+    private List<Guid> SelectedPlayerIds = new List<Guid>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+        var teamId = Guid.Parse(Id);
+        TeamModel = await TeamService.GetTeamById(teamId);
+        PlayerModel = await PlayerService.GetPlayersByTeam(teamId);
+        LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+        TeamsByLeagueModel = await TeamService.GetTeamsByLeague(LeagueModel.League.Id);
+        LeagueTeamsModel = TeamsByLeagueModel.Teams.Where(x => x.Id != TeamModel.Team.Id);
+        await GetPlayerImageAsync(PlayerModel.Players, TeamModel.Team);
+        await GetTeamImageAsync(TeamModel.Team);
+
+        SelectedTeamId = LeagueTeamsModel.OrderBy(x => x.TeamName).First().Id;
+        SelectedTeamModel = await TeamService.GetTeamById(SelectedTeamId);
+        SelectedTeamPlayerModel = await PlayerService.GetPlayersByTeam(SelectedTeamModel.Team.Id);
+        await GetPlayerImageAsync(SelectedTeamPlayerModel.Players, SelectedTeamModel.Team);
+        await GetTeamImageAsync(SelectedTeamModel.Team);
+
+        CreateDropZone(PlayerModel.Players, TeamModel.Team);
+        CreateDropZone(SelectedTeamPlayerModel.Players, SelectedTeamModel.Team);
+        PageLoad = true;
+    }
+
+    private void ItemUpdated(MudItemDropInfo<DropItem> dropItem)
+    {
+        dropItem.Item.PreviousTeam = dropItem.Item.Identifier;
+        dropItem.Item.Identifier = dropItem.DropzoneIdentifier;
+        dropItem.Item.Selected = true;
+        SelectedPlayerIds.Add(dropItem.Item.Id);
+    }
+
+    private List<DropItem> CreateDropZone(IEnumerable<PlayerModel> players, TeamModel team)
+    {
+        foreach (var player in players)
+        {
+            _items.Add(new DropItem() { Id = player.Id, PlayerImage = player.Image, Name = String.Concat(player.FirstName, " ", player.LastName), Identifier = team.TeamName, PreviousTeam = string.Empty, Selected = false });
+        }
+
+        return _items;
+    }
+
+    private List<DropItem> RemoveFromDropZone(TeamModel team)
+    {
+        var selectedPlayers = _items.Where(x => x.Selected == true);
+        foreach(var player in selectedPlayers)
+        {
+            player.Selected = false;
+            player.Identifier = player.PreviousTeam;
+            player.PreviousTeam = string.Empty;
+        }
+        _items.RemoveAll(x => x.Identifier == team.TeamName);
+
+        return _items;
+    }
+
+    private async Task GetPlayerImageAsync(IEnumerable<PlayerModel> players, TeamModel team)
+    {
+        foreach (var player in players)
+        {
+            var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{team.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
+            player.Image = await AWSService.GetImage(keyPath);
+        }
+    }
+
+    private async Task GetTeamImageAsync(TeamModel team)
+    {
+        var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{team.TeamName}/{team.ImageFile}";
+        team.Image = await AWSService.GetImage(keyPath);
+    }
+
+    private async Task GetTeamPlayers()
+    {
+        PageLoad = false;
+        RemoveFromDropZone(SelectedTeamModel.Team);
+        SelectedTeamModel = await TeamService.GetTeamById(SelectedTeamId);
+        SelectedTeamPlayerModel = await PlayerService.GetPlayersByTeam(SelectedTeamModel.Team.Id);
+        await GetPlayerImageAsync(SelectedTeamPlayerModel.Players, SelectedTeamModel.Team);
+        await GetTeamImageAsync(SelectedTeamModel.Team);
+        CreateDropZone(SelectedTeamPlayerModel.Players, SelectedTeamModel.Team);
+        PageLoad = true;
+    }
+
+    private async Task SubmitTrade()
+    {
+        var selectedPlayers = _items.Where(x => x.Selected == true);
+
+        foreach(var player in selectedPlayers)
+        {
+            var response = await PlayerService.GetPlayerById(player.Id);
+            var team = player.Identifier == TeamModel.Team.TeamName ? TeamModel.Team : SelectedTeamModel.Team;
+            var previousTeam = player.PreviousTeam == TeamModel.Team.TeamName ? TeamModel.Team : SelectedTeamModel.Team;
+            var previousKeyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{previousTeam.TeamName}/players/{String.Concat(response.Player.FirstName, " ", response.Player.LastName)}/{response.Player.ImageFile}";
+            var uploadKeyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{team.TeamName}/players/{String.Concat(response.Player.FirstName, " ", response.Player.LastName)}/{response.Player.ImageFile}";
+            await AWSService.CopyObjectToNewFolder(previousKeyPath, uploadKeyPath);
+            UpdatePlayerModel updatePlayer = new UpdatePlayerModel(response.Player.Id, team.Id, response.Player.FirstName, response.Player.LastName, response.Player.PlayerAddress, response.Player.PlayerDetail,
+                                                                   response.Player.Description, response.Player.ImageFile, (int)response.Player.PlayerStatus);
+            UpdatePlayerRequest playerRequest = new UpdatePlayerRequest(updatePlayer);
+            await PlayerService.UpdatePlayer(playerRequest);
+        }
+    }
+
+    public class DropItem
+    {
+        public Guid Id { get; set; }
+        public string PlayerImage { get; set; } = default!;
+        public string Name { get; init; } = default!;
+        public string Identifier { get; set; } = default!;
+        public string PreviousTeam { get; set; } = default!;
+        public bool Selected { get; set; }
+    }
+}

@@ -17,6 +17,9 @@
                 <AuthorizeView Roles="@Roles.CreateSeasons">
                     <MudNavLink Href="/seasons" Icon="@Icons.Material.Filled.CalendarMonth">Seasons</MudNavLink>
                 </AuthorizeView>
+                <AuthorizeView Roles="@Roles.SupportLeagues">
+                    <MudNavLink Href="/health" Icon="@Icons.Material.Filled.HealthAndSafety">Health</MudNavLink>
+                </AuthorizeView>
                 <MudNavLink Href="/support" Icon="@Icons.Material.Filled.Chat">Support</MudNavLink>
             </MudNavMenu>
         </MudPaper>

@@ -105,7 +105,13 @@
                                         <MudTd DataLabel="Status">@Constants.GameStatus(context.GameStatus)</MudTd>
                                         <AuthorizeView Roles="@Roles.UpdateGames" Context="updateAuth">
                                             <Authorized>
-                                                <MudTd DataLabel="Edit"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
+                                                <MudTd DataLabel="Edit">
+                                                    <MudTooltip Text="Edit Game" Color="Color.Secondary">
+                                                        <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))">
+                                                            <MudIcon Icon="@Icons.Material.Filled.Edit" />
+                                                        </MudLink>
+                                                    </MudTooltip>
+                                                </MudTd>
                                             </Authorized>
                                             <NotAuthorized>
                                                 <MudTd></MudTd>
@@ -115,7 +121,13 @@
                                         {
                                             <AuthorizeView Roles="@Roles.ReadStats" Context="statAuth">
                                                 <Authorized>
-                                                    <MudTd DataLabel="Stats"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))"><MudIcon Icon="@Icons.Material.Filled.QueryStats" /></MudLink></MudTd>
+                                                    <MudTd DataLabel="Stats">
+                                                        <MudTooltip Text="Game Stats" Color="Color.Secondary">
+                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))">
+                                                                <MudIcon Icon="@Icons.Material.Filled.QueryStats" />
+                                                            </MudLink>
+                                                        </MudTooltip>
+                                                    </MudTd>
                                                 </Authorized>
                                                 <NotAuthorized>
                                                     <MudTd></MudTd>
@@ -134,7 +146,13 @@
                                         {
                                             <AuthorizeView Roles="@Roles.DeleteGames" Context="deleteAuth">
                                                 <Authorized>
-                                                    <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                                                    <MudTd DataLabel="Delete">
+                                                        <MudTooltip Text="Delete" Color="Color.Secondary">
+                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))">
+                                                                <MudIcon Icon="@Icons.Material.Filled.Delete" />
+                                                            </MudLink>
+                                                        </MudTooltip>
+                                                    </MudTd>
                                                 </Authorized>
                                                 <NotAuthorized>
                                                     <MudTd></MudTd>
@@ -198,7 +216,13 @@
                                         <MudTd DataLabel="Status">@Constants.GameStatus(context.GameStatus)</MudTd>
                                         <AuthorizeView Roles="@Roles.UpdateGames" Context="updateAuth">
                                             <Authorized>
-                                                <MudTd DataLabel="Edit"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
+                                                <MudTd DataLabel="Edit">
+                                                    <MudTooltip Text="Edit Game" Color="Color.Secondary">
+                                                        <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))">
+                                                            <MudIcon Icon="@Icons.Material.Filled.Edit" />
+                                                        </MudLink>
+                                                    </MudTooltip>
+                                                </MudTd>
                                             </Authorized>
                                             <NotAuthorized>
                                                 <MudTd></MudTd>
@@ -208,7 +232,13 @@
                                         {
                                             <AuthorizeView Roles="@Roles.ReadStats" Context="statAuth">
                                                 <Authorized>
-                                                    <MudTd DataLabel="Stats"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))"><MudIcon Icon="@Icons.Material.Filled.QueryStats" /></MudLink></MudTd>
+                                                    <MudTd DataLabel="Stats">
+                                                        <MudTooltip Text="Game Stats" Color="Color.Secondary">
+                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))">
+                                                                <MudIcon Icon="@Icons.Material.Filled.QueryStats" />
+                                                            </MudLink>
+                                                        </MudTooltip>
+                                                    </MudTd>
                                                 </Authorized>
                                                 <NotAuthorized>
                                                     <MudTd></MudTd>
@@ -227,7 +257,13 @@
                                         {
                                             <AuthorizeView Roles="@Roles.DeleteGames" Context="deleteAuth">
                                                 <Authorized>
-                                                    <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                                                    <MudTd DataLabel="Delete">
+                                                        <MudTooltip Text="Delete" Color="Color.Secondary">
+                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))">
+                                                                <MudIcon Icon="@Icons.Material.Filled.Delete" />
+                                                            </MudLink>
+                                                        </MudTooltip>
+                                                    </MudTd>
                                                 </Authorized>
                                                 <NotAuthorized>
                                                     <MudTd></MudTd>

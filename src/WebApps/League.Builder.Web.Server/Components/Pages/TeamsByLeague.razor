@@ -60,15 +60,26 @@
                                                         <MudImage Src="@context.Image" Alt="Team Image"></MudImage>
                                                     </MudAvatar>
                                                 </MudTd>
-                                                <MudTd DataLabel="Team Name"><MudLink Color="Color.Tertiary" Href="@($"/playersbyteam/{context.Id}")">@context.TeamName</MudLink></MudTd>
+                                                <MudTd DataLabel="Team Name">
+                                                    <MudTooltip Text="Team Details" Color="Color.Secondary">
+                                                        <MudLink Color="Color.Tertiary" Href="@($"/playersbyteam/{context.Id}")">@context.TeamName</MudLink>
+                                                </MudTooltip>
+                                                </MudTd>
                                                 <MudTd DataLabel="Description">@context.Description</MudTd>
                                                 <MudTd DataLabel="Links">
                                                     <AuthorizeView Roles="@Roles.ReadGames" Context="teamGamesAuth">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/teamgames/", context.Id)" />
+                                                        <MudTooltip Text="Schedule" Color="Color.Secondary">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/teamgames/", context.Id)" />
+                                                        </MudTooltip>
                                                     </AuthorizeView>
                                                     <AuthorizeView Roles="@Roles.UpdateTeams" Context="updateAuth">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateteam/", context.Id)" />
+                                                        <MudTooltip Text="Update" Color="Color.Secondary">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateteam/", context.Id)" />
+                                                        </MudTooltip>
                                                     </AuthorizeView>
+                                                    <MudTooltip Text="Trade Player" Color="Color.Secondary">
+                                                        <MudIconButton Icon="@Icons.Material.Filled.CompareArrows" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/moveplayers/", context.Id)" />
+                                                    </MudTooltip>
                                                 </MudTd>
                                             </RowTemplate>
                                             <PagerContent>
@@ -101,6 +112,9 @@
                                                     <AuthorizeView Roles="@Roles.UpdateTeams" Context="updateAuth">
                                                         <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateteam/", context.Id)" />
                                                     </AuthorizeView>
+                                                    <MudTooltip Text="Trade Player" Color="Color.Secondary">
+                                                        <MudIconButton Icon="@Icons.Material.Filled.CompareArrows" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/moveplayers/", context.Id)" />
+                                                    </MudTooltip>
                                                 </MudTd>
                                             </RowTemplate>
                                             <PagerContent>

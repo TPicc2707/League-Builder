@@ -10,6 +10,8 @@ public interface IGameService
     Task<GetGamesByLeagueResponse> GetGamesByLeague(Guid leagueId);
     [Get("/game-service/games/team/{teamId}")]
     Task<GetGamesByTeamResponse> GetGamesByTeam(Guid teamId);
+    [Get("/standings-service/healthz")]
+    Task<string> GetGameHealth();
     [Post("/game-service/games")]
     Task<CreateGameResponse> CreateGame(CreateGameRequest game);
     [Put("/game-service/games")]

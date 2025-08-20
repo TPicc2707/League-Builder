@@ -58,11 +58,11 @@ app.UseCors();
 
 app.UseExceptionHandler(options => { });
 
-app.UseHealthChecks("/health",
+app.MapHealthChecks("/healthz",
     new HealthCheckOptions
     {
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-    });
+    }).RequireAuthorization(KeycloakPolicy.SupportLeaguePolicy);
 
 
 

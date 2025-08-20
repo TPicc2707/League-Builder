@@ -33,7 +33,13 @@
                                 <MudTd DataLabel="Team Name">@context.Year</MudTd>
                                 <AuthorizeView Roles="@Roles.UpdateSeasons" Context="updateAuth">
                                     <Authorized>
-                                        <MudTd DataLabel="Edit"><MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateSeason(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Edit" /></MudLink></MudTd>
+                                        <MudTd DataLabel="Edit">
+                                            <MudTooltip Text="Edit" Color="Color.Secondary">
+                                                <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateSeason(context.Id))">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Edit" />
+                                                </MudLink>
+                                            </MudTooltip>
+                                        </MudTd>
                                     </Authorized>
                                     <NotAuthorized>
                                         <MudTd></MudTd>
@@ -41,7 +47,13 @@
                                 </AuthorizeView>
                                 <AuthorizeView Roles="@Roles.DeleteSeasons" Context="deleteAuth">
                                     <Authorized>
-                                        <MudTd DataLabel="Delete"><MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))"><MudIcon Icon="@Icons.Material.Filled.Delete" /></MudLink></MudTd>
+                                        <MudTd DataLabel="Delete">
+                                            <MudTooltip Text="Delete" Color="Color.Secondary">
+                                                <MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" />
+                                                </MudLink>
+                                            </MudTooltip>
+                                        </MudTd>
                                     </Authorized>
                                     <NotAuthorized>
                                         <MudTd></MudTd>

@@ -86,4 +86,9 @@ public interface IStatsService
     [Delete("/stats-service/footballstats/{id}")]
     Task<DeleteFootballStatsResponse> DeleteFootballStats(Guid id);
 
+
+    //Health
+    [Get("/stats-service/healthz")]
+    Task<string> GetStatsHealth();
+
 }
