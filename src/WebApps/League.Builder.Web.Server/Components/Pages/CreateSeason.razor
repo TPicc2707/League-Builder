@@ -2,56 +2,81 @@
 @inject ISeasonService SeasonService
 @inject ITeamService TeamsService
 @inject IStandingsService StandingsService
-@inject NavigationManager NavManager
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager;
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IValidator<CreateSeasonModel> CreateSeasonValidator
+@inject IDialogService DialogService
 
 <AuthorizeView Roles="@String.Concat(Roles.CreateSeasons, ", ", Roles.ReadSeasons, ", ", Roles.ReadTeams)" Context="auth">
     <Authorized>
-        <MudItem style="padding-top: 150px; padding-bottom: 175px;">
-            <MudText Typo="Typo.h3" Style="font-weight: bold; padding-bottom: 25px;" Align="Align.Center">Create Season</MudText>
+        <MudItem Style="padding-top: 50px;">
+            <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">Create Season</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem style="margin-top: 50px; margin-bottom: 50px;">
             <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
-                <DataAnnotationsValidator />
-                <MudGrid>
-                    <MudItem xs="12" sm="7">
-                        <MudCard Class="border border-solid" Style="border-color: #000000">
-                            <MudCardContent>
-                                <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Season Information:</MudText>
-                                <MudTextField Label="Season Year"
-                                                 @bind-Value="model.Year" For="@(() => model.Year)" />
-                                <MudTextField Label="Description" Class="mt-3"
-                                              @bind-Value="model.Description" For="@(() => model.Description)" />
-                            </MudCardContent>
-                            <MudCardActions>
-                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Create</MudButton>
-                            </MudCardActions>
-                        </MudCard>
-                    </MudItem>
-                    <MudItem xs="12" sm="5">
-                        <MudPaper Class="pa-4 mud-height-full border border-solid" Style="border-color: #000000">
-                            <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
-                            @if (success)
-                            {
-                                <MudText Color="Color.Success">Success</MudText>
-                            }
-                            else
-                            {
-                                <MudText Color="@Color.Error">
-                                    <CustomValidation @ref="customValidation" />
-                                    <ValidationSummary />
-                                </MudText>
-                            }
-                        </MudPaper>
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.body2" Align="Align.Center">
-                            Fill out the form correctly to see the success message.
-                        </MudText>
-                    </MudItem>
-                </MudGrid>
+                <FluentValidationValidator @ref="fluentValidationValidator" />
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px; width: 100%;">
+                    <MudStepper @bind-ActiveIndex="_index" OnPreviewInteraction="@OnStepInteraction" CurrentStepColor="Color.Secondary" CompletedStepColor="Color.Success">
+                        <ChildContent>
+                            <MudStep Title="Create Season Information">
+                                <MudGrid Justify="Justify.Center">
+                                    <MudItem xs="12" sm="10">
+                                        <MudCard Class="border border-solid" Style="border-color: #000000">
+                                            <MudCardContent>
+                                                <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
+                                                    <MudText Typo="Typo.h6" Style="font-weight: bold;">Season Information</MudText>
+                                                </MudStack>
+                                                <MudTextField Required="true" Label="Season Year"
+                                                              @bind-Value="model.Year" For="@(() => model.Year)" />
+                                                <MudTextField Label="Description" Class="mt-3"
+                                                              @bind-Value="model.Description" For="@(() => model.Description)" />
+                                            </MudCardContent>
+                                        </MudCard>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudStep>
+                            <MudStep Title="Review">
+                                <MudGrid Justify="Justify.Center">
+                                    <MudItem xs="12" sm="10">
+                                        <MudCard Class="border border-solid" Style="border-color: #000000">
+                                            <MudCardContent>
+                                                <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
+                                                    <MudText Typo="Typo.h6" Style="font-weight: bold;">Season Information</MudText>
+                                                </MudStack>
+                                                <MudTextField Required="true" ReadOnly="true" Label="Season Year"
+                                                              @bind-Value="model.Year" For="@(() => model.Year)" />
+                                                <MudTextField ReadOnly="true" Label="Description" Class="mt-3"
+                                                              @bind-Value="model.Description" For="@(() => model.Description)" />
+                                            </MudCardContent>
+                                            <MudCardActions>
+                                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Create</MudButton>
+                                            </MudCardActions>
+                                        </MudCard>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudStep>
+                        </ChildContent>
+                        <ActionContent Context="stepper">
+                            <MudIconButton OnClick="@(() => stepper.PreviousStepAsync())"
+                                           Icon="@Icons.Material.Filled.ArrowBack"
+                                           Color="Color.Primary"
+                                           Disabled="_index == 0 ? true : false">
+                            </MudIconButton>
+                            <MudSpacer />
+                            <MudIconButton OnClick="@(() => stepper.NextStepAsync())"
+                                           Icon="@Icons.Material.Filled.ArrowForward"
+                                           Color="Color.Primary"
+                                           Disabled="_index != 1 ? false : true">
+                            </MudIconButton>
+                        </ActionContent>
+                    </MudStepper>
+                </MudPaper>
             </EditForm>
-
         </MudItem>
     </Authorized>
     <NotAuthorized>
@@ -69,72 +94,81 @@
         }
     }
 
-    CreateSeasonForm model = new CreateSeasonForm();
+    CreateSeasonModel model = new CreateSeasonModel();
     bool success;
-    private CustomValidation? customValidation;
-
+    private int _index;
+    private bool canProceed = false;
+    private List<string> errors = new();
     private GetTeamsResponse TeamsModel { get; set; }
     private GetSeasonByIdResponse SeasonModel { get; set; }
-
-    public class CreateSeasonForm
-    {
-        [Required]
-        [Range(1900, 2500, ErrorMessage = "Please enter valid Year")]
-        public int Year { get; set; } = DateTime.Now.Year;
-        public string Description { get; set; }
-
-    }
+    private FluentValidationValidator fluentValidationValidator;
 
     private async Task OnValidSubmit(EditContext context)
     {
-        customValidation?.ClearErrors();
+        CreateSeasonRequest request = new CreateSeasonRequest(model.Year, model.Description);
+        var response = await SeasonService.CreateSeason(request);
 
-        var errors = new Dictionary<string, List<string>>();
-
-        await ValidateModel(errors);
-
-        if (errors.Any())
-            customValidation?.DisplayErrors(errors);
-        else
+        TeamsModel = await TeamsService.GetTeams(0, 100);
+        SeasonModel = await SeasonService.GetSeason(response.Id);
+        StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0);
+        foreach(var team in TeamsModel.Teams.Data)
         {
-            CreateSeasonRequest request = new CreateSeasonRequest(model.Year, model.Description);
-            var response = await SeasonService.CreateSeason(request);
+            TeamDetailModel teamDetailModel = new TeamDetailModel(team.Id, team.TeamName);
+            CreateStandingsModel createStandingsModel = new CreateStandingsModel(team.LeagueId, SeasonModel.Season.Id, standingsDetailModel, teamDetailModel);
+            CreateStandingsRequest standingsRequest = new CreateStandingsRequest(createStandingsModel);
+            await StandingsService.CreateStandings(standingsRequest);
+        }
 
-            TeamsModel = await TeamsService.GetTeams(0, 100);
-            SeasonModel = await SeasonService.GetSeason(response.Id);
-            StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0);
-            foreach(var team in TeamsModel.Teams.Data)
+        success = true;
+        NavManager.NavigateTo("/seasons");
+        Snackbar.Add("Season has been created.", MudBlazor.Severity.Success);
+        StateHasChanged();
+    }
+
+    private async Task OnStepInteraction(StepperInteractionEventArgs args)
+    {
+        canProceed = false;
+        await ValidModel();
+        if (args.Action == StepAction.Complete)
+        {
+            if (!canProceed)
             {
-                TeamDetailModel teamDetailModel = new TeamDetailModel(team.Id, team.TeamName);
-                CreateStandingsModel createStandingsModel = new CreateStandingsModel(team.LeagueId, SeasonModel.Season.Id, standingsDetailModel, teamDetailModel);
-                CreateStandingsRequest standingsRequest = new CreateStandingsRequest(createStandingsModel);
-                await StandingsService.CreateStandings(standingsRequest);
+                await OpenErrorDialogAsync();
+                args.Cancel = true;
             }
 
-            success = true;
-            NavManager.NavigateTo("/seasons");
-            Snackbar.Add("Season has been created.", Severity.Success);
-            StateHasChanged();
         }
     }
 
-    private async Task ValidateModel(Dictionary<string, List<string>> errors)
+    private Task OpenErrorDialogAsync()
     {
-        var seasons = await SeasonService.GetSeasons();
-        var doesSeasonExist = seasons.Seasons.Where(x => x.Year == model.Year).Any();
+        var parameters = new DialogParameters<ErrorMessageBox> { { x => x.Errors, errors } };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
 
-        if (doesSeasonExist)
-            errors.Add("Year",
-                      [" " + "This season year already exists."]);
-
-        if(model.Year <= 1990)
-            errors.Add("Year",
-                     [" " + "The season year must be a more recent year."]);
-
-        var futureYear = DateTime.Now.Year + 30;
-
-        if (model.Year >= futureYear)
-            errors.Add("Year",
-                             [" " + "The season year must be 30 or less years in the future."]);
+        return DialogService.ShowAsync<ErrorMessageBox>("Errors", parameters, options);
     }
+
+
+    private async Task ValidModel()
+    {
+        errors.RemoveRange(0, errors.Count);
+
+        if (_index == 0)
+        {
+            var seasons = await SeasonService.GetSeasons();
+            var doesSeasonExist = seasons.Seasons.Where(x => x.Year == model.Year).Any();
+
+            if (doesSeasonExist)
+                errors.Add("This season already exists.");
+
+            var result = await CreateSeasonValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreateSeasonModel.Year)));
+            if (result.IsValid && !doesSeasonExist)
+                canProceed = true;
+
+            foreach (var error in result.Errors)
+                errors.Add($"{error.ErrorMessage}");
+        }
+
+    }
+
 }

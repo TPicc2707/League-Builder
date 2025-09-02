@@ -16,6 +16,8 @@ public interface ILeagueService
     Task<CreateLeagueResponse> CreateLeague(CreateLeagueRequest request);
     [Put("/league-service/leagues")]
     Task<UpdateLeagueResponse> UpdateLeague(UpdateLeagueRequest request);
+    [Put("/league-service/leagues/settings")]
+    Task<UpdateLeagueResponse> UpdateLeagueSettings(UpdateLeagueSettingsRequest request);
     [Delete("/league-service/leagues/{id}")]
     Task<DeleteLeagueResponse> DeleteLeague(Guid id);
 }

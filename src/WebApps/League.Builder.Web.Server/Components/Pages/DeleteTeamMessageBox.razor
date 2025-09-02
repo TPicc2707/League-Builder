@@ -25,7 +25,7 @@
     {
         await TeamService.DeleteTeam(Id);
         MudDialog.Close(DialogResult.Ok(true));
-        Snackbar.Add("Team has been deleted", Severity.Success);
+        Snackbar.Add("Team has been deleted", MudBlazor.Severity.Success);
         StateHasChanged();
         NavManager.NavigateTo("/");
     }

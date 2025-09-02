@@ -27,7 +27,7 @@
         var leagueId = game.Game.LeagueId.ToString();
         await GameService.DeleteGame(Id);
         MudDialog.Close(DialogResult.Ok(true));
-        Snackbar.Add("Game has been deleted.", Severity.Success);
+        Snackbar.Add("Game has been deleted.", MudBlazor.Severity.Success);
         StateHasChanged();
         NavManager.NavigateTo($"/leaguegames/{leagueId}");
     }

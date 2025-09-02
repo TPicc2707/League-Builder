@@ -25,7 +25,7 @@
     {
         await PlayerService.DeletePlayer(Id);
         MudDialog.Close(DialogResult.Ok(true));
-        Snackbar.Add("Player has been deleted.", Severity.Success);
+        Snackbar.Add("Player has been deleted.", MudBlazor.Severity.Success);
         StateHasChanged();
         NavManager.NavigateTo("/");
     }

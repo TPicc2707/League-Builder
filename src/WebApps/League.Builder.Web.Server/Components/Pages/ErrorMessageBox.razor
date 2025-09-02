@@ -1,0 +1,30 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Align="Align.Center" Typo="Typo.h5" Style="font-weight: bold;">Please Fix the Following Errors:</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack AlignItems="AlignItems.Start">
+            @foreach(var error in Errors)
+            {
+                <MudStack Row="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                    <MudText Typo="Typo.body1" Color="Color.Error">@error</MudText>
+                </MudStack>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Ok">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+
+    [Parameter]
+    public List<string> Errors { get; set; }
+
+    private void Ok() => MudDialog.Cancel();
+}

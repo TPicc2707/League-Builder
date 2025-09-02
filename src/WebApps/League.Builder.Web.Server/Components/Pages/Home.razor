@@ -129,19 +129,19 @@
                     <MudPaper Elevation="2" Class="border border-solid" style="border-color: #000000; padding: 1rem;">
                         <MudText Typo="Typo.h3" Align="Align.Center" Style="font-family: Pacifico; margin-top: 1rem; margin-bottom: 1rem;">Build Your League</MudText>
                         <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Top" TimelineAlign="TimelineAlign.Default">
-                            <MudTimelineItem Color="Color.Primary" Variant="Variant.Filled">
+                            <MudTimelineItem Color="Color.Secondary" Variant="Variant.Filled">
                                 <ItemDot><MudIcon Icon="@Icons.Material.Filled.Public" Size="Size.Small"></MudIcon></ItemDot>
                                 <ItemContent>
                                     <MudStack AlignItems="AlignItems.Center">
                                         <MudItem Style="margin-top: 3.5rem">
-                                            <MudButton Href="/createleague" Color="@Color.Primary" Variant="Variant.Filled">
+                                            <MudButton Href="/createleague" Color="@Color.Secondary" Variant="Variant.Filled">
                                                 Create League
                                             </MudButton>
                                         </MudItem>
                                     </MudStack>
                                 </ItemContent>
                             </MudTimelineItem>
-                            <MudTimelineItem Color="Color.Primary" Variant="Variant.Filled">
+                            <MudTimelineItem Color="Color.Secondary" Variant="Variant.Filled">
                                 <ItemDot><MudIcon Icon="@Icons.Material.Filled.Groups2" Size="Size.Small"></MudIcon></ItemDot>
                                 <ItemContent>
                                     <MudStack AlignItems="AlignItems.Center">
@@ -151,13 +151,13 @@
                                                 <MudSelectItem Value="@league.Id">@league.Name</MudSelectItem>
                                             }
                                         </MudSelect>
-                                        <MudButton Href="@String.Concat("/createteam/", leagueId.ToString())" Color="@Color.Primary" Variant="Variant.Filled">
+                                        <MudButton Href="@String.Concat("/createteam/", leagueId.ToString())" Color="@Color.Secondary" Variant="Variant.Filled">
                                             Create Team
                                         </MudButton>
                                     </MudStack>
                                 </ItemContent>
                             </MudTimelineItem>
-                            <MudTimelineItem Color="Color.Primary" Variant="Variant.Filled">
+                            <MudTimelineItem Color="Color.Secondary" Variant="Variant.Filled">
                                 <ItemDot><MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small"></MudIcon></ItemDot>
                                 <ItemContent>
                                     <MudStack AlignItems="AlignItems.Center">
@@ -167,7 +167,7 @@
                                                 <MudSelectItem Value="@team.Id">@team.TeamName</MudSelectItem>
                                             }
                                         </MudSelect>
-                                        <MudButton Href="@String.Concat("/createplayer/", teamId.ToString())" Color="@Color.Primary" Variant="Variant.Filled">
+                                        <MudButton Href="@String.Concat("/createplayer/", teamId.ToString())" Color="@Color.Secondary" Variant="Variant.Filled">
                                             Create Player
                                         </MudButton>
                                     </MudStack>

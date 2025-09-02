@@ -16,7 +16,7 @@ public class PlayerModel
     public PlayerStatus PlayerStatus { get; set; } = default!;
 }
 
-public record CreatePlayerModel(
+public record CreatePlayerRecord(
     Guid TeamId,
     string FirstName,
     string LastName,
@@ -25,7 +25,7 @@ public record CreatePlayerModel(
     string Description,
     string ImageFile);
 
-public record UpdatePlayerModel(
+public record UpdatePlayerRecord(
     Guid Id,
     Guid TeamId,
     string FirstName,
@@ -48,8 +48,8 @@ public enum PlayerStatus
 }
 
 //Request Record
-public record UpdatePlayerRequest(UpdatePlayerModel Player);
-public record CreatePlayerRequest(CreatePlayerModel Player);
+public record UpdatePlayerRequest(UpdatePlayerRecord Player);
+public record CreatePlayerRequest(CreatePlayerRecord Player);
 
 
 // Response Records

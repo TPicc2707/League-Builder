@@ -18,7 +18,7 @@ public class GameModel
     public int TeamSeasonLosses { get; set; }
 }
 
-public record CreateGameModel(
+public record CreateGameRecord(
     Guid LeagueId,
     Guid? WinningTeamId,
     Guid SeasonId,
@@ -26,7 +26,7 @@ public record CreateGameModel(
     AwayTeamDetailModel AwayTeam,
     HomeTeamDetailModel HomeTeam);
 
-public record UpdateGameModel(
+public record UpdateGameRecord(
     Guid Id,    
     Guid LeagueId,
     Guid? WinningTeamId,
@@ -53,8 +53,8 @@ public enum GameStatus
 }
 
 //Request Records
-public record CreateGameRequest(CreateGameModel Game);
-public record UpdateGameRequest(UpdateGameModel Game);
+public record CreateGameRequest(CreateGameRecord Game);
+public record UpdateGameRequest(UpdateGameRecord Game);
 
 //Response Records
 public record GetGamesResponse(PaginatedResult<GameModel> Games);

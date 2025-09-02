@@ -40,7 +40,7 @@
             </MudItem>
             <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px 25px 50px 25px;">
                 <MudItem>
-                    <MudTable Items="@Model.Standings.Where(x => x.SeasonId == Season.Id)" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                    <MudTable Items="@Standings" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                         <HeaderContent>
                             <MudTh Class="mud-theme-primary"></MudTh>
                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.Team.TeamName)">Team Name</MudTableSortLabel></MudTh>
@@ -96,6 +96,7 @@
     private string firstPlacePlaceholder = "--";
     private int seasonValue;
     private bool expandSearchPanel = false;
+    private IEnumerable<StandingsModel> Standings;
 
     private GetSeasonsResponse SeasonsModel { get; set; }
     private GetSeasonByYearResponse SeasonModel { get; set; }
@@ -113,6 +114,7 @@
         SeasonsModel = await SeasonService.GetSeasons();
         Season = SeasonsModel.Seasons.First();
         Model = await StandingsService.GetStandingsByLeague(leagueId);
+        Standings = Model.Standings.Where(x => x.SeasonId == Season.Id);
         LeagueModel = await LeagueService.GetLeague(leagueId);
         await GetImageAsync();
         CalculateGamesBack();

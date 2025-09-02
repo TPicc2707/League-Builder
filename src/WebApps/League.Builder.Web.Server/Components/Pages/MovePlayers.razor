@@ -193,7 +193,7 @@ else
             var previousKeyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{previousTeam.TeamName}/players/{String.Concat(response.Player.FirstName, " ", response.Player.LastName)}/{response.Player.ImageFile}";
             var uploadKeyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{team.TeamName}/players/{String.Concat(response.Player.FirstName, " ", response.Player.LastName)}/{response.Player.ImageFile}";
             await AWSService.CopyObjectToNewFolder(previousKeyPath, uploadKeyPath);
-            UpdatePlayerModel updatePlayer = new UpdatePlayerModel(response.Player.Id, team.Id, response.Player.FirstName, response.Player.LastName, response.Player.PlayerAddress, response.Player.PlayerDetail,
+            UpdatePlayerRecord updatePlayer = new UpdatePlayerRecord(response.Player.Id, team.Id, response.Player.FirstName, response.Player.LastName, response.Player.PlayerAddress, response.Player.PlayerDetail,
                                                                    response.Player.Description, response.Player.ImageFile, (int)response.Player.PlayerStatus);
             UpdatePlayerRequest playerRequest = new UpdatePlayerRequest(updatePlayer);
             await PlayerService.UpdatePlayer(playerRequest);

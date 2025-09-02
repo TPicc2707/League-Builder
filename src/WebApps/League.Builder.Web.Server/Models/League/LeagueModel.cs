@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
-
-namespace League.Builder.Web.Server.Models.League;
+﻿namespace League.Builder.Web.Server.Models.League;
 
 public class LeagueModel
 {
@@ -12,12 +10,15 @@ public class LeagueModel
     public string Image { get; set; } = default!;
     public string OwnerFirstName { get; set; } = default!;
     public string OwnerLastName { get; set; } = default!;
+    public int TotalGamesPerSeason { get; set; } = default!;
+    public int TotalPlayoffTeams { get; set; } = default!;
     public string EmailAddress { get; set; } = default!;
 }
 
 // Request Records
 public record CreateLeagueRequest(string Name, string Sport, string Description, string ImageFile, string OwnerFirstName, string OwnerLastName, string EmailAddress);
 public record UpdateLeagueRequest(Guid Id, string Name, string Sport, string Description, string ImageFile, string OwnerFirstName, string OwnerLastName, string EmailAddress);
+public record UpdateLeagueSettingsRequest(Guid Id, int TotalGamesPerSeason, int TotalPlayoffTeams);
 
 // Response Records
 public record GetLeaguesResponse(IEnumerable<LeagueModel> Leagues);

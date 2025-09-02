@@ -25,7 +25,7 @@
     {
         await LeagueService.DeleteLeague(Id);
         MudDialog.Close(DialogResult.Ok(true));
-        Snackbar.Add("League has been deleted.", Severity.Success);
+        Snackbar.Add("League has been deleted.", MudBlazor.Severity.Success);
         StateHasChanged();
         NavManager.NavigateTo("/");
     } 

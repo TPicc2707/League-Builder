@@ -1,4 +1,5 @@
 using Amazon.S3;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,17 @@ builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<IAWSService, AWSService>();
 builder.Services.AddScoped<ISupportService, SupportService>();
+builder.Services.AddScoped<IValidator<CreateLeagueModel>, CreateLeagueModelValidator>();
+builder.Services.AddScoped<IValidator<CreateTeamModel>, CreateTeamModelValidator>();
+builder.Services.AddScoped<IValidator<CreatePlayerModel>, CreatePlayerModelValidator>();
+builder.Services.AddScoped<IValidator<CreateGameModel>, CreateGameModelValidator>();
+builder.Services.AddScoped<IValidator<CreateSeasonModel>, CreateSeasonModelValidator>();
+builder.Services.AddScoped<IValidator<UpdateLeagueModel>, UpdateLeagueModelValidator>();
+builder.Services.AddScoped<IValidator<UpdateTeamModel>, UpdateTeamModelValidator>();
+builder.Services.AddScoped<IValidator<UpdatePlayerModel>, UpdatePlayerModelValidator>();
+builder.Services.AddScoped<IValidator<UpdateGameModel>, UpdateGameModelValidator>();
+builder.Services.AddScoped<IValidator<UpdateSeasonModel>, UpdateSeasonModelValidator>();
+builder.Services.AddScoped<IValidator<UpdateLeagueSettingsModel>, UpdateLeagueSettingsModelValidator>();
 
 builder.Services.AddRefitClient<ILeagueService>().ConfigureHttpClient(x =>
 {

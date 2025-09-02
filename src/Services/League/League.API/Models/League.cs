@@ -9,6 +9,8 @@ public class League
     public string OwnerFirstName { get; set; } = default!;
     public string OwnerLastName { get; set; } = default!;
     public string EmailAddress { get; set; } = default!;
+    public int TotalGamesPerSeason { get; set; } = default!;
+    public int TotalPlayoffTeams { get; set; } = default!;
     public DateTime Created_DateTime { get; set; } = default!;
     public string Created_User { get; set; } = default!;
     public DateTime Modified_DateTime { get; set; } = default!;

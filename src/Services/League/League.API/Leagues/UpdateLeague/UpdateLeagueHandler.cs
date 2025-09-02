@@ -40,6 +40,8 @@ public class UpdateLeagueCommandHandler
         league.Description = command.Description;
         league.OwnerFirstName = command.OwnerFirstName;
         league.OwnerLastName = command.OwnerLastName;
+        league.TotalGamesPerSeason = league.TotalGamesPerSeason;
+        league.TotalPlayoffTeams = league.TotalPlayoffTeams;
         league.EmailAddress = command.EmailAddress;
         league.ImageFile = command.ImageFile;
         league.Modified_DateTime = DateTime.Now;

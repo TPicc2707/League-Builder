@@ -9,10 +9,10 @@ public class GetLeaguesQueryHandler
 {
     public async Task<GetLeaguesResult> Handle(GetLeaguesQuery query, CancellationToken cancellationToken)
     {
-        var products = await documentSession.Query<Models.League>()
+        var leagues = await documentSession.Query<Models.League>()
             .ToPagedListAsync(query.PageNumber ?? 1, query.PageSize ?? 10, cancellationToken);
 
-        return new GetLeaguesResult(products);
+        return new GetLeaguesResult(leagues);
     }
 }
 

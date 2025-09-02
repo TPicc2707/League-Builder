@@ -1,0 +1,90 @@
+﻿@page "/updateleaguesettings/{id}"
+@inject ILeagueService LeagueService
+@inject NavigationManager NavManager
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ISnackbar Snackbar
+@inject IValidator<UpdateLeagueSettingsModel> UpdateLeagueSettingsValidator
+
+<AuthorizeView Roles="@String.Concat(Roles.UpdateLeagues, ", ", Roles.ReadLeagues)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <MudItem Style="margin-top: 50px;">
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudText Typo="Typo.h6" Align="Align.Center" Style="font-weight:bold">@LeagueByIdResponse.League.Name League Settings</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudGrid Justify="Justify.Center">
+                <MudItem Style="margin-top: 25px;" xs="12" sm="9">
+                    <MudCard Class="border border-solid pa-8" Style="border-color: #000000">
+                        <EditForm Model="@model" OnValidSubmit="OnSubmit">
+                            <MudCardContent Class="pa-6">
+                                <FluentValidationValidator @ref="fluentValidationValidator" />
+                                <MudTextField @bind-Value="model.TotalGamesPerSeason"
+                                              For="@(() => model.TotalGamesPerSeason)"
+                                                Label="Total Games" />
+                            </MudCardContent>
+                            <MudCardContent Class="pa-6">
+                                <MudTextField @bind-Value="model.TotalPlayoffTeams"
+                                              For="@(() => model.TotalPlayoffTeams)"
+                                                Label="Total Playoff Teams" />
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
+                            </MudCardActions>
+                        </EditForm>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private bool PageLoad = false;
+    UpdateLeagueSettingsModel model = new UpdateLeagueSettingsModel();
+    private GetLeagueByIdResponse LeagueByIdResponse { get; set; }
+    bool success;
+    private FluentValidationValidator fluentValidationValidator;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PageLoad = false;
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
+        if(LeagueByIdResponse is null)
+        {
+            var leagueId = Guid.Parse(Id);
+            LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
+            model.Id = LeagueByIdResponse.League.Id;
+            model.TotalGamesPerSeason = LeagueByIdResponse.League.TotalGamesPerSeason == 0 ? null : LeagueByIdResponse.League.TotalGamesPerSeason;
+            model.TotalPlayoffTeams = LeagueByIdResponse.League.TotalPlayoffTeams == 0 ? null : LeagueByIdResponse.League.TotalPlayoffTeams;
+
+        }
+        PageLoad = true;
+    }
+
+    private async Task OnSubmit()
+    {
+        PageLoad = false;
+
+        UpdateLeagueSettingsRequest request = new UpdateLeagueSettingsRequest(model.Id, (int)model.TotalGamesPerSeason, (int)model.TotalPlayoffTeams);
+        await LeagueService.UpdateLeagueSettings(request);
+        success = true;
+        Snackbar.Add("League Settings has been updated.", MudBlazor.Severity.Success);
+        NavManager.NavigateTo("/leagues");
+        StateHasChanged();
+
+        PageLoad = true;
+    }
+
+}

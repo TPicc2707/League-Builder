@@ -1,4 +1,5 @@
 ﻿@page "/updategame/{id}"
+@inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject ISeasonService SeasonService
 @inject IGameService GameService
@@ -6,95 +7,193 @@
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
+@inject IValidator<UpdateGameModel> UpdateGameValidator
+@inject IDialogService DialogService
+@inject IAWSService AWSService
 
 <AuthorizeView Roles="@String.Concat(Roles.UpdateGames, ", ", Roles.ReadGames, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.UpdateStandings, ", ", Roles.ReadStandings)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="padding-top: 150px; padding-bottom: 175px;">
-                <MudText Typo="Typo.h3" Style="font-weight: bold; padding-bottom: 25px;" Align="Align.Center">Update Game</MudText>
+            <MudItem Style="padding-top: 50px;">
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">
+                        <MudStack Row="true" Justify="Justify.Center">
+                            <MudAvatar Size="Size.Medium">
+                                <MudImage Src="@GameModel.Game.AwayTeamImage" Alt="Team Image"></MudImage>
+                            </MudAvatar>
+                            @AwayTeam.TeamName vs @HomeTeam.TeamName
+                            <MudAvatar Size="Size.Medium">
+                                <MudImage Src="@GameModel.Game.HomeTeamImage" Alt="Team Image"></MudImage>
+                            </MudAvatar>
+                        </MudStack>
+                    </MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem style="margin-top: 50px; margin-bottom: 50px;">
                 <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
-                    <DataAnnotationsValidator />
-                    <MudGrid>
-                        <MudItem xs="12" sm="7">
-                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                <MudCardContent>
-                                    <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Game Information</MudText>
-                                    <MudSelect Disabled="true" Class="mt-3" Label="Away Team" @bind-Value="awayTeamId">
-                                        @foreach (var team in TeamsResponse.Teams)
+                    <FluentValidationValidator @ref="fluentValidationValidator" />
+                    <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px; width: 100%;">
+                        <MudStepper @bind-ActiveIndex="_index" OnPreviewInteraction="@OnStepInteraction" CurrentStepColor="Color.Secondary" CompletedStepColor="Color.Success">
+                            <ChildContent>
+                                <MudStep Title="Update Game Information">
+                                    <MudGrid Justify="Justify.Center">
+                                        <MudItem xs="12" sm="10">
+                                            <MudCard Class="border border-solid" Style="border-color: #000000">
+                                                <MudCardContent>
+                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
+                                                        <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
+                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Game Information</MudText>
+                                                    </MudStack>
+                                                    <MudSelect Required="true" Disabled="isGameCompleted" Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
+                                                        @foreach (var team in TeamsResponse.Teams)
+                                                        {
+                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                    <MudSelect Required="true" Disabled="isGameCompleted" Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
+                                                        @foreach (var team in TeamsResponse.Teams)
+                                                        {
+                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </MudItem>
+                                        @if (isGameCompleted)
                                         {
-                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                            <MudItem xs="12">
+                                                <MudText Typo="Typo.body2" Align="Align.Center">
+                                                    This game has already been completed and submitted.
+                                                </MudText>
+                                            </MudItem>
                                         }
-                                    </MudSelect>
-                                    <MudSelect Disabled="true" Class="mt-3" Label="Home Team" @bind-Value="homeTeamId">
-                                        @foreach (var team in TeamsResponse.Teams)
+                                    </MudGrid>
+                                </MudStep>
+                                <MudStep Title="Game Outcome">
+                                    <MudGrid Justify="Justify.Center">
+                                        <MudItem xs="12" sm="10">
+                                            <MudCard Class="border border-solid" Style="border-color: #000000">
+                                                <MudCardContent>
+                                                    @if (model.GameStatus == GameStatus.Completed)
+                                                    {
+                                                        <MudSelect Required="true" Disabled="isGameCompleted" Class="mt-3" Label="Winning Team" @bind-Value="model.WinningTeamId">
+                                                            @foreach (var team in TeamsInGame)
+                                                            {
+                                                                <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                                            }
+                                                        </MudSelect>
+                                                    }
+                                                    <MudTextField Required="true" Disabled="isGameCompleted" Label="Away Team Score" Class="mt-3"
+                                                                  @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
+                                                    <MudTextField Required="true" Disabled="isGameCompleted" Label="Home Team Score" Class="mt-3"
+                                                                  @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
+                                                    <MudSelect Required="true" Disabled="isGameCompleted" Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
+                                                        @foreach (var status in Enum.GetValues<GameStatus>())
+                                                        {
+                                                            <MudSelectItem Value="status">@status</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                </MudCardContent>
+                                            </MudCard>                                           
+                                        </MudItem>
+                                        @if (isGameCompleted)
                                         {
-                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                            <MudItem xs="12">
+                                                <MudText Typo="Typo.body2" Align="Align.Center">
+                                                    This game has already been completed and submitted.
+                                                </MudText>
+                                            </MudItem>
                                         }
-                                    </MudSelect>
-                                    <MudDatePicker Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="startDate" />
-                                    <MudTimePicker Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="startTime" />
-                                </MudCardContent>
-                            </MudCard>
-                        </MudItem>
-                        <MudItem xs="12" sm="5">
-                            <MudPaper Class="pa-4 mud-height-full border border-solid" Style="border-color: #000000">
-                                <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
-                                @if (success)
-                                {
-                                    <MudText Color="Color.Success">Success</MudText>
-                                }
-                                else
-                                {
-                                    <MudText Color="@Color.Error">
-                                        <CustomValidation @ref="customValidation" />
-                                        <ValidationSummary />
-                                    </MudText>
-                                }
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="12" sm="7">
-                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                <MudCardContent>
-                                    <MudText Typo="Typo.body1" Style="font-weight: bold; padding-top: 5px; padding-bottom: 5px;">Game Details</MudText>
-                                    @if (model.GameStatus == GameStatus.Completed)
-                                    {
-                                        <MudSelect Disabled="isGameCompleted" Class="mt-3" Label="Winning Team" @bind-Value="winningTeamId">
-                                            @foreach (var team in TeamsInGame)
-                                            {
-                                                <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                            }
-                                        </MudSelect>
-                                    }
-                                    <MudTextField Disabled="isGameCompleted" Label="Away Team Score" Class="mt-3"
-                                                     @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
-                                    <MudTextField Disabled="isGameCompleted" Label="Home Team Score" Class="mt-3"
-                                                     @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
-                                    <MudSelect Disabled="isGameCompleted" Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
-                                        @foreach (var status in Enum.GetValues<GameStatus>())
+                                    </MudGrid>
+                                </MudStep>
+                                <MudStep Title="Update Game Time">
+                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
+                                        <MudIcon Icon="@Icons.Material.Filled.AccessTime" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
+                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Game Time</MudText>
+                                    </MudStack>
+                                    <MudDatePicker Required="true" Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.StartDate" />
+                                    <MudTimePicker Required="true" Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="model.StartTime" />
+                                    <MudDatePicker Required="@(model.GameStatus == GameStatus.Completed ? true : false)" Disabled="isGameCompleted" Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.EndDate" />
+                                    <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed ? true : false)" Disabled="isGameCompleted" Class="mt-3" Label="End Time" AmPm="true" Editable="true" @bind-Time="model.EndTime" />
+                                </MudStep>
+                                <MudStep Title="Review">
+                                    <MudGrid Justify="Justify.Center">
+                                        <MudItem xs="12" sm="10">
+                                            <MudCard Class="border border-solid" Style="border-color: #000000">
+                                                <MudCardContent>
+                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
+                                                        <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
+                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Review</MudText>
+                                                    </MudStack>
+                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
+                                                        @foreach (var team in TeamsResponse.Teams)
+                                                        {
+                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
+                                                        @foreach (var team in TeamsResponse.Teams)
+                                                        {
+                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                    @if (model.GameStatus == GameStatus.Completed)
+                                                    {
+                                                        <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Winning Team" @bind-Value="model.WinningTeamId">
+                                                            @foreach (var team in TeamsInGame)
+                                                            {
+                                                                <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+                                                            }
+                                                        </MudSelect>
+                                                    }
+                                                    <MudTextField Required="true" ReadOnly="true" Label="Away Team Score" Class="mt-3"
+                                                                  @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
+                                                    <MudTextField Required="true" ReadOnly="true" Label="Home Team Score" Class="mt-3"
+                                                                  @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
+                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
+                                                        @foreach (var status in Enum.GetValues<GameStatus>())
+                                                        {
+                                                            <MudSelectItem Value="status">@status</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
+                                                    <MudDatePicker Required="true" ReadOnly="true" Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.StartDate" />
+                                                    <MudTimePicker Required="true" ReadOnly="true" Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="model.StartTime" />
+                                                    <MudDatePicker Required="@(model.GameStatus == GameStatus.Completed ? true : false)" ReadOnly="true" Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.EndDate" />
+                                                    <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed ? true : false)" ReadOnly="true" Class="mt-3" Label="End Time" AmPm="true" Editable="true" @bind-Time="model.EndTime" />
+                                                </MudCardContent>
+                                                <MudCardActions>
+                                                    <MudButton Disabled="isGameCompleted" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
+                                                </MudCardActions>
+                                            </MudCard>
+                                        </MudItem>
+                                        @if (isGameCompleted)
                                         {
-                                            <MudSelectItem Value="status">@status</MudSelectItem>
+                                            <MudItem xs="12">
+                                                <MudText Typo="Typo.body2" Align="Align.Center">
+                                                    This game has already been completed and submitted.
+                                                </MudText>
+                                            </MudItem>
                                         }
-                                    </MudSelect>
-                                    @if (model.GameStatus == GameStatus.Completed)
-                                    {
-                                        <MudDatePicker Disabled="isGameCompleted" Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="endDate" />
-                                        <MudTimePicker Disabled="isGameCompleted" Class="mt-3" Label="End Time" AmPm="true" Editable="true" @bind-Time="endTime" />
-                                    }
-                                </MudCardContent>
-                                <MudCardActions>
-                                    <MudButton Disabled="isGameCompleted" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
-                                </MudCardActions>
-                            </MudCard>
-                        </MudItem>
-                        <MudItem xs="12">
-                            <MudText Typo="Typo.body2" Align="Align.Center">
-                                Fill out the form correctly to see the success message.
-                            </MudText>
-                        </MudItem>
-                    </MudGrid>
+                                    </MudGrid>
+                                </MudStep>
+                            </ChildContent>
+                            <ActionContent Context="stepper">
+                                <MudIconButton OnClick="@(() => stepper.PreviousStepAsync())"
+                                               Icon="@Icons.Material.Filled.ArrowBack"
+                                               Color="Color.Primary"
+                                               Disabled="_index == 0 ? true : false">
+                                </MudIconButton>
+                                <MudSpacer />
+                                <MudIconButton OnClick="@(() => stepper.NextStepAsync())"
+                                               Icon="@Icons.Material.Filled.ArrowForward"
+                                               Color="Color.Primary"
+                                               Disabled="_index != 3 ? false : true">
+                                </MudIconButton>
+                            </ActionContent>
+                        </MudStepper>
+                    </MudPaper>
                 </EditForm>
-
             </MudItem>
 
         }
@@ -111,23 +210,21 @@
 @code {
     [Parameter]
     public string Id { get; set; }
-    private CustomValidation? customValidation;
     private bool PageLoad = false;
-    private Guid awayTeamId;
-    private Guid homeTeamId;
-    private Guid winningTeamId;
     private IEnumerable<TeamModel> TeamsInGame;
-    private DateTime? startDate;
-    private TimeSpan? startTime;
-    private DateTime? endDate;
-    private TimeSpan? endTime;
+    private TeamModel AwayTeam;
+    private TeamModel HomeTeam;
     private bool isGameCompleted = false;
     bool success;
-    UpdateGameForm model = new UpdateGameForm();
+    private int _index;
+    private bool canProceed = false;
+    private List<string> errors = new();
+    UpdateGameModel model = new UpdateGameModel();
     private GetGameByIdResponse GameModel { get; set; }
     private GetTeamsByLeagueResponse TeamsResponse { get; set; }
     private GetSeasonByYearResponse SeasonResponse { get; set; }
     private GetStandingsByTeamResponse StandingsResponse { get; set; }
+    private FluentValidationValidator fluentValidationValidator;
 
     protected override async Task OnInitializedAsync()
     {
@@ -140,131 +237,119 @@
         GameModel = await GameService.GetGameById(gameId);
         model.LeagueId = GameModel.Game.LeagueId;
         TeamsResponse = await TeamService.GetTeamsByLeague(model.LeagueId);
-        awayTeamId = GameModel.Game.AwayTeam.Id;
-        homeTeamId = GameModel.Game.HomeTeam.Id;
-        TeamsInGame = TeamsResponse.Teams.Where(t => t.Id == awayTeamId || t.Id == homeTeamId).ToList();
+        model.AwayTeamId = GameModel.Game.AwayTeam.Id;
+        model.HomeTeamId = GameModel.Game.HomeTeam.Id;
+        TeamsInGame = TeamsResponse.Teams.Where(t => t.Id == model.AwayTeamId || t.Id == model.HomeTeamId).ToList();
+        HomeTeam = TeamsInGame.FirstOrDefault(t => t.Id == model.HomeTeamId);
+        AwayTeam = TeamsInGame.FirstOrDefault(t => t.Id == model.AwayTeamId);
         model.AwayTeamScore = GameModel.Game.GameDetail.AwayTeamScore;
         model.HomeTeamScore = GameModel.Game.GameDetail.HomeTeamScore;
         model.GameStatus = GameModel.Game.GameStatus;
-        winningTeamId = GameModel.Game.WinningTeamId is not null ? (Guid)GameModel.Game.WinningTeamId : TeamsInGame.First().Id;
+        model.WinningTeamId = GameModel.Game.WinningTeamId is not null ? (Guid)GameModel.Game.WinningTeamId : TeamsInGame.First().Id;
 
-        startDate = GameModel.Game.GameDetail.StartTime;
-        startTime = GameModel.Game.GameDetail.StartTime.TimeOfDay;
+        model.StartDate = GameModel.Game.GameDetail.StartTime;
+        model.StartTime = GameModel.Game.GameDetail.StartTime.TimeOfDay;
 
         if(GameModel.Game.GameDetail.EndTime is not null)
         {
-            endDate = GameModel.Game.GameDetail.EndTime.Value;
-            endTime = GameModel.Game.GameDetail.EndTime.Value.TimeOfDay;
+            model.EndDate = GameModel.Game.GameDetail.EndTime.Value;
+            model.EndTime = GameModel.Game.GameDetail.EndTime.Value.TimeOfDay;
         }
         isGameCompleted = model.GameStatus == GameStatus.Completed ? true : false;
+        await GetImageAsync();
         PageLoad = true;
-    }
-
-    public class UpdateGameForm
-    {
-        public Guid LeagueId { get; set; }
-        [Required(ErrorMessage = "Must have a Start Date.")]
-        public DateTime StartTime { get; set; }
-
-        public DateTime? EndTime { get; set; }
-
-        [Range(0, int.MaxValue, ErrorMessage = "Please enter valid Away Team Score")]
-        public int AwayTeamScore { get; set; }
-        [Range(0, int.MaxValue, ErrorMessage = "Please enter valid Home Team Score")]
-        public int HomeTeamScore { get; set; }
-
-        public GameStatus GameStatus { get; set; }
-
     }
 
     private async Task OnValidSubmit(EditContext context)
     {
-        customValidation?.ClearErrors();
+        await SubmitGame();
+        success = true;
+        Snackbar.Add("Game has been updated.", MudBlazor.Severity.Success);
+        NavManager.NavigateTo($"/leaguegames/{model.LeagueId}");
+        StateHasChanged();
+    }
 
-        var errors = new Dictionary<string, List<string>>();
-
-        ValidateModel(errors);
-
-        if (errors.Any())
-            customValidation?.DisplayErrors(errors);
-        else
+    private async Task OnStepInteraction(StepperInteractionEventArgs args)
+    {
+        canProceed = false;
+        await ValidModel();
+        if (args.Action == StepAction.Complete)
         {
-            await SubmitGame();
-            success = true;
-            Snackbar.Add("Game has been updated.", Severity.Success);
-            NavManager.NavigateTo($"/leaguegames/{model.LeagueId}");
-            StateHasChanged();
+            if (!canProceed)
+            {
+                await OpenErrorDialogAsync();
+                args.Cancel = true;
+            }
+
         }
     }
 
-    private void ValidateModel(Dictionary<string, List<string>> errors)
+    private async Task ValidModel()
     {
-        if (startDate is null && startTime is null)
-            errors.Add(nameof(model.StartTime),
-                            [" " + "Start Date & Time is required."]);
-        else if (startDate is null || startTime is null)
-            errors.Add(nameof(model.StartTime),
-                            startDate is null ? [" " + "Start Date is required."] : [" " + "Start Time is required."]);
+        errors.RemoveRange(0, errors.Count);
 
-        if(model.GameStatus == GameStatus.Completed)
+        if (_index == 0)
         {
-            if (endDate is null && endTime is null)
-                errors.Add(nameof(model.EndTime),
-                                        [" " + "End Date & Time is required."]);
-            else if (endDate is null || endTime is null)
-                errors.Add(nameof(model.EndTime),
-                                endDate is null ? [" " + "End Date is required."] : [" " + "End Time is required."]);
+            var result = await UpdateGameValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(UpdateGameModel.HomeTeamId)));
+            if (result.IsValid)
+                canProceed = true;
+
+            foreach (var error in result.Errors)
+                errors.Add($"{error.ErrorMessage}");
         }
 
-        if (awayTeamId == homeTeamId)
-            errors.Add("Teams",
-                       [" " + "Home & Away Team must be different."]);
-
-        if(model.GameStatus == GameStatus.Completed && winningTeamId == Guid.Empty)
-            errors.Add("Winning Team",
-                           [" " + "Game is Completed, please select a winner."]);
-
-        if(model.GameStatus == GameStatus.Completed)
+        if (_index == 1)
         {
-            if (model.AwayTeamScore == model.HomeTeamScore)
-                errors.Add("Scores",
-                                       [" " + "Scores cant be the same."]);
+            var result = await UpdateGameValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(UpdateGameModel.WinningTeamId), nameof(UpdateGameModel.HomeTeamScore), nameof(UpdateGameModel.AwayTeamScore)));
+            if (result.IsValid)
+                canProceed = true;
 
-            if (winningTeamId == awayTeamId && model.HomeTeamScore > model.AwayTeamScore)
-                errors.Add("Scores",
-                                    [" " + "Winning Team must have more than the losing team."]);
-
-            if (winningTeamId == homeTeamId && model.AwayTeamScore > model.HomeTeamScore)
-                errors.Add("Scores",
-                                    [" " + "Winning Team must have more than the losing team."]);
+            foreach (var error in result.Errors)
+                errors.Add($"{error.ErrorMessage}");
         }
+
+        if (_index == 2)
+        {
+            var result = await UpdateGameValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(UpdateGameModel.StartDate), nameof(UpdateGameModel.StartTime), nameof(UpdateGameModel.EndDate), nameof(UpdateGameModel.EndTime)));
+
+            if (result.IsValid)
+                canProceed = true;
+
+            foreach (var error in result.Errors)
+                errors.Add($"{error.ErrorMessage}");
+        }
+
+    }
+
+    private Task OpenErrorDialogAsync()
+    {
+        var parameters = new DialogParameters<ErrorMessageBox> { { x => x.Errors, errors } };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        return DialogService.ShowAsync<ErrorMessageBox>("Errors", parameters, options);
     }
 
     private async Task SubmitGame()
     {
-        DateTime modelStartDate = (DateTime)startDate;
-        TimeSpan modelStartTime = (TimeSpan)startTime;
-        model.StartTime = new DateTime(modelStartDate.Year, modelStartDate.Month, modelStartDate.Day, modelStartTime.Hours, modelStartTime.Minutes, modelStartTime.Seconds);
-
-        if(endDate is not null || endTime is not null)
+        var startGameTime = new DateTime(model.StartDate.Value.Year, model.StartDate.Value.Month, model.StartDate.Value.Day, model.StartTime.Value.Hours, model.StartTime.Value.Minutes, model.StartTime.Value.Seconds);
+        DateTime? endGameTime = null;
+        if(model.EndDate is not null || model.EndTime is not null)
         {
-            DateTime modelEndDate = (DateTime)endDate;
-            TimeSpan modelEndTime = (TimeSpan)endTime;
-            model.EndTime = new DateTime(modelEndDate.Year, modelEndDate.Month, modelEndDate.Day, modelEndTime.Hours, modelEndTime.Minutes, modelEndTime.Seconds);
+            endGameTime = new DateTime(model.EndDate.Value.Year, model.EndDate.Value.Month, model.EndDate.Value.Day, model.EndTime.Value.Hours, model.EndTime.Value.Minutes, model.EndTime.Value.Seconds);
         }
 
         var gameId = Guid.Parse(Id);
-        SeasonResponse = await SeasonService.GetSeasonByYear(model.StartTime.Year);
-        Models.Game.GameDetailModel gameDetail = new GameDetailModel(model.AwayTeamScore, model.HomeTeamScore, model.StartTime, model.EndTime);
-        Models.Game.AwayTeamDetailModel awayTeamDetail = new AwayTeamDetailModel(awayTeamId, string.Empty);
-        Models.Game.HomeTeamDetailModel homeTeamDetail = new HomeTeamDetailModel(homeTeamId, string.Empty);
-        UpdateGameModel updateGameModel = new UpdateGameModel(gameId, model.LeagueId, winningTeamId, SeasonResponse.Season.Id, gameDetail, awayTeamDetail, homeTeamDetail, (int)model.GameStatus);
+        SeasonResponse = await SeasonService.GetSeasonByYear(startGameTime.Year);
+        Models.Game.GameDetailModel gameDetail = new GameDetailModel(model.AwayTeamScore, model.HomeTeamScore, startGameTime, endGameTime != null ? endGameTime.Value : null);
+        Models.Game.AwayTeamDetailModel awayTeamDetail = new AwayTeamDetailModel(model.AwayTeamId, string.Empty);
+        Models.Game.HomeTeamDetailModel homeTeamDetail = new HomeTeamDetailModel(model.HomeTeamId, string.Empty);
+        UpdateGameRecord updateGameModel = new UpdateGameRecord(gameId, model.LeagueId, model.WinningTeamId, SeasonResponse.Season.Id, gameDetail, awayTeamDetail, homeTeamDetail, (int)model.GameStatus);
         UpdateGameRequest request = new UpdateGameRequest(updateGameModel);
         await GameService.UpdateGame(request);
         if(model.GameStatus == GameStatus.Completed)
         {
-            await UpdateTeamStandings(SeasonResponse, awayTeamId);
-            await UpdateTeamStandings(SeasonResponse, homeTeamId);
+            await UpdateTeamStandings(SeasonResponse, model.AwayTeamId);
+            await UpdateTeamStandings(SeasonResponse, model.HomeTeamId);
         }
     }
 
@@ -274,11 +359,21 @@
         StandingsResponse = await StandingsService.GetStandingsByTeam(teamId);
         var currentStandings = StandingsResponse.Standings.FirstOrDefault(s => s.SeasonId == seasonResponse.Season.Id);
         StandingsDetailModel standingsDetail = new StandingsDetailModel(currentStandings.StandingsDetail.GamesPlayed + 1,
-            winningTeamId == teamId ? currentStandings.StandingsDetail.Wins + 1 : currentStandings.StandingsDetail.Wins,
-            winningTeamId == teamId ? currentStandings.StandingsDetail.Losses : currentStandings.StandingsDetail.Losses + 1, currentStandings.StandingsDetail.Ties);
+            model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Wins + 1 : currentStandings.StandingsDetail.Wins,
+            model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Losses : currentStandings.StandingsDetail.Losses + 1, currentStandings.StandingsDetail.Ties);
         TeamDetailModel teamDetail = new TeamDetailModel(teamId, string.Empty);
         UpdateStandingsModel standingsModel = new UpdateStandingsModel(currentStandings.Id, model.LeagueId, seasonResponse.Season.Id, standingsDetail, (int)currentStandings.StandingsStatus, teamDetail);
         UpdateStandingsRequest request = new UpdateStandingsRequest(standingsModel);
         await StandingsService.UpdateStandings(request);
+    }
+
+    private async Task GetImageAsync()
+    {
+        var league = await LeagueService.GetLeague(model.LeagueId);
+        var awayTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{AwayTeam.TeamName}/{AwayTeam.ImageFile}";
+        GameModel.Game.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
+
+        var homeTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{HomeTeam.TeamName}/{HomeTeam.ImageFile}";
+        GameModel.Game.HomeTeamImage = await AWSService.GetImage(homeTeamKeyPath);
     }
 }

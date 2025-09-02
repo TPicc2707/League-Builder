@@ -14,14 +14,14 @@ public class TeamModel
     public TeamStatus TeamStatus { get; set; } = default!;
 }
 
-public record CreateTeamModel(
+public record CreateTeamRecord(
     Guid LeagueId,
     string TeamName,
     AddressModel TeamAddress,
     string Description,
     string ImageFile);
 
-public record UpdateTeamModel(
+public record UpdateTeamRecord(
     Guid Id,
     Guid LeagueId,
     string TeamName,
@@ -41,8 +41,8 @@ public enum TeamStatus
 }
 
 //Request Record
-public record UpdateTeamRequest(UpdateTeamModel Team);
-public record CreateTeamRequest(CreateTeamModel Team);
+public record UpdateTeamRequest(UpdateTeamRecord Team);
+public record CreateTeamRequest(CreateTeamRecord Team);
 
 // Response Records
 public record GetTeamsResponse(PaginatedResult<TeamModel> Teams);
