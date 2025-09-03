@@ -47,13 +47,13 @@
                                                         <MudText Typo="Typo.h6" Style="font-weight: bold;">Game Information</MudText>
                                                     </MudStack>
                                                     <MudSelect Required="true" Disabled="isGameCompleted" Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
-                                                        @foreach (var team in TeamsResponse.Teams)
+                                                        @foreach (var team in Teams)
                                                         {
                                                             <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
                                                         }
                                                     </MudSelect>
                                                     <MudSelect Required="true" Disabled="isGameCompleted" Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
-                                                        @foreach (var team in TeamsResponse.Teams)
+                                                        @foreach (var team in Teams)
                                                         {
                                                             <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
                                                         }
@@ -128,13 +128,13 @@
                                                         <MudText Typo="Typo.h6" Style="font-weight: bold;">Review</MudText>
                                                     </MudStack>
                                                     <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
-                                                        @foreach (var team in TeamsResponse.Teams)
+                                                        @foreach (var team in Teams)
                                                         {
                                                             <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
                                                         }
                                                     </MudSelect>
                                                     <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
-                                                        @foreach (var team in TeamsResponse.Teams)
+                                                        @foreach (var team in Teams)
                                                         {
                                                             <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
                                                         }
@@ -223,6 +223,9 @@
     UpdateGameModel model = new UpdateGameModel();
     private GetGameByIdResponse GameModel { get; set; }
     private GetTeamsByLeagueResponse TeamsResponse { get; set; }
+    private List<TeamModel> Teams { get; set; } = new();
+    private GetLeagueByIdResponse LeagueResponse { get; set; }
+    private GetGamesByTeamResponse TeamGamesResponse { get; set; }
     private GetSeasonByYearResponse SeasonResponse { get; set; }
     private GetStandingsByTeamResponse StandingsResponse { get; set; }
     private FluentValidationValidator fluentValidationValidator;
@@ -238,6 +241,8 @@
         GameModel = await GameService.GetGameById(gameId);
         model.LeagueId = GameModel.Game.LeagueId;
         TeamsResponse = await TeamService.GetTeamsByLeague(model.LeagueId);
+        Teams = TeamsResponse.Teams.ToList();
+        await CheckMaxGamesForTeam();
         model.AwayTeamId = GameModel.Game.AwayTeam.Id;
         model.HomeTeamId = GameModel.Game.HomeTeam.Id;
         TeamsInGame = TeamsResponse.Teams.Where(t => t.Id == model.AwayTeamId || t.Id == model.HomeTeamId).ToList();
@@ -259,6 +264,19 @@
         isGameCompleted = model.GameStatus == GameStatus.Completed ? true : false;
         await GetImageAsync();
         PageLoad = true;
+    }
+
+    private async Task CheckMaxGamesForTeam()
+    {
+        var teamsToRemove = new List<Guid>();
+        LeagueResponse = await LeagueService.GetLeague(model.LeagueId);
+        foreach (var team in TeamsResponse.Teams)
+        {
+            TeamGamesResponse = await GameService.GetGamesByTeam(team.Id);
+            if (LeagueResponse.League.TotalGamesPerSeason <= TeamGamesResponse.Games.Count())
+                Teams.RemoveAll(x => x.Id == team.Id);
+        }
+
     }
 
     private async Task OnValidSubmit(EditContext context)

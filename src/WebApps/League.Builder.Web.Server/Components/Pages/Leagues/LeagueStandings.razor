@@ -38,7 +38,7 @@
                     </MudExpansionPanel>
                 </MudExpansionPanels>
             </MudItem>
-            <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px 25px 50px 25px;">
+            <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px 25px 25px 25px;">
                 <MudItem>
                     <MudTable Items="@Standings" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                         <HeaderContent>
@@ -56,7 +56,22 @@
                                     <MudImage Src="@context.TeamImage" Alt="Player Image"></MudImage>
                                 </MudAvatar>
                             </MudTd>
-                            <MudTd DataLabel="Team Name">@context.Team.TeamName</MudTd>
+                            @if (context.PlayoffTeam)
+                            {
+                                <MudTd DataLabel="Team Name">
+                                    <MudStack Row="true">
+                                        x - @context.Team.TeamName
+                                    </MudStack>
+                                </MudTd>
+                            }
+                            else
+                            {
+                                <MudTd DataLabel="Team Name">
+                                    <MudStack Row="true">
+                                        @context.Team.TeamName
+                                    </MudStack>
+                                </MudTd>
+                            }
                             <MudTd DataLabel="Games Played">@context.StandingsDetail.GamesPlayed</MudTd>
                             <MudTd DataLabel="Wins">@context.StandingsDetail.Wins</MudTd>
                             <MudTd DataLabel="Losses">@context.StandingsDetail.Losses</MudTd>
@@ -74,6 +89,11 @@
                         </RowTemplate>
                     </MudTable>
 
+                </MudItem>
+                <MudItem xs="12" Style="margin-top: 25px; margin-right: 10px;">
+                    <MudText Typo="Typo.body2" Align="Align.End">
+                        x - : Clinched Playoff Berth
+                    </MudText>
                 </MudItem>
             </MudPaper>
         }
@@ -118,6 +138,7 @@
         LeagueModel = await LeagueService.GetLeague(leagueId);
         await GetImageAsync();
         CalculateGamesBack();
+        CalculatePlayoffTeams();
         seasonValue = Season.Year;
         PageLoad = true;
     }
@@ -154,5 +175,13 @@
             var difference = differenceWins + differenceLosses;
             standing.GamesBack = difference != 0 ? (decimal)difference / 2 : 0;
         }
+    }
+
+    private void CalculatePlayoffTeams()
+    {
+        var playoffTeams = Model.Standings.Where(x => x.SeasonId == Season.Id).OrderByDescending(x => x.WinPercentage).Take(LeagueModel.League.TotalPlayoffTeams);
+
+        foreach(var playoffTeam in playoffTeams)
+            playoffTeam.PlayoffTeam = true;
     }
 }
