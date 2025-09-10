@@ -1,6 +1,6 @@
 ﻿namespace League.API.Leagues.UpdateLeagueSettings;
 
-public record UpdateLeagueSettingsCommand(Guid Id, int TotalGamesPerSeason, int TotalPlayoffTeams)
+public record UpdateLeagueSettingsCommand(Guid Id, int TotalGamesPerSeason, int TotalPlayoffTeams, int MinimumTotalTeamPlayers, int MaximumTotalTeamPlayers)
     : ICommand<UpdateLeagueSettingsResult>;
 
 public record UpdateLeagueSettingsResult(bool IsSuccess);
@@ -14,6 +14,9 @@ public class UpdateLeagueCommandValidator : AbstractValidator<UpdateLeagueSettin
         RuleFor(x => x.TotalGamesPerSeason).NotEmpty().LessThanOrEqualTo(60).WithMessage("Total Games Per Season can not be more than 60.");
         RuleFor(x => x.TotalPlayoffTeams).NotEmpty().GreaterThan(1).WithMessage("Total Playoff Teams must be more than 1.");
         RuleFor(x => x.TotalPlayoffTeams).NotEmpty().LessThanOrEqualTo(8).WithMessage("Total Playoff Teams can not be more than 8.");
+        RuleFor(x => x.MinimumTotalTeamPlayers).NotEmpty().GreaterThanOrEqualTo(5).WithMessage("Teams must have a minimum of players.");
+        RuleFor(x => x.MaximumTotalTeamPlayers).NotEmpty().LessThanOrEqualTo(30).WithMessage("Teams must have a minimum of players.");
+        RuleFor(x => x.MaximumTotalTeamPlayers).NotEmpty().GreaterThanOrEqualTo(x => x.MinimumTotalTeamPlayers).WithMessage("Maximum number of players must be equal to or more than the minimum.");
 
     }
 }
@@ -38,6 +41,8 @@ public class UpdateLeagueSettingsHandler
         league.OwnerLastName = league.OwnerLastName;
         league.TotalGamesPerSeason = command.TotalGamesPerSeason;
         league.TotalPlayoffTeams = command.TotalPlayoffTeams;
+        league.MinimumTotalTeamPlayers = command.MinimumTotalTeamPlayers;
+        league.MaximumTotalTeamPlayers = command.MaximumTotalTeamPlayers;
         league.EmailAddress = league.EmailAddress;
         league.ImageFile = league.ImageFile;
         league.Modified_DateTime = DateTime.Now;

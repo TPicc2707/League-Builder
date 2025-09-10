@@ -11,6 +11,8 @@ public class League
     public string EmailAddress { get; set; } = default!;
     public int TotalGamesPerSeason { get; set; } = default!;
     public int TotalPlayoffTeams { get; set; } = default!;
+    public int MinimumTotalTeamPlayers { get; set; } = default!;
+    public int MaximumTotalTeamPlayers { get; set; } = default!;
     public DateTime Created_DateTime { get; set; } = default!;
     public string Created_User { get; set; } = default!;
     public DateTime Modified_DateTime { get; set; } = default!;

@@ -2,7 +2,6 @@
 @inject IPlayerService PlayerService
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
-@inject NavigationManager NavManager
 @inject ISnackbar Snackbar
 @inject IWebHostEnvironment env
 @inject NavigationManager NavManager;
@@ -48,27 +47,6 @@
                                                             <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
                                                         }
                                                     </MudSelect>
-                                                    <MudItem Style="padding-top: 20px;">
-                                                        <MudStack Row="true">
-                                                            <MudFileUpload @ref="@_fileUpload"
-                                                                           T="IBrowserFile"
-                                                                           For="@(() => model.File)"
-                                                                           @bind-Files="model.File" Required="true">
-                                                                <ActivatorContent>
-                                                                    <MudButton Variant="Variant.Filled"
-                                                                               Color="Color.Primary"
-                                                                               StartIcon="@Icons.Material.Filled.CloudUpload">
-                                                                        Player Image
-                                                                    </MudButton>
-                                                                </ActivatorContent>
-                                                            </MudFileUpload>
-                                                            @if (model.File != null)
-                                                            {
-                                                                <MudText Typo="@Typo.h6">@model.File.Name</MudText>
-                                                            }
-                                                        </MudStack>
-                                                    </MudItem>
-
                                                 </MudCardContent>
                                             </MudCard>
                                          </MudItem>
@@ -188,7 +166,7 @@
                                                             <MudFileUpload @ref="@_fileUpload"
                                                                            T="IBrowserFile"
                                                                            For="@(() => model.File)"
-                                                                           @bind-Files="model.File" Required="true" Disabled="true">
+                                                                           @bind-Files="model.File">
                                                                 <ActivatorContent>
                                                                     <MudButton Variant="Variant.Filled"
                                                                                Color="Color.Primary"
@@ -290,6 +268,7 @@
         Snackbar.Add("Player has been created.", MudBlazor.Severity.Success);
         NavManager.NavigateTo($"/playersbyteam/{teamId.ToString()}");
         StateHasChanged();
+
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)
@@ -313,7 +292,7 @@
 
         if (_index == 0)
         {
-            var result = await CreatePlayerValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreatePlayerModel.FirstName), nameof(CreatePlayerModel.LastName), nameof(CreatePlayerModel.File)));
+            var result = await CreatePlayerValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreatePlayerModel.FirstName), nameof(CreatePlayerModel.LastName)));
             if (result.IsValid)
                 canProceed = true;
 

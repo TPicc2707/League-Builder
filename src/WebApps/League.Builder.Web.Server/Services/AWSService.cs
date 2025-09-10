@@ -15,22 +15,30 @@ public class AWSService : IAWSService
 
     public async Task<bool> UploadImages(string keyPath, IBrowserFile file)
     {
-        PutObjectRequest s3Request = new PutObjectRequest()
+        try
         {
-            InputStream = file.OpenReadStream(),
-            BucketName = Image_S3_Bucket_Name,
-            Key = keyPath
+            PutObjectRequest s3Request = new PutObjectRequest()
+            {
+                InputStream = file.OpenReadStream(),
+                BucketName = Image_S3_Bucket_Name,
+                Key = keyPath
 
-        };
-        PutObjectResponse s3Response = await _awsS3.PutObjectAsync(s3Request);
+            };
+            PutObjectResponse s3Response = await _awsS3.PutObjectAsync(s3Request);
 
-        var response = s3Response.HttpStatusCode;
+            var response = s3Response.HttpStatusCode;
 
-        if (response != System.Net.HttpStatusCode.OK)
-            return false;
+            if (response != System.Net.HttpStatusCode.OK)
+                return false;
 
 
-        return true;
+            return true;
+
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
     }
 
     public async Task<bool> CopyObjectToNewFolder(string sourceKeyPath, string destinationKeyPath)

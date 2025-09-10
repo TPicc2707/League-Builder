@@ -45,27 +45,6 @@
                                                             <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
                                                         }
                                                     </MudSelect>
-                                                    <MudItem Style="padding-top: 20px;">
-                                                        <MudStack Row="true">
-                                                            <MudFileUpload @ref="@_fileUpload"
-                                                                           T="IBrowserFile"
-                                                                           For="@(() => model.File)"
-                                                                           @bind-Files="model.File" Required="true">
-                                                                <ActivatorContent>
-                                                                    <MudButton Variant="Variant.Filled"
-                                                                               Color="Color.Primary"
-                                                                               StartIcon="@Icons.Material.Filled.CloudUpload">
-                                                                        Player Image
-                                                                    </MudButton>
-                                                                </ActivatorContent>
-                                                            </MudFileUpload>
-                                                            @if (model.File != null)
-                                                            {
-                                                                <MudText Typo="@Typo.h6">@model.File.Name</MudText>
-                                                            }
-                                                        </MudStack>
-                                                    </MudItem>
-
                                                 </MudCardContent>
                                             </MudCard>
                                          </MudItem>
@@ -185,7 +164,7 @@
                                                             <MudFileUpload @ref="@_fileUpload"
                                                                            T="IBrowserFile"
                                                                            For="@(() => model.File)"
-                                                                           @bind-Files="model.File" Required="true" Disabled="true">
+                                                                           @bind-Files="model.File">
                                                                 <ActivatorContent>
                                                                     <MudButton Variant="Variant.Filled"
                                                                                Color="Color.Primary"

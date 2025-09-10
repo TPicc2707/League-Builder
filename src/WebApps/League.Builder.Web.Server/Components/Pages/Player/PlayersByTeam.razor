@@ -45,7 +45,7 @@
                                         <MudTable Items="@Players.Players" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <ToolBarContent>
                                                 <MudStack Justify="Justify.FlexStart">
-                                                    <MudButton OnClick="NavigateToCreatePlayer" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
+                                                    <MudButton OnClick="NavigateToCreatePlayer" Disabled="IsTeamMaxOnPlayers" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
                                                 </MudStack>
                                             </ToolBarContent>
                                             <HeaderContent>
@@ -228,6 +228,7 @@
     private Justify _justify = Justify.SpaceEvenly;
     private int PlayerCounter = 0;
     private int NumberPlayersToShow = 100;
+    private bool IsTeamMaxOnPlayers = false;
 
     private GetTeamByIdResponse Team { get; set; }
     private GetPlayersByTeamResponse Players { get; set; }
@@ -244,7 +245,9 @@
         Team = await TeamService.GetTeamById(teamId);
         Players = await PlayerService.GetPlayersByTeam(teamId);
         LeaguesResponse = await LeagueService.GetLeagues();
-        await GetTeamImageAsync();
+        var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == Team.Team.LeagueId);
+        IsTeamMaxOnPlayers = Players.Players.Count() == league.MaximumTotalTeamPlayers ? true : false;
+        await GetTeamImageAsync(league);
         await GetImageAsync();
         PageLoad = true;
     }
@@ -291,9 +294,8 @@
         }
     }
 
-    private async Task GetTeamImageAsync()
+    private async Task GetTeamImageAsync(LeagueModel league)
     {
-        var league = LeaguesResponse.Leagues.FirstOrDefault(l => l.Id == Team.Team.LeagueId);
         Team.Team.LeagueName = league.Name;
         var keyPath = $"/{league.Sport}/{league.Name}/teams/{Team.Team.TeamName}/{Team.Team.ImageFile}";
         Team.Team.Image = await AWSService.GetImage(keyPath);

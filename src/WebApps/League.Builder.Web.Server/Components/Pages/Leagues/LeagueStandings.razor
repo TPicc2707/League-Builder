@@ -27,11 +27,11 @@
                                         }
                                     </MudSelect>
                                 </MudItem>
-                                <MudItem xs="3" md="3" lg="3">
-
-                                </MudItem>
                                 <MudItem xs="3" md="3" lg="3" Style="align-content: center; padding: 10px;">
                                     <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStandings" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                </MudItem>
+                                <MudItem xs="3" md="3" lg="3" Style="align-content: center; padding: 10px;">
+                                    <MudButton OnClick="NavigateToPlayoffs" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Playoffs</MudButton>
                                 </MudItem>
                             </MudStack>
                         </ChildContent>
@@ -151,6 +151,11 @@
         CalculateGamesBack();
         StateHasChanged();
         PageLoad = true;
+    }
+
+    private async Task NavigateToPlayoffs()
+    {
+        NavManager.NavigateTo($"/playoffs/{Id}");
     }
 
     private async Task GetImageAsync()

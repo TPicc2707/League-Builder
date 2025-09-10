@@ -9,6 +9,8 @@ public class UpdateLeagueSettingsModel
     public int? TotalGamesPerSeason { get; set; }
 
     public int? TotalPlayoffTeams { get; set; }
+    public int? MinimumTotalTeamPlayers { get; set; }
+    public int? MaximumTotalTeamPlayers { get; set; }
 }
 
 /// <summary>
@@ -26,6 +28,10 @@ public class UpdateLeagueSettingsModelValidator : AbstractValidator<UpdateLeague
         RuleFor(x => x.TotalPlayoffTeams).NotEmpty().WithMessage("Total Playoff Teams must not be empty");
         RuleFor(x => x.TotalPlayoffTeams).GreaterThan(1).WithMessage("Total Playoff Teams must be more than 1.");
         RuleFor(x => x.TotalPlayoffTeams).LessThanOrEqualTo(8).WithMessage("Total Playoff Teams can not be more than 8.");
+        RuleFor(x => x.MinimumTotalTeamPlayers).NotEmpty().GreaterThanOrEqualTo(5).WithMessage("Teams must have a minimum of players.");
+        RuleFor(x => x.MaximumTotalTeamPlayers).NotEmpty().LessThanOrEqualTo(30).WithMessage("Teams must have a minimum of players.");
+        RuleFor(x => x.MaximumTotalTeamPlayers).NotEmpty().GreaterThanOrEqualTo(x => x.MinimumTotalTeamPlayers).WithMessage("Maximum number of players must be equal to or more than the minimum.");
+
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

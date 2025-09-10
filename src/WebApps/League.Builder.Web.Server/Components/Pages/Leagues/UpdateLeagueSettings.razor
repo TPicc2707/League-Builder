@@ -29,6 +29,16 @@
                                 <MudTextField @bind-Value="model.TotalPlayoffTeams"
                                               For="@(() => model.TotalPlayoffTeams)"
                                                 Label="Total Playoff Teams" />
+                            </MudCardContent>  
+                            <MudCardContent Class="pa-6">
+                                <MudTextField @bind-Value="model.MinimumTotalTeamPlayers"
+                                              For="@(() => model.MinimumTotalTeamPlayers)"
+                                              Label="Minimum Number of Players On Team" />
+                            </MudCardContent>
+                            <MudCardContent Class="pa-6">
+                                <MudTextField @bind-Value="model.MaximumTotalTeamPlayers"
+                                              For="@(() => model.MaximumTotalTeamPlayers)"
+                                              Label="Max Number of Players On Team" />
                             </MudCardContent>
                             <MudCardActions>
                                 <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
@@ -68,6 +78,8 @@
             model.Id = LeagueByIdResponse.League.Id;
             model.TotalGamesPerSeason = LeagueByIdResponse.League.TotalGamesPerSeason == 0 ? null : LeagueByIdResponse.League.TotalGamesPerSeason;
             model.TotalPlayoffTeams = LeagueByIdResponse.League.TotalPlayoffTeams == 0 ? null : LeagueByIdResponse.League.TotalPlayoffTeams;
+            model.MinimumTotalTeamPlayers = LeagueByIdResponse.League.MinimumTotalTeamPlayers == 0 ? null : LeagueByIdResponse.League.MinimumTotalTeamPlayers;
+            model.MaximumTotalTeamPlayers = LeagueByIdResponse.League.MaximumTotalTeamPlayers == 0 ? null : LeagueByIdResponse.League.MaximumTotalTeamPlayers;
 
         }
         PageLoad = true;
@@ -77,7 +89,7 @@
     {
         PageLoad = false;
 
-        UpdateLeagueSettingsRequest request = new UpdateLeagueSettingsRequest(model.Id, (int)model.TotalGamesPerSeason, (int)model.TotalPlayoffTeams);
+        UpdateLeagueSettingsRequest request = new UpdateLeagueSettingsRequest(model.Id, (int)model.TotalGamesPerSeason, (int)model.TotalPlayoffTeams, (int)model.MinimumTotalTeamPlayers, (int)model.MaximumTotalTeamPlayers);
         await LeagueService.UpdateLeagueSettings(request);
         success = true;
         Snackbar.Add("League Settings has been updated.", MudBlazor.Severity.Success);

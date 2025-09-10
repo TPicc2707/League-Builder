@@ -1,6 +1,6 @@
 ﻿namespace League.API.Leagues.UpdateLeagueSettings;
 
-public record UpdateLeagueSettingsRequest(Guid Id, int TotalGamesPerSeason, int TotalPlayoffTeams);
+public record UpdateLeagueSettingsRequest(Guid Id, int TotalGamesPerSeason, int TotalPlayoffTeams, int MinimumTotalTeamPlayers, int MaximumTotalTeamPlayers);
 
 public record UpdateLeagueSettingsResponse(bool IsSuccess);
 

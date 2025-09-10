@@ -1,0 +1,97 @@
+﻿@page "/playoffs/{id}"
+@inject IStandingsService StandingsService
+@inject ISeasonService SeasonService
+@inject ITeamService TeamService
+@inject NavigationManager NavManager;
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ILeagueService LeagueService
+@inject IAWSService AWSService
+
+
+<AuthorizeView Roles="@String.Concat(Roles.ReadStandings, ", ", Roles.ReadSeasons)" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <MudItem Style="padding-top: 50px;">
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">@Season.Year Playoffs</MudText>
+                </MudPaper>
+            </MudItem>
+
+            @if(LeagueModel.League.TotalPlayoffTeams == PlayoffTeams.TwoTeams)
+            {
+                <TwoTeamPlayoff Standings="Standings" />
+            }
+
+            @if (LeagueModel.League.TotalPlayoffTeams == PlayoffTeams.FourTeams)
+            {
+                <FourTeamPlayoff Standings="Standings" />
+            }
+
+            @if (LeagueModel.League.TotalPlayoffTeams == PlayoffTeams.EightTeams)
+            {
+                <EightTeamPlayoff Standings="Standings" />
+            }
+        }
+        else
+        {
+            <Loading />    
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private bool PageLoad = false;
+    private SeasonModel Season;
+    private GetSeasonsResponse SeasonsModel { get; set; }
+    private IEnumerable<StandingsModel> Standings;
+
+    private GetSeasonByYearResponse SeasonModel { get; set; }
+    private GetStandingsByLeagueResponse Model { get; set; }
+    private GetLeagueByIdResponse LeagueModel { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
+        var leagueId = Guid.Parse(Id);
+        SeasonsModel = await SeasonService.GetSeasons();
+        Season = SeasonsModel.Seasons.First();
+        Model = await StandingsService.GetStandingsByLeague(leagueId);
+        Standings = Model.Standings.Where(x => x.SeasonId == Season.Id);
+        LeagueModel = await LeagueService.GetLeague(leagueId);
+        await GetImageAsync();
+        CalculatePlayoffTeams();
+        Standings = Standings.Where(x => x.SeasonId == Season.Id && x.PlayoffTeam == true).OrderByDescending(x => x.WinPercentage);
+        PageLoad = true;
+    }
+
+
+    private async Task GetImageAsync()
+    {
+        foreach (var standing in Model.Standings)
+        {
+            standing.WinPercentage = standing.StandingsDetail.Wins != 0 | standing.StandingsDetail.GamesPlayed != 0 ? (decimal)standing.StandingsDetail.Wins / standing.StandingsDetail.GamesPlayed : 0;
+            var team = await TeamService.GetTeamById(standing.Team.Id);
+            var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{team.Team.TeamName}/{team.Team.ImageFile}";
+            standing.TeamImage = await AWSService.GetImage(keyPath);
+        }
+    }
+
+    private void CalculatePlayoffTeams()
+    {
+        var playoffTeams = Model.Standings.Where(x => x.SeasonId == Season.Id).OrderByDescending(x => x.WinPercentage).Take(LeagueModel.League.TotalPlayoffTeams);
+
+        foreach (var playoffTeam in playoffTeams)
+            playoffTeam.PlayoffTeam = true;
+    }
+}

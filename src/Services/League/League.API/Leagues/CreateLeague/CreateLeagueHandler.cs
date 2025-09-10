@@ -40,6 +40,8 @@ internal class CreateLeagueCommandHandler
             OwnerLastName = command.OwnerLastName,
             TotalGamesPerSeason = 0,
             TotalPlayoffTeams = 0,
+            MinimumTotalTeamPlayers = 0,
+            MaximumTotalTeamPlayers = 0,
             EmailAddress = command.EmailAddress,
             ImageFile = command.ImageFile,
             Created_DateTime = DateTime.Now,

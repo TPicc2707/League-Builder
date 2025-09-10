@@ -211,4 +211,11 @@
         public const string BASKETBALL = "Basketball";
         public const string FOOTBALL = "Football";
     }
+
+    public static class PlayoffTeams
+    {
+        public const int TwoTeams = 2;
+        public const int FourTeams = 4;
+        public const int EightTeams = 8;
+    }
 }

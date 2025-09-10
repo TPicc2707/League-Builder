@@ -38,26 +38,6 @@
                                                             <MudSelectItem Value="sports">@sports</MudSelectItem>
                                                         }
                                                     </MudSelect>
-                                                    <MudItem Style="padding-top: 20px;">
-                                                        <MudStack Row="true">
-                                                            <MudFileUpload @ref="@_fileUpload"
-                                                                            T="IBrowserFile"
-                                                                            For="@(() => model.File)"
-                                                                            @bind-Files="model.File" Required="true">
-                                                                <ActivatorContent>
-                                                                    <MudButton Variant="Variant.Filled"
-                                                                                Color="Color.Primary"
-                                                                                StartIcon="@Icons.Material.Filled.CloudUpload">
-                                                                        League Image
-                                                                    </MudButton>
-                                                                </ActivatorContent>
-                                                            </MudFileUpload>
-                                                            @if (model.File != null)
-                                                            {
-                                                                <MudText Typo="@Typo.h6">@model.File.Name</MudText>
-                                                            }
-                                                        </MudStack>
-                                                    </MudItem>
                                                 </MudCardContent>
                                             </MudCard>
                                         </MudItem>
@@ -115,7 +95,7 @@
                                                             <MudFileUpload Disabled="true" @ref="@_fileUpload"
                                                                             T="IBrowserFile"
                                                                             For="@(() => model.File)"
-                                                                            @bind-Files="model.File" Required="true">
+                                                                            @bind-Files="model.File">
                                                                 <ActivatorContent>
                                                                     <MudButton Variant="Variant.Filled"
                                                                                 Color="Color.Primary"
@@ -200,7 +180,7 @@
         errors.RemoveRange(0, errors.Count);
         if (_index == 0)
         {
-            var result = await CreateLeagueValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreateLeagueModel.Name), nameof(CreateLeagueModel.Sport), nameof(CreateLeagueModel.File)));
+            var result = await CreateLeagueValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreateLeagueModel.Name), nameof(CreateLeagueModel.Sport)));
             if (result.IsValid)
                 canProceed = true;
 

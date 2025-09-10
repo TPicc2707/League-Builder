@@ -42,7 +42,9 @@ public class UpdateLeagueCommandHandler
         league.OwnerLastName = command.OwnerLastName;
         league.TotalGamesPerSeason = league.TotalGamesPerSeason;
         league.TotalPlayoffTeams = league.TotalPlayoffTeams;
-        league.EmailAddress = command.EmailAddress;
+        league.MinimumTotalTeamPlayers = league.MinimumTotalTeamPlayers;
+        league.TotalPlayoffTeams = league.TotalPlayoffTeams;
+        league.MaximumTotalTeamPlayers = league.MaximumTotalTeamPlayers;
         league.ImageFile = command.ImageFile;
         league.Modified_DateTime = DateTime.Now;
         league.Modified_User = "tony.pic";
