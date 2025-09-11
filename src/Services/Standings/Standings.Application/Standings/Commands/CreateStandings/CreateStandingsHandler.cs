@@ -14,7 +14,7 @@ public class CreateStandingsHandler(IApplicationDbContext dbContext)
 
     private Domain.Models.Standings CreateNewStandings(StandingsDto standingsDto)
     {
-        var standingsDetail = StandingsDetail.Of(standingsDto.StandingsDetail.GamesPlayed, standingsDto.StandingsDetail.Wins, standingsDto.StandingsDetail.Losses, standingsDto.StandingsDetail.Ties);
+        var standingsDetail = StandingsDetail.Of(standingsDto.StandingsDetail.GamesPlayed, standingsDto.StandingsDetail.Wins, standingsDto.StandingsDetail.Losses, standingsDto.StandingsDetail.Ties, standingsDto.StandingsDetail.PlayoffTeam, standingsDto.StandingsDetail.Champion);
 
         var newStandings = Domain.Models.Standings.Create(
             id: StandingsId.Of(Guid.NewGuid()),

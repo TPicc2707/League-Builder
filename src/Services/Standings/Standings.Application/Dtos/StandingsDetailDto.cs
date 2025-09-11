@@ -4,5 +4,7 @@ public record StandingsDetailDto(
     int GamesPlayed,
     int Wins,
     int Losses,
-    int Ties
+    int Ties,
+    bool PlayoffTeam,
+    bool Champion
     );

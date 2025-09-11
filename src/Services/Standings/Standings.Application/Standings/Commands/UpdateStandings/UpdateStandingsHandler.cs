@@ -24,7 +24,7 @@ public class UpdateStandingsHandler(IApplicationDbContext dbContext)
 
     private async Task UpdateNewStandingsWithNewValues(Domain.Models.Standings standings, StandingsDto standingsDto)
     {
-        var updatedStandingsDetail = StandingsDetail.Of(standingsDto.StandingsDetail.GamesPlayed, standingsDto.StandingsDetail.Wins, standingsDto.StandingsDetail.Losses, standingsDto.StandingsDetail.Ties);
+        var updatedStandingsDetail = StandingsDetail.Of(standingsDto.StandingsDetail.GamesPlayed, standingsDto.StandingsDetail.Wins, standingsDto.StandingsDetail.Losses, standingsDto.StandingsDetail.Ties, standingsDto.StandingsDetail.PlayoffTeam, standingsDto.StandingsDetail.Champion);
 
         standings.Update(
             leagueId: LeagueId.Of(standingsDto.LeagueId),

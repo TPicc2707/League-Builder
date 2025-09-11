@@ -2,13 +2,13 @@
 @inject IStandingsService StandingsService
 @inject ISeasonService SeasonService
 @inject ITeamService TeamService
-@inject NavigationManager NavManager;
+@inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ILeagueService LeagueService
 @inject IAWSService AWSService
 
 
-<AuthorizeView Roles="@String.Concat(Roles.ReadStandings, ", ", Roles.ReadSeasons)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.ReadStandings, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -71,7 +71,7 @@
         LeagueModel = await LeagueService.GetLeague(leagueId);
         await GetImageAsync();
         CalculatePlayoffTeams();
-        Standings = Standings.Where(x => x.SeasonId == Season.Id && x.PlayoffTeam == true).OrderByDescending(x => x.WinPercentage);
+        Standings = Standings.Where(x => x.SeasonId == Season.Id && x.StandingsDetail.PlayoffTeam == true).OrderByDescending(x => x.WinPercentage);
         PageLoad = true;
     }
 
@@ -92,6 +92,6 @@
         var playoffTeams = Model.Standings.Where(x => x.SeasonId == Season.Id).OrderByDescending(x => x.WinPercentage).Take(LeagueModel.League.TotalPlayoffTeams);
 
         foreach (var playoffTeam in playoffTeams)
-            playoffTeam.PlayoffTeam = true;
+            playoffTeam.ProjectedPlayoffTeam = true;
     }
 }

@@ -379,7 +379,7 @@
         var currentStandings = StandingsResponse.Standings.FirstOrDefault(s => s.SeasonId == seasonResponse.Season.Id);
         StandingsDetailModel standingsDetail = new StandingsDetailModel(currentStandings.StandingsDetail.GamesPlayed + 1,
             model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Wins + 1 : currentStandings.StandingsDetail.Wins,
-            model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Losses : currentStandings.StandingsDetail.Losses + 1, currentStandings.StandingsDetail.Ties);
+            model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Losses : currentStandings.StandingsDetail.Losses + 1, currentStandings.StandingsDetail.Ties, currentStandings.StandingsDetail.PlayoffTeam, currentStandings.StandingsDetail.Champion);
         TeamDetailModel teamDetail = new TeamDetailModel(teamId, string.Empty);
         UpdateStandingsModel standingsModel = new UpdateStandingsModel(currentStandings.Id, model.LeagueId, seasonResponse.Season.Id, standingsDetail, (int)currentStandings.StandingsStatus, teamDetail);
         UpdateStandingsRequest request = new UpdateStandingsRequest(standingsModel);

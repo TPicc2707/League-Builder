@@ -117,6 +117,12 @@
                                                             }
                                                         </MudTooltip>
                                                     </AuthorizeView>
+                                                    <AuthorizeView Roles="@Roles.ReadLeagues" Context="leagueHistoryAuth">
+                                                        <MudTooltip Text="League History" Color="Color.Secondary">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.MenuBook" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/leaguehistory/", context.Id)" />
+                                                        </MudTooltip>
+                                                    </AuthorizeView>
+
                                                     <AuthorizeView Roles="@Roles.UpdateLeagues" Context="updateSettingsAuth">
                                                         <MudTooltip Text="Settings" Color="Color.Secondary">
                                                             <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateleaguesettings/", context.Id)" />

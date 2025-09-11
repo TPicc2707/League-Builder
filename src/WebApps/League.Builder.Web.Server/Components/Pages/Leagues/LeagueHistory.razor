@@ -1,0 +1,62 @@
+﻿@page "/leaguehistory/{id}"
+@inject ILeagueService LeagueService
+@inject ITeamService TeamService
+@inject ISeasonService SeasonService
+@inject NavigationManager NavManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+<AuthorizeView Roles="@String.Concat(Roles.ReadLeagues, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames)">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <MudItem Style="padding-top: 50px;">
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">@LeagueByIdResponse.League.Name History</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem Style="padding-top: 50px;">
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudExpansionPanels>
+                        <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000; padding-left: 25px; padding-right: 25px;">
+                            <TitleContent>
+                                <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Champions</MudText>
+                            </TitleContent>
+                            <ChildContent>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                </MudPaper>
+            </MudItem>
+        }
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    public bool PageLoad = false;
+    public GetLeagueByIdResponse LeagueByIdResponse { get; set; }
+    public GetTeamsByLeagueResponse TeamsByLeagueResponse { get; set; }
+    public GetSeasonsResponse GetSeasonsResponse { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        {
+            NavManager.NavigateTo("authentication/logout");
+        }
+
+        var leagueId = Guid.Parse(Id);
+        LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
+        TeamsByLeagueResponse = await TeamService.GetTeamsByLeague(leagueId);
+        GetSeasonsResponse = await SeasonService.GetSeasons();
+        PageLoad = true;
+    }
+}

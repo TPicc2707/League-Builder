@@ -112,7 +112,7 @@
 
         TeamsModel = await TeamsService.GetTeams(0, 100);
         SeasonModel = await SeasonService.GetSeason(response.Id);
-        StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0);
+        StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0, false, false);
         foreach(var team in TeamsModel.Teams.Data)
         {
             TeamDetailModel teamDetailModel = new TeamDetailModel(team.Id, team.TeamName);

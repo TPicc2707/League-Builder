@@ -233,7 +233,7 @@
 
         //Create Standings after Team Creation
         SeasonModel = await SeasonService.GetSeasonByYear(DateTime.Now.Year);
-        StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0);
+        StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0, false, false);
         TeamDetailModel teamDetailModel = new TeamDetailModel(response.Id, model.TeamName);
         CreateStandingsModel createStandingsModel = new CreateStandingsModel(leagueId, SeasonModel.Season.Id, standingsDetailModel, teamDetailModel);
         CreateStandingsRequest standingsRequest = new CreateStandingsRequest(createStandingsModel);

@@ -12,7 +12,9 @@ public static class StandingsExtensions
                 standings.StandingsDetail.GamesPlayed,
                 standings.StandingsDetail.Wins,
                 standings.StandingsDetail.Losses,
-                standings.StandingsDetail.Ties),
+                standings.StandingsDetail.Ties,
+                standings.StandingsDetail.PlayoffTeam,
+                standings.StandingsDetail.Champion),
             StandingsStatus: standings.StandingsStatus,
             Team: new TeamDto(
                 standings.TeamId.Value,
@@ -30,7 +32,9 @@ public static class StandingsExtensions
                 standings.StandingsDetail.GamesPlayed,
                 standings.StandingsDetail.Wins,
                 standings.StandingsDetail.Losses,
-                standings.StandingsDetail.Ties),
+                standings.StandingsDetail.Ties,
+                standings.StandingsDetail.PlayoffTeam,
+                standings.StandingsDetail.Champion),
             StandingsStatus: standings.StandingsStatus,
             Team: new TeamDto(
                 team.Id.Value,

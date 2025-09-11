@@ -8,7 +8,7 @@ public class StandingsModel
     public string TeamImage { get; set; } = default!;
     public decimal WinPercentage { get; set; } = default!;
     public decimal GamesBack {  get; set; } = default!;
-    public bool PlayoffTeam {  get; set; } = default!; 
+    public bool ProjectedPlayoffTeam { get; set; } = default!;  
     public StandingsDetailModel StandingsDetail { get ; set; } = default!;
     public StandingsStatus StandingsStatus { get; set; } = default!;
     public TeamDetailModel Team { get; set; } = default!;
@@ -31,7 +31,7 @@ public record UpdateStandingsModel(
 );
 
 
-public record StandingsDetailModel(int GamesPlayed, int Wins, int Losses, int Ties);
+public record StandingsDetailModel(int GamesPlayed, int Wins, int Losses, int Ties, bool PlayoffTeam, bool Champion);
 
 public record TeamDetailModel(Guid Id, string TeamName);
 

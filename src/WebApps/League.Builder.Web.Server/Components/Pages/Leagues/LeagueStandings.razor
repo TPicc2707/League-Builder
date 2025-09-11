@@ -56,7 +56,7 @@
                                     <MudImage Src="@context.TeamImage" Alt="Player Image"></MudImage>
                                 </MudAvatar>
                             </MudTd>
-                            @if (context.PlayoffTeam)
+                            @if (context.ProjectedPlayoffTeam)
                             {
                                 <MudTd DataLabel="Team Name">
                                     <MudStack Row="true">
@@ -187,6 +187,6 @@
         var playoffTeams = Model.Standings.Where(x => x.SeasonId == Season.Id).OrderByDescending(x => x.WinPercentage).Take(LeagueModel.League.TotalPlayoffTeams);
 
         foreach(var playoffTeam in playoffTeams)
-            playoffTeam.PlayoffTeam = true;
+            playoffTeam.ProjectedPlayoffTeam = true;
     }
 }
