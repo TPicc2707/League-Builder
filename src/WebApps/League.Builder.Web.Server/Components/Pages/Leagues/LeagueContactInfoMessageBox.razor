@@ -8,7 +8,7 @@
         @if (DataLoad)
         {
             <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
-                <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                <MudIconButton Href="@MailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
                 <MudText Typo="Typo.h6">@League.League.EmailAddress</MudText>
             </MudStack>
         }
@@ -24,12 +24,13 @@
     [Parameter]
     public Guid Id { get; set; }
     private bool DataLoad;
-
+    private string MailUrl = string.Empty;
     GetLeagueByIdResponse League { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         League = await LeagueService.GetLeague(Id);
+        MailUrl = $"mailto:{League.League.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
         DataLoad = true;
     }
 

@@ -1,4 +1,5 @@
 ﻿@inject IPlayerService PlayerService
+@inject NavigationManager NavManager;
 
 <MudDialog>
     <TitleContent>
@@ -8,7 +9,7 @@
         @if (DataLoad)
         {
             <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
-                <MudIcon Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />            
+                <MudIconButton Href="@MailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
                 <MudText Typo="Typo.h6">@PlayerModel.Player.PlayerDetail.EmailAddress</MudText>
             </MudStack>
             <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
@@ -28,12 +29,14 @@
     [Parameter]
     public Guid Id { get; set; }
     private bool DataLoad;
+    private string MailUrl = string.Empty;
 
     GetPlayerByIdResponse PlayerModel { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         PlayerModel = await PlayerService.GetPlayerById(Id);
+        MailUrl = $"mailto:{PlayerModel.Player.PlayerDetail.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
         DataLoad = true;
     }
 
