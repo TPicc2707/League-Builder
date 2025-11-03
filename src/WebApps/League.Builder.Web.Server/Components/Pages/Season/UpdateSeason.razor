@@ -1,6 +1,5 @@
 ﻿@page "/updateseason/{id}"
-@using global::League.Builder.Web.Server.Common
-@using global::League.Builder.Web.Server.Components.Pages.Shared
+@using League.Builder.Web.Server.Services.Cache
 @inject ISeasonService SeasonService
 @inject ITeamService TeamsService
 @inject IStandingsService StandingsService
@@ -9,6 +8,9 @@
 @inject ISnackbar Snackbar
 @inject IValidator<UpdateSeasonModel> UpdateSeasonValidator
 @inject IDialogService DialogService
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject IStandingsLocalCacheService StandingsLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.UpdateSeasons, ", ", Roles.ReadSeasons)" Context="auth">
     <Authorized>
@@ -114,7 +116,13 @@
         }
 
         var seasonId = Guid.Parse(Id);
-        GetSeasonModel = await SeasonService.GetSeason(seasonId);
+        GetSeasonModel = await SeasonLocalCache.GetSeasonByIdCache(Id);
+        if (GetSeasonModel == null)
+        {
+            GetSeasonModel = await SeasonService.GetSeason(seasonId);
+            await SeasonLocalCache.SetSeasonByIdCache(Id, GetSeasonModel);
+        }
+
         model.Id = GetSeasonModel.Season.Id;
         model.Year = GetSeasonModel.Season.Year;
         model.Description = GetSeasonModel.Season.Description;
@@ -127,6 +135,9 @@
         UpdateSeasonRequest request = new UpdateSeasonRequest(model.Id, model.Year, model.Description);
         await SeasonService.UpdateSeason(request);
         success = true;
+        await SeasonLocalCache.DeleteSeasonsCache();
+        await SeasonLocalCache.DeleteSeasonByIdCache(model.Id.ToString());
+        await SeasonLocalCache.DeleteSeasonByYearCache(model.Year);
         NavManager.NavigateTo("/seasons");
         Snackbar.Add("Season has been updated.", MudBlazor.Severity.Success);
         StateHasChanged();
@@ -157,11 +168,17 @@
 
     private async Task ValidModel()
     {
+        GetSeasonsResponse seasons;
         errors.RemoveRange(0, errors.Count);
 
         if (_index == 0)
         {
-            var seasons = await SeasonService.GetSeasons();
+            seasons = await SeasonLocalCache.GetSeasonsCache();
+            if (seasons == null)
+            {
+                seasons = await SeasonService.GetSeasons();
+                await SeasonLocalCache.SetSeasonsCache(seasons);
+            }
             var doesSeasonExist = seasons.Seasons.Where(x => x.Year == model.Year).Any();
 
             if (doesSeasonExist)

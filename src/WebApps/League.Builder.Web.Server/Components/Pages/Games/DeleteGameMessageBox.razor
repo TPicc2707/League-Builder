@@ -1,6 +1,7 @@
 ﻿@inject IGameService GameService
 @inject NavigationManager NavManager
 @inject ISnackbar Snackbar
+@inject IGameLocalCacheService GameLocalCache
 
 <MudDialog>
     <TitleContent>
@@ -21,11 +22,22 @@
     [Parameter]
     public Guid Id { get; set; }
 
+    GetGameByIdResponse GameByIdResponse { get; set; }
+
     private async Task Delete()
     {
-        var game = await GameService.GetGameById(Id);
-        var leagueId = game.Game.LeagueId.ToString();
+        GameByIdResponse = await GameLocalCache.GetGameByIdCache(Id.ToString());
+        if(GameByIdResponse == null)
+        {
+            GameByIdResponse = await GameService.GetGameById(Id);
+            await GameLocalCache.SetGameByIdCache(Id.ToString(), GameByIdResponse);
+        }
+        var leagueId = GameByIdResponse.Game.LeagueId.ToString();
         await GameService.DeleteGame(Id);
+        await GameLocalCache.DeleteGameByIdCache(Id.ToString());
+        await GameLocalCache.DeleteGamesByLeagueCache(leagueId.ToString());
+        await GameLocalCache.DeleteGamesByTeamCache(GameByIdResponse.Game.AwayTeam.Id.ToString());
+        await GameLocalCache.DeleteGamesByTeamCache(GameByIdResponse.Game.HomeTeam.Id.ToString());
         MudDialog.Close(DialogResult.Ok(true));
         Snackbar.Add("Game has been deleted.", MudBlazor.Severity.Success);
         StateHasChanged();

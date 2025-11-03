@@ -20,3 +20,4 @@ global using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 global using MudBlazor.Services;
 global using Refit;
 global using System.IdentityModel.Tokens.Jwt;
+global using League.Builder.Web.Server.Services.Cache;

@@ -1,8 +1,11 @@
 ﻿@page "/"
+@using League.Builder.Web.Server.Services.Cache
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.CreateLeagues, ", ", Roles.CreateTeams, ", ", Roles.CreatePlayers)" Context="auth">
     <Authorized>
@@ -244,13 +247,23 @@
         {
             if (user.IsInRole(Roles.ReadLeagues))
             {
-                LeagueModel = await LeagueService.GetLeagues(1, 100);
+                LeagueModel = await LeagueLocalCache.GetLeaguesCache();
+                if(LeagueModel == null)
+                {
+                    LeagueModel = await LeagueService.GetLeagues(1, 1000);
+                    await LeagueLocalCache.SetLeaguesCache(LeagueModel);
+                }
                 leagueId = LeagueModel.Leagues.First().Id;
             }
 
             if (user.IsInRole(Roles.ReadTeams))
             {
-                TeamModel = await TeamService.GetTeams(0, 100);
+                TeamModel = await TeamLocalCache.GetTeamsCache();
+                if(TeamModel == null)
+                {
+                    TeamModel = await TeamService.GetTeams(0, 1000);
+                    await TeamLocalCache.SetTeamsCache(TeamModel);
+                }
                 teamId = TeamModel.Teams.Data.First().Id;
                 
             }

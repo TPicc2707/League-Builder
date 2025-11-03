@@ -1,4 +1,5 @@
 ﻿@page "/leaguestandings/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject IStandingsService StandingsService
 @inject ISeasonService SeasonService
 @inject ITeamService TeamService
@@ -6,6 +7,10 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ILeagueService LeagueService
 @inject IAWSService AWSService
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject IStandingsLocalCacheService StandingsLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStandings, ", ", Roles.ReadSeasons)" Context="auth">
     <Authorized>
@@ -122,6 +127,7 @@
     private GetSeasonByYearResponse SeasonModel { get; set; }
     private GetStandingsByLeagueResponse Model { get; set; }
     private GetLeagueByIdResponse LeagueModel { get; set; }
+    private GetTeamByIdResponse TeamByIdResponse { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -131,11 +137,26 @@
         }
 
         var leagueId = Guid.Parse(Id);
-        SeasonsModel = await SeasonService.GetSeasons();
+        SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
+        if (SeasonsModel == null)
+        {
+            SeasonsModel = await SeasonService.GetSeasons();
+            await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+        }
         Season = SeasonsModel.Seasons.First();
-        Model = await StandingsService.GetStandingsByLeague(leagueId);
+        Model = await StandingsLocalCache.GetStandingsByLeagueCache(Id);
+        if (Model == null)
+        {
+            Model = await StandingsService.GetStandingsByLeague(leagueId);
+            await StandingsLocalCache.SetStandingsByLeagueCache(Id, Model);
+        }
         Standings = Model.Standings.Where(x => x.SeasonId == Season.Id);
-        LeagueModel = await LeagueService.GetLeague(leagueId);
+        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(Id);
+        if (LeagueModel == null)
+        {
+            LeagueModel = await LeagueService.GetLeague(leagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueModel);
+        }
         await GetImageAsync();
         CalculateGamesBack();
         CalculatePlayoffTeams();
@@ -146,7 +167,12 @@
     private async Task GetSeasonStandings()
     {
         PageLoad = false;
-        SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
+        SeasonModel = await SeasonLocalCache.GetSeasonByYearCache(seasonValue);
+        if(SeasonModel == null)
+        {
+            SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
+            await SeasonLocalCache.SetSeasonByYearCache(seasonValue, SeasonModel);
+        }
         Season = SeasonModel.Season;
         CalculateGamesBack();
         StateHasChanged();
@@ -163,8 +189,13 @@
         foreach (var standing in Model.Standings)
         {
             standing.WinPercentage = standing.StandingsDetail.Wins != 0 | standing.StandingsDetail.GamesPlayed != 0 ? (decimal)standing.StandingsDetail.Wins / standing.StandingsDetail.GamesPlayed : 0;
-            var team = await TeamService.GetTeamById(standing.Team.Id);
-            var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{team.Team.TeamName}/{team.Team.ImageFile}";
+            TeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(standing.Team.Id.ToString());
+            if (TeamByIdResponse == null)
+            {
+                TeamByIdResponse = await TeamService.GetTeamById(standing.Team.Id);
+                await TeamLocalCache.SetTeamByIdCache(standing.Team.Id.ToString(), TeamByIdResponse);
+            }
+            var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamByIdResponse.Team.TeamName}/{TeamByIdResponse.Team.ImageFile}";
             standing.TeamImage = await AWSService.GetImage(keyPath);
         }
     }

@@ -1,4 +1,5 @@
 ﻿@page "/footballplayerstats/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject IPlayerService PlayerService
 @inject IStatsService StatService
 @inject ISeasonService SeasonService
@@ -9,6 +10,12 @@
 @inject IDialogService DialogService
 @inject NavigationManager NavManager;
 @inject IHttpContextAccessor HttpContextAccessor
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject IPlayerLocalCacheService PlayerLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject IStatsLocalCacheService StatLocalCache
+@inject IGameLocalCacheService GameLocalCache
 
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames, ", ", Roles.ReadTeams)" Context="auth">
@@ -653,7 +660,12 @@
         }
 
         int year = DateTime.Now.Year;
-        SeasonsModel = await SeasonService.GetSeasons();
+        SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
+        if (SeasonsModel == null)
+        {
+            SeasonsModel = await SeasonService.GetSeasons();
+            await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+        }
         seasonValue = SeasonsModel.Seasons.FirstOrDefault(x => x.Year == year).Year;
         await CreatePlayerStats(year);
         PageLoad = true;
@@ -702,14 +714,44 @@
     private async Task CreatePlayerStats(int year)
     {
         var playerId = Guid.Parse(Id);
-        PlayerModel = await PlayerService.GetPlayerById(playerId);
-        TeamModel = await TeamService.GetTeamById(PlayerModel.Player.TeamId);
-        LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+        PlayerModel = await PlayerLocalCache.GetPlayerByIdCache(Id);
+        if (PlayerModel == null)
+        {
+            PlayerModel = await PlayerService.GetPlayerById(playerId);
+            await PlayerLocalCache.SetPlayerByIdCache(PlayerModel, Id);
+        }
+        TeamModel = await TeamLocalCache.GetTeamByIdCache(PlayerModel.Player.TeamId.ToString());
+        if (TeamModel == null)
+        {
+            TeamModel = await TeamService.GetTeamById(PlayerModel.Player.TeamId);
+            await TeamLocalCache.SetTeamByIdCache(PlayerModel.Player.TeamId.ToString(), TeamModel);
+        }
+        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(TeamModel.Team.LeagueId.ToString());
+        if (LeagueModel == null)
+        {
+            LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(TeamModel.Team.LeagueId.ToString(), LeagueModel);
+        }
         await GetImageAsync();
         address = String.Concat(PlayerModel.Player.PlayerAddress.AddressLine, ", ", PlayerModel.Player.PlayerAddress.State, ", ", PlayerModel.Player.PlayerAddress.ZipCode);
-        SeasonModel = await SeasonService.GetSeasonByYear(year);
-        StatsModel = await StatService.GetPlayerFootballStatsBySeason(playerId, SeasonModel.Season.Id);
-        GameModel = await GameService.GetGamesByTeam(PlayerModel.Player.TeamId);
+        SeasonModel = await SeasonLocalCache.GetSeasonByYearCache(year);
+        if (SeasonModel == null)
+        {
+            SeasonModel = await SeasonService.GetSeasonByYear(year);
+            await SeasonLocalCache.SetSeasonByYearCache(year, SeasonModel);
+        }
+        StatsModel = await StatLocalCache.GetPlayerFootballStatsBySeasonCache(Id, SeasonModel.Season.Id.ToString());
+        if (StatsModel == null)
+        {
+            StatsModel = await StatService.GetPlayerFootballStatsBySeason(playerId, SeasonModel.Season.Id);
+            await StatLocalCache.SetPlayerFootballStatsBySeasonCache(Id, SeasonModel.Season.Id.ToString(), StatsModel);
+        }
+        GameModel = await GameLocalCache.GetGamesByTeamCache(PlayerModel.Player.TeamId.ToString());
+        if (GameModel == null)
+        {
+            GameModel = await GameService.GetGamesByTeam(PlayerModel.Player.TeamId);
+            await GameLocalCache.SetGamesByTeamCache(PlayerModel.Player.TeamId.ToString(), GameModel);
+        }
         foreach (var stat in StatsModel.FootballStats)
         {
             //Passing

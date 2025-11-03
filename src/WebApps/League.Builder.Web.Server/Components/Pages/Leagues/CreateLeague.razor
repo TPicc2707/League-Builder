@@ -1,5 +1,6 @@
 ﻿@page "/createleague"
 @using League.Builder.Web.Server.Components.Pages.Shared
+@using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager;
@@ -7,6 +8,8 @@
 @inject IAWSService AWSService
 @inject IValidator<CreateLeagueModel> CreateLeagueValidator
 @inject IDialogService DialogService
+@inject ILocalStorageService LocalStorage
+@inject ILeagueLocalCacheService LeagueLocalCache
 
 <AuthorizeView Roles="@Roles.CreateLeagues" Context="auth">
     <Authorized>
@@ -209,6 +212,9 @@
         CreateLeagueRequest request = new CreateLeagueRequest(model.Name, model.Sport, model.Description, model.ImageFile, model.OwnerFirstName, model.OwnerLastName, model.EmailAddress);
         await LeagueService.CreateLeague(request);
         success = true;
+        await LeagueLocalCache.DeleteLeaguesCache();
+        await LeagueLocalCache.DeleteLeagueBySportCache(model.Sport);
+        await LeagueLocalCache.DeleteLeagueByNameCache();
         Snackbar.Add("League has been created.", MudBlazor.Severity.Success);
         NavManager.NavigateTo("/leagues");
         StateHasChanged();

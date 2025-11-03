@@ -1,4 +1,5 @@
 ﻿@page "/updateplayer/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject IPlayerService PlayerService
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
@@ -8,6 +9,12 @@
 @inject IAWSService AWSService
 @inject IValidator<UpdatePlayerModel> UpdatePlayerValidator
 @inject IDialogService DialogService
+@inject ILocalStorageService LocalStorage
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject IPlayerLocalCacheService PlayerLocalCache
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject IStatsLocalCacheService StatsLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.UpdatePlayers, ", ", Roles.ReadPlayers, ", ", Roles.ReadTeams)" Context="auth">
     <Authorized>
@@ -226,6 +233,7 @@
     private GetTeamsResponse TeamsResponse { get; set; }
     private GetTeamByIdResponse TeamById { get; set; }
     private GetLeagueByIdResponse LeagueById { get; set; }
+    private GetSeasonByYearResponse SeasonByYearResponse { get; set; }
     private List<string> states;
     UpdatePlayerModel model = new UpdatePlayerModel();
     bool success;
@@ -245,10 +253,30 @@
         }
 
         var playerId = Guid.Parse(Id);
-        PlayerByIdResponse = await PlayerService.GetPlayerById(playerId);
-        TeamsResponse = await TeamService.GetTeams();
-        TeamById = await TeamService.GetTeamById(PlayerByIdResponse.Player.TeamId);
-        LeagueById = await LeagueService.GetLeague(TeamById.Team.LeagueId);
+        PlayerByIdResponse = await PlayerLocalCache.GetPlayerByIdCache(Id);
+        if(PlayerByIdResponse == null)
+        {
+            PlayerByIdResponse = await PlayerService.GetPlayerById(playerId);
+            await PlayerLocalCache.SetPlayerByIdCache(PlayerByIdResponse, Id);
+        }
+        TeamsResponse = await TeamLocalCache.GetTeamsCache();
+        if(TeamsResponse == null)
+        {
+            TeamsResponse = await TeamService.GetTeams();
+            await TeamLocalCache.SetTeamsCache(TeamsResponse);
+        }
+        TeamById = await TeamLocalCache.GetTeamByIdCache(PlayerByIdResponse.Player.TeamId.ToString());
+        if (TeamById == null)
+        {
+            TeamById = await TeamService.GetTeamById(PlayerByIdResponse.Player.TeamId);
+            await TeamLocalCache.SetTeamByIdCache(Id, TeamById);
+        }
+        LeagueById = await LeagueLocalCache.GetLeagueByIdCache(TeamById.Team.LeagueId.ToString());
+        if (LeagueById == null)
+        {
+            LeagueById = await LeagueService.GetLeague(TeamById.Team.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(TeamById.Team.LeagueId.ToString(), LeagueById);
+        }        
         sport = LeagueById.League.Sport;
         states = Constants.States();
         model.Id = PlayerByIdResponse.Player.Id;
@@ -306,6 +334,37 @@
         Console.WriteLine(request.Player.PlayerStatus);
         await PlayerService.UpdatePlayer(request);
         success = true;
+        await PlayerLocalCache.DeletePlayersCache();
+        await PlayerLocalCache.DeletePlayersByFirstNameCache();
+        await PlayerLocalCache.DeletePlayersByLastNameCache();
+        await PlayerLocalCache.DeletePlayersByPositionCache();
+        await PlayerLocalCache.DeletePlayersByBirthDateCache();
+        await PlayerLocalCache.DeletePlayersBeforeBirthDateCache();
+        await PlayerLocalCache.DeletePlayersAfterBirthDateCache();
+        await PlayerLocalCache.DeletePlayersByTeamCache(model.TeamId.ToString());
+        if (LeagueById.League.Sport == SportName.BASEBALL)
+        {
+            await StatsLocalCache.DeleteLeagueBaseballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
+            await StatsLocalCache.DeleteBaseballStatsByTeamCache(model.TeamId.ToString());
+            await StatsLocalCache.DeleteBaseballStatsByPlayerCache(Id);
+            await StatsLocalCache.DeletePlayerBaseballStatsBySeasonCache(Id, SeasonByYearResponse.Season.Id.ToString());
+        }
+        if (LeagueById.League.Sport == SportName.BASKETBALL)
+        {
+            await StatsLocalCache.DeleteLeagueBasketballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
+            await StatsLocalCache.DeleteBasketballStatsByTeamCache(model.TeamId.ToString());
+            await StatsLocalCache.DeleteBasketballStatsByPlayerCache(Id);
+            await StatsLocalCache.DeletePlayerBasketballStatsBySeasonCache(Id, SeasonByYearResponse.Season.Id.ToString());
+
+        }
+        if (LeagueById.League.Sport == SportName.FOOTBALL)
+        {
+            await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
+            await StatsLocalCache.DeleteFootballStatsByTeamCache(model.TeamId.ToString());
+            await StatsLocalCache.DeleteFootballStatsByPlayerCache(Id);
+            await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(Id, SeasonByYearResponse.Season.Id.ToString());
+
+        }
         Snackbar.Add("Player was updated.", MudBlazor.Severity.Success);
         NavManager.NavigateTo($"/playersbyteam/{model.TeamId.ToString()}");
         StateHasChanged();

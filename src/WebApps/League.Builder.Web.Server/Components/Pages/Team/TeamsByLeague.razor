@@ -4,6 +4,7 @@
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IAWSService AWSService
+@inject ILocalStorageService LocalStorage
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -163,9 +164,20 @@
         }
 
         var leagueId = Guid.Parse(Id);
+        League = await LocalStorage.GetItemAsync<GetLeagueByIdResponse>($"League: {Id}");
+        if (League == null)
+        {
+            League = await LeagueService.GetLeague(leagueId);
+            await LocalStorage.SetItemAsync($"League: {Id}", League);
+        }
         League = await LeagueService.GetLeague(leagueId);
         await GetLeagueImageAsync();
-        Teams = await TeamService.GetTeamsByLeague(leagueId);
+        Teams = await LocalStorage.GetItemAsync<GetTeamsByLeagueResponse>($"TeamsByLeague: {Id}");
+        if(Teams == null)
+        {
+            Teams = await TeamService.GetTeamsByLeague(leagueId);
+            await LocalStorage.SetItemAsync($"TeamsByLeague: {Id}", Teams);
+        }
         await GetImageAsync();
         PageLoad = true;
     }

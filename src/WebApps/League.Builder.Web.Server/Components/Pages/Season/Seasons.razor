@@ -1,8 +1,10 @@
 ﻿@page "/seasons"
+@using League.Builder.Web.Server.Services.Cache
 @inject ISeasonService SeasonService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IDialogService DialogService
+@inject ISeasonLocalCacheService SeasonLocalCache
 
 <AuthorizeView Roles="@Roles.CreateSeasons" Context="auth">
     <Authorized>
@@ -87,8 +89,12 @@
         {
             NavManager.NavigateTo("authentication/logout");
         }
-
-        Model = await SeasonService.GetSeasons();
+        Model = await SeasonLocalCache.GetSeasonsCache();
+        if(Model == null)
+        {
+            Model = await SeasonService.GetSeasons();
+            await SeasonLocalCache.SetSeasonsCache(Model);
+        }
         PageLoad = true;
     }
 
@@ -112,7 +118,14 @@
 
         var result = await dialog.Result;
 
-        if(!result.Canceled)
-            Model = await SeasonService.GetSeasons();
+        if (!result.Canceled)
+        {
+            Model = await SeasonLocalCache.GetSeasonsCache();
+            if (Model == null)
+            {
+                Model = await SeasonService.GetSeasons();
+                await SeasonLocalCache.SetSeasonsCache(Model);
+            }
+        }
     }
 }

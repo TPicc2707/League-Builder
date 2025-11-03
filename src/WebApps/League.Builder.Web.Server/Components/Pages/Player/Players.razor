@@ -1,10 +1,14 @@
 ﻿@page "/players"
+@using League.Builder.Web.Server.Services.Cache
 @inject NavigationManager NavManager
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject IPlayerService PlayerService
 @inject IAWSService AWSService
 @inject IHttpContextAccessor HttpContextAccessor
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject IPlayerLocalCacheService PlayerLocalCache
 
 <AuthorizeView Roles="@Roles.ReadPlayers" Context="auth">
     <Authorized>
@@ -200,11 +204,15 @@
 
 @code {
     private string firstName = string.Empty;
+    private string prevFirstName = string.Empty;
     private string lastName  = string.Empty;
+    private string prevLastName = string.Empty;
     private string sport = string.Empty;
     private string position = string.Empty;
+    private string prevPosition = string.Empty;
     private string _when = string.Empty;
     private DateTime? birthdate;
+    private DateTime? prevBirthdate;
     private bool expandSearchPanel = true;
     private bool isSearchLoading = false;
     private bool PageLoad = false;
@@ -226,15 +234,35 @@
         {
             NavManager.NavigateTo("authentication/logout");
         }
-        TeamsResponse = await TeamService.GetTeams(0, 1000);
-        LeaguesResponse = await LeagueService.GetLeagues();
+
+        TeamsResponse = await TeamLocalCache.GetTeamsCache();  //If a team is added need to delete local storage
+        if (TeamsResponse == null)
+        {
+            TeamsResponse = await TeamService.GetTeams(0, 1000);
+            await TeamLocalCache.SetTeamsCache(TeamsResponse);
+        }
+
+        LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();  //If a league is added need to delete local storage
+        if (LeaguesResponse == null)
+        {
+            LeaguesResponse = await LeagueService.GetLeagues();
+            await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+        }
+
         PageLoad = true;
     }
 
     private async Task SearchAll()
     {
         isSearchLoading = true;
-        PlayersResponse = await PlayerService.GetPlayers(0, 1000);
+
+        PlayersResponse = await PlayerLocalCache.GetPlayersCache();  //If a player is added need to delete local storage
+        if (PlayersResponse == null)
+        {
+            PlayersResponse = await PlayerService.GetPlayers(0, 1000);
+            await PlayerLocalCache.SetPlayersCache(PlayersResponse);
+        }
+
         Model = PlayersResponse.Players.Data.ToList();
         await GetImageAsync();
         expandSearchPanel = false;
@@ -244,9 +272,15 @@
     private async Task SearchByFirstName()
     {
         isSearchLoading = true;
-        PlayersByFirstNameResponse = await PlayerService.GetPlayersByFirstName(firstName);
+        PlayersByFirstNameResponse = await PlayerLocalCache.GetPlayersByFirstNameCache();
+        if(PlayersByFirstNameResponse == null || prevFirstName != firstName)
+        {
+            PlayersByFirstNameResponse = await PlayerService.GetPlayersByFirstName(firstName);
+            await PlayerLocalCache.SetPlayersByFirstNameCache(PlayersByFirstNameResponse);
+        }
         Model = PlayersByFirstNameResponse.Players.ToList();
         await GetImageAsync();
+        prevFirstName = firstName;
         expandSearchPanel = false;
         isSearchLoading = false;
     }
@@ -254,9 +288,15 @@
     private async Task SearchByLastName()
     {
         isSearchLoading = true;
-        PlayersbyLastNameResponse = await PlayerService.GetPlayersByLastName(lastName);
+        PlayersbyLastNameResponse = await PlayerLocalCache.GetPlayersByLastNameCache();
+        if (PlayersbyLastNameResponse == null || prevLastName != lastName)
+        {
+            PlayersbyLastNameResponse = await PlayerService.GetPlayersByLastName(lastName);
+            await PlayerLocalCache.SetPlayersByLastNameCache(PlayersbyLastNameResponse);
+        }
         Model = PlayersbyLastNameResponse.Players.ToList();
         await GetImageAsync();
+        prevLastName = lastName;
         expandSearchPanel = false;
         isSearchLoading = false;
     }
@@ -264,9 +304,15 @@
     private async Task SearchByPosition()
     {
         isSearchLoading = true;
-        PlayersByPositionResponse = await PlayerService.GetPlayersByPosition(position);
+        PlayersByPositionResponse = await PlayerLocalCache.GetPlayersByPositionCache();
+        if(PlayersByPositionResponse == null || prevPosition == position)
+        {
+            PlayersByPositionResponse = await PlayerService.GetPlayersByPosition(position);
+            await PlayerLocalCache.SetPlayersByPositionCache(PlayersByPositionResponse);
+        }
         Model = PlayersByPositionResponse.Players.ToList();
         await GetImageAsync();
+        prevPosition = position;
         expandSearchPanel = false;
         isSearchLoading = false;
     }
@@ -275,26 +321,44 @@
     {
         isSearchLoading = true;
         DateTime date = (DateTime)birthdate;
+        DateTime prevDate = (DateTime)prevBirthdate;
+        string prevBirthDate = prevDate.ToString("yyyy-MM-dd");
         string birthDate = date.ToString("yyyy-MM-dd");
         if (_when == "By")
         {
-            PlayersByBirthdateResponse = await PlayerService.GetPlayersByBirthDate(birthDate);
+            PlayersByBirthdateResponse = await PlayerLocalCache.GetPlayersByBirthDateCache();
+            if (PlayersByBirthdateResponse == null || prevBirthDate == birthDate)
+            {
+                PlayersByBirthdateResponse = await PlayerService.GetPlayersByBirthDate(birthDate);
+                await PlayerLocalCache.SetPlayersByBirthDateCache(PlayersByBirthdateResponse);
+            }
             Model = PlayersByBirthdateResponse.Players.ToList();
 
         }
         if (_when == "Before")
         {
-            PlayersBeforeBirthDateResponse = await PlayerService.GetPlayersBeforeBirthDate(birthDate);
+            PlayersBeforeBirthDateResponse = await PlayerLocalCache.GetPlayersBeforeBirthDateCache();
+            if (PlayersBeforeBirthDateResponse == null || prevBirthDate == birthDate)
+            {
+                PlayersBeforeBirthDateResponse = await PlayerService.GetPlayersBeforeBirthDate(birthDate);
+                await PlayerLocalCache.SetPlayersBeforeBirthDateCache(PlayersBeforeBirthDateResponse);
+            }
             Model = PlayersBeforeBirthDateResponse.Players.ToList();
 
         }
         if (_when == "After")
         {
-            PlayersAfterBirthDateResponse = await PlayerService.GetPlayersAfterBirthDate(birthDate);
+            PlayersAfterBirthDateResponse = await PlayerLocalCache.GetPlayersAfterBirthDateCache();
+            if (PlayersAfterBirthDateResponse == null || prevBirthDate == birthDate)
+            {
+                PlayersAfterBirthDateResponse = await PlayerService.GetPlayersAfterBirthDate(birthDate);
+                await PlayerLocalCache.SetPlayersAfterBirthDateCache(PlayersAfterBirthDateResponse);
+            }
             Model = PlayersAfterBirthDateResponse.Players.ToList();
 
         }
         await GetImageAsync();
+        prevBirthdate = birthdate;
         expandSearchPanel = false;
         isSearchLoading = false;
     }

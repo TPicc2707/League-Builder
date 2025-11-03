@@ -1,10 +1,15 @@
 ﻿@page "/playersbyteam/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject IPlayerService PlayerService
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IAWSService AWSService
+@inject ILocalStorageService LocalStorage
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject IPlayerLocalCacheService PlayerLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -242,9 +247,24 @@
         }
 
         var teamId = Guid.Parse(Id);
-        Team = await TeamService.GetTeamById(teamId);
-        Players = await PlayerService.GetPlayersByTeam(teamId);
-        LeaguesResponse = await LeagueService.GetLeagues();
+        Team = await TeamLocalCache.GetTeamByIdCache(Id);
+        if(Team == null)
+        {
+            Team = await TeamService.GetTeamById(teamId);
+            await TeamLocalCache.SetTeamByIdCache(Id, Team);
+        }
+        Players = await PlayerLocalCache.GetPlayersByTeamCache(Id);
+        if(Players == null)
+        {
+            Players = await PlayerService.GetPlayersByTeam(teamId);
+            await PlayerLocalCache.SetPlayersByTeamCache(Id, Players);
+        }
+        LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();  
+        if (LeaguesResponse == null)
+        {
+            LeaguesResponse = await LeagueService.GetLeagues();
+            await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+        }
         var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == Team.Team.LeagueId);
         IsTeamMaxOnPlayers = Players.Players.Count() == league.MaximumTotalTeamPlayers ? true : false;
         await GetTeamImageAsync(league);

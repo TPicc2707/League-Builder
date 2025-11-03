@@ -1,9 +1,12 @@
 ﻿@page "/teams"
+@using League.Builder.Web.Server.Services.Cache
 @inject NavigationManager NavManager
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject IAWSService AWSService
 @inject IHttpContextAccessor HttpContextAccessor
+@inject ITeamLocalCacheService TeamLocalCache
+@inject ILeagueLocalCacheService LeagueLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -122,6 +125,7 @@
 @code {
     private bool PageLoad = false;
     private string teamName = string.Empty;
+    private string prevTeamName = string.Empty;
     private GetTeamsResponse TeamsResponse { get; set; }
     private GetTeamsByNameResponse TeamsByNameResponse { get; set; }
     private GetLeaguesResponse LeaguesResponse { get; set; }
@@ -136,14 +140,24 @@
         {
             NavManager.NavigateTo("authentication/logout");
         }
-        LeaguesResponse = await LeagueService.GetLeagues();
+        LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();  //If a league is added need to delete local storage
+        if (LeaguesResponse == null)
+        {
+            LeaguesResponse = await LeagueService.GetLeagues();
+            await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+        }
         PageLoad = true;
     }
 
     private async Task SearchAll()
     {
         isSearchLoading = true;
-        TeamsResponse = await TeamService.GetTeams(0, 100);
+        TeamsResponse = await TeamLocalCache.GetTeamsCache();  //If a team is added need to delete local storage
+        if (TeamsResponse == null)
+        {
+            TeamsResponse = await TeamService.GetTeams(0, 1000);
+            await TeamLocalCache.SetTeamsCache(TeamsResponse);
+        }
         Model = TeamsResponse.Teams.Data.ToList();
         await GetImageAsync();
         expandSearchPanel = false;
@@ -153,7 +167,20 @@
     private async Task SearchByTeamName()
     {
         isSearchLoading = true;
-        TeamsByNameResponse = await TeamService.GetTeamsByName(teamName);
+        if (prevTeamName == teamName)
+        {
+            TeamsByNameResponse = await TeamLocalCache.GetTeamsByNameCache();  //If a team is added need to delete local storage
+            if (TeamsByNameResponse == null)
+            {
+                TeamsByNameResponse = await TeamService.GetTeamsByName(teamName);
+                await TeamLocalCache.SetTeamsByNameCache(TeamsByNameResponse);
+            }
+        }
+        else
+        {
+            TeamsByNameResponse = await TeamService.GetTeamsByName(teamName);
+            await TeamLocalCache.SetTeamsByNameCache(TeamsByNameResponse);
+        }
         Model = TeamsByNameResponse.Teams.ToList();
         await GetImageAsync();
         expandSearchPanel = false;

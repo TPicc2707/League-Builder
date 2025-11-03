@@ -9,6 +9,8 @@
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILocalStorageService LocalStorage
+@inject IGameLocalCacheService GameLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadGames, ", ", Roles.ReadSeasons)" Context="auth">
     <Authorized>
@@ -316,9 +318,19 @@
         }
 
         var leagueId = Guid.Parse(Id);
-        SeasonsModel = await SeasonService.GetSeasons();
+        SeasonsModel = await LocalStorage.GetItemAsync<GetSeasonsResponse>("Seasons");
+        if(SeasonsModel == null)
+        {
+            SeasonsModel = await SeasonService.GetSeasons();
+            await LocalStorage.SetItemAsync("Seasons", SeasonsModel);
+        }
         Season = SeasonsModel.Seasons.First();
-        Model = await GamesService.GetGamesByLeague(leagueId);
+        Model = await LocalStorage.GetItemAsync<GetGamesByLeagueResponse>($"GamesByLeague: {Id}");
+        if(Model == null)
+        {
+            Model = await GamesService.GetGamesByLeague(leagueId);
+            await LocalStorage.SetItemAsync($"GamesByLeague: {Id}", Model);
+        }
         Month = monthValue;
         GameCount = Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month).Count();
         seasonValue = Season.Year;
@@ -329,7 +341,12 @@
     private async Task GetSeasonGames()
     {
         PageLoad = false;
-        SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
+        SeasonModel = await LocalStorage.GetItemAsync<GetSeasonByYearResponse>($"SeasonByYear: {seasonValue}");
+        if(SeasonModel == null)
+        {
+            SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
+            await LocalStorage.SetItemAsync($"SeasonByYear: {seasonValue}", SeasonModel);
+        }
         Season = SeasonModel.Season;
         Month = monthValue;
         GameCount = Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month).Count();
@@ -363,7 +380,12 @@
         var canCreateStats = claims.Where(c => c.Value.Contains(Roles.CreateStats)).Any();
 
         var idString = id.ToString();
-        var league = await LeagueService.GetLeague(leagueId);
+        var league = await LocalStorage.GetItemAsync<GetLeagueByIdResponse>($"League: {Id}");
+        if (league == null)
+        {
+            league = await LeagueService.GetLeague(leagueId);
+            await LocalStorage.SetItemAsync($"League: {Id}", league);
+        }
 
         if(canEditStats && canCreateStats)
         {
@@ -403,7 +425,12 @@
         {
             PageLoad = false;
             var leagueId = Guid.Parse(Id);
-            Model = await GamesService.GetGamesByLeague(leagueId);
+            Model = await GameLocalCache.GetGamesByLeagueCache(Id);
+            if(Model == null)
+            {
+                Model = await GamesService.GetGamesByLeague(leagueId);
+                await GameLocalCache.SetGamesByLeagueCache(Id, Model);
+            }
             Month = monthValue;
             GameCount = Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month).Count();
             seasonValue = Season.Year;
@@ -415,12 +442,28 @@
     private async Task GetImageAsync()
     {
         var leagueId = Guid.Parse(Id);
-        var league = await LeagueService.GetLeague(leagueId);
+        var league = await LocalStorage.GetItemAsync<GetLeagueByIdResponse>($"League: {Id}");
+        if (league == null)
+        {
+            league = await LeagueService.GetLeague(leagueId);
+            await LocalStorage.SetItemAsync($"League: {Id}", league);
+        }
 
         foreach (var games in Model.Games)
         {
-            var awayTeam = await TeamService.GetTeamById(games.AwayTeam.Id);
-            var homeTeam = await TeamService.GetTeamById(games.HomeTeam.Id);
+            var awayTeam = await LocalStorage.GetItemAsync<GetTeamByIdResponse>($"Team: {games.AwayTeam.Id.ToString()}");
+            if (awayTeam == null)
+            {
+                awayTeam = await TeamService.GetTeamById(games.AwayTeam.Id);
+                await LocalStorage.SetItemAsync($"Team: {games.AwayTeam.Id.ToString()}", awayTeam);
+            }
+            var homeTeam = await LocalStorage.GetItemAsync<GetTeamByIdResponse>($"Team: {games.HomeTeam.Id.ToString()}");
+            if (homeTeam == null)
+            {
+                homeTeam = await TeamService.GetTeamById(games.HomeTeam.Id);
+                await LocalStorage.SetItemAsync($"Team: {games.HomeTeam.Id.ToString()}", homeTeam);
+            }
+
             var awayTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{awayTeam.Team.TeamName}/{awayTeam.Team.ImageFile}";
             games.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
 

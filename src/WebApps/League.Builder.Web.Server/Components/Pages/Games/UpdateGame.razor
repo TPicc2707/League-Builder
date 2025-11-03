@@ -1,5 +1,6 @@
 ﻿@page "/updategame/{id}"
 @using League.Builder.Web.Server.Components.Pages.Shared
+@using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject ISeasonService SeasonService
@@ -11,6 +12,11 @@
 @inject IValidator<UpdateGameModel> UpdateGameValidator
 @inject IDialogService DialogService
 @inject IAWSService AWSService
+@inject ITeamLocalCacheService TeamLocalCache
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject IGameLocalCacheService GameLocalCache
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject IStandingsLocalCacheService StandingsLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.UpdateGames, ", ", Roles.ReadGames, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.UpdateStandings, ", ", Roles.ReadStandings)" Context="auth">
     <Authorized>
@@ -238,9 +244,19 @@
         }
 
         var gameId = Guid.Parse(Id);
-        GameModel = await GameService.GetGameById(gameId);
+        GameModel = await GameLocalCache.GetGameByIdCache(Id);
+        if(GameModel == null)
+        {
+            GameModel = await GameService.GetGameById(gameId);
+            await GameLocalCache.SetGameByIdCache(Id, GameModel);
+        }
         model.LeagueId = GameModel.Game.LeagueId;
-        TeamsResponse = await TeamService.GetTeamsByLeague(model.LeagueId);
+        TeamsResponse = await TeamLocalCache.GetTeamsByLeagueCache(model.LeagueId.ToString());
+        if (TeamsResponse == null)
+        {
+            TeamsResponse = await TeamService.GetTeamsByLeague(model.LeagueId);
+            await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsResponse);
+        }
         Teams = TeamsResponse.Teams.ToList();
         await CheckMaxGamesForTeam();
         model.AwayTeamId = GameModel.Game.AwayTeam.Id;
@@ -269,10 +285,20 @@
     private async Task CheckMaxGamesForTeam()
     {
         var teamsToRemove = new List<Guid>();
-        LeagueResponse = await LeagueService.GetLeague(model.LeagueId);
+        LeagueResponse = await LeagueLocalCache.GetLeagueByIdCache(model.LeagueId.ToString());
+        if(LeagueResponse == null)
+        {
+            LeagueResponse = await LeagueService.GetLeague(model.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(model.LeagueId.ToString(), LeagueResponse);
+        }
         foreach (var team in TeamsResponse.Teams)
         {
-            TeamGamesResponse = await GameService.GetGamesByTeam(team.Id);
+            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(team.Id.ToString());
+            if(TeamGamesResponse == null)
+            {
+                TeamGamesResponse = await GameService.GetGamesByTeam(team.Id);
+                await GameLocalCache.SetGamesByTeamCache(team.Id.ToString(), TeamGamesResponse);
+            }
             if (LeagueResponse.League.TotalGamesPerSeason <= TeamGamesResponse.Games.Count())
                 Teams.RemoveAll(x => x.Id == team.Id);
         }
@@ -358,13 +384,22 @@
         }
 
         var gameId = Guid.Parse(Id);
-        SeasonResponse = await SeasonService.GetSeasonByYear(startGameTime.Year);
+        SeasonResponse = await SeasonLocalCache.GetSeasonByYearCache(startGameTime.Year);
+        if(SeasonResponse == null)
+        {
+            SeasonResponse = await SeasonService.GetSeasonByYear(startGameTime.Year);
+            await SeasonLocalCache.SetSeasonByYearCache(startGameTime.Year, SeasonResponse);
+        }
         Models.Game.GameDetailModel gameDetail = new GameDetailModel(model.AwayTeamScore, model.HomeTeamScore, startGameTime, endGameTime != null ? endGameTime.Value : null);
         Models.Game.AwayTeamDetailModel awayTeamDetail = new AwayTeamDetailModel(model.AwayTeamId, string.Empty);
         Models.Game.HomeTeamDetailModel homeTeamDetail = new HomeTeamDetailModel(model.HomeTeamId, string.Empty);
         UpdateGameRecord updateGameModel = new UpdateGameRecord(gameId, model.LeagueId, model.WinningTeamId, SeasonResponse.Season.Id, gameDetail, awayTeamDetail, homeTeamDetail, (int)model.GameStatus);
         UpdateGameRequest request = new UpdateGameRequest(updateGameModel);
         await GameService.UpdateGame(request);
+        await GameLocalCache.DeleteGameByIdCache(Id);
+        await GameLocalCache.DeleteGamesByLeagueCache(model.LeagueId.ToString());
+        await GameLocalCache.DeleteGamesByTeamCache(model.AwayTeamId.ToString());
+        await GameLocalCache.DeleteGamesByTeamCache(model.HomeTeamId.ToString());
         if(model.GameStatus == GameStatus.Completed)
         {
             await UpdateTeamStandings(SeasonResponse, model.AwayTeamId);
@@ -374,8 +409,12 @@
 
     private async Task UpdateTeamStandings(GetSeasonByYearResponse seasonResponse, Guid teamId)
     {
-        //Away Team
-        StandingsResponse = await StandingsService.GetStandingsByTeam(teamId);
+        StandingsResponse = await StandingsLocalCache.GetStandingsByTeamCache(teamId.ToString());
+        if(StandingsResponse == null)
+        {
+            StandingsResponse = await StandingsService.GetStandingsByTeam(teamId);
+            await StandingsLocalCache.SetStandingsByTeamCache(teamId.ToString(), StandingsResponse);
+        }
         var currentStandings = StandingsResponse.Standings.FirstOrDefault(s => s.SeasonId == seasonResponse.Season.Id);
         StandingsDetailModel standingsDetail = new StandingsDetailModel(currentStandings.StandingsDetail.GamesPlayed + 1,
             model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Wins + 1 : currentStandings.StandingsDetail.Wins,
@@ -384,15 +423,16 @@
         UpdateStandingsModel standingsModel = new UpdateStandingsModel(currentStandings.Id, model.LeagueId, seasonResponse.Season.Id, standingsDetail, (int)currentStandings.StandingsStatus, teamDetail);
         UpdateStandingsRequest request = new UpdateStandingsRequest(standingsModel);
         await StandingsService.UpdateStandings(request);
+        await StandingsLocalCache.DeleteStandingsByLeagueCache(model.LeagueId.ToString());
+        await StandingsLocalCache.DeleteStandingsByTeamCache(teamId.ToString());
     }
 
     private async Task GetImageAsync()
     {
-        var league = await LeagueService.GetLeague(model.LeagueId);
-        var awayTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{AwayTeam.TeamName}/{AwayTeam.ImageFile}";
+        var awayTeamKeyPath = $"/{LeagueResponse.League.Sport}/{LeagueResponse.League.Name}/teams/{AwayTeam.TeamName}/{AwayTeam.ImageFile}";
         GameModel.Game.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
 
-        var homeTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{HomeTeam.TeamName}/{HomeTeam.ImageFile}";
+        var homeTeamKeyPath = $"/{LeagueResponse.League.Sport}/{LeagueResponse.League.Name}/teams/{HomeTeam.TeamName}/{HomeTeam.ImageFile}";
         GameModel.Game.HomeTeamImage = await AWSService.GetImage(homeTeamKeyPath);
     }
 }

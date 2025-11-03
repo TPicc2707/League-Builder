@@ -1,9 +1,13 @@
 ﻿@page "/leaguehistory/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject ISeasonService SeasonService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject ISeasonLocalCacheService SeasonLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadLeagues, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames)">
     <Authorized>
@@ -15,17 +19,15 @@
                 </MudPaper>
             </MudItem>
             <MudItem Style="padding-top: 50px;">
-                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudExpansionPanels>
-                        <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000; padding-left: 25px; padding-right: 25px;">
-                            <TitleContent>
-                                <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Champions</MudText>
-                            </TitleContent>
-                            <ChildContent>
-                            </ChildContent>
-                        </MudExpansionPanel>
-                    </MudExpansionPanels>
-                </MudPaper>
+                <MudExpansionPanels>
+                    <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000; padding-left: 25px; padding-right: 25px;">
+                        <TitleContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Champions</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
             </MudItem>
         }
         else
@@ -54,9 +56,24 @@
         }
 
         var leagueId = Guid.Parse(Id);
-        LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
-        TeamsByLeagueResponse = await TeamService.GetTeamsByLeague(leagueId);
-        GetSeasonsResponse = await SeasonService.GetSeasons();
+        LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
+        if (LeagueByIdResponse == null)
+        {
+            LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueByIdResponse);
+        }
+        TeamsByLeagueResponse = await TeamLocalCache.GetTeamsByLeagueCache(Id);
+        if(TeamsByLeagueResponse == null)
+        {
+            TeamsByLeagueResponse = await TeamService.GetTeamsByLeague(leagueId);
+            await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsByLeagueResponse);
+        }
+        GetSeasonsResponse = await SeasonLocalCache.GetSeasonsCache();
+        if(GetSeasonsResponse == null)
+        {
+            GetSeasonsResponse = await SeasonService.GetSeasons();
+            await SeasonLocalCache.SetSeasonsCache(GetSeasonsResponse);
+        }
         PageLoad = true;
     }
 }

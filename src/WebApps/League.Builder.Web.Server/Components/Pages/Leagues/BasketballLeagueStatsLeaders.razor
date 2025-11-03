@@ -1,4 +1,5 @@
 ﻿@page "/basketballleaguestatsleaders/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject NavigationManager NavManager;
 @inject ISeasonService SeasonService
 @inject IStatsService StatsService
@@ -7,7 +8,11 @@
 @inject ILeagueService LeagueService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IAWSService AWSService
-
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject IStatsLocalCacheService StatsLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject IPlayerLocalCacheService PlayerLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -148,10 +153,19 @@
             NavManager.NavigateTo("authentication/logout");
         }
 
-        SeasonsModel = await SeasonService.GetSeasons();
-        Season = SeasonsModel.Seasons.First();
+        SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
+        if (SeasonsModel == null)
+        {
+            SeasonsModel = await SeasonService.GetSeasons();
+            await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+        }
         var leagueId = Guid.Parse(Id);
-        LeagueModel = await LeagueService.GetLeague(leagueId);
+        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(Id);
+        if (LeagueModel == null)
+        {
+            LeagueModel = await LeagueService.GetLeague(leagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueModel);
+        }
         await CreateStatsLeadersByLeague(leagueId);
         seasonValue = Season.Year;
         PageLoad = true;
@@ -159,7 +173,12 @@
 
     private async Task CreateStatsLeadersByLeague(Guid leagueId)
     {
-        StatsModel = await StatsService.GetLeagueBasketballStatsBySeason(leagueId, Season.Id);
+        StatsModel = await StatsLocalCache.GetLeagueBasketballStatsBySeasonCache(Id, Season.Id.ToString());
+        if (StatsModel == null)
+        {
+            StatsModel = await StatsService.GetLeagueBasketballStatsBySeason(leagueId, Season.Id);
+            await StatsLocalCache.SetLeagueBasketballStatsBySeasonCache(Id, Season.Id.ToString(), StatsModel);
+        }
         await BuildStatLeaders();
     }
 
@@ -169,7 +188,13 @@
         PageLoad = false;
         Season = SeasonsModel.Seasons.FirstOrDefault(s => s.Year == seasonValue);
 
-        StatsModel = await StatsService.GetLeagueBasketballStatsBySeason(LeagueModel.League.Id, Season.Id);
+        StatsModel = await StatsLocalCache.GetLeagueBasketballStatsBySeasonCache(LeagueModel.League.Id.ToString(), Season.Id.ToString());
+        if (StatsModel == null)
+        {
+            StatsModel = await StatsService.GetLeagueBasketballStatsBySeason(LeagueModel.League.Id, Season.Id);
+            await StatsLocalCache.SetLeagueBasketballStatsBySeasonCache(LeagueModel.League.Id.ToString(), Season.Id.ToString(), StatsModel);
+        }
+
         await BuildStatLeaders();
         PageLoad = true;
     }
@@ -189,8 +214,18 @@
         {
             if (!StatLeaders.Any(s => s.PlayerId == stat.PlayerId))
             {
-                PlayerModel = await PlayerService.GetPlayerById(stat.PlayerId);
-                TeamModel = await TeamService.GetTeamById(stat.TeamId);
+                PlayerModel = await PlayerLocalCache.GetPlayerByIdCache(stat.PlayerId.ToString());
+                if (PlayerModel == null)
+                {
+                    PlayerModel = await PlayerService.GetPlayerById(stat.PlayerId);
+                    await PlayerLocalCache.SetPlayerByIdCache(PlayerModel, stat.PlayerId.ToString());
+                }
+                TeamModel = await TeamLocalCache.GetTeamByIdCache(stat.TeamId.ToString());
+                if (TeamModel == null)
+                {
+                    TeamModel = await TeamService.GetTeamById(stat.TeamId);
+                    await TeamLocalCache.SetTeamByIdCache(stat.TeamId.ToString(), TeamModel);
+                }
                 var statLeader = new StatLeaderModel
                     {
                         PlayerId = PlayerModel.Player.Id,

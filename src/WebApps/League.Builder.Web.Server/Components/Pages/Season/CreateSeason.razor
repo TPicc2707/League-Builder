@@ -1,6 +1,5 @@
 ﻿@page "/createseason"
-@using global::League.Builder.Web.Server.Common
-@using global::League.Builder.Web.Server.Components.Pages.Shared
+@using League.Builder.Web.Server.Services.Cache
 @inject ISeasonService SeasonService
 @inject ITeamService TeamsService
 @inject IStandingsService StandingsService
@@ -9,6 +8,9 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IValidator<CreateSeasonModel> CreateSeasonValidator
 @inject IDialogService DialogService
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject IStandingsLocalCacheService StandingsLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.CreateSeasons, ", ", Roles.ReadSeasons, ", ", Roles.ReadTeams)" Context="auth">
     <Authorized>
@@ -109,9 +111,20 @@
     {
         CreateSeasonRequest request = new CreateSeasonRequest(model.Year, model.Description);
         var response = await SeasonService.CreateSeason(request);
+        await SeasonLocalCache.DeleteSeasonsCache();
 
-        TeamsModel = await TeamsService.GetTeams(0, 100);
-        SeasonModel = await SeasonService.GetSeason(response.Id);
+        TeamsModel = await TeamLocalCache.GetTeamsCache();
+        if(TeamsModel == null)
+        {
+            TeamsModel = await TeamsService.GetTeams(0, 1000);
+            await TeamLocalCache.SetTeamsCache(TeamsModel);
+        }
+        SeasonModel = await SeasonLocalCache.GetSeasonByIdCache(response.Id.ToString());
+        if(SeasonModel == null)
+        {
+            SeasonModel = await SeasonService.GetSeason(response.Id);
+            await SeasonLocalCache.SetSeasonByIdCache(response.Id.ToString(), SeasonModel);
+        }
         StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0, false, false);
         foreach(var team in TeamsModel.Teams.Data)
         {
@@ -119,6 +132,7 @@
             CreateStandingsModel createStandingsModel = new CreateStandingsModel(team.LeagueId, SeasonModel.Season.Id, standingsDetailModel, teamDetailModel);
             CreateStandingsRequest standingsRequest = new CreateStandingsRequest(createStandingsModel);
             await StandingsService.CreateStandings(standingsRequest);
+            await StandingsLocalCache.DeleteStandingsByLeagueCache(team.LeagueId.ToString());
         }
 
         success = true;
@@ -153,11 +167,17 @@
 
     private async Task ValidModel()
     {
+        GetSeasonsResponse seasons;
         errors.RemoveRange(0, errors.Count);
 
         if (_index == 0)
         {
-            var seasons = await SeasonService.GetSeasons();
+            seasons = await SeasonLocalCache.GetSeasonsCache();
+            if(seasons == null)
+            {
+                seasons = await SeasonService.GetSeasons();
+                await SeasonLocalCache.SetSeasonsCache(seasons);
+            }
             var doesSeasonExist = seasons.Seasons.Where(x => x.Year == model.Year).Any();
 
             if (doesSeasonExist)

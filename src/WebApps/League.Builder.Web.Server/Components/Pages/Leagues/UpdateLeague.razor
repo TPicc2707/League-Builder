@@ -1,7 +1,5 @@
 ﻿@page "/updateleague/{id}"
-@using global::League.Builder.Web.Server.Common
-@using global::League.Builder.Web.Server.Components.Pages.Shared
-@using global::League.Builder.Web.Server.Persistence
+@using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject NavigationManager NavManager
@@ -10,6 +8,8 @@
 @inject IAWSService AWSService
 @inject IValidator<UpdateLeagueModel> UpdateLeagueValidator
 @inject IDialogService DialogService
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.UpdateLeagues, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -179,8 +179,19 @@
         }
 
         var leagueId = Guid.Parse(Id);
-        LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
-        TeamsByLeagueResponse = await TeamService.GetTeamsByLeague(leagueId);
+        LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
+        if(LeagueByIdResponse == null)
+        {
+            LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueByIdResponse);
+        }
+        TeamsByLeagueResponse = await TeamLocalCache.GetTeamsByLeagueCache(Id);
+        if(TeamsByLeagueResponse == null)
+        {
+            TeamsByLeagueResponse = await TeamService.GetTeamsByLeague(leagueId);
+            await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsByLeagueResponse);
+        }
+        
         if (TeamsByLeagueResponse.Teams.Any())
             disableSportDropdown = true;
         model.Id = LeagueByIdResponse.League.Id;
@@ -209,6 +220,10 @@
         UpdateLeagueRequest request = new UpdateLeagueRequest(model.Id, model.Name, model.Sport, model.Description, model.ImageFile, model.OwnerFirstName, model.OwnerLastName, model.EmailAddress);
         await LeagueService.UpdateLeague(request);
         success = true;
+        await LeagueLocalCache.DeleteLeaguesCache();
+        await LeagueLocalCache.DeleteLeagueBySportCache(model.Sport);
+        await LeagueLocalCache.DeleteLeagueByNameCache();
+        await LeagueLocalCache.DeleteLeagueByIdCache(Id);
         Snackbar.Add("League has been updated.", MudBlazor.Severity.Success);
         NavManager.NavigateTo("/leagues");
         StateHasChanged();

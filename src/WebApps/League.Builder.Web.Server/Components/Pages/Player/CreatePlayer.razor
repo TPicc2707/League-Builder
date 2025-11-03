@@ -2,6 +2,7 @@
 @inject IPlayerService PlayerService
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
+@inject ISeasonService SeasonService
 @inject ISnackbar Snackbar
 @inject IWebHostEnvironment env
 @inject NavigationManager NavManager;
@@ -9,7 +10,11 @@
 @inject IAWSService AWSService
 @inject IValidator<CreatePlayerModel> CreatePlayerValidator
 @inject IDialogService DialogService
-
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject IPlayerLocalCacheService PlayerLocalCache
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject IStatsLocalCacheService StatsLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.CreatePlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -226,6 +231,7 @@
     private GetTeamsResponse TeamsResponse { get; set; }
     private GetTeamByIdResponse TeamById { get; set; }
     private GetLeagueByIdResponse LeagueById { get; set; }
+    private GetSeasonByYearResponse SeasonByYearResponse { get; set; }
     private string teamValue;
     string sport = string.Empty;
     private List<string> states;
@@ -238,6 +244,7 @@
     private List<string> errors = new();
     private MudFileUpload<IBrowserFile> _fileUpload;
     private FluentValidationValidator fluentValidationValidator;
+    private int year;
 
     protected override async Task OnInitializedAsync()
     {
@@ -246,10 +253,32 @@
             NavManager.NavigateTo("authentication/logout");
         }
 
+        year = DateTime.Now.Year;
         teamId = Guid.Parse(Id);
-        TeamsResponse = await TeamService.GetTeams();
-        TeamById = await TeamService.GetTeamById(teamId);
-        LeagueById = await LeagueService.GetLeague(TeamById.Team.LeagueId);
+        TeamsResponse = await TeamLocalCache.GetTeamsCache();  //If a team is added need to delete local storage
+        if (TeamsResponse == null)
+        {
+            TeamsResponse = await TeamService.GetTeams();
+            await TeamLocalCache.SetTeamsCache(TeamsResponse);
+        }
+        TeamById = await TeamLocalCache.GetTeamByIdCache(Id);
+        if (TeamById == null)
+        {
+            TeamById = await TeamService.GetTeamById(teamId);
+            await TeamLocalCache.SetTeamByIdCache(Id, TeamById);
+        }
+        LeagueById = await LeagueLocalCache.GetLeagueByIdCache(TeamById.Team.LeagueId.ToString());
+        if (LeagueById == null)
+        {
+            LeagueById = await LeagueService.GetLeague(TeamById.Team.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(TeamById.Team.LeagueId.ToString(), LeagueById);
+        }
+        SeasonByYearResponse = await SeasonLocalCache.GetSeasonByYearCache(year);
+        if(SeasonByYearResponse == null)
+        {
+            SeasonByYearResponse = await SeasonService.GetSeasonByYear(year);
+            await SeasonLocalCache.SetSeasonByYearCache(year, SeasonByYearResponse);
+        }
         sport = LeagueById.League.Sport;
         states = Constants.States();
         PageLoad = true;
@@ -265,6 +294,29 @@
         CreatePlayerRequest request = new CreatePlayerRequest(new CreatePlayerRecord(teamId, model.FirstName, model.LastName, address, playerDetail, model.Description, model.ImageFile));
         await PlayerService.CreatePlayer(request);
         success = true;
+        await PlayerLocalCache.DeletePlayersCache();
+        await PlayerLocalCache.DeletePlayersByFirstNameCache();
+        await PlayerLocalCache.DeletePlayersByLastNameCache();
+        await PlayerLocalCache.DeletePlayersByPositionCache();
+        await PlayerLocalCache.DeletePlayersByBirthDateCache();
+        await PlayerLocalCache.DeletePlayersBeforeBirthDateCache();
+        await PlayerLocalCache.DeletePlayersAfterBirthDateCache();
+        await PlayerLocalCache.DeletePlayersByTeamCache(Id);
+        if(LeagueById.League.Sport == SportName.BASEBALL)
+        {
+            await StatsLocalCache.DeleteLeagueBaseballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
+            await StatsLocalCache.DeleteBaseballStatsByTeamCache(Id);
+        }
+        if (LeagueById.League.Sport == SportName.BASKETBALL)
+        {
+            await StatsLocalCache.DeleteLeagueBasketballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
+            await StatsLocalCache.DeleteBasketballStatsByTeamCache(Id);
+        }
+        if (LeagueById.League.Sport == SportName.FOOTBALL)
+        {
+            await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
+            await StatsLocalCache.DeleteFootballStatsByTeamCache(Id);
+        }
         Snackbar.Add("Player has been created.", MudBlazor.Severity.Success);
         NavManager.NavigateTo($"/playersbyteam/{teamId.ToString()}");
         StateHasChanged();

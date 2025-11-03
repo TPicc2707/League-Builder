@@ -1,5 +1,6 @@
-﻿@inject ILeagueService LeagueService
-
+﻿@using League.Builder.Web.Server.Services.Cache
+@inject ILeagueService LeagueService
+@inject ILeagueLocalCacheService LeagueLocalCache
 <MudDialog>
     <TitleContent>
         <MudText Align="Align.Center" Typo="Typo.h4" Style="font-weight: bold;">Contact Info</MudText>
@@ -29,7 +30,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        League = await LeagueService.GetLeague(Id);
+        League = await LeagueLocalCache.GetLeagueByIdCache(Id.ToString());
+        if(League == null)
+        {
+            League = await LeagueService.GetLeague(Id);
+            await LeagueLocalCache.SetLeagueByIdCache(Id.ToString(), League);
+        }
         MailUrl = $"mailto:{League.League.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
         DataLoad = true;
     }

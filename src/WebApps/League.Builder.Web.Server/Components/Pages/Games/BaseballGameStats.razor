@@ -1,4 +1,5 @@
 ﻿@page "/baseballgamestats/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject IStatsService StatsService
 @inject IGameService GameService
 @inject ILeagueService LeagueService
@@ -8,7 +9,11 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager;
 @inject IHttpContextAccessor HttpContextAccessor
-
+@inject IGameLocalCacheService GameLocalCache
+@inject IPlayerLocalCacheService PlayerLocalCache
+@inject IStatsLocalCacheService StatsLocalCache
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadGames, ", ", Roles.ReadPlayers)" Context="auth">
     <Authorized>
@@ -391,6 +396,9 @@
     GetPlayersByTeamResponse HomePlayersModel { get; set; }
     GetBaseballStatsByTeamResponse AwayPlayerStatsModel { get; set; }
     GetBaseballStatsByTeamResponse HomePlayerStatsModel { get; set; }
+    GetLeagueByIdResponse LeagueByIdResponse { get; set; }
+    GetTeamByIdResponse AwayTeamByIdResponse { get; set; }
+    GetTeamByIdResponse HomeTeamByIdResponse { get; set; }
 
     private int AwayTotalAtBats = 0;
     private int AwayTotalHits = 0;
@@ -445,11 +453,36 @@
         }
 
         var gameId = Guid.Parse(Id);
-        GameModel = await GameService.GetGameById(gameId);
-        AwayPlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
-        HomePlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
-        AwayPlayerStatsModel = await StatsService.GetBaseballStatsByTeam(GameModel.Game.AwayTeam.Id);
-        HomePlayerStatsModel = await StatsService.GetBaseballStatsByTeam(GameModel.Game.HomeTeam.Id);
+        GameModel = await GameLocalCache.GetGameByIdCache(Id);
+        if(GameModel == null)
+        {
+            GameModel = await GameService.GetGameById(gameId);
+            await GameLocalCache.SetGameByIdCache(Id, GameModel);
+        }
+        AwayPlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
+        if(AwayPlayersModel == null)
+        {
+            AwayPlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
+            await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayersModel);
+        }
+        HomePlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
+        if (HomePlayersModel == null)
+        {
+            HomePlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
+            await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayersModel);
+        }
+        AwayPlayerStatsModel = await StatsLocalCache.GetBaseballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
+        if(AwayPlayerStatsModel == null)
+        {
+            AwayPlayerStatsModel = await StatsService.GetBaseballStatsByTeam(GameModel.Game.HomeTeam.Id);
+            await StatsLocalCache.SetBaseballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayerStatsModel);
+        }
+        HomePlayerStatsModel = await StatsLocalCache.GetBaseballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
+        if (HomePlayerStatsModel == null)
+        {
+            HomePlayerStatsModel = await StatsService.GetBaseballStatsByTeam(GameModel.Game.HomeTeam.Id);
+            await StatsLocalCache.SetBaseballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayerStatsModel);
+        }
         await GetImageAsync();
         foreach (var player in AwayPlayersModel.Players)
         {
@@ -534,13 +567,28 @@
 
     private async Task GetImageAsync()
     {
-        var league = await LeagueService.GetLeague(GameModel.Game.LeagueId);
-        var awayTeam = await TeamService.GetTeamById(GameModel.Game.AwayTeam.Id);
-        var homeTeam = await TeamService.GetTeamById(GameModel.Game.HomeTeam.Id);
-        var awayTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{awayTeam.Team.TeamName}/{awayTeam.Team.ImageFile}";
+        LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(GameModel.Game.LeagueId.ToString());
+        if(LeagueByIdResponse == null)
+        {
+            LeagueByIdResponse = await LeagueService.GetLeague(GameModel.Game.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(GameModel.Game.LeagueId.ToString(), LeagueByIdResponse);
+        }
+        AwayTeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString());
+        if (AwayTeamByIdResponse == null)
+        {
+            AwayTeamByIdResponse = await TeamService.GetTeamById(GameModel.Game.AwayTeam.Id);
+            await TeamLocalCache.SetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString(), AwayTeamByIdResponse);
+        }
+        HomeTeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString());
+        if (HomeTeamByIdResponse == null)
+        {
+            HomeTeamByIdResponse = await TeamService.GetTeamById(GameModel.Game.HomeTeam.Id);
+            await TeamLocalCache.SetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString(), HomeTeamByIdResponse);
+        }
+        var awayTeamKeyPath = $"/{LeagueByIdResponse.League.Sport}/{LeagueByIdResponse.League.Name}/teams/{AwayTeamByIdResponse.Team.TeamName}/{AwayTeamByIdResponse.Team.ImageFile}";
         GameModel.Game.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
 
-        var homeTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{homeTeam.Team.TeamName}/{homeTeam.Team.ImageFile}";
+        var homeTeamKeyPath = $"/{LeagueByIdResponse.League.Sport}/{LeagueByIdResponse.League.Name}/teams/{HomeTeamByIdResponse.Team.TeamName}/{HomeTeamByIdResponse.Team.ImageFile}";
         GameModel.Game.HomeTeamImage = await AWSService.GetImage(homeTeamKeyPath);
     }
 

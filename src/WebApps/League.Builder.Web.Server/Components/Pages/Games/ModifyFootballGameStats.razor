@@ -1,4 +1,5 @@
 ﻿@page "/editfootballgamestats/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject IStatsService StatsService
 @inject IGameService GameService
 @inject ILeagueService LeagueService
@@ -8,6 +9,11 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IGameLocalCacheService GameLocalCache
+@inject IPlayerLocalCacheService PlayerLocalCache
+@inject IStatsLocalCacheService StatsLocalCache
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
 
 
 <AuthorizeView Roles="@String.Concat(Roles.CreateStats, ", ", Roles.UpdateStats, ", ", Roles.ReadStats, ", ", Roles.ReadGames, ", ", Roles.ReadPlayers)" Context="auth">
@@ -1030,10 +1036,16 @@
     private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
     private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
     GetGameByIdResponse GameModel { get; set; }
+    GetLeagueByIdResponse LeagueByIdResponse { get; set; }
+    GetTeamByIdResponse AwayTeamByIdResponse { get; set; }
+    GetTeamByIdResponse HomeTeamByIdResponse { get; set; }
+
     GetPlayersByTeamResponse AwayPlayersModel { get; set; }
     GetPlayersByTeamResponse HomePlayersModel { get; set; }
     GetFootballStatsByTeamResponse AwayPlayerStatsModel { get; set; }
     GetFootballStatsByTeamResponse HomePlayerStatsModel { get; set; }
+    GetFootballStatsByPlayerResponse PlayerStatsModel { get; set; }
+
     private int AwayTotalPassingCompletions  = 0;
     private int AwayTotalPassingAttempts = 0;
     private int AwayTotalPassingYards = 0;
@@ -1112,11 +1124,36 @@
         }
 
         var gameId = Guid.Parse(Id);
-        GameModel = await GameService.GetGameById(gameId);
-        AwayPlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
-        HomePlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
-        AwayPlayerStatsModel = await StatsService.GetFootballStatsByTeam(GameModel.Game.AwayTeam.Id);
-        HomePlayerStatsModel = await StatsService.GetFootballStatsByTeam(GameModel.Game.HomeTeam.Id);
+        GameModel = await GameLocalCache.GetGameByIdCache(Id);
+        if (GameModel == null)
+        {
+            GameModel = await GameService.GetGameById(gameId);
+            await GameLocalCache.SetGameByIdCache(Id, GameModel);
+        }
+        AwayPlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
+        if (AwayPlayersModel == null)
+        {
+            AwayPlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
+            await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayersModel);
+        }
+        HomePlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
+        if (HomePlayersModel == null)
+        {
+            HomePlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
+            await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayersModel);
+        }
+        AwayPlayerStatsModel = await StatsLocalCache.GetFootballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
+        if (AwayPlayerStatsModel == null)
+        {
+            AwayPlayerStatsModel = await StatsService.GetFootballStatsByTeam(GameModel.Game.HomeTeam.Id);
+            await StatsLocalCache.SetFootballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayerStatsModel);
+        }
+        HomePlayerStatsModel = await StatsLocalCache.GetFootballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
+        if (HomePlayerStatsModel == null)
+        {
+            HomePlayerStatsModel = await StatsService.GetFootballStatsByTeam(GameModel.Game.HomeTeam.Id);
+            await StatsLocalCache.SetFootballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayerStatsModel);
+        }
         await GetImageAsync();
         foreach(var player in AwayPlayersModel.Players)
         {
@@ -1445,6 +1482,11 @@
 
                 UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
                 await StatsService.UpdateFootballStats(request);
+                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(passingStatSelectedItem.LeagueId.ToString(), passingStatSelectedItem.SeasonId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByTeamCache(passingStatSelectedItem.TeamId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByPlayerCache(passingStatSelectedItem.PlayerId.ToString());
+                await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(passingStatSelectedItem.PlayerId.ToString(), passingStatSelectedItem.SeasonId.ToString());
+
 
                 if (passingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
                 {
@@ -1492,6 +1534,11 @@
                 CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
 
                 await StatsService.CreateFootballStats(request);
+                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(passingStatSelectedItem.LeagueId.ToString(), passingStatSelectedItem.SeasonId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByTeamCache(passingStatSelectedItem.TeamId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByPlayerCache(passingStatSelectedItem.PlayerId.ToString());
+                await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(passingStatSelectedItem.PlayerId.ToString(), passingStatSelectedItem.SeasonId.ToString());
+
 
                 if (passingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
                 {
@@ -1554,6 +1601,11 @@
 
                 UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
                 await StatsService.UpdateFootballStats(request);
+                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(rushingStatSelectedItem.LeagueId.ToString(), rushingStatSelectedItem.SeasonId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByTeamCache(rushingStatSelectedItem.TeamId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByPlayerCache(rushingStatSelectedItem.PlayerId.ToString());
+                await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(rushingStatSelectedItem.PlayerId.ToString(), rushingStatSelectedItem.SeasonId.ToString());
+
 
                 if (rushingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
                 {
@@ -1599,6 +1651,10 @@
                 CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
 
                 await StatsService.CreateFootballStats(request);
+                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(rushingStatSelectedItem.LeagueId.ToString(), rushingStatSelectedItem.SeasonId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByTeamCache(rushingStatSelectedItem.TeamId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByPlayerCache(rushingStatSelectedItem.PlayerId.ToString());
+                await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(rushingStatSelectedItem.PlayerId.ToString(), rushingStatSelectedItem.SeasonId.ToString());
 
                 if (rushingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
                 {
@@ -1659,6 +1715,11 @@
 
                 UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
                 await StatsService.UpdateFootballStats(request);
+                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(receivingStatSelectedItem.LeagueId.ToString(), receivingStatSelectedItem.SeasonId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByTeamCache(receivingStatSelectedItem.TeamId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByPlayerCache(receivingStatSelectedItem.PlayerId.ToString());
+                await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(receivingStatSelectedItem.PlayerId.ToString(), receivingStatSelectedItem.SeasonId.ToString());
+
 
                 if (receivingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
                 {
@@ -1708,6 +1769,10 @@
                 CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
 
                 await StatsService.CreateFootballStats(request);
+                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(receivingStatSelectedItem.LeagueId.ToString(), receivingStatSelectedItem.SeasonId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByTeamCache(receivingStatSelectedItem.TeamId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByPlayerCache(receivingStatSelectedItem.PlayerId.ToString());
+                await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(receivingStatSelectedItem.PlayerId.ToString(), receivingStatSelectedItem.SeasonId.ToString());
 
                 if (receivingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
                 {
@@ -1773,6 +1838,11 @@
 
                 UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
                 await StatsService.UpdateFootballStats(request);
+                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(defensiveStatSelectedItem.LeagueId.ToString(), defensiveStatSelectedItem.SeasonId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByTeamCache(defensiveStatSelectedItem.TeamId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByPlayerCache(defensiveStatSelectedItem.PlayerId.ToString());
+                await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(defensiveStatSelectedItem.PlayerId.ToString(), defensiveStatSelectedItem.SeasonId.ToString());
+
 
                 if (defensiveStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
                 {
@@ -1827,6 +1897,10 @@
                 CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
 
                 await StatsService.CreateFootballStats(request);
+                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(defensiveStatSelectedItem.LeagueId.ToString(), defensiveStatSelectedItem.SeasonId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByTeamCache(defensiveStatSelectedItem.TeamId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByPlayerCache(defensiveStatSelectedItem.PlayerId.ToString());
+                await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(defensiveStatSelectedItem.PlayerId.ToString(), defensiveStatSelectedItem.SeasonId.ToString());
 
                 if (defensiveStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
                 {
@@ -1896,6 +1970,11 @@
 
                 UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
                 await StatsService.UpdateFootballStats(request);
+                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(kickingStatSelectedItem.LeagueId.ToString(), kickingStatSelectedItem.SeasonId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByTeamCache(kickingStatSelectedItem.TeamId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByPlayerCache(kickingStatSelectedItem.PlayerId.ToString());
+                await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(kickingStatSelectedItem.PlayerId.ToString(), kickingStatSelectedItem.SeasonId.ToString());
+
 
                 if (kickingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
                 {
@@ -1946,6 +2025,11 @@
                 CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
 
                 await StatsService.CreateFootballStats(request);
+                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(kickingStatSelectedItem.LeagueId.ToString(), kickingStatSelectedItem.SeasonId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByTeamCache(kickingStatSelectedItem.TeamId.ToString());
+                await StatsLocalCache.DeleteFootballStatsByPlayerCache(kickingStatSelectedItem.PlayerId.ToString());
+                await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(kickingStatSelectedItem.PlayerId.ToString(), kickingStatSelectedItem.SeasonId.ToString());
+
 
                 if (kickingStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
                 {
@@ -1977,13 +2061,31 @@
 
     private async Task GetImageAsync()
     {
-        var league = await LeagueService.GetLeague(GameModel.Game.LeagueId);
-        var awayTeam = await TeamService.GetTeamById(GameModel.Game.AwayTeam.Id);
-        var homeTeam = await TeamService.GetTeamById(GameModel.Game.HomeTeam.Id);
-        var awayTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{awayTeam.Team.TeamName}/{awayTeam.Team.ImageFile}";
+        GetLeagueByIdResponse leagueByIdResponse;
+        GetTeamByIdResponse awayTeamResponse;
+        GetTeamByIdResponse homeTeamResponse;
+        leagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(GameModel.Game.LeagueId.ToString());
+        if(leagueByIdResponse == null)
+        {
+            leagueByIdResponse = await LeagueService.GetLeague(GameModel.Game.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(GameModel.Game.LeagueId.ToString(), leagueByIdResponse);
+        }
+        awayTeamResponse = await TeamLocalCache.GetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString());
+        if(awayTeamResponse == null)
+        {
+            awayTeamResponse = await TeamService.GetTeamById(GameModel.Game.AwayTeam.Id);
+            await TeamLocalCache.SetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString(), awayTeamResponse);
+        }
+        homeTeamResponse = await TeamLocalCache.GetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString());
+        if (homeTeamResponse == null)
+        {
+            homeTeamResponse = await TeamService.GetTeamById(GameModel.Game.HomeTeam.Id);
+            await TeamLocalCache.SetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString(), homeTeamResponse);
+        }
+        var awayTeamKeyPath = $"/{leagueByIdResponse.League.Sport}/{leagueByIdResponse.League.Name}/teams/{awayTeamResponse.Team.TeamName}/{awayTeamResponse.Team.ImageFile}";
         GameModel.Game.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
 
-        var homeTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{homeTeam.Team.TeamName}/{homeTeam.Team.ImageFile}";
+        var homeTeamKeyPath = $"/{leagueByIdResponse.League.Sport}/{leagueByIdResponse.League.Name}/teams/{homeTeamResponse.Team.TeamName}/{homeTeamResponse.Team.ImageFile}";
         GameModel.Game.HomeTeamImage = await AWSService.GetImage(homeTeamKeyPath);
     }
 

@@ -8,6 +8,9 @@
 @inject IAWSService AWSService
 @inject IValidator<UpdateTeamModel> UpdateTeamValidator
 @inject IDialogService DialogService
+@inject ILocalStorageService LocalStorage
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.UpdateTeams, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -195,6 +198,7 @@
     private bool PageLoad = false;
     private GetTeamByIdResponse TeamByIdResponse { get; set; }
     private GetLeaguesBySportResponse Leagues { get; set; }
+    private GetLeagueByIdResponse League { get; set; }
     private List<string> states;
     UpdateTeamModel model = new UpdateTeamModel();
     bool success;
@@ -213,9 +217,24 @@
         }
 
         var teamId = Guid.Parse(Id);
-        TeamByIdResponse = await TeamService.GetTeamById(teamId);
-        var league = await LeagueService.GetLeague(TeamByIdResponse.Team.LeagueId);
-        Leagues = await LeagueService.GetLeaguesBySport(league.League.Sport);
+        TeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(Id);
+        if(TeamByIdResponse == null)
+        {
+            TeamByIdResponse = await TeamService.GetTeamById(teamId);
+            await TeamLocalCache.SetTeamByIdCache(Id, TeamByIdResponse);
+        }
+        League = await LeagueLocalCache.GetLeagueByIdCache(TeamByIdResponse.Team.LeagueId.ToString());
+        if (League == null)
+        {
+            League = await LeagueService.GetLeague(TeamByIdResponse.Team.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(TeamByIdResponse.Team.LeagueId.ToString(), League);
+        }
+        Leagues = await LeagueLocalCache.GetLeaguesBySportCache(League.League.Sport);
+        if(Leagues == null)
+        {
+            Leagues = await LeagueService.GetLeaguesBySport(League.League.Sport);
+            await LeagueLocalCache.SetLeaguesBySportCache(League.League.Sport, Leagues);
+        }
         states = Constants.States();
         model.Id = TeamByIdResponse.Team.Id;
         model.LeagueId = TeamByIdResponse.Team.LeagueId;
@@ -235,12 +254,10 @@
 
     private async Task OnValidSubmit(EditContext context)
     {
-        var league = await LeagueService.GetLeague(TeamByIdResponse.Team.LeagueId);
-
         if (uploadFile == true)
         {
             model.ImageFile = model.File.Name;
-            var keyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
+            var keyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
             var s3Success = await AWSService.UploadImages(keyPath, model.File);
         }
 
@@ -249,6 +266,10 @@
         Console.WriteLine(request.Team.TeamStatus);
         await TeamService.UpdateTeam(request);
         success = true;
+        await TeamLocalCache.DeleteTeamsCache();
+        await TeamLocalCache.DeleteTeamsByNameCache();
+        await TeamLocalCache.DeleteTeamByIdCache(Id);
+        await TeamLocalCache.DeleteTeamsByLeagueCache(model.LeagueId.ToString());
         Snackbar.Add("Team has been updated.", MudBlazor.Severity.Success);
         NavManager.NavigateTo($"/teamsbyleague/{model.LeagueId.ToString()}");
         StateHasChanged();

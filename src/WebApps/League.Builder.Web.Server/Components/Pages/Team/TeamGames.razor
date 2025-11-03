@@ -1,4 +1,5 @@
 ﻿@page "/teamgames/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject IGameService GamesService
 @inject ISeasonService SeasonService
 @inject ILeagueService LeagueService
@@ -8,6 +9,10 @@
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject IGameLocalCacheService GameLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject ILeagueLocalCacheService LeagueLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadGames, ", ", Roles.ReadSeasons)" Context="auth">
     <Authorized>
@@ -146,6 +151,7 @@
     private GetSeasonByYearResponse SeasonModel { get; set; }
     private GetGamesByTeamResponse Model { get; set; }
     private GetTeamByIdResponse TeamModel { get; set; }
+    private GetLeagueByIdResponse LeagueModel { get; set; }
     private IEnumerable<GameModel> Games { get; set; }
 
 
@@ -157,11 +163,26 @@
         }
 
         var teamId = Guid.Parse(Id);
-        SeasonsModel = await SeasonService.GetSeasons();
+        SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
+        if (SeasonsModel == null)
+        {
+            SeasonsModel = await SeasonService.GetSeasons();
+            await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+        }
         Season = SeasonsModel.Seasons.First();
-        Model = await GamesService.GetGamesByTeam(teamId);
+        Model = await GameLocalCache.GetGamesByTeamCache(Id);
+        if(Model == null)
+        {
+            Model = await GamesService.GetGamesByTeam(teamId);
+            await GameLocalCache.SetGamesByTeamCache(Id, Model);
+        }
         Games = Model.Games.Where(x => x.GameDetail.StartTime.Year == Season.Year);
-        TeamModel = await TeamService.GetTeamById(teamId);
+        TeamModel = await TeamLocalCache.GetTeamByIdCache(Id);
+        if (TeamModel == null)
+        {
+            TeamModel = await TeamService.GetTeamById(teamId);
+            await TeamLocalCache.SetTeamByIdCache(Id, TeamModel);
+        }
         seasonValue = Season.Year;
         await GetImageAsync();
         await GetTeamImageAsync();
@@ -173,7 +194,12 @@
         PageLoad = false;
         teamSeasonWins = 0;
         teamSeasonLosses = 0;
-        SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
+        SeasonModel = await SeasonLocalCache.GetSeasonByYearCache(seasonValue);
+        if (SeasonModel == null)
+        {
+            SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
+            await SeasonLocalCache.SetSeasonByYearCache(seasonValue, SeasonModel);
+        }
         Season = SeasonModel.Season;
         Games = Model.Games.Where(x => x.GameDetail.StartTime.Year == Season.Year);
         await GetImageAsync();
@@ -183,27 +209,43 @@
 
     private async Task GetTeamImageAsync()
     {
-        var league = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(TeamModel.Team.LeagueId.ToString());
+        if (LeagueModel == null)
+        {
+            LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(TeamModel.Team.LeagueId.ToString(), LeagueModel);
+        }
 
-        var keyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{TeamModel.Team.TeamName}/{TeamModel.Team.ImageFile}";
+        var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamModel.Team.TeamName}/{TeamModel.Team.ImageFile}";
         TeamModel.Team.ImageFile = await AWSService.GetImage(keyPath);
     }
 
     private async Task GetImageAsync()
     {
-        var league = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(TeamModel.Team.LeagueId.ToString());
+        if (LeagueModel == null)
+        {
+            LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(TeamModel.Team.LeagueId.ToString(), LeagueModel);
+        }
 
         foreach (var game in Games.OrderBy(x => x.GameDetail.StartTime))
         {
+            GetTeamByIdResponse opponent;
             if(game.AwayTeam.Id == TeamModel.Team.Id)
             {
                 teamSeasonWins = game.GameDetail.AwayTeamScore > game.GameDetail.HomeTeamScore ? teamSeasonWins + 1 : teamSeasonWins;
                 teamSeasonLosses = game.GameDetail.AwayTeamScore > game.GameDetail.HomeTeamScore ? teamSeasonLosses : teamSeasonLosses + 1;
                 game.TeamSeasonWins = teamSeasonWins;
                 game.TeamSeasonLosses = teamSeasonLosses;
-                var opponent = await TeamService.GetTeamById(game.HomeTeam.Id);
+                opponent = await TeamLocalCache.GetTeamByIdCache(game.HomeTeam.Id.ToString());
+                if (opponent == null)
+                {
+                    opponent = await TeamService.GetTeamById(game.HomeTeam.Id);
+                    await TeamLocalCache.SetTeamByIdCache(Id, TeamModel);
+                }
 
-                var opponentKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{opponent.Team.TeamName}/{opponent.Team.ImageFile}";
+                var opponentKeyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{opponent.Team.TeamName}/{opponent.Team.ImageFile}";
                 game.HomeTeamImage = await AWSService.GetImage(opponentKeyPath);
             }
             else
@@ -214,9 +256,14 @@
                 game.TeamSeasonWins = teamSeasonWins;
                 game.TeamSeasonLosses = teamSeasonLosses;
 
-                var opponent = await TeamService.GetTeamById(game.AwayTeam.Id);
+                opponent = await TeamLocalCache.GetTeamByIdCache(game.AwayTeam.Id.ToString());
+                if (opponent == null)
+                {
+                    opponent = await TeamService.GetTeamById(game.AwayTeam.Id);
+                    await TeamLocalCache.SetTeamByIdCache(Id, TeamModel);
+                }
 
-                var opponentKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{opponent.Team.TeamName}/{opponent.Team.ImageFile}";
+                var opponentKeyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{opponent.Team.TeamName}/{opponent.Team.ImageFile}";
                 game.AwayTeamImage = await AWSService.GetImage(opponentKeyPath);
                 
             }

@@ -1,5 +1,7 @@
 using Amazon.S3;
+using Blazored.LocalStorage;
 using FluentValidation;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,8 +35,17 @@ builder.Services.AddAuthentication(oidcScheme)
 
 builder.Services.AddCascadingAuthenticationState();
 
+builder.Services.AddBlazoredLocalStorage();
+
 builder.Services.AddScoped<IAWSService, AWSService>();
 builder.Services.AddScoped<ISupportService, SupportService>();
+builder.Services.AddScoped<ILeagueLocalCacheService, LeagueLocalCacheService>();
+builder.Services.AddScoped<ITeamLocalCacheService, TeamLocalCacheService>();
+builder.Services.AddScoped<IPlayerLocalCacheService, PlayerLocalCacheService>();
+builder.Services.AddScoped<ISeasonLocalCacheService, SeasonLocalCacheService>();
+builder.Services.AddScoped<IStatsLocalCacheService, StatsLocalCacheService>();
+builder.Services.AddScoped<IGameLocalCacheService, GameLocalCacheService>();
+builder.Services.AddScoped<IStandingsLocalCacheService, StandingsLocalCacheService>();
 builder.Services.AddScoped<IValidator<CreateLeagueModel>, CreateLeagueModelValidator>();
 builder.Services.AddScoped<IValidator<CreateTeamModel>, CreateTeamModelValidator>();
 builder.Services.AddScoped<IValidator<CreatePlayerModel>, CreatePlayerModelValidator>();

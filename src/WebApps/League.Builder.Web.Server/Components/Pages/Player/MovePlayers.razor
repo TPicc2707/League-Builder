@@ -1,10 +1,14 @@
 ﻿@page "/moveplayers/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject IPlayerService PlayerService
 @inject IAWSService AWSService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager NavManager;
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject IPlayerLocalCacheService PlayerLocalCache
 
 @if (PageLoad)
 {
@@ -103,17 +107,48 @@ else
             NavManager.NavigateTo("authentication/logout");
         }
         var teamId = Guid.Parse(Id);
-        TeamModel = await TeamService.GetTeamById(teamId);
-        PlayerModel = await PlayerService.GetPlayersByTeam(teamId);
-        LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
-        TeamsByLeagueModel = await TeamService.GetTeamsByLeague(LeagueModel.League.Id);
+        TeamModel = await TeamLocalCache.GetTeamByIdCache(Id);
+        if(TeamModel == null)
+        {
+            TeamModel = await TeamService.GetTeamById(teamId);
+            await TeamLocalCache.SetTeamByIdCache(Id, TeamModel);
+        }
+        PlayerModel = await PlayerLocalCache.GetPlayersByTeamCache(Id);
+        if(PlayerModel == null)
+        {
+            PlayerModel = await PlayerService.GetPlayersByTeam(teamId);
+            await PlayerLocalCache.SetPlayersByTeamCache(Id, PlayerModel);
+        }
+        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(TeamModel.Team.LeagueId.ToString());
+        if(LeagueModel == null)
+        {
+            LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(TeamModel.Team.LeagueId.ToString(), LeagueModel);
+        }
+        TeamsByLeagueModel = await TeamLocalCache.GetTeamsByLeagueCache(LeagueModel.League.Id.ToString());
+        if(TeamsByLeagueModel == null)
+        {
+            TeamsByLeagueModel = await TeamService.GetTeamsByLeague(LeagueModel.League.Id);
+            await TeamLocalCache.SetTeamsByLeagueCache(LeagueModel.League.Id.ToString(), TeamsByLeagueModel);
+
+        }
         LeagueTeamsModel = TeamsByLeagueModel.Teams.Where(x => x.Id != TeamModel.Team.Id);
         await GetPlayerImageAsync(PlayerModel.Players, TeamModel.Team);
         await GetTeamImageAsync(TeamModel.Team);
 
         SelectedTeamId = LeagueTeamsModel.OrderBy(x => x.TeamName).First().Id;
-        SelectedTeamModel = await TeamService.GetTeamById(SelectedTeamId);
-        SelectedTeamPlayerModel = await PlayerService.GetPlayersByTeam(SelectedTeamModel.Team.Id);
+        SelectedTeamModel = await TeamLocalCache.GetTeamByIdCache(SelectedTeamId.ToString());
+        if(SelectedTeamModel == null)
+        {
+            SelectedTeamModel = await TeamService.GetTeamById(SelectedTeamId);
+            await TeamLocalCache.SetTeamByIdCache(SelectedTeamId.ToString(), SelectedTeamModel);
+        }
+        SelectedTeamPlayerModel = await PlayerLocalCache.GetPlayersByTeamCache(SelectedTeamModel.Team.Id.ToString());
+        if(SelectedTeamPlayerModel == null)
+        {
+            SelectedTeamPlayerModel = await PlayerService.GetPlayersByTeam(SelectedTeamModel.Team.Id);
+            await PlayerLocalCache.SetPlayersByTeamCache(SelectedTeamModel.Team.Id.ToString(), SelectedTeamPlayerModel);
+        }
         await GetPlayerImageAsync(SelectedTeamPlayerModel.Players, SelectedTeamModel.Team);
         await GetTeamImageAsync(SelectedTeamModel.Team);
 
@@ -173,8 +208,18 @@ else
     {
         PageLoad = false;
         RemoveFromDropZone(SelectedTeamModel.Team);
-        SelectedTeamModel = await TeamService.GetTeamById(SelectedTeamId);
-        SelectedTeamPlayerModel = await PlayerService.GetPlayersByTeam(SelectedTeamModel.Team.Id);
+        SelectedTeamModel = await TeamLocalCache.GetTeamByIdCache(SelectedTeamId.ToString());
+        if (SelectedTeamModel == null)
+        {
+            SelectedTeamModel = await TeamService.GetTeamById(SelectedTeamId);
+            await TeamLocalCache.SetTeamByIdCache(SelectedTeamId.ToString(), SelectedTeamModel);
+        }
+        SelectedTeamPlayerModel = await PlayerLocalCache.GetPlayersByTeamCache(SelectedTeamModel.Team.Id.ToString());
+        if (SelectedTeamPlayerModel == null)
+        {
+            SelectedTeamPlayerModel = await PlayerService.GetPlayersByTeam(SelectedTeamModel.Team.Id);
+            await PlayerLocalCache.SetPlayersByTeamCache(SelectedTeamModel.Team.Id.ToString(), SelectedTeamPlayerModel);
+        }
         await GetPlayerImageAsync(SelectedTeamPlayerModel.Players, SelectedTeamModel.Team);
         await GetTeamImageAsync(SelectedTeamModel.Team);
         CreateDropZone(SelectedTeamPlayerModel.Players, SelectedTeamModel.Team);
@@ -184,10 +229,15 @@ else
     private async Task SubmitTrade()
     {
         var selectedPlayers = _items.Where(x => x.Selected == true);
-
+        GetPlayerByIdResponse response;
         foreach(var player in selectedPlayers)
         {
-            var response = await PlayerService.GetPlayerById(player.Id);
+            response = await PlayerLocalCache.GetPlayerByIdCache(player.Id.ToString());
+            if(response == null)
+            {
+                response = await PlayerService.GetPlayerById(player.Id);
+                await PlayerLocalCache.SetPlayerByIdCache(response, player.Id.ToString());
+            }
             var team = player.Identifier == TeamModel.Team.TeamName ? TeamModel.Team : SelectedTeamModel.Team;
             var previousTeam = player.PreviousTeam == TeamModel.Team.TeamName ? TeamModel.Team : SelectedTeamModel.Team;
             var previousKeyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{previousTeam.TeamName}/players/{String.Concat(response.Player.FirstName, " ", response.Player.LastName)}/{response.Player.ImageFile}";
@@ -197,6 +247,15 @@ else
                                                                    response.Player.Description, response.Player.ImageFile, (int)response.Player.PlayerStatus);
             UpdatePlayerRequest playerRequest = new UpdatePlayerRequest(updatePlayer);
             await PlayerService.UpdatePlayer(playerRequest);
+            await PlayerLocalCache.DeletePlayersCache();
+            await PlayerLocalCache.DeletePlayersByFirstNameCache();
+            await PlayerLocalCache.DeletePlayersByLastNameCache();
+            await PlayerLocalCache.DeletePlayersByPositionCache();
+            await PlayerLocalCache.DeletePlayersByBirthDateCache();
+            await PlayerLocalCache.DeletePlayersBeforeBirthDateCache();
+            await PlayerLocalCache.DeletePlayersAfterBirthDateCache();
+            await PlayerLocalCache.DeletePlayersByTeamCache(team.Id.ToString());
+            await PlayerLocalCache.DeletePlayersByTeamCache(previousTeam.Id.ToString());
         }
     }
 

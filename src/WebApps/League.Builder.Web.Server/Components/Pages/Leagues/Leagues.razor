@@ -3,6 +3,7 @@
 @inject ILeagueService LeagueService
 @inject IAWSService AWSService
 @inject IHttpContextAccessor HttpContextAccessor
+@inject ILeagueLocalCacheService LeagueLocalCache
 
 <AuthorizeView Roles="@Roles.ReadLeagues" Context="auth">
     <Authorized>
@@ -122,7 +123,6 @@
                                                             <MudIconButton Icon="@Icons.Material.Filled.MenuBook" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/leaguehistory/", context.Id)" />
                                                         </MudTooltip>
                                                     </AuthorizeView>
-
                                                     <AuthorizeView Roles="@Roles.UpdateLeagues" Context="updateSettingsAuth">
                                                         <MudTooltip Text="Settings" Color="Color.Secondary">
                                                             <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateleaguesettings/", context.Id)" />
@@ -189,6 +189,11 @@
                                                             }
                                                         </MudTooltip>
                                                     </AuthorizeView>
+                                                    <AuthorizeView Roles="@Roles.ReadLeagues" Context="leagueHistoryAuth">
+                                                        <MudTooltip Text="League History" Color="Color.Secondary">
+                                                            <MudIconButton Icon="@Icons.Material.Filled.MenuBook" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/leaguehistory/", context.Id)" />
+                                                        </MudTooltip>
+                                                    </AuthorizeView>
                                                     <AuthorizeView Roles="@Roles.UpdateLeagues" Context="updateAuth2">
                                                         <MudTooltip Text="Update" Color="Color.Secondary">
                                                             <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateleague/", context.Id)" />
@@ -217,8 +222,10 @@
 
 @code {
     private string sport = string.Empty;
+    private string prevSport = string.Empty;
     private string name = string.Empty;
-    private GetLeaguesResponse LeaguesReponse { get; set; }
+    private string prevName = string.Empty;
+    private GetLeaguesResponse LeaguesResponse { get; set; }
     private GetLeaguesBySportResponse LeaguesBySportResponse { get; set; }
     private GetLeaguesByNameResponse LeaguesByNameResponse { get; set; }
     private bool expandSearchPanel = true;
@@ -242,8 +249,13 @@
     private async Task SearchAll()
     {
         isSearchLoading = true;
-        LeaguesReponse = await LeagueService.GetLeagues(1, 10000);
-        Model = LeaguesReponse.Leagues.ToList();
+        LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();
+        if (LeaguesResponse == null)
+        {
+            LeaguesResponse = await LeagueService.GetLeagues(1, 10000);
+            await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+        }
+        Model = LeaguesResponse.Leagues.ToList();
         await GetImageAsync();
         expandSearchPanel = false;
         isSearchLoading = false;
@@ -252,9 +264,15 @@
     private async Task SearchBySport()
     {
         isSearchLoading = true;
-        LeaguesBySportResponse = await LeagueService.GetLeaguesBySport(sport);
+        LeaguesBySportResponse = await LeagueLocalCache.GetLeaguesBySportCache(sport);
+        if (LeaguesBySportResponse == null)
+        {
+            LeaguesBySportResponse = await LeagueService.GetLeaguesBySport(sport);
+            await LeagueLocalCache.SetLeaguesBySportCache(sport, LeaguesBySportResponse);
+        }
         Model = LeaguesBySportResponse.Leagues.ToList();
         await GetImageAsync();
+        prevSport = sport;
         expandSearchPanel = false;
         isSearchLoading = false;
     }
@@ -262,9 +280,23 @@
     private async Task SearchByName()
     {
         isSearchLoading = true;
-        LeaguesByNameResponse = await LeagueService.GetLeaguesByName(name);
+        if(prevName == name)
+        {
+            LeaguesByNameResponse = await LeagueLocalCache.GetLeaguesByNameCache(); 
+            if (LeaguesByNameResponse == null)
+            {
+                LeaguesByNameResponse = await LeagueService.GetLeaguesByName(name);
+                await LeagueLocalCache.SetLeaguesByNameCache(LeaguesByNameResponse);
+            }
+        }
+        else
+        {
+            LeaguesByNameResponse = await LeagueService.GetLeaguesByName(name);
+            await LeagueLocalCache.SetLeaguesByNameCache(LeaguesByNameResponse);
+        }
         Model = LeaguesByNameResponse.Leagues.ToList();
         await GetImageAsync();
+        prevName = name;
         expandSearchPanel = false;
         isSearchLoading = false;
     }

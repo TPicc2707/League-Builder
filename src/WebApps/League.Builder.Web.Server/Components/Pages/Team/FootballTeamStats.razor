@@ -1,4 +1,5 @@
 ﻿@page "/footballteamstats/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject IPlayerService PlayerService
 @inject IStatsService StatService
 @inject ISeasonService SeasonService
@@ -10,6 +11,13 @@
 @inject IDialogService DialogService
 @inject NavigationManager NavManager;
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IPlayerLocalCacheService PlayerLocalCache
+@inject IStatsLocalCacheService StatsLocalCache
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject IGameLocalCacheService GameLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject IStandingsLocalCacheService StandingsLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -773,6 +781,8 @@
     GetPlayerFootballStatsBySeasonResponse StatsModel { get; set; }
     GetLeagueByIdResponse LeagueModel { get; set; }
     GetStandingsByTeamResponse StandingsModel { get; set; }
+    GetPlayersByTeamResponse PlayersByTeam { get; set; }
+    GetStandingsByTeamResponse StandingsByTeam { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -783,11 +793,26 @@
 
         var teamId = Guid.Parse(Id);
         int year = DateTime.Now.Year;
-        SeasonsModel = await SeasonService.GetSeasons();
+        SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
+        if (SeasonsModel == null)
+        {
+            SeasonsModel = await SeasonService.GetSeasons();
+            await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+        }
         Season = SeasonsModel.Seasons.FirstOrDefault(x => x.Year == year);
         seasonValue = Season.Year;
-        TeamModel = await TeamService.GetTeamById(teamId);
-        LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+        TeamModel = await TeamLocalCache.GetTeamByIdCache(Id);
+        if (TeamModel == null)
+        {
+            TeamModel = await TeamService.GetTeamById(teamId);
+            await TeamLocalCache.SetTeamByIdCache(Id, TeamModel);
+        }
+        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(TeamModel.Team.LeagueId.ToString());
+        if (LeagueModel == null)
+        {
+            LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(TeamModel.Team.LeagueId.ToString(), LeagueModel);
+        }
         await CreatePlayerStats(year, teamId);
         await GetTeamImageAsync();
         PageLoad = true;
@@ -857,12 +882,27 @@
 
     private async Task CreatePlayerStats(int year, Guid teamId)
     {
-        var standings = await StandingsService.GetStandingsByTeam(teamId);
-        var teamGames = standings.Standings.FirstOrDefault(s => s.SeasonId == Season.Id).StandingsDetail.GamesPlayed;
-        var players = await PlayerService.GetPlayersByTeam(teamId);
-        await GetImageAsync(players.Players);
-        SeasonModel = await SeasonService.GetSeasonByYear(year);
-        foreach (var player in players.Players)
+        StandingsByTeam = await StandingsLocalCache.GetStandingsByTeamCache(teamId.ToString());
+        if (StandingsByTeam == null)
+        {
+            StandingsByTeam = await StandingsService.GetStandingsByTeam(teamId);
+            await StandingsLocalCache.SetStandingsByTeamCache(teamId.ToString(), StandingsByTeam);
+        }
+        var teamGames = StandingsByTeam.Standings.FirstOrDefault(s => s.SeasonId == Season.Id).StandingsDetail.GamesPlayed;
+        PlayersByTeam = await PlayerLocalCache.GetPlayersByTeamCache(teamId.ToString());
+        if (PlayersByTeam == null)
+        {
+            PlayersByTeam = await PlayerService.GetPlayersByTeam(teamId);
+            await PlayerLocalCache.SetPlayersByTeamCache(teamId.ToString(), PlayersByTeam);
+        }
+        await GetImageAsync(PlayersByTeam.Players);
+        SeasonModel = await SeasonLocalCache.GetSeasonByYearCache(year);
+        if (SeasonModel == null)
+        {
+            SeasonModel = await SeasonService.GetSeasonByYear(year);
+            await SeasonLocalCache.SetSeasonByYearCache(year, SeasonModel);
+        }
+        foreach (var player in PlayersByTeam.Players)
         {
             //Passing
             playerSeasonPassingCompletions = 0;
@@ -920,7 +960,12 @@
             playerSeasonLongestKick = 0;
             playerSeasonPuntingYards = 0;
 
-            StatsModel = await StatService.GetPlayerFootballStatsBySeason(player.Id, SeasonModel.Season.Id);
+            StatsModel = await StatsLocalCache.GetPlayerFootballStatsBySeasonCache(player.Id.ToString(), SeasonModel.Season.Id.ToString());
+            if (StatsModel == null)
+            {
+                StatsModel = await StatService.GetPlayerFootballStatsBySeason(player.Id, SeasonModel.Season.Id);
+                await StatsLocalCache.SetPlayerFootballStatsBySeasonCache(player.Id.ToString(), SeasonModel.Season.Id.ToString(), StatsModel);
+            }
             foreach (var stat in StatsModel.FootballStats)
             {
                 //Passing

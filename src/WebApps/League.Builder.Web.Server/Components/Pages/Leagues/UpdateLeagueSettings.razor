@@ -1,9 +1,11 @@
 ﻿@page "/updateleaguesettings/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
 @inject IValidator<UpdateLeagueSettingsModel> UpdateLeagueSettingsValidator
+@inject ILeagueLocalCacheService LeagueLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.UpdateLeagues, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -74,7 +76,12 @@
         if(LeagueByIdResponse is null)
         {
             var leagueId = Guid.Parse(Id);
-            LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
+            LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
+            if(LeagueByIdResponse == null)
+            {
+                LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
+                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueByIdResponse);
+            }
             model.Id = LeagueByIdResponse.League.Id;
             model.TotalGamesPerSeason = LeagueByIdResponse.League.TotalGamesPerSeason == 0 ? null : LeagueByIdResponse.League.TotalGamesPerSeason;
             model.TotalPlayoffTeams = LeagueByIdResponse.League.TotalPlayoffTeams == 0 ? null : LeagueByIdResponse.League.TotalPlayoffTeams;

@@ -1,4 +1,5 @@
 ﻿@page "/creategame/{id}"
+@using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject ISeasonService SeasonService
@@ -8,6 +9,10 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IValidator<CreateGameModel> CreateGameValidator
 @inject IDialogService DialogService
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject IGameLocalCacheService GameLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.CreateGames, ", ", Roles.ReadTeams)" Context="auth">
     <Authorized>
@@ -153,7 +158,12 @@
         }
 
         var leagueId = Guid.Parse(Id);
-        TeamsResponse = await TeamService.GetTeamsByLeague(leagueId);
+        TeamsResponse = await TeamLocalCache.GetTeamsByLeagueCache(Id);
+        if(TeamsResponse == null)
+        {
+            TeamsResponse = await TeamService.GetTeamsByLeague(leagueId);
+            await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsResponse);
+        }
         Teams = TeamsResponse.Teams.ToList();
         await CheckMaxGamesForTeam();
         model.AwayTeamId = Teams.First().Id;
@@ -165,10 +175,20 @@
     {
         var leagueId = Guid.Parse(Id);
         var teamsToRemove = new List<Guid>();
-        LeagueResponse = await LeagueService.GetLeague(leagueId);
+        LeagueResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
+        if(LeagueResponse == null)
+        {
+            LeagueResponse = await LeagueService.GetLeague(leagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueResponse);
+        }
         foreach(var team in TeamsResponse.Teams)
         {
-            TeamGamesResponse = await GameService.GetGamesByTeam(team.Id);
+            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(team.Id.ToString());
+            if(TeamGamesResponse == null)
+            {
+                TeamGamesResponse = await GameService.GetGamesByTeam(team.Id);
+                await GameLocalCache.SetGamesByTeamCache(team.Id.ToString(), TeamGamesResponse);
+            }
             if (LeagueResponse.League.TotalGamesPerSeason <= TeamGamesResponse.Games.Count())
                 Teams.RemoveAll(x => x.Id == team.Id);        
         }
@@ -245,6 +265,9 @@
         CreateGameRecord createGameModel = new CreateGameRecord(leagueId, null, SeasonResponse.Season.Id, gameDetail, awayTeamDetail, homeTeamDetail);
         CreateGameRequest request = new CreateGameRequest(createGameModel);
         await GameService.CreateGame(request);
+        await GameLocalCache.DeleteGamesByLeagueCache(Id);
+        await GameLocalCache.DeleteGamesByTeamCache(model.AwayTeamId.ToString());
+        await GameLocalCache.DeleteGamesByTeamCache(model.HomeTeamId.ToString());
     }
 
 }

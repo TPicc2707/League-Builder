@@ -1,5 +1,7 @@
-﻿@inject IPlayerService PlayerService
+﻿@using League.Builder.Web.Server.Services.Cache
+@inject IPlayerService PlayerService
 @inject NavigationManager NavManager;
+@inject IPlayerLocalCacheService PlayerLocalCache
 
 <MudDialog>
     <TitleContent>
@@ -35,7 +37,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        PlayerModel = await PlayerService.GetPlayerById(Id);
+        PlayerModel = await PlayerLocalCache.GetPlayerByIdCache(Id.ToString());
+        if(PlayerModel == null)
+        {
+            PlayerModel = await PlayerService.GetPlayerById(Id);
+            await PlayerLocalCache.SetPlayerByIdCache(PlayerModel, Id.ToString());
+        }
         MailUrl = $"mailto:{PlayerModel.Player.PlayerDetail.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
         DataLoad = true;
     }
