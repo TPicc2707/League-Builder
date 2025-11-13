@@ -110,7 +110,7 @@
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.LastName)">Last Name</MudTableSortLabel></MudTh>
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.TeamName)">Team</MudTableSortLabel></MudTh>
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary">Position</MudTh>
-                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Description</MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Location</MudTh>
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
                                         </HeaderContent>
                                         <RowTemplate>
@@ -167,7 +167,7 @@
                                             </MudTd>
                                             <MudTd DataLabel="Team">@context.TeamName</MudTd>
                                             <MudTd DataLabel="Position">@context.PlayerDetail.Position</MudTd>
-                                            <MudTd DataLabel="Description">@context.Description</MudTd>
+                                            <MudTd DataLabel="Location">@context.PlayerAddress.City, @context.PlayerAddress.State</MudTd>
                                             <MudTd DataLabel="Links">
                                                 <AuthorizeView Roles="@Roles.UpdatePlayers" Context="updateAuth">
                                                     <MudTooltip Text="Update" Color="Color.Secondary">
@@ -254,15 +254,8 @@
 
     private async Task SearchAll()
     {
-        isSearchLoading = true;
-
-        PlayersResponse = await PlayerLocalCache.GetPlayersCache();  //If a player is added need to delete local storage
-        if (PlayersResponse == null)
-        {
-            PlayersResponse = await PlayerService.GetPlayers(0, 1000);
-            await PlayerLocalCache.SetPlayersCache(PlayersResponse);
-        }
-
+        isSearchLoading = true; //If a player is added need to delete local storage
+        PlayersResponse = await PlayerService.GetPlayers(0, 1000);
         Model = PlayersResponse.Players.Data.ToList();
         await GetImageAsync();
         expandSearchPanel = false;

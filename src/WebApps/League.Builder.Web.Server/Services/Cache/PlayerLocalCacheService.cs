@@ -13,7 +13,17 @@ public class PlayerLocalCacheService : IPlayerLocalCacheService
 
     public async Task<GetPlayersResponse> GetPlayersCache()
     {
-        return await _localStorage.GetItemAsync<GetPlayersResponse>("Players");
+        try
+        {
+            var players = await _localStorage.GetItemAsync<GetPlayersResponse>("Players");
+            return players;
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
     }
 
     public async Task<GetPlayerByIdResponse> GetPlayerByIdCache(string id)
@@ -106,9 +116,14 @@ public class PlayerLocalCacheService : IPlayerLocalCacheService
         await _localStorage.RemoveItemAsync("Players");
     }
 
-    public async Task DeletePlayersByTeamCache(string id)
+    public async Task DeletePlayerByIdCache(string id)
     {
-        await _localStorage.RemoveItemAsync($"PlayersByTeam: {id}");
+        await _localStorage.RemoveItemAsync($"Player: {id}");
+    }
+
+    public async Task DeletePlayersByTeamCache(string teamId)
+    {
+        await _localStorage.RemoveItemAsync($"PlayersByTeam: {teamId}");
     }
 
     public async Task DeletePlayersByFirstNameCache()

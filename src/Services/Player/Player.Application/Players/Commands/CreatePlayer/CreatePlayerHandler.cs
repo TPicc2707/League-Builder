@@ -24,7 +24,7 @@ public class CreatePlayerHandler(IApplicationDbContext dbContext, IPublishEndpoi
 
     private Domain.Models.Player CreateNewPlayer(PlayerDto playerDto)
     {
-        var playerAddress = Address.Of(playerDto.PlayerAddress.AddressLine, playerDto.PlayerAddress.Country, playerDto.PlayerAddress.State, playerDto.PlayerAddress.ZipCode);
+        var playerAddress = Address.Of(playerDto.PlayerAddress.AddressLine, playerDto.PlayerAddress.City, playerDto.PlayerAddress.Country, playerDto.PlayerAddress.State, playerDto.PlayerAddress.ZipCode);
         var playerDetail = PlayerDetail.Of(playerDto.PlayerDetail.EmailAddress, playerDto.PlayerDetail.PhoneNumber, playerDto.PlayerDetail.BirthDate, playerDto.PlayerDetail.Height, playerDto.PlayerDetail.Weight, playerDto.PlayerDetail.Position, playerDto.PlayerDetail.Number);
 
         var newPlayer = Domain.Models.Player.Create(

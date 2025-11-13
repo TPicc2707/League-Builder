@@ -23,7 +23,7 @@ public class CreateTeamHandler(IApplicationDbContext dbContext, IPublishEndpoint
 
     private Domain.Models.Team CreateNewTeam(TeamDto teamDto)
     {
-        var teamAddress = Address.Of(teamDto.TeamAddress.FirstName, teamDto.TeamAddress.LastName, teamDto.TeamAddress.EmailAddress, teamDto.TeamAddress.AddressLine, teamDto.TeamAddress.Country, teamDto.TeamAddress.State, teamDto.TeamAddress.ZipCode);
+        var teamAddress = Address.Of(teamDto.TeamAddress.FirstName, teamDto.TeamAddress.LastName, teamDto.TeamAddress.EmailAddress, teamDto.TeamAddress.AddressLine, teamDto.TeamAddress.City, teamDto.TeamAddress.Country, teamDto.TeamAddress.State, teamDto.TeamAddress.ZipCode);
 
         var newTeam = Domain.Models.Team.Create(
                 id: TeamId.Of(Guid.NewGuid()),

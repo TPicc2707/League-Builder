@@ -20,6 +20,9 @@
                 <AuthorizeView Roles="@Roles.SupportLeagues">
                     <MudNavLink Href="/health" Icon="@Icons.Material.Filled.HealthAndSafety">Health</MudNavLink>
                 </AuthorizeView>
+                <AuthorizeView Roles="@String.Concat(Roles.SupportLeagues, ", ", Roles.CreateLeagues)">
+                    <MudNavLink Target="_blank" Href="https://us-east-2.console.aws.amazon.com/s3/buckets/league-builder-images?region=us-east-2" Icon="@Icons.Material.Filled.Camera">Manage Images</MudNavLink>
+                </AuthorizeView>
                 <MudNavLink Href="/support" Icon="@Icons.Material.Filled.Chat">Support</MudNavLink>
             </MudNavMenu>
         </MudPaper>
@@ -35,3 +38,4 @@
         </MudPaper>
     </NotAuthorized>
 </AuthorizeView>
+

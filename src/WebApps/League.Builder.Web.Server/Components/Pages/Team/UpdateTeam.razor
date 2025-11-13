@@ -84,14 +84,20 @@
                                                     </MudStack>
                                                     <MudTextField Required="true" Label="Address Line" Class="mt-3"
                                                                   @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" />
+                                                    <MudTextField Required="true" Label="City" Class="mt-3"
+                                                                  @bind-Value="model.City" For="@(() => model.City)" />
                                                     <MudSelect Required="true" Class="mt-3" Label="State" @bind-Value="model.State">
                                                         @foreach (var state in states)
                                                         {
                                                             <MudSelectItem Value="state">@state</MudSelectItem>
                                                         }
                                                     </MudSelect>
-                                                    <MudTextField Required="true" Label="Country" Class="mt-3"
-                                                                  @bind-Value="model.Country" For="@(() => model.Country)" />
+                                                    <MudSelect Required="true" Class="mt-3" Label="Country" @bind-Value="model.Country">
+                                                        @foreach (var country in countries)
+                                                        {
+                                                            <MudSelectItem Value="country">@country</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
                                                     <MudTextField Required="true" Label="Zip Code" Class="mt-3"
                                                                   @bind-Value="model.ZipCode" For="@(() => model.ZipCode)" />
                                                 </MudCardContent>
@@ -126,14 +132,20 @@
                                                                   @bind-Value="model.Description" For="@(() => model.Description)" ReadOnly="true" />
                                                     <MudTextField Required="true" Label="Address Line" Class="mt-3"
                                                                   @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" ReadOnly="true" />
+                                                    <MudTextField Required="true" Label="City" Class="mt-3"
+                                                                  @bind-Value="model.City" For="@(() => model.City)" ReadOnly="true" />
                                                     <MudSelect Required="true" Class="mt-3" Label="State" @bind-Value="model.State" ReadOnly="true">
                                                         @foreach (var state in states)
                                                         {
                                                             <MudSelectItem Value="state">@state</MudSelectItem>
                                                         }
                                                     </MudSelect>
-                                                    <MudTextField Required="true" Label="Country" Class="mt-3"
-                                                                  @bind-Value="model.Country" For="@(() => model.Country)" ReadOnly="true" />
+                                                    <MudSelect Required="true" Class="mt-3" Label="Country" @bind-Value="model.Country" ReadOnly="true">
+                                                        @foreach (var country in countries)
+                                                        {
+                                                            <MudSelectItem Value="country">@country</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
                                                     <MudTextField Required="true" Label="Zip Code" Class="mt-3"
                                                                   @bind-Value="model.ZipCode" For="@(() => model.ZipCode)" ReadOnly="true" />
                                                     <MudItem Style="padding-top: 20px;">
@@ -202,6 +214,7 @@
     private GetLeaguesBySportResponse Leagues { get; set; }
     private GetLeagueByIdResponse League { get; set; }
     private List<string> states;
+    private List<string> countries;
     UpdateTeamModel model = new UpdateTeamModel();
     bool success;
     bool uploadFile = false;
@@ -238,12 +251,14 @@
             await LeagueLocalCache.SetLeaguesBySportCache(League.League.Sport, Leagues);
         }
         states = Constants.States();
+        countries = Constants.Countries();
         model.Id = TeamByIdResponse.Team.Id;
         model.LeagueId = TeamByIdResponse.Team.LeagueId;
         model.TeamName = TeamByIdResponse.Team.TeamName;
         model.FirstName = TeamByIdResponse.Team.TeamAddress.FirstName;
         model.LastName = TeamByIdResponse.Team.TeamAddress.LastName;
         model.AddressLine = TeamByIdResponse.Team.TeamAddress.AddressLine;
+        model.City = TeamByIdResponse.Team.TeamAddress.City;
         model.EmailAddress = TeamByIdResponse.Team.TeamAddress.EmailAddress;
         model.State = TeamByIdResponse.Team.TeamAddress.State;
         model.Country = TeamByIdResponse.Team.TeamAddress.Country;
@@ -256,14 +271,39 @@
 
     private async Task OnValidSubmit(EditContext context)
     {
-        if (uploadFile == true)
+        if (model.TeamName != TeamByIdResponse.Team.TeamName)
         {
-            model.ImageFile = model.File.Name;
-            var keyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
-            var s3Success = await AWSService.UploadImages(keyPath, model.File);
+            var deleteKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{TeamByIdResponse.Team.TeamName}/{model.ImageFile}";
+
+            if (model.File == null)
+            {
+                var uploadKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
+                await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
+
+                await AWSService.DeleteObject(deleteKeyPath);
+
+            }
+            else
+            {
+                model.ImageFile = model.File.Name;
+                var uploadKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
+                await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
+
+                await AWSService.DeleteObject(deleteKeyPath);
+            }
+
+        }
+        else
+        {
+            if (model.File != null)
+            {
+                model.ImageFile = model.File.Name;
+                var uploadKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
+                await AWSService.UploadImages(uploadKeyPath, model.File);
+            }
         }
 
-        Models.Team.AddressModel address = new Models.Team.AddressModel(model.FirstName, model.LastName, model.EmailAddress, model.AddressLine, model.Country, model.State, model.ZipCode);
+        Models.Team.AddressModel address = new Models.Team.AddressModel(model.FirstName, model.LastName, model.EmailAddress, model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
         UpdateTeamRequest request = new UpdateTeamRequest(new UpdateTeamRecord(model.Id, model.LeagueId, model.TeamName, address, model.Description, model.ImageFile, (int)model.TeamStatus));
         Console.WriteLine(request.Team.TeamStatus);
         await TeamService.UpdateTeam(request);

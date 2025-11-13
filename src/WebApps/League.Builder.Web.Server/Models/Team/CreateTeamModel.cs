@@ -12,6 +12,8 @@ public class CreateTeamModel
 
     public string AddressLine { get; set; }
 
+    public string City { get; set; }
+
     public string EmailAddress { get; set; }
 
     public string State { get; set; }
@@ -41,6 +43,8 @@ public class CreateTeamModelValidator : AbstractValidator<CreateTeamModel>
         RuleFor(x => x.LastName).NotEmpty().WithMessage("Last Name is required.")
                 .Length(2, 50).WithMessage("Name must be between 2 and 50 characters");
         RuleFor(x => x.AddressLine).NotEmpty().WithMessage("Address is required.");
+        RuleFor(x => x.City).NotEmpty().WithMessage("City is required.")
+                .Length(2, 50).WithMessage("City must be between 2 and 50 characters");
         RuleFor(x => x.State).NotEmpty().WithMessage("State is required.");
         RuleFor(x => x.Country).NotEmpty().WithMessage("Country is required.");
         RuleFor(x => x.ZipCode).NotEmpty().WithMessage("Zip Code is required.");

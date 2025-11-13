@@ -30,7 +30,7 @@ public record UpdateTeamRecord(
     string ImageFile,
     int TeamStatus);
 
-public record AddressModel(string FirstName, string LastName, string EmailAddress, string AddressLine, string Country, string State, string ZipCode);
+public record AddressModel(string FirstName, string LastName, string EmailAddress, string AddressLine, string City, string Country, string State, string ZipCode);
 
 public enum TeamStatus
 {

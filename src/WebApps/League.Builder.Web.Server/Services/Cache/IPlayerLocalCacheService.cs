@@ -21,7 +21,8 @@ public interface IPlayerLocalCacheService
     Task SetPlayersBeforeBirthDateCache(GetPlayersBeforeBirthDateResponse playersBeforeBirthDateResponse);
     Task SetPlayersAfterBirthDateCache(GetPlayersAfterBirthDateResponse playersAfterBirthDateResponse);
     Task DeletePlayersCache();
-    Task DeletePlayersByTeamCache(string id);
+    Task DeletePlayerByIdCache(string id);
+    Task DeletePlayersByTeamCache(string teamId);
     Task DeletePlayersByFirstNameCache();
     Task DeletePlayersByLastNameCache();
     Task DeletePlayersByPositionCache();

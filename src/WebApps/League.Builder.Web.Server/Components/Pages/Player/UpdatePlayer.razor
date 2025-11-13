@@ -3,6 +3,7 @@
 @inject IPlayerService PlayerService
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
+@inject ISeasonService SeasonService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
@@ -75,8 +76,12 @@
                                                                   @bind-Value="model.Height" For="@(() => model.Height)" />
                                                     <MudTextField Required="true" Label="Weight" Class="mt-3"
                                                                   @bind-Value="model.Weight" For="@(() => model.Weight)" />
-                                                    <MudTextField Required="true" Label="Number" Class="mt-3"
-                                                                  @bind-Value="model.Number" For="@(() => model.Number)" />
+                                                    <MudSelect Required="true" Class="mt-3" Label="Number" @bind-Value="model.Number">
+                                                        @foreach (var jerseyNumber in jerseyNumbers)
+                                                        {
+                                                            <MudSelectItem Value="jerseyNumber">@jerseyNumber</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
                                                     <MudSelect Required="true" Class="mt-3" Label="Position" @bind-Value="model.Position">
                                                         @foreach (var position in Constants.Positions(sport))
                                                         {
@@ -101,14 +106,20 @@
                                                     </MudStack>
                                                     <MudTextField Required="true" Label="Address Line" Class="mt-3"
                                                                   @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" />
+                                                    <MudTextField Required="true" Label="City" Class="mt-3"
+                                                                  @bind-Value="model.City" For="@(() => model.City)" />
                                                     <MudSelect Required="true" Class="mt-3" Label="State" @bind-Value="model.State">
                                                         @foreach (var state in states)
                                                         {
                                                             <MudSelectItem Value="state">@state</MudSelectItem>
                                                         }
                                                     </MudSelect>
-                                                    <MudTextField Required="true" Label="Country" Class="mt-3"
-                                                                  @bind-Value="model.Country" For="@(() => model.Country)" />
+                                                    <MudSelect Required="true" Class="mt-3" Label="Country" @bind-Value="model.Country">
+                                                        @foreach (var country in countries)
+                                                        {
+                                                            <MudSelectItem Value="country">@country</MudSelectItem>
+                                                        }
+                                                    </MudSelect>                                                      
                                                     <MudTextField Required="true" Label="Zip Code" Class="mt-3"
                                                                   @bind-Value="model.ZipCode" For="@(() => model.ZipCode)" />
                                                 </MudCardContent>
@@ -129,7 +140,7 @@
                                                                   @bind-Value="model.FirstName" For="@(() => model.FirstName)" />
                                                     <MudTextField Required="true" ReadOnly="true" Label="Last Name" HelperText="Max. 50 characters"
                                                                   @bind-Value="model.LastName" For="@(() => model.LastName)" />
-                                                    <MudSelect Label="Team" Class="mt-3" @bind-Value="model.TeamId">
+                                                    <MudSelect Label="Team" Class="mt-3" @bind-Value="model.TeamId" ReadOnly="true">
                                                         @foreach (var team in TeamsResponse.Teams.Data)
                                                         {
                                                             <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
@@ -144,8 +155,12 @@
                                                                   @bind-Value="model.Height" For="@(() => model.Height)" />
                                                     <MudTextField Required="true" ReadOnly="true" Label="Weight" Class="mt-3"
                                                                   @bind-Value="model.Weight" For="@(() => model.Weight)" />
-                                                    <MudTextField Required="true" ReadOnly="true" Label="Number" Class="mt-3"
-                                                                  @bind-Value="model.Number" For="@(() => model.Number)" />
+                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Number" @bind-Value="model.Number">
+                                                        @foreach (var jerseyNumber in jerseyNumbers)
+                                                        {
+                                                            <MudSelectItem Value="jerseyNumber">@jerseyNumber</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
                                                     <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Position" @bind-Value="model.Position">
                                                         @foreach (var position in Constants.Positions(sport))
                                                         {
@@ -156,14 +171,20 @@
                                                                   @bind-Value="model.Description" For="@(() => model.Description)" />
                                                     <MudTextField Required="true" ReadOnly="true" Label="Address Line" Class="mt-3"
                                                                   @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" />
+                                                    <MudTextField Required="true" ReadOnly="true" Label="City" Class="mt-3"
+                                                                  @bind-Value="model.City" For="@(() => model.City)" />
                                                     <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="State" @bind-Value="model.State">
                                                         @foreach (var state in states)
                                                         {
                                                             <MudSelectItem Value="state">@state</MudSelectItem>
                                                         }
                                                     </MudSelect>
-                                                    <MudTextField Required="true" ReadOnly="true" Label="Country" Class="mt-3"
-                                                                  @bind-Value="model.Country" For="@(() => model.Country)" />
+                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Country" @bind-Value="model.Country">
+                                                        @foreach (var country in countries)
+                                                        {
+                                                            <MudSelectItem Value="country">@country</MudSelectItem>
+                                                        }
+                                                    </MudSelect>                                                     
                                                     <MudTextField Required="true" ReadOnly="true" Label="Zip Code" Class="mt-3"
                                                                   @bind-Value="model.ZipCode" For="@(() => model.ZipCode)" />
                                                     <MudItem Style="padding-top: 20px;">
@@ -234,7 +255,10 @@
     private GetTeamByIdResponse TeamById { get; set; }
     private GetLeagueByIdResponse LeagueById { get; set; }
     private GetSeasonByYearResponse SeasonByYearResponse { get; set; }
+    private GetPlayersByTeamResponse PlayersByTeamResponse { get; set; }
     private List<string> states;
+    private List<string> countries;
+    private List<int> jerseyNumbers;
     UpdatePlayerModel model = new UpdatePlayerModel();
     bool success;
     string sport = string.Empty;
@@ -244,6 +268,7 @@
     private List<string> errors = new();
     private MudFileUpload<IBrowserFile> _fileUpload;
     private FluentValidationValidator fluentValidationValidator;
+    private int year;
 
     protected override async Task OnInitializedAsync()
     {
@@ -252,6 +277,7 @@
             NavManager.NavigateTo("authentication/logout");
         }
 
+        year = DateTime.Now.Year;
         var playerId = Guid.Parse(Id);
         PlayerByIdResponse = await PlayerLocalCache.GetPlayerByIdCache(Id);
         if(PlayerByIdResponse == null)
@@ -271,19 +297,34 @@
             TeamById = await TeamService.GetTeamById(PlayerByIdResponse.Player.TeamId);
             await TeamLocalCache.SetTeamByIdCache(Id, TeamById);
         }
+        PlayersByTeamResponse = await PlayerLocalCache.GetPlayersByTeamCache(PlayerByIdResponse.Player.TeamId.ToString());
+        if (PlayersByTeamResponse == null)
+        {
+            PlayersByTeamResponse = await PlayerService.GetPlayersByTeam(PlayerByIdResponse.Player.TeamId);
+            await PlayerLocalCache.SetPlayersByTeamCache(Id, PlayersByTeamResponse);
+        }
         LeagueById = await LeagueLocalCache.GetLeagueByIdCache(TeamById.Team.LeagueId.ToString());
         if (LeagueById == null)
         {
             LeagueById = await LeagueService.GetLeague(TeamById.Team.LeagueId);
             await LeagueLocalCache.SetLeagueByIdCache(TeamById.Team.LeagueId.ToString(), LeagueById);
-        }        
+        }     
+        SeasonByYearResponse = await SeasonLocalCache.GetSeasonByYearCache(year);
+        if (SeasonByYearResponse == null)
+        {
+            SeasonByYearResponse = await SeasonService.GetSeasonByYear(year);
+            await SeasonLocalCache.SetSeasonByYearCache(year, SeasonByYearResponse);
+        }
         sport = LeagueById.League.Sport;
         states = Constants.States();
+        countries = Constants.Countries();
+        jerseyNumbers = Constants.JerseyNumbers();
         model.Id = PlayerByIdResponse.Player.Id;
         model.TeamId = PlayerByIdResponse.Player.TeamId;
         model.FirstName = PlayerByIdResponse.Player.FirstName;
         model.LastName = PlayerByIdResponse.Player.LastName;
         model.AddressLine = PlayerByIdResponse.Player.PlayerAddress.AddressLine;
+        model.City = PlayerByIdResponse.Player.PlayerAddress.City;
         model.State = PlayerByIdResponse.Player.PlayerAddress.State;
         model.Country = PlayerByIdResponse.Player.PlayerAddress.Country;
         model.ZipCode = PlayerByIdResponse.Player.PlayerAddress.ZipCode;
@@ -297,6 +338,7 @@
         model.Description = PlayerByIdResponse.Player.Description;
         model.ImageFile = PlayerByIdResponse.Player.ImageFile;
         model.PlayerStatus = PlayerByIdResponse.Player.PlayerStatus;
+        RemoveTakenJerseyNumbers();
         PageLoad = true;
     }
 
@@ -315,26 +357,35 @@
 
             }
             else
+            {
+                model.ImageFile = model.File.Name;
+                var uploadKeyPath = $"/{LeagueById.League.Sport}/{LeagueById.League.Name}/teams/{TeamById.Team.TeamName}/players/{String.Concat(model.FirstName, " ", model.LastName)}/{model.ImageFile}";
+                await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
+
                 await AWSService.DeleteObject(deleteKeyPath);
 
-        }
+            }
 
-        if (uploadFile == true)
+        }
+        else
         {
-            var deleteKeyPath = $"/{LeagueById.League.Sport}/{LeagueById.League.Name}/teams/{TeamById.Team.TeamName}/players/{String.Concat(model.FirstName, " ", model.LastName)}/{model.ImageFile}";
-            await AWSService.DeleteObject(deleteKeyPath);
-            model.ImageFile = model.File.Name;
-            var keyPath = $"/{LeagueById.League.Sport}/{LeagueById.League.Name}/teams/{TeamById.Team.TeamName}/players/{String.Concat(model.FirstName, " ", model.LastName)}/{model.ImageFile}";
-            var s3Success = await AWSService.UploadImages(keyPath, model.File);
+            if (model.File != null)
+            {
+                model.ImageFile = model.File.Name;
+                var uploadKeyPath = $"/{LeagueById.League.Sport}/{LeagueById.League.Name}/teams/{TeamById.Team.TeamName}/players/{String.Concat(model.FirstName, " ", model.LastName)}/{model.ImageFile}";
+                await AWSService.UploadImages(uploadKeyPath, model.File);
+            }
+
         }
 
-        Models.Player.AddressModel address = new Models.Player.AddressModel(model.AddressLine, model.Country, model.State, model.ZipCode);
-        Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(model.EmailAddress, model.PhoneNumber, model.BirthDate.Value, (int)model.Height, (int)model.Weight, model.Position, (int)model.Number);
+        Models.Player.AddressModel address = new Models.Player.AddressModel(model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
+        Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(model.EmailAddress, model.PhoneNumber, model.BirthDate.Value, (int)model.Height, (int)model.Weight, model.Position, model.Number);
         UpdatePlayerRequest request = new UpdatePlayerRequest(new UpdatePlayerRecord(model.Id, model.TeamId, model.FirstName, model.LastName, address, playerDetail, model.Description, model.ImageFile, (int)model.PlayerStatus));
         Console.WriteLine(request.Player.PlayerStatus);
         await PlayerService.UpdatePlayer(request);
         success = true;
         await PlayerLocalCache.DeletePlayersCache();
+        await PlayerLocalCache.DeletePlayerByIdCache(model.Id.ToString());
         await PlayerLocalCache.DeletePlayersByFirstNameCache();
         await PlayerLocalCache.DeletePlayersByLastNameCache();
         await PlayerLocalCache.DeletePlayersByPositionCache();
@@ -428,5 +479,16 @@
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
 
         return DialogService.ShowAsync<ErrorMessageBox>("Errors", parameters, options);
+    }
+
+    private void RemoveTakenJerseyNumbers()
+    {
+        foreach (var player in PlayersByTeamResponse.Players)
+        {
+            if(player.Id == model.Id)
+                continue;
+
+            jerseyNumbers.Remove(player.PlayerDetail.Number);
+        }
     }
 }

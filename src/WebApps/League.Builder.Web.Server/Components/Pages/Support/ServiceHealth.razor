@@ -1,6 +1,4 @@
 ﻿@page "/health"
-@using global::League.Builder.Web.Server.Common
-@using global::League.Builder.Web.Server.Models.Health
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject IPlayerService PlayerService
@@ -35,6 +33,7 @@
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -58,6 +57,30 @@
                                                 {
                                                     <MudTd DataLabel="Status">
                                                         <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                                @if(context.Key == "self")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/league-api" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if(context.Key == "PostgreSql")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/leagueDb" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "masstransit-bus")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/rabbitmq" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if(context.Key == "npgsql")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/pgadmin" Target="_blank" />
                                                     </MudTd>
                                                 }
                                             </RowTemplate>
@@ -71,6 +94,7 @@
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -94,6 +118,24 @@
                                                 {
                                                     <MudTd DataLabel="Status">
                                                         <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/team-api" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "sqlserver")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/sql" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "masstransit-bus")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/rabbitmq" Target="_blank" />
                                                     </MudTd>
                                                 }
                                             </RowTemplate>
@@ -107,6 +149,7 @@
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -130,6 +173,24 @@
                                                 {
                                                     <MudTd DataLabel="Status">
                                                         <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/player-api" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "sqlserver")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/sql" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "masstransit-bus")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/rabbitmq" Target="_blank" />
                                                     </MudTd>
                                                 }
                                             </RowTemplate>
@@ -143,6 +204,7 @@
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -166,6 +228,30 @@
                                                 {
                                                     <MudTd DataLabel="Status">
                                                         <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/season-api" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "PostgreSql")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/seasonDb" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "masstransit-bus")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/rabbitmq" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "npgsql")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/pgadmin" Target="_blank" />
                                                     </MudTd>
                                                 }
                                             </RowTemplate>
@@ -192,6 +278,7 @@
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -215,6 +302,24 @@
                                                 {
                                                     <MudTd DataLabel="Status">
                                                         <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/standings-api" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "sqlserver")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/sql" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "masstransit-bus")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/rabbitmq" Target="_blank" />
                                                     </MudTd>
                                                 }
                                             </RowTemplate>
@@ -228,6 +333,7 @@
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -251,6 +357,24 @@
                                                 {
                                                     <MudTd DataLabel="Status">
                                                         <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/game-api" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "sqlserver")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/sql" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "masstransit-bus")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/rabbitmq" Target="_blank" />
                                                     </MudTd>
                                                 }
                                             </RowTemplate>
@@ -264,6 +388,7 @@
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -287,6 +412,24 @@
                                                 {
                                                     <MudTd DataLabel="Status">
                                                         <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" />
+                                                    </MudTd>
+                                                }
+                                                @if (context.Key == "self")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/stats-api" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "sqlserver")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/sql" Target="_blank" />
+                                                    </MudTd>
+                                                }
+                                                else if (context.Key == "masstransit-bus")
+                                                {
+                                                    <MudTd>
+                                                        <MudIconButton Icon="@Icons.Material.Filled.LaptopChromebook" Color="Color.Inherit" Href="https://localhost:17087/consolelogs/resource/rabbitmq" Target="_blank" />
                                                     </MudTd>
                                                 }
                                             </RowTemplate>

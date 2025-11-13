@@ -55,7 +55,8 @@
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<TeamModel, object>(x => x.TeamName)">Name</MudTableSortLabel></MudTh>
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<TeamModel, object>(x => x.LeagueName)">League</MudTableSortLabel></MudTh>
-                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Description</MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<TeamModel, object>(x => x.TeamAddress.FirstName)">Team Owner</MudTableSortLabel></MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<TeamModel, object>(x => x.TeamAddress.State)">Location</MudTableSortLabel></MudTh>
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
                                         </HeaderContent>
                                         <RowTemplate>
@@ -70,7 +71,8 @@
                                                 </MudTooltip>
                                              </MudTd>
                                             <MudTd DataLabel="League">@context.LeagueName</MudTd>
-                                            <MudTd DataLabel="Description">@context.Description</MudTd>
+                                            <MudTd DataLabel="Team Owner">@context.TeamAddress.FirstName @context.TeamAddress.LastName</MudTd>
+                                            <MudTd DataLabel="Location">@context.TeamAddress.City, @context.TeamAddress.State</MudTd>
                                             <MudTd DataLabel="Links">
                                                 <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
                                                     <AuthorizeView Roles="@Roles.ReadGames" Context="teamGamesAuth">

@@ -14,6 +14,8 @@ public class UpdatePlayerModel
 
     public string AddressLine { get; set; }
 
+    public string City { get; set; }
+
     public string State { get; set; }
 
     public string Country { get; set; }
@@ -30,7 +32,7 @@ public class UpdatePlayerModel
 
     public int? Weight { get; set; }
 
-    public int? Number { get; set; }
+    public int Number { get; set; }
 
     public string Position { get; set; }
 
@@ -55,6 +57,8 @@ public class UpdatePlayerModelValidator : AbstractValidator<UpdatePlayerModel>
                 .Length(2, 50).WithMessage("Last Name must be between 2 and 50 characters");
         RuleFor(x => x.AddressLine).NotEmpty().WithMessage("Address is required.");
         RuleFor(x => x.State).NotEmpty().WithMessage("State is required.");
+        RuleFor(x => x.City).NotEmpty().WithMessage("City is required.")
+               .Length(2, 50).WithMessage("City must be between 2 and 50 characters"); 
         RuleFor(x => x.Country).NotEmpty().WithMessage("Country is required.");
         RuleFor(x => x.ZipCode).NotEmpty().WithMessage("Zip Code is required.");
         RuleFor(x => x.ZipCode).Matches(@"^\d{5}(-\d{4})?$").WithMessage("A valid Zip Code is required.");

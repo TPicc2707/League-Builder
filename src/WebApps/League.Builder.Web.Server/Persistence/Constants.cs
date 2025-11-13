@@ -2,6 +2,9 @@
 {
     public static class Constants
     {
+        private static string BASEBALL = "Baseball";
+        private static string BASKETBALL = "Basketball";
+        private static string FOOTBALL = "Football";
 
         public static List<string> When()
         {
@@ -25,7 +28,7 @@
 
         public static List<string> Positions(string sport)
         {
-            if (sport == "Baseball")
+            if (sport == BASEBALL)
             {
                 return new List<string>
                 {
@@ -39,7 +42,7 @@
                 };
             }
 
-            if (sport == "Basketball")
+            if (sport == BASKETBALL)
             {
                 return new List<string>
                 {
@@ -51,7 +54,7 @@
                 };
             }
 
-            if(sport == "Football")
+            if (sport == FOOTBALL)
             {
                 return new List<string>
                 {
@@ -71,36 +74,6 @@
 
             return new List<string>();
         }
-
-        //public static List<string> BasketballPositions()
-        //{
-        //    return new List<string>
-        //    {
-        //        "Center",
-        //        "Power Forward",
-        //        "Small Forward",
-        //        "Shooting Guard",
-        //        "Point Guard"
-        //    };
-        //}
-
-        //public static List<string> FootballPositions()
-        //{
-        //    return new List<string>
-        //    {
-        //        "Quarterback",
-        //        "Running Back",
-        //        "Wide Receiver",
-        //        "Tight End",
-        //        "Offensive Lineman",
-        //        "Defensive Lineman",
-        //        "Linebacker",
-        //        "Defensive Back",
-        //        "Safety",
-        //        "Kicker",
-        //        "Punter"
-        //    };
-        //}
 
         public static List<string> States()
         {
@@ -132,6 +105,7 @@
                 "MS",
                 "MO",
                 "MT",
+                "NC",
                 "NE",
                 "NV",
                 "NH",
@@ -162,6 +136,14 @@
                 "PR",
                 "UM",
                 "VI"
+            };
+        }
+
+        public static List<string> Countries()
+        {
+            return new List<string>
+            {
+                "US"
             };
         }
 
@@ -203,6 +185,11 @@
 
             return string.Empty;
         }
+
+        public static List<int> JerseyNumbers()
+        {
+            return Enumerable.Range(0, 100).ToList();
+        }
     }
 
     public static class SportName
@@ -218,4 +205,5 @@
         public const int FourTeams = 4;
         public const int EightTeams = 8;
     }
+
 }

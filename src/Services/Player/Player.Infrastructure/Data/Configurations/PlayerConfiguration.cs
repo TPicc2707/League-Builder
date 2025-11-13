@@ -40,6 +40,9 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Domain.Models.Player
                     .HasMaxLength(180)
                     .IsRequired();
 
+               addressBuilder.Property(a => a.City)
+                    .HasMaxLength(50);
+
                addressBuilder.Property(a => a.Country)
                     .HasMaxLength(50);
 

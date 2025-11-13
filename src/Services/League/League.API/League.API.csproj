@@ -10,11 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Npgsql" Version="9.4.2" />
+    <PackageReference Include="Aspire.Npgsql" Version="9.5.2" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageReference Include="Carter" Version="9.0.0" />
-    <PackageReference Include="Marten" Version="8.11.0" />
-    <PackageReference Include="System.Text.Json" Version="9.0.9" />
+    <PackageReference Include="Marten" Version="8.14.0" />
+    <PackageReference Include="System.Text.Json" Version="10.0.0-rc.2.25502.107" />
   </ItemGroup>
 
   <ItemGroup>

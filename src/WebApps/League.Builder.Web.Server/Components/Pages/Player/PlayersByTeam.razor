@@ -1,8 +1,9 @@
 ﻿@page "/playersbyteam/{id}"
-@using League.Builder.Web.Server.Services.Cache
 @inject IPlayerService PlayerService
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
+@inject ISeasonService SeasonService
+@inject IStandingsService StandingsService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IAWSService AWSService
@@ -10,6 +11,8 @@
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
 @inject IPlayerLocalCacheService PlayerLocalCache
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject IStandingsLocalCacheService StandingsLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -27,9 +30,13 @@
                                     <MudText Typo="Typo.h4" Align="Align.Start" Style="font-weight:bold;">@Team.Team.TeamName</MudText>
                                     <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;">@Team.Team.LeagueName</MudText>
                                     <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;">@Team.Team.TeamAddress.AddressLine</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;">@Team.Team.TeamAddress.State</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;">@Team.Team.TeamAddress.ZipCode</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;"> @Team.Team.TeamAddress.City, @Team.Team.TeamAddress.State @Team.Team.TeamAddress.ZipCode</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;"> Team Owner: @Team.Team.TeamAddress.FirstName @Team.Team.TeamAddress.LastName</MudText>
                                     <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;">@Team.Team.Description</MudText>
+                                    @if(record is not null)
+                                    {
+                                        <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;"> @year Season Record: @record.StandingsDetail.Wins - @record.StandingsDetail.Losses </MudText>
+                                    }
                                 </MudItem>
                             </MudStack>
                         </MudCardContent>
@@ -58,7 +65,7 @@
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.FirstName)">First Name</MudTableSortLabel></MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.LastName)">Last Name</MudTableSortLabel></MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Position</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Description</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Location</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
@@ -114,7 +121,7 @@
                                                     </AuthorizeView>
                                                 </MudTd>
                                                 <MudTd DataLabel="Position">@context.PlayerDetail.Position</MudTd>
-                                                <MudTd DataLabel="Description">@context.Description</MudTd>
+                                                <MudTd DataLabel="Location">@context.PlayerAddress.City, @context.PlayerAddress.State</MudTd>
                                                 <MudTd DataLabel="Links">
                                                     <AuthorizeView Roles="@Roles.UpdatePlayers" Context="updateAuth">
                                                         <MudTooltip Text="Update" Color="Color.Secondary">
@@ -137,7 +144,7 @@
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.FirstName)">First Name</MudTableSortLabel></MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.LastName)">Last Name</MudTableSortLabel></MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Position</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Description</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Location</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
@@ -193,7 +200,7 @@
                                                     </AuthorizeView>
                                                 </MudTd>
                                                 <MudTd DataLabel="Position">@context.PlayerDetail.Position</MudTd>
-                                                <MudTd DataLabel="Description">@context.Description</MudTd>
+                                                <MudTd DataLabel="Location">@context.PlayerAddress.City, @context.PlayerAddress.State</MudTd>
                                                 <MudTd DataLabel="Links">
                                                     <MudTooltip Text="Update" Color="Color.Secondary">
                                                         <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateplayer/", context.Id)" />
@@ -234,10 +241,15 @@
     private int PlayerCounter = 0;
     private int NumberPlayersToShow = 100;
     private bool IsTeamMaxOnPlayers = false;
+    private int year;
 
     private GetTeamByIdResponse Team { get; set; }
     private GetPlayersByTeamResponse Players { get; set; }
     private GetLeaguesResponse LeaguesResponse { get; set; }
+    private GetStandingsByTeamResponse StandingsByTeamResponse { get; set; }
+    private GetSeasonByYearResponse SeasonByYearResponse { get; set; }
+    private StandingsModel record = new();
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -247,6 +259,7 @@
         }
 
         var teamId = Guid.Parse(Id);
+        year = DateTime.Now.Year;
         Team = await TeamLocalCache.GetTeamByIdCache(Id);
         if(Team == null)
         {
@@ -265,6 +278,21 @@
             LeaguesResponse = await LeagueService.GetLeagues();
             await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
         }
+        SeasonByYearResponse = await SeasonLocalCache.GetSeasonByYearCache(year);
+        if (SeasonByYearResponse == null)
+        {
+            SeasonByYearResponse = await SeasonService.GetSeasonByYear(year);
+            await SeasonLocalCache.SetSeasonByYearCache(year, SeasonByYearResponse);
+        }
+        await StandingsLocalCache.DeleteStandingsByTeamCache(Id);
+        StandingsByTeamResponse = await StandingsLocalCache.GetStandingsByTeamCache(Id);
+        if (StandingsByTeamResponse == null)
+        {
+            StandingsByTeamResponse = await StandingsService.GetStandingsByTeam(teamId);
+            await StandingsLocalCache.SetStandingsByTeamCache(Id, StandingsByTeamResponse);
+        }
+        record = StandingsByTeamResponse.Standings.FirstOrDefault(x => x.SeasonId == SeasonByYearResponse.Season.Id);
+
         var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == Team.Team.LeagueId);
         IsTeamMaxOnPlayers = Players.Players.Count() == league.MaximumTotalTeamPlayers ? true : false;
         await GetTeamImageAsync(league);

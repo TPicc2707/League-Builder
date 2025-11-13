@@ -16,43 +16,43 @@ internal class InitialData
     {
         get
         {
-            var address1 = Address.Of("875 Derby Road", "US", "PA", "52134");
+            var address1 = Address.Of("875 Derby Road", "US", "Lancaster", "PA", "52134");
             var playerDetail1 = PlayerDetail.Of("jj@email.com", "1234567890", new DateTime(2003, 02, 14), 72, 215, "Second Baseman", 0);
 
-            var address2 = Address.Of("142 Philly Drive", "US", "PA", "52134");
+            var address2 = Address.Of("142 Philly Drive", "US", "Lancaster", "PA", "52134");
             var playerDetail2 = PlayerDetail.Of("lc@email.com", "2345678901", new DateTime(2002, 11, 25), 76, 224, "First Baseman", 0);
 
-            var address3 = Address.Of("123 1st Street", "US", "CA", "12346");
+            var address3 = Address.Of("123 1st Street", "US", "Santa Cruz", "CA", "12346");
             var playerDetail3 = PlayerDetail.Of("sw@email.com", "3456789012", new DateTime(2001, 05, 06), 75, 251, "Third Baseman", 0);
 
-            var address4 = Address.Of("564 2nd Street", "US", "CA", "12346");
+            var address4 = Address.Of("564 2nd Street", "US", "Santa Cruz", "CA", "12346");
             var playerDetail4 = PlayerDetail.Of("tt@email.com", "4567890123", new DateTime(2003, 08, 19), 79, 201, "Pitcher", 0);
 
-            var address5 = Address.Of("Broadway No:1", "US", "NY", "12347");
+            var address5 = Address.Of("Broadway No:1", "US", "Saratoga Springs", "NY", "12347");
             var playerDetail5 = PlayerDetail.Of("js@email.com", "5678901234", new DateTime(2001, 01, 02), 74, 276, "Defensive Lineman", 0);
 
-            var address6 = Address.Of("Broadway No:2", "US", "NY", "12347");
+            var address6 = Address.Of("Broadway No:2", "US", "Saratoga Springs", "NY", "12347");
             var playerDetail6 = PlayerDetail.Of("jg@email.com", "6789012345", new DateTime(2002, 05, 05), 71, 243, "Tight End", 0);
 
-            var address7 = Address.Of("741 Quick Avenue", "US", "FL", "24512");
+            var address7 = Address.Of("741 Quick Avenue", "US", "Gainesville", "FL", "24512");
             var playerDetail7 = PlayerDetail.Of("bt@email.com", "7890123456", new DateTime(2003, 03, 15), 78, 212, "Quarterback", 0);
 
-            var address8 = Address.Of("741 Second Street", "US", "FL", "24512");
+            var address8 = Address.Of("741 Second Street", "US", "Gainesville", "FL", "24512");
             var playerDetail8 = PlayerDetail.Of("nj@email.com", "8901234567", new DateTime(2001, 09, 23), 74, 205, "Wide Receiver", 0);
 
-            var address9 = Address.Of("1245 First Street", "US", "KY", "40265");
+            var address9 = Address.Of("1245 First Street", "US", "Bowling Green", "KY", "40265");
             var playerDetail9 = PlayerDetail.Of("bb@email.com", "4567891241", new DateTime(2003, 11, 25), 78, 224, "Outfielder", 0);
 
-            var address10 = Address.Of("1475 Fast Lane", "US", "KY", "40275");
+            var address10 = Address.Of("1475 Fast Lane", "US", "Bowling Green", "KY", "40275");
             var playerDetail10 = PlayerDetail.Of("oj@email.com", "1254689632", new DateTime(2005, 06, 17), 74, 195, "Second Base", 0);
 
-            var address11 = Address.Of("741 Lazy Corner", "US", "FL", "24513");
+            var address11 = Address.Of("741 Lazy Corner", "US", "Gainesville", "FL", "24513");
             var playerDetail11 = PlayerDetail.Of("vb@email.com", "4125687413", new DateTime(2002, 05, 11), 72, 225, "Running Back", 0);
 
-            var address12 = Address.Of("7586 Jump Corner", "US", "NY", "12348");
+            var address12 = Address.Of("7586 Jump Corner", "US", "Saratoga Springs", "NY", "12348");
             var playerDetail12 = PlayerDetail.Of("km@email.com", "7854698712", new DateTime(2004, 08, 04), 78, 300, "Offensive Lineman", 0);
 
-            var address13 = Address.Of("1254 Carrie Street", "US", "PA", "52135");
+            var address13 = Address.Of("1254 Carrie Street", "US", "Lancaster", "PA", "52135");
             var playerDetail13 = PlayerDetail.Of("gc@email.com", "4512546325", new DateTime(2004, 05, 01), 75, 201, "Shortstop", 0);
 
 

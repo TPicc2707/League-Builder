@@ -1,15 +1,18 @@
 ﻿@page "/leaguehistory/{id}"
-@using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject ISeasonService SeasonService
+@inject IStandingsService StandingsService
+@inject IAWSService AWSService
 @inject NavigationManager NavManager
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
 @inject ISeasonLocalCacheService SeasonLocalCache
+@inject IStandingsLocalCacheService StandingsLocalCache
 
-<AuthorizeView Roles="@String.Concat(Roles.ReadLeagues, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames)">
+
+<AuthorizeView Roles="@String.Concat(Roles.ReadLeagues, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames)" Context="Auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -25,6 +28,32 @@
                             <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Champions</MudText>
                         </TitleContent>
                         <ChildContent>
+                            @if(Champs.Count > 0)
+                            {
+                                <MudItem>
+                                    <MudTable Items="Champs" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                        <HeaderContent>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<LeagueChampion, object>(x => x.Year)">Year</MudTableSortLabel></MudTh>
+                                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<LeagueChampion, object>(x => x.TeamName)">Team</MudTableSortLabel></MudTh>
+                                        </HeaderContent>
+                                        <RowTemplate>
+                                            <MudTd DataLabel="Year">@context.Year</MudTd>
+                                            <MudTd DataLabel="Team">
+                                                <MudStack Row="true">
+                                                    <MudAvatar Size="Size.Small">
+                                                        <MudImage Src="@context.Image" Alt="Team Image"></MudImage>
+                                                    </MudAvatar>
+                                                    <MudText>@context.TeamName (@context.Wins - @context.Losses)</MudText>
+                                                </MudStack>
+                                            </MudTd>
+                                        </RowTemplate>
+                                        <PagerContent>
+                                            <MudTablePager />
+                                        </PagerContent>
+                                    </MudTable>
+                                </MudItem>
+                            }
                         </ChildContent>
                     </MudExpansionPanel>
                 </MudExpansionPanels>
@@ -47,6 +76,8 @@
     public GetLeagueByIdResponse LeagueByIdResponse { get; set; }
     public GetTeamsByLeagueResponse TeamsByLeagueResponse { get; set; }
     public GetSeasonsResponse GetSeasonsResponse { get; set; }
+    public GetStandingsByLeagueResponse GetStandingsByLeagueResponse { get; set; }
+    public List<LeagueChampion> Champs { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,6 +105,46 @@
             GetSeasonsResponse = await SeasonService.GetSeasons();
             await SeasonLocalCache.SetSeasonsCache(GetSeasonsResponse);
         }
+        GetStandingsByLeagueResponse = await StandingsLocalCache.GetStandingsByLeagueCache(Id);
+        if(GetStandingsByLeagueResponse == null)
+        {
+            GetStandingsByLeagueResponse = await StandingsService.GetStandingsByLeague(leagueId);
+            await StandingsLocalCache.SetStandingsByLeagueCache(Id, GetStandingsByLeagueResponse);
+        }
+
+        foreach(var standing in GetStandingsByLeagueResponse.Standings)
+        {
+            LeagueChampion champion = new LeagueChampion();
+
+            if (standing.StandingsDetail.Champion)
+            {
+                champion.TeamId = standing.Team.Id;
+                champion.TeamName = standing.Team.TeamName;
+                champion.Year = GetSeasonsResponse.Seasons.FirstOrDefault(x => x.Id == standing.SeasonId).Year;
+                champion.Wins = standing.StandingsDetail.Wins;
+                champion.Losses = standing.StandingsDetail.Losses;
+                await GetImageAsync(champion);
+                Champs.Add(champion);
+            }
+        }
+
         PageLoad = true;
+    }
+
+    private async Task GetImageAsync(LeagueChampion champion)
+    {
+        var team = TeamsByLeagueResponse.Teams.FirstOrDefault(x => x.Id == champion.TeamId);
+        var keyPath = $"/{LeagueByIdResponse.League.Sport}/{LeagueByIdResponse.League.Name}/teams/{team.TeamName}/{team.ImageFile}";
+        champion.Image = await AWSService.GetImage(keyPath);
+    }
+
+    public class LeagueChampion
+    {
+        public Guid TeamId { get; set; }
+        public string TeamName { get; set; } = default!;
+        public string Image { get; set; } = default!;
+        public int Year { get; set; }
+        public int Wins { get; set; }
+        public int Losses { get; set; }
     }
 }

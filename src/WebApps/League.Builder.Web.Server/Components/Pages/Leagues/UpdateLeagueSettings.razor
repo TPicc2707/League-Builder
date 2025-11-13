@@ -102,7 +102,10 @@
         Snackbar.Add("League Settings has been updated.", MudBlazor.Severity.Success);
         NavManager.NavigateTo("/leagues");
         StateHasChanged();
-
+        await LeagueLocalCache.DeleteLeaguesCache();
+        await LeagueLocalCache.DeleteLeagueByIdCache(Id);
+        await LeagueLocalCache.DeleteLeagueBySportCache(LeagueByIdResponse.League.Sport);
+        await LeagueLocalCache.DeleteLeagueByNameCache();
         PageLoad = true;
     }
 

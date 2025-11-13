@@ -98,7 +98,7 @@
                                                                   @bind-Value="model.Description" For="@(() => model.Description)" />
                                                     <MudItem Style="padding-top: 20px;">
                                                         <MudStack Row="true">
-                                                            <MudFileUpload Disabled="true" @ref="@_fileUpload"
+                                                            <MudFileUpload  @ref="@_fileUpload"
                                                                            T="IBrowserFile"
                                                                            For="@(() => model.File)"
                                                                            @bind-Files="model.File">
@@ -191,7 +191,7 @@
             TeamsByLeagueResponse = await TeamService.GetTeamsByLeague(leagueId);
             await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsByLeagueResponse);
         }
-        
+
         if (TeamsByLeagueResponse.Teams.Any())
             disableSportDropdown = true;
         model.Id = LeagueByIdResponse.League.Id;
@@ -207,14 +207,37 @@
 
     private async Task OnValidSubmit(EditContext context)
     {
-        if (uploadFile == true)
+
+        if (model.Name != LeagueByIdResponse.League.Name)
         {
-            model.ImageFile = model.File.Name;
-            // string rootpath = @"C:\Development\league-builder\src\WebApps\League.Builder.Web\wwwroot\images";
-            string keyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
-            var s3Success = await AWSService.UploadImages(keyPath, model.File);
-            // FileStream filestream = new FileStream(rootpath, FileMode.Create, FileAccess.Write);
-            // await model.File.OpenReadStream().CopyToAsync(filestream);
+            var deleteKeyPath = $"/{model.Sport}/{LeagueByIdResponse.League.Name}/{model.ImageFile}";
+
+            if (model.File == null)
+            {
+                var uploadKeyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
+                await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
+
+                await AWSService.DeleteObject(deleteKeyPath);
+
+            }
+            else
+            {
+                model.ImageFile = model.File.Name;
+                var uploadKeyPath = $"/{model.Sport}/{model.Name}/{model.File.Name}";
+                await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
+
+                await AWSService.DeleteObject(deleteKeyPath);
+            }
+
+        }
+        else
+        {
+            if (model.File != null)
+            {
+                model.ImageFile = model.File.Name;
+                var uploadKeyPath = $"/{model.Sport}/{model.Name}/{model.File.Name}";
+                await AWSService.UploadImages(uploadKeyPath, model.File);
+            }
         }
 
         UpdateLeagueRequest request = new UpdateLeagueRequest(model.Id, model.Name, model.Sport, model.Description, model.ImageFile, model.OwnerFirstName, model.OwnerLastName, model.EmailAddress);

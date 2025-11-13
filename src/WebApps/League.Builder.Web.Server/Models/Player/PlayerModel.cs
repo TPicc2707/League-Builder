@@ -36,7 +36,7 @@ public record UpdatePlayerRecord(
     string ImageFile,
     int PlayerStatus);
 
-public record AddressModel(string AddressLine, string Country, string State, string ZipCode);
+public record AddressModel(string AddressLine, string City, string Country, string State, string ZipCode);
 public record PlayerDetailModel(string EmailAddress, string PhoneNumber, DateTime BirthDate, int Height, int Weight, string Position, int Number);
 
 public enum PlayerStatus

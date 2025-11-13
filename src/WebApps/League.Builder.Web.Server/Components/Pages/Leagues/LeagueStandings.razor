@@ -144,6 +144,7 @@
             await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
         }
         Season = SeasonsModel.Seasons.First();
+        await StandingsLocalCache.DeleteStandingsByLeagueCache(Id);
         Model = await StandingsLocalCache.GetStandingsByLeagueCache(Id);
         if (Model == null)
         {

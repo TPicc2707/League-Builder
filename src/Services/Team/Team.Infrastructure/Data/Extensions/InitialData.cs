@@ -13,11 +13,11 @@ internal class InitialData
     {
         get
         {
-            var address1 = Address.Of("tony", "piccirilli", "tony-piccirilli@team.com", "123 Way Lane", "US", "PA", "12345");
-            var address2 = Address.Of("john", "doe", "john-doe@team.com", "698 Main Avenue", "US", "CA", "12346");
-            var address3 = Address.Of("timmy", "johnson", "timmy-johnson@team.com", "Broadway No:1", "US", "NY", "12347");
-            var address4 = Address.Of("lisa", "monroe", "lisa-monroe@team.com", "741 Second Street", "US", "FL", "12348");
-            var address5 = Address.Of("larry", "sanders", "larry-sanders@team.com", "741 First Street", "US", "KY", "47853");
+            var address1 = Address.Of("tony", "piccirilli", "tony-piccirilli@team.com", "123 Way Lane", "US", "Lancaster", "PA", "12345");
+            var address2 = Address.Of("john", "doe", "john-doe@team.com", "698 Main Avenue", "US", "Santa Cruz", "CA", "12346");
+            var address3 = Address.Of("timmy", "johnson", "timmy-johnson@team.com", "Broadway No:1", "US", "Saratoga Springs", "NY", "12347");
+            var address4 = Address.Of("lisa", "monroe", "lisa-monroe@team.com", "741 Second Street", "US", "Gainesville", "FL", "12348");
+            var address5 = Address.Of("larry", "sanders", "larry-sanders@team.com", "741 First Street", "US", "Bowling Green", "KY", "47853");
 
             var team1 = Domain.Models.Team.Create(TeamId.Of(new Guid("d8bd14ea-efd4-48a0-9e53-321e39681201")),
                                                   LeagueId.Of(new Guid("5334c996-8457-4cf0-815c-ed2b77c4ff61")),

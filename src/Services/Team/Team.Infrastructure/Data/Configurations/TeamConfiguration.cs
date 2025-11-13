@@ -41,6 +41,9 @@ public class TeamConfiguration : IEntityTypeConfiguration<Domain.Models.Team>
                    .HasMaxLength(150)
                    .IsRequired();
 
+               addressBuilder.Property(a => a.City)
+                    .HasMaxLength(50);
+
                addressBuilder.Property(a => a.Country)
                     .HasMaxLength(50);
 

@@ -11,6 +11,7 @@ public static class PlayerExtensions
             LastName: player.LastName.Value,
             PlayerAddress: new AddressDto(
                 player.PlayerAddress.AddressLine,
+                player.PlayerAddress.City,
                 player.PlayerAddress.Country,
                 player.PlayerAddress.State,
                 player.PlayerAddress.ZipCode),
@@ -37,6 +38,7 @@ public static class PlayerExtensions
             LastName: player.LastName.Value,
             PlayerAddress: new AddressDto(
                 player.PlayerAddress.AddressLine,
+                player.PlayerAddress.City,
                 player.PlayerAddress.Country,
                 player.PlayerAddress.State,
                 player.PlayerAddress.ZipCode),

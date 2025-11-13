@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject ILocalStorageService localStorage
 
 <MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="MyCustomTheme" />
 <MudPopoverProvider />
@@ -9,6 +10,11 @@
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
+        <AuthorizeView Roles="@String.Concat(Roles.UpdateLeagues, " , ", Roles.ReadLeagues, " , ", Roles.SupportLeagues)">
+            <Authorized>
+                <MudIconButton Icon="@Icons.Material.Filled.Cached" Color="Color.Inherit" OnClick="@ClearCache" />
+            </Authorized>
+        </AuthorizeView>
         <MudSwitch @bind-Value="_isDarkMode" Color="Color.Secondary" Class="ma-4" T="bool" ThumbIcon="@(_isDarkMode ? Icons.Material.Filled.ModeNight : Icons.Material.Filled.WbSunny)"/>
         <MudIconButton Icon="@Icons.Material.Filled.Person" Color="Color.Inherit" OnClick="@ToggleOpen" />
         <MudPopover Open="_open" Style="padding-top: 30px;" Fixed="true" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterRight" Paper="false">
@@ -74,6 +80,11 @@
         _isDarkMode = newValue;
         StateHasChanged();
         return Task.CompletedTask;
+    }
+
+    private async Task ClearCache()
+    {
+        await localStorage.ClearAsync();
     }
 
     private void ToggleOpen() => _open = !_open;
