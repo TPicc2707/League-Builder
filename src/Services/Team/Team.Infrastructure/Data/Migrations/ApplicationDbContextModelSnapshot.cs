@@ -18,7 +18,7 @@ namespace Team.Infrastructure.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -49,7 +49,7 @@ namespace Team.Infrastructure.Data.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.ComplexProperty<Dictionary<string, object>>("Sport", "Team.Domain.Models.League.Sport#Sport", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Sport", "Team.Domain.Models.League.Sport#Sport", b1 =>
                         {
                             b1.IsRequired();
 
@@ -99,7 +99,7 @@ namespace Team.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("OffSeason");
 
-                    b.ComplexProperty<Dictionary<string, object>>("TeamAddress", "Team.Domain.Models.Team.TeamAddress#Address", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "TeamAddress", "Team.Domain.Models.Team.TeamAddress#Address", b1 =>
                         {
                             b1.IsRequired();
 
@@ -144,7 +144,27 @@ namespace Team.Infrastructure.Data.Migrations
                                 .HasColumnType("nvarchar(5)");
                         });
 
-                    b.ComplexProperty<Dictionary<string, object>>("TeamName", "Team.Domain.Models.Team.TeamName#TeamName", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "TeamManager", "Team.Domain.Models.Team.TeamManager#Manager", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<string>("EmailAddress")
+                                .IsRequired()
+                                .HasMaxLength(150)
+                                .HasColumnType("nvarchar(150)");
+
+                            b1.Property<string>("FirstName")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar(50)");
+
+                            b1.Property<string>("LastName")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar(50)");
+                        });
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "TeamName", "Team.Domain.Models.Team.TeamName#TeamName", b1 =>
                         {
                             b1.IsRequired();
 

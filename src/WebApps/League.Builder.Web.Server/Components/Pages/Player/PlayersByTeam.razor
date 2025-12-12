@@ -31,7 +31,6 @@
                                     <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;">@Team.Team.LeagueName</MudText>
                                     <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;">@Team.Team.TeamAddress.AddressLine</MudText>
                                     <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;"> @Team.Team.TeamAddress.City, @Team.Team.TeamAddress.State @Team.Team.TeamAddress.ZipCode</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;"> Team Owner: @Team.Team.TeamAddress.FirstName @Team.Team.TeamAddress.LastName</MudText>
                                     <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;">@Team.Team.Description</MudText>
                                     @if(record is not null)
                                     {
@@ -43,6 +42,43 @@
                     </MudCard>
 
                 </MudItem>
+            </MudItem>
+            <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
+                <MudExpansionPanels>
+                    <MudExpansionPanel Expanded ="true" Class="border border-solid" Style="border-color:#000000">
+                        <TitleContent>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Management</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudStack Row="true">
+                                <MudItem xs="6" md="6" lg="6">
+                                    <MudCard Class="border border-solid" Style="border-color: #000000">
+                                        <MudCardContent>
+                                            <MudStack Row="true" AlignItems="AlignItems.Center">
+                                                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Size="Size.Medium" />
+                                                <MudText Typo="Typo.body1" Style="font-weight:bold">Team Admin: </MudText>
+                                                <MudText Typo="Typo.body1" Style="font-weight:bold">@Team.Team.TeamAddress.FirstName @Team.Team.TeamAddress.LastName</MudText>
+                                                <MudIconButton Href="@AdminMailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                                            </MudStack>
+                                        </MudCardContent>
+                                    </MudCard>
+                                </MudItem>
+                                <MudItem xs="6" md="6" lg="6">
+                                    <MudCard Class="border border-solid" Style="border-color: #000000">
+                                        <MudCardContent>
+                                            <MudStack Row="true" AlignItems="AlignItems.Center">
+                                                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Medium" />
+                                                <MudText Typo="Typo.body1" Style="font-weight:bold">Team Manager: </MudText>
+                                                <MudText Typo="Typo.body1" Style="font-weight:bold">@Team.Team.TeamManager.FirstName @Team.Team.TeamManager.LastName</MudText>
+                                                <MudIconButton Href="@ManagerMailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                                            </MudStack>
+                                        </MudCardContent>
+                                    </MudCard>
+                                </MudItem>
+                            </MudStack>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
             </MudItem>
             <MudItem Style="padding-top: 25px;">
                 <MudExpansionPanels>
@@ -249,6 +285,8 @@
     private GetStandingsByTeamResponse StandingsByTeamResponse { get; set; }
     private GetSeasonByYearResponse SeasonByYearResponse { get; set; }
     private StandingsModel record = new();
+    private string AdminMailUrl = string.Empty;
+    private string ManagerMailUrl = string.Empty;
 
 
     protected override async Task OnInitializedAsync()
@@ -297,6 +335,8 @@
         IsTeamMaxOnPlayers = Players.Players.Count() == league.MaximumTotalTeamPlayers ? true : false;
         await GetTeamImageAsync(league);
         await GetImageAsync();
+        AdminMailUrl = $"mailto:{Team.Team.TeamAddress.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
+        ManagerMailUrl = $"mailto:{Team.Team.TeamManager.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
         PageLoad = true;
     }
 

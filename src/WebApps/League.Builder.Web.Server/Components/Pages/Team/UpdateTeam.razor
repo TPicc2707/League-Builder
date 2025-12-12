@@ -73,6 +73,26 @@
                                         </MudItem>
                                     </MudGrid>
                                 </MudStep>
+                                <MudStep Title="Update Team Manager">
+                                    <MudGrid Justify="Justify.Center">
+                                        <MudItem xs="12" sm="10">
+                                            <MudCard Class="border border-solid" Style="border-color: #000000">
+                                                <MudCardContent>
+                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
+                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Team Manager</MudText>
+                                                    </MudStack>
+                                                    <MudTextField Required="true" Label="First Name" Class="mt-3"
+                                                                  @bind-Value="model.ManagerFirstName" For="@(() => model.ManagerFirstName)" />
+                                                    <MudTextField Required="true" Label="Last Name" Class="mt-3"
+                                                                  @bind-Value="model.ManagerLastName" For="@(() => model.ManagerLastName)" />
+                                                    <MudTextField Required="true" Label="Email Address" Class="mt-3"
+                                                                  @bind-Value="model.ManagerEmailAddress" For="@(() => model.ManagerEmailAddress)" />
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudStep>
                                 <MudStep Title="Update Team Address">
                                     <MudGrid Justify="Justify.Center">
                                         <MudItem xs="12" sm="10">
@@ -130,6 +150,12 @@
                                                                   @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" ReadOnly="true" />
                                                     <MudTextField Label="Description" Class="mt-3"
                                                                   @bind-Value="model.Description" For="@(() => model.Description)" ReadOnly="true" />
+                                                    <MudTextField Required="true" Label="Manager First Name" Class="mt-3"
+                                                                  @bind-Value="model.ManagerFirstName" For="@(() => model.ManagerFirstName)" ReadOnly="true" />
+                                                    <MudTextField Required="true" Label="Manager Last Name" Class="mt-3"
+                                                                  @bind-Value="model.ManagerLastName" For="@(() => model.ManagerLastName)" ReadOnly="true" />
+                                                    <MudTextField Required="true" Label="Manager Email Address" Class="mt-3"
+                                                                  @bind-Value="model.ManagerEmailAddress" For="@(() => model.ManagerEmailAddress)" ReadOnly="true" />
                                                     <MudTextField Required="true" Label="Address Line" Class="mt-3"
                                                                   @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" ReadOnly="true" />
                                                     <MudTextField Required="true" Label="City" Class="mt-3"
@@ -187,7 +213,7 @@
                                 <MudIconButton OnClick="@(() => stepper.NextStepAsync())"
                                                Icon="@Icons.Material.Filled.ArrowForward"
                                                Color="Color.Primary"
-                                               Disabled="_index != 3 ? false : true">
+                                               Disabled="_index != 4 ? false : true">
                                 </MudIconButton>
                             </ActionContent>
                         </MudStepper>
@@ -257,6 +283,9 @@
         model.TeamName = TeamByIdResponse.Team.TeamName;
         model.FirstName = TeamByIdResponse.Team.TeamAddress.FirstName;
         model.LastName = TeamByIdResponse.Team.TeamAddress.LastName;
+        model.ManagerFirstName = TeamByIdResponse.Team.TeamManager?.FirstName;
+        model.ManagerLastName = TeamByIdResponse.Team.TeamManager?.LastName;
+        model.ManagerEmailAddress = TeamByIdResponse.Team.TeamManager?.EmailAddress;
         model.AddressLine = TeamByIdResponse.Team.TeamAddress.AddressLine;
         model.City = TeamByIdResponse.Team.TeamAddress.City;
         model.EmailAddress = TeamByIdResponse.Team.TeamAddress.EmailAddress;
@@ -304,7 +333,8 @@
         }
 
         Models.Team.AddressModel address = new Models.Team.AddressModel(model.FirstName, model.LastName, model.EmailAddress, model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
-        UpdateTeamRequest request = new UpdateTeamRequest(new UpdateTeamRecord(model.Id, model.LeagueId, model.TeamName, address, model.Description, model.ImageFile, (int)model.TeamStatus));
+        Models.Team.ManagerModel manager = new Models.Team.ManagerModel(model.ManagerFirstName, model.ManagerLastName, model.ManagerEmailAddress);
+        UpdateTeamRequest request = new UpdateTeamRequest(new UpdateTeamRecord(model.Id, model.LeagueId, model.TeamName, address, model.Description, model.ImageFile, (int)model.TeamStatus, manager));
         Console.WriteLine(request.Team.TeamStatus);
         await TeamService.UpdateTeam(request);
         success = true;
@@ -358,6 +388,17 @@
         }
 
         if (_index == 2)
+        {
+            var result = await UpdateTeamValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreateTeamModel.ManagerFirstName), nameof(CreateTeamModel.ManagerLastName), nameof(CreateTeamModel.ManagerEmailAddress)));
+
+            if (result.IsValid)
+                canProceed = true;
+
+            foreach (var error in result.Errors)
+                errors.Add($"{error.ErrorMessage}");
+        }
+
+        if (_index == 3)
         {
             var result = await UpdateTeamValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreateTeamModel.AddressLine), nameof(CreateTeamModel.State), nameof(CreateTeamModel.Country), nameof(CreateTeamModel.ZipCode)));
 

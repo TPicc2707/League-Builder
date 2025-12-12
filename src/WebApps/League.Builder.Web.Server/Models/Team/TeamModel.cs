@@ -12,6 +12,7 @@ public class TeamModel
     public string ImageFile { get; set; } = default!;
     public string Image { get; set; } = default!;
     public TeamStatus TeamStatus { get; set; } = default!;
+    public ManagerModel TeamManager { get; set; } = default!;
 }
 
 public record CreateTeamRecord(
@@ -19,7 +20,8 @@ public record CreateTeamRecord(
     string TeamName,
     AddressModel TeamAddress,
     string Description,
-    string ImageFile);
+    string ImageFile,
+    ManagerModel TeamManager);
 
 public record UpdateTeamRecord(
     Guid Id,
@@ -28,9 +30,11 @@ public record UpdateTeamRecord(
     AddressModel TeamAddress,
     string Description,
     string ImageFile,
-    int TeamStatus);
+    int TeamStatus,
+    ManagerModel TeamManager);
 
 public record AddressModel(string FirstName, string LastName, string EmailAddress, string AddressLine, string City, string Country, string State, string ZipCode);
+public record ManagerModel(string FirstName, string LastName, string EmailAddress);
 
 public enum TeamStatus
 {

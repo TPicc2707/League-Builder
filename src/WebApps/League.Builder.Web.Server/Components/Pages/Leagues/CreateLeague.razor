@@ -205,19 +205,28 @@
 
     private async Task OnValidSubmit(EditContext context)
     {
-        model.ImageFile = model.File.Name;
-        string keyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
-        var s3Success = await AWSService.UploadImages(keyPath, model.File);
+        try
+        {
+            model.ImageFile = model.File.Name;
+            string keyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
+            var s3Success = await AWSService.UploadImages(keyPath, model.File);
 
-        CreateLeagueRequest request = new CreateLeagueRequest(model.Name, model.Sport, model.Description, model.ImageFile, model.OwnerFirstName, model.OwnerLastName, model.EmailAddress);
-        await LeagueService.CreateLeague(request);
-        success = true;
-        await LeagueLocalCache.DeleteLeaguesCache();
-        await LeagueLocalCache.DeleteLeagueBySportCache(model.Sport);
-        await LeagueLocalCache.DeleteLeagueByNameCache();
-        Snackbar.Add("League has been created.", MudBlazor.Severity.Success);
-        NavManager.NavigateTo("/leagues");
-        StateHasChanged();
+            CreateLeagueRequest request = new CreateLeagueRequest(model.Name, model.Sport, model.Description, model.ImageFile, model.OwnerFirstName, model.OwnerLastName, model.EmailAddress);
+            await LeagueService.CreateLeague(request);
+            success = true;
+            await LeagueLocalCache.DeleteLeaguesCache();
+            await LeagueLocalCache.DeleteLeagueBySportCache(model.Sport);
+            await LeagueLocalCache.DeleteLeagueByNameCache();
+            Snackbar.Add("League has been created.", MudBlazor.Severity.Success);
+            NavManager.NavigateTo("/leagues");
+            StateHasChanged();
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private Task OpenErrorDialogAsync()

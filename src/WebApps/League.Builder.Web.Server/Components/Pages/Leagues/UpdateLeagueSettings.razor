@@ -67,46 +67,64 @@
 
     protected override async Task OnInitializedAsync()
     {
-        PageLoad = false;
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
-
-        if(LeagueByIdResponse is null)
-        {
-            var leagueId = Guid.Parse(Id);
-            LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
-            if(LeagueByIdResponse == null)
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
             {
-                LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
-                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueByIdResponse);
+                NavManager.NavigateTo("authentication/logout");
             }
-            model.Id = LeagueByIdResponse.League.Id;
-            model.TotalGamesPerSeason = LeagueByIdResponse.League.TotalGamesPerSeason == 0 ? null : LeagueByIdResponse.League.TotalGamesPerSeason;
-            model.TotalPlayoffTeams = LeagueByIdResponse.League.TotalPlayoffTeams == 0 ? null : LeagueByIdResponse.League.TotalPlayoffTeams;
-            model.MinimumTotalTeamPlayers = LeagueByIdResponse.League.MinimumTotalTeamPlayers == 0 ? null : LeagueByIdResponse.League.MinimumTotalTeamPlayers;
-            model.MaximumTotalTeamPlayers = LeagueByIdResponse.League.MaximumTotalTeamPlayers == 0 ? null : LeagueByIdResponse.League.MaximumTotalTeamPlayers;
+
+            if (LeagueByIdResponse is null)
+            {
+                var leagueId = Guid.Parse(Id);
+                LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
+                if (LeagueByIdResponse == null)
+                {
+                    LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
+                    await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueByIdResponse);
+                }
+                model.Id = LeagueByIdResponse.League.Id;
+                model.TotalGamesPerSeason = LeagueByIdResponse.League.TotalGamesPerSeason == 0 ? null : LeagueByIdResponse.League.TotalGamesPerSeason;
+                model.TotalPlayoffTeams = LeagueByIdResponse.League.TotalPlayoffTeams == 0 ? null : LeagueByIdResponse.League.TotalPlayoffTeams;
+                model.MinimumTotalTeamPlayers = LeagueByIdResponse.League.MinimumTotalTeamPlayers == 0 ? null : LeagueByIdResponse.League.MinimumTotalTeamPlayers;
+                model.MaximumTotalTeamPlayers = LeagueByIdResponse.League.MaximumTotalTeamPlayers == 0 ? null : LeagueByIdResponse.League.MaximumTotalTeamPlayers;
+
+            }
+            PageLoad = true;
 
         }
-        PageLoad = true;
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task OnSubmit()
     {
-        PageLoad = false;
+        try
+        {
+            PageLoad = false;
 
-        UpdateLeagueSettingsRequest request = new UpdateLeagueSettingsRequest(model.Id, (int)model.TotalGamesPerSeason, (int)model.TotalPlayoffTeams, (int)model.MinimumTotalTeamPlayers, (int)model.MaximumTotalTeamPlayers);
-        await LeagueService.UpdateLeagueSettings(request);
-        success = true;
-        Snackbar.Add("League Settings has been updated.", MudBlazor.Severity.Success);
-        NavManager.NavigateTo("/leagues");
-        StateHasChanged();
-        await LeagueLocalCache.DeleteLeaguesCache();
-        await LeagueLocalCache.DeleteLeagueByIdCache(Id);
-        await LeagueLocalCache.DeleteLeagueBySportCache(LeagueByIdResponse.League.Sport);
-        await LeagueLocalCache.DeleteLeagueByNameCache();
-        PageLoad = true;
+            UpdateLeagueSettingsRequest request = new UpdateLeagueSettingsRequest(model.Id, (int)model.TotalGamesPerSeason, (int)model.TotalPlayoffTeams, (int)model.MinimumTotalTeamPlayers, (int)model.MaximumTotalTeamPlayers);
+            await LeagueService.UpdateLeagueSettings(request);
+            success = true;
+            Snackbar.Add("League Settings has been updated.", MudBlazor.Severity.Success);
+            NavManager.NavigateTo("/leagues");
+            StateHasChanged();
+            await LeagueLocalCache.DeleteLeaguesCache();
+            await LeagueLocalCache.DeleteLeagueByIdCache(Id);
+            await LeagueLocalCache.DeleteLeagueBySportCache(LeagueByIdResponse.League.Sport);
+            await LeagueLocalCache.DeleteLeagueByNameCache();
+            PageLoad = true;
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
+        
     }
 
 }

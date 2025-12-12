@@ -147,61 +147,110 @@
     private GetLeagueByIdResponse LeagueResponse { get; set; }
     private GetGamesByTeamResponse TeamGamesResponse { get; set; }
     private GetSeasonByYearResponse SeasonResponse { get; set; }
+    private GetTeamByIdResponse Team { get; set; }
     private FluentValidationValidator fluentValidationValidator;
 
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+            {
+                NavManager.NavigateTo("authentication/logout");
+            }
 
-        var leagueId = Guid.Parse(Id);
-        TeamsResponse = await TeamLocalCache.GetTeamsByLeagueCache(Id);
-        if(TeamsResponse == null)
-        {
-            TeamsResponse = await TeamService.GetTeamsByLeague(leagueId);
-            await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsResponse);
+            var leagueId = Guid.Parse(Id);
+            TeamsResponse = await TeamLocalCache.GetTeamsByLeagueCache(Id);
+            if (TeamsResponse == null)
+            {
+                TeamsResponse = await TeamService.GetTeamsByLeague(leagueId);
+                await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsResponse);
+            }
+            Teams = TeamsResponse.Teams.ToList();
+            model.AwayTeamId = Teams.First().Id;
+            model.HomeTeamId = Teams.Skip(1).First().Id;
+            PageLoad = true;
+
         }
-        Teams = TeamsResponse.Teams.ToList();
-        await CheckMaxGamesForTeam();
-        model.AwayTeamId = Teams.First().Id;
-        model.HomeTeamId = Teams.Skip(1).First().Id;
-        PageLoad = true;
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
-    private async Task CheckMaxGamesForTeam()
+    private async Task CheckMaxGamesForTeam(FluentValidation.Results.ValidationResult result)
     {
-        var leagueId = Guid.Parse(Id);
-        var teamsToRemove = new List<Guid>();
-        LeagueResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
-        if(LeagueResponse == null)
+        try
         {
-            LeagueResponse = await LeagueService.GetLeague(leagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueResponse);
-        }
-        foreach(var team in TeamsResponse.Teams)
-        {
-            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(team.Id.ToString());
-            if(TeamGamesResponse == null)
+            var leagueId = Guid.Parse(Id);
+            var teamsToRemove = new List<Guid>();
+            LeagueResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
+            if (LeagueResponse == null)
             {
-                TeamGamesResponse = await GameService.GetGamesByTeam(team.Id);
-                await GameLocalCache.SetGamesByTeamCache(team.Id.ToString(), TeamGamesResponse);
+                LeagueResponse = await LeagueService.GetLeague(leagueId);
+                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueResponse);
             }
-            if (LeagueResponse.League.TotalGamesPerSeason <= TeamGamesResponse.Games.Count())
-                Teams.RemoveAll(x => x.Id == team.Id);        
-        }
 
+            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(model.AwayTeamId.ToString());
+            if (TeamGamesResponse == null)
+            {
+                TeamGamesResponse = await GameService.GetGamesByTeam(model.AwayTeamId);
+                await GameLocalCache.SetGamesByTeamCache(model.AwayTeamId.ToString(), TeamGamesResponse);
+            }
+            if (LeagueResponse.League.TotalGamesPerSeason <= TeamGamesResponse.Games.Where(x => x.GameDetail.StartTime.Year == model.StartDate.Value.Year).Count())
+            {
+                Team = await TeamLocalCache.GetTeamByIdCache(model.AwayTeamId.ToString());
+                if (Team == null)
+                {
+                    Team = await TeamService.GetTeamById(model.AwayTeamId);
+                    await TeamLocalCache.SetTeamByIdCache(model.AwayTeamId.ToString(), Team);
+                }
+                result.Errors.Add(new FluentValidation.Results.ValidationFailure(nameof(CreateGameModel.AwayTeamId), $"The away team '{Team.Team.TeamName}' has reached the maximum number of games ({LeagueResponse.League.TotalGamesPerSeason}) for the {model.StartDate.Value.Year} season."));
+            }
+
+            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(model.HomeTeamId.ToString());
+            if (TeamGamesResponse == null)
+            {
+                TeamGamesResponse = await GameService.GetGamesByTeam(model.HomeTeamId);
+                await GameLocalCache.SetGamesByTeamCache(model.AwayTeamId.ToString(), TeamGamesResponse);
+            }
+            if (LeagueResponse.League.TotalGamesPerSeason <= TeamGamesResponse.Games.Where(x => x.GameDetail.StartTime.Year == model.StartDate.Value.Year).Count())
+            {
+                Team = await TeamLocalCache.GetTeamByIdCache(model.HomeTeamId.ToString());
+                if (Team == null)
+                {
+                    Team = await TeamService.GetTeamById(model.HomeTeamId);
+                    await TeamLocalCache.SetTeamByIdCache(model.HomeTeamId.ToString(), Team);
+                }
+                result.Errors.Add(new FluentValidation.Results.ValidationFailure(nameof(CreateGameModel.HomeTeamId), $"The home team '{Team.Team.TeamName}' has reached the maximum number of games ({LeagueResponse.League.TotalGamesPerSeason}) for the {model.StartDate.Value.Year} season."));
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task OnValidSubmit(EditContext context)
     {
-        await SubmitGame();
-        success = true;
-        Snackbar.Add("Game has been created.", MudBlazor.Severity.Success);
-        NavManager.NavigateTo($"/leaguegames/{Id}");
-        StateHasChanged();
+        try
+        {
+            await SubmitGame();
+            success = true;
+            Snackbar.Add("Game has been created.", MudBlazor.Severity.Success);
+            NavManager.NavigateTo($"/leaguegames/{Id}");
+            StateHasChanged();
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)
@@ -237,11 +286,15 @@
         {
             var result = await CreateGameValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreateGameModel.StartDate), nameof(CreateGameModel.StartTime)));
 
+            if(model.StartDate.HasValue)
+                await CheckMaxGamesForTeam(result);
+
             if (result.IsValid)
                 canProceed = true;
 
             foreach (var error in result.Errors)
                 errors.Add($"{error.ErrorMessage}");
+
         }
 
     }

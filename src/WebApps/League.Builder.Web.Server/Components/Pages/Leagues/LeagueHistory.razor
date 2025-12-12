@@ -81,54 +81,63 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
-
-        var leagueId = Guid.Parse(Id);
-        LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
-        if (LeagueByIdResponse == null)
-        {
-            LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueByIdResponse);
-        }
-        TeamsByLeagueResponse = await TeamLocalCache.GetTeamsByLeagueCache(Id);
-        if(TeamsByLeagueResponse == null)
-        {
-            TeamsByLeagueResponse = await TeamService.GetTeamsByLeague(leagueId);
-            await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsByLeagueResponse);
-        }
-        GetSeasonsResponse = await SeasonLocalCache.GetSeasonsCache();
-        if(GetSeasonsResponse == null)
-        {
-            GetSeasonsResponse = await SeasonService.GetSeasons();
-            await SeasonLocalCache.SetSeasonsCache(GetSeasonsResponse);
-        }
-        GetStandingsByLeagueResponse = await StandingsLocalCache.GetStandingsByLeagueCache(Id);
-        if(GetStandingsByLeagueResponse == null)
-        {
-            GetStandingsByLeagueResponse = await StandingsService.GetStandingsByLeague(leagueId);
-            await StandingsLocalCache.SetStandingsByLeagueCache(Id, GetStandingsByLeagueResponse);
-        }
-
-        foreach(var standing in GetStandingsByLeagueResponse.Standings)
-        {
-            LeagueChampion champion = new LeagueChampion();
-
-            if (standing.StandingsDetail.Champion)
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
             {
-                champion.TeamId = standing.Team.Id;
-                champion.TeamName = standing.Team.TeamName;
-                champion.Year = GetSeasonsResponse.Seasons.FirstOrDefault(x => x.Id == standing.SeasonId).Year;
-                champion.Wins = standing.StandingsDetail.Wins;
-                champion.Losses = standing.StandingsDetail.Losses;
-                await GetImageAsync(champion);
-                Champs.Add(champion);
+                NavManager.NavigateTo("authentication/logout");
             }
-        }
 
-        PageLoad = true;
+            var leagueId = Guid.Parse(Id);
+            LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
+            if (LeagueByIdResponse == null)
+            {
+                LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
+                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueByIdResponse);
+            }
+            TeamsByLeagueResponse = await TeamLocalCache.GetTeamsByLeagueCache(Id);
+            if (TeamsByLeagueResponse == null)
+            {
+                TeamsByLeagueResponse = await TeamService.GetTeamsByLeague(leagueId);
+                await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsByLeagueResponse);
+            }
+            GetSeasonsResponse = await SeasonLocalCache.GetSeasonsCache();
+            if (GetSeasonsResponse == null)
+            {
+                GetSeasonsResponse = await SeasonService.GetSeasons();
+                await SeasonLocalCache.SetSeasonsCache(GetSeasonsResponse);
+            }
+            GetStandingsByLeagueResponse = await StandingsLocalCache.GetStandingsByLeagueCache(Id);
+            if (GetStandingsByLeagueResponse == null)
+            {
+                GetStandingsByLeagueResponse = await StandingsService.GetStandingsByLeague(leagueId);
+                await StandingsLocalCache.SetStandingsByLeagueCache(Id, GetStandingsByLeagueResponse);
+            }
+
+            foreach (var standing in GetStandingsByLeagueResponse.Standings)
+            {
+                LeagueChampion champion = new LeagueChampion();
+
+                if (standing.StandingsDetail.Champion)
+                {
+                    champion.TeamId = standing.Team.Id;
+                    champion.TeamName = standing.Team.TeamName;
+                    champion.Year = GetSeasonsResponse.Seasons.FirstOrDefault(x => x.Id == standing.SeasonId).Year;
+                    champion.Wins = standing.StandingsDetail.Wins;
+                    champion.Losses = standing.StandingsDetail.Losses;
+                    await GetImageAsync(champion);
+                    Champs.Add(champion);
+                }
+            }
+
+            PageLoad = true;
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task GetImageAsync(LeagueChampion champion)

@@ -1,6 +1,7 @@
 ﻿@using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject ILeagueLocalCacheService LeagueLocalCache
+@inject NavigationManager NavManager
 <MudDialog>
     <TitleContent>
         <MudText Align="Align.Center" Typo="Typo.h4" Style="font-weight: bold;">Contact Info</MudText>
@@ -30,14 +31,23 @@
 
     protected override async Task OnInitializedAsync()
     {
-        League = await LeagueLocalCache.GetLeagueByIdCache(Id.ToString());
-        if(League == null)
+        try
         {
-            League = await LeagueService.GetLeague(Id);
-            await LeagueLocalCache.SetLeagueByIdCache(Id.ToString(), League);
+            League = await LeagueLocalCache.GetLeagueByIdCache(Id.ToString());
+            if (League == null)
+            {
+                League = await LeagueService.GetLeague(Id);
+                await LeagueLocalCache.SetLeagueByIdCache(Id.ToString(), League);
+            }
+            MailUrl = $"mailto:{League.League.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
+            DataLoad = true;
+
         }
-        MailUrl = $"mailto:{League.League.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
-        DataLoad = true;
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private void Ok() => MudDialog.Cancel();

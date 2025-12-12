@@ -7,10 +7,12 @@ public class AWSService : IAWSService
 {
     private readonly IAmazonS3 _awsS3;
     private const string Image_S3_Bucket_Name = "league-builder-images";
+    private readonly NavigationManager _navManager;
 
-    public AWSService(IAmazonS3 awsS3)
+    public AWSService(IAmazonS3 awsS3, NavigationManager navManager)
     {
         _awsS3 = awsS3 ?? throw new ArgumentNullException(nameof(awsS3));
+        _navManager = navManager;
     }
 
     public async Task<bool> UploadImages(string keyPath, IBrowserFile file)
@@ -37,7 +39,9 @@ public class AWSService : IAWSService
         }
         catch (Exception ex)
         {
-            throw new Exception(ex.Message);
+            Console.WriteLine(ex.Message);
+            _navManager.NavigateTo("/error");
+            return false;
         }
     }
 
@@ -82,9 +86,11 @@ public class AWSService : IAWSService
             }
 
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            throw new Exception("Read object operation failed.", exception);
+            Console.WriteLine(ex.Message);
+            _navManager.NavigateTo("/error");
+            return null;
         }
     }
 
@@ -102,9 +108,10 @@ public class AWSService : IAWSService
 
             var test = s3Response.DeleteMarker;
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            throw new Exception("Deleting folder operation failed.", exception);
+            Console.WriteLine(ex.Message);
+            _navManager.NavigateTo("/error");
         }
     }
 
@@ -132,9 +139,10 @@ public class AWSService : IAWSService
 
             }
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            throw new Exception("Deleting folder operation failed.", exception);
+            Console.WriteLine(ex.Message);
+            _navManager.NavigateTo("/error");
         }
     }
 

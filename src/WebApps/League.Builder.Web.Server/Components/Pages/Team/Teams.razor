@@ -34,6 +34,21 @@
                                             </MudItem>
                                         </MudStack>
                                     </MudTabPanel>
+                                    <MudTabPanel Text="State">
+                                        <MudStack Row="true">
+                                            <MudItem xs="9" md="9" lg="9">
+                                                <MudSelect Label="State" @bind-Value="state">
+                                                    @foreach (var state in Constants.States())
+                                                    {
+                                                        <MudSelectItem Value="state">@state</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            </MudItem>
+                                            <MudItem xs="3" md="3" lg="3" Style="align-content:center">
+                                                <MudButton Disabled="@(state == string.Empty ? true : false)" OnClick="SearchByState" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                            </MudItem>
+                                        </MudStack>
+                                    </MudTabPanel>
                                 </MudTabs>
                             </MudItem>
                         </ChildContent>
@@ -127,9 +142,11 @@
 @code {
     private bool PageLoad = false;
     private string teamName = string.Empty;
+    private string state = string.Empty;
     private string prevTeamName = string.Empty;
     private GetTeamsResponse TeamsResponse { get; set; }
     private GetTeamsByNameResponse TeamsByNameResponse { get; set; }
+    private GetTeamsByStateResponse TeamsByStateResponse { get; set; }
     private GetLeaguesResponse LeaguesResponse { get; set; }
     private List<TeamModel> Model { get; set; }
     private bool expandSearchPanel = true;
@@ -184,6 +201,18 @@
             await TeamLocalCache.SetTeamsByNameCache(TeamsByNameResponse);
         }
         Model = TeamsByNameResponse.Teams.ToList();
+        await GetImageAsync();
+        expandSearchPanel = false;
+        isSearchLoading = false;
+    }
+
+    private async Task SearchByState()
+    {
+        isSearchLoading = true;
+
+        TeamsByStateResponse = await TeamService.GetTeamsByState(state);
+
+        Model = TeamsByStateResponse.Teams.ToList();
         await GetImageAsync();
         expandSearchPanel = false;
         isSearchLoading = false;

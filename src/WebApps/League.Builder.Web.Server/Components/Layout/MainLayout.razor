@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject ILocalStorageService localStorage
+@inject ISnackbar Snackbar
 
 <MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="MyCustomTheme" />
 <MudPopoverProvider />
@@ -85,6 +86,7 @@
     private async Task ClearCache()
     {
         await localStorage.ClearAsync();
+        Snackbar.Add("All Local Cache has been cleared from application.", MudBlazor.Severity.Success);
     }
 
     private void ToggleOpen() => _open = !_open;

@@ -307,100 +307,109 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
-
-        var gameId = Guid.Parse(Id);
-        GameModel = await GameLocalCache.GetGameByIdCache(Id);
-        if (GameModel == null)
-        {
-            GameModel = await GameService.GetGameById(gameId);
-            await GameLocalCache.SetGameByIdCache(Id, GameModel);
-        }
-        AwayPlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
-        if (AwayPlayersModel == null)
-        {
-            AwayPlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
-            await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayersModel);
-        }
-        HomePlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
-        if (HomePlayersModel == null)
-        {
-            HomePlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
-            await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayersModel);
-        }
-        AwayPlayerStatsModel = await StatsLocalCache.GetBasketballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
-        if (AwayPlayerStatsModel == null)
-        {
-            AwayPlayerStatsModel = await StatsService.GetBasketballStatsByTeam(GameModel.Game.HomeTeam.Id);
-            await StatsLocalCache.SetBasketballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayerStatsModel);
-        }
-        HomePlayerStatsModel = await StatsLocalCache.GetBasketballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
-        if (HomePlayerStatsModel == null)
-        {
-            HomePlayerStatsModel = await StatsService.GetBasketballStatsByTeam(GameModel.Game.HomeTeam.Id);
-            await StatsLocalCache.SetBasketballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayerStatsModel);
-        }
-        await GetImageAsync();
-        foreach (var player in AwayPlayersModel.Players)
-        {
-            var playerStat = AwayPlayerStatsModel.BasketballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
-            if (playerStat is not null)
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
             {
-                Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
-                                                    playerStat.Stats.Start, playerStat.Stats.Minutes, playerStat.Stats.Points, playerStat.Stats.FieldGoalsMade, playerStat.Stats.FieldGoalsAttempted, playerStat.Stats.ThreePointersMade, playerStat.Stats.ThreePointersAttempted,
-                                                    playerStat.Stats.FreeThrowsMade, playerStat.Stats.FreeThrowsAttempted, playerStat.Stats.Rebounds, playerStat.Stats.Assists, playerStat.Stats.Steals,
-                                                    playerStat.Stats.Blocks, playerStat.Stats.Turnovers, playerStat.Stats.Fouls));
-
-                AwayTotalPoints += playerStat.Stats.Points;
-                AwayTotalFieldGoalsMade += playerStat.Stats.FieldGoalsMade;
-                AwayTotalFieldGoalsAttempted += playerStat.Stats.FieldGoalsAttempted;
-                AwayTotalThreePointersMade += playerStat.Stats.ThreePointersMade;
-                AwayTotalThreePointersAttempted += playerStat.Stats.ThreePointersAttempted;
-                AwayTotalFreeThrowsMade += playerStat.Stats.FreeThrowsMade;
-                AwayTotalFreeThrowsAttempted += playerStat.Stats.FreeThrowsAttempted;
-                AwayTotalRebounds += playerStat.Stats.Rebounds;
-                AwayTotalAssists += playerStat.Stats.Assists;
-                AwayTotalSteals += playerStat.Stats.Steals;
-                AwayTotalBlocks += playerStat.Stats.Blocks;
-                AwayTotalTurnovers += playerStat.Stats.Turnovers;
-                AwayTotalFouls += playerStat.Stats.Fouls;
+                NavManager.NavigateTo("authentication/logout");
             }
-            else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
-        }
-        foreach (var player in HomePlayersModel.Players)
-        {
-            var playerStat = HomePlayerStatsModel.BasketballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
-            if (playerStat is not null)
+
+            var gameId = Guid.Parse(Id);
+            GameModel = await GameLocalCache.GetGameByIdCache(Id);
+            if (GameModel == null)
             {
-                Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
-                                                    playerStat.Stats.Start, playerStat.Stats.Minutes, playerStat.Stats.Points, playerStat.Stats.FieldGoalsMade, playerStat.Stats.FieldGoalsAttempted, playerStat.Stats.ThreePointersMade, playerStat.Stats.ThreePointersAttempted,
-                                                    playerStat.Stats.FreeThrowsMade, playerStat.Stats.FreeThrowsAttempted, playerStat.Stats.Rebounds, playerStat.Stats.Assists, playerStat.Stats.Steals,
-                                                    playerStat.Stats.Blocks, playerStat.Stats.Turnovers, playerStat.Stats.Fouls));
-
-                HomeTotalPoints += playerStat.Stats.Points;
-                HomeTotalFieldGoalsMade += playerStat.Stats.FieldGoalsMade;
-                HomeTotalFieldGoalsAttempted += playerStat.Stats.FieldGoalsAttempted;
-                HomeTotalThreePointersMade += playerStat.Stats.ThreePointersMade;
-                HomeTotalThreePointersAttempted += playerStat.Stats.ThreePointersAttempted;
-                HomeTotalFreeThrowsMade += playerStat.Stats.FreeThrowsMade;
-                HomeTotalFreeThrowsAttempted += playerStat.Stats.FreeThrowsAttempted;
-                HomeTotalRebounds += playerStat.Stats.Rebounds;
-                HomeTotalAssists += playerStat.Stats.Assists;
-                HomeTotalSteals += playerStat.Stats.Steals;
-                HomeTotalBlocks += playerStat.Stats.Blocks;
-                HomeTotalTurnovers += playerStat.Stats.Turnovers;
-                HomeTotalFouls += playerStat.Stats.Fouls;
-
-
+                GameModel = await GameService.GetGameById(gameId);
+                await GameLocalCache.SetGameByIdCache(Id, GameModel);
             }
-            else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+            AwayPlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
+            if (AwayPlayersModel == null)
+            {
+                AwayPlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
+                await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayersModel);
+            }
+            HomePlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
+            if (HomePlayersModel == null)
+            {
+                HomePlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
+                await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayersModel);
+            }
+            AwayPlayerStatsModel = await StatsLocalCache.GetBasketballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
+            if (AwayPlayerStatsModel == null)
+            {
+                AwayPlayerStatsModel = await StatsService.GetBasketballStatsByTeam(GameModel.Game.HomeTeam.Id);
+                await StatsLocalCache.SetBasketballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayerStatsModel);
+            }
+            HomePlayerStatsModel = await StatsLocalCache.GetBasketballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
+            if (HomePlayerStatsModel == null)
+            {
+                HomePlayerStatsModel = await StatsService.GetBasketballStatsByTeam(GameModel.Game.HomeTeam.Id);
+                await StatsLocalCache.SetBasketballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayerStatsModel);
+            }
+            await GetImageAsync();
+            foreach (var player in AwayPlayersModel.Players)
+            {
+                var playerStat = AwayPlayerStatsModel.BasketballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
+                if (playerStat is not null)
+                {
+                    Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                                                        playerStat.Stats.Start, playerStat.Stats.Minutes, playerStat.Stats.Points, playerStat.Stats.FieldGoalsMade, playerStat.Stats.FieldGoalsAttempted, playerStat.Stats.ThreePointersMade, playerStat.Stats.ThreePointersAttempted,
+                                                        playerStat.Stats.FreeThrowsMade, playerStat.Stats.FreeThrowsAttempted, playerStat.Stats.Rebounds, playerStat.Stats.Assists, playerStat.Stats.Steals,
+                                                        playerStat.Stats.Blocks, playerStat.Stats.Turnovers, playerStat.Stats.Fouls));
+
+                    AwayTotalPoints += playerStat.Stats.Points;
+                    AwayTotalFieldGoalsMade += playerStat.Stats.FieldGoalsMade;
+                    AwayTotalFieldGoalsAttempted += playerStat.Stats.FieldGoalsAttempted;
+                    AwayTotalThreePointersMade += playerStat.Stats.ThreePointersMade;
+                    AwayTotalThreePointersAttempted += playerStat.Stats.ThreePointersAttempted;
+                    AwayTotalFreeThrowsMade += playerStat.Stats.FreeThrowsMade;
+                    AwayTotalFreeThrowsAttempted += playerStat.Stats.FreeThrowsAttempted;
+                    AwayTotalRebounds += playerStat.Stats.Rebounds;
+                    AwayTotalAssists += playerStat.Stats.Assists;
+                    AwayTotalSteals += playerStat.Stats.Steals;
+                    AwayTotalBlocks += playerStat.Stats.Blocks;
+                    AwayTotalTurnovers += playerStat.Stats.Turnovers;
+                    AwayTotalFouls += playerStat.Stats.Fouls;
+                }
+                else if (GameModel.Game.GameStatus == GameStatus.Completed)
+                    Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+            }
+            foreach (var player in HomePlayersModel.Players)
+            {
+                var playerStat = HomePlayerStatsModel.BasketballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
+                if (playerStat is not null)
+                {
+                    Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                                                        playerStat.Stats.Start, playerStat.Stats.Minutes, playerStat.Stats.Points, playerStat.Stats.FieldGoalsMade, playerStat.Stats.FieldGoalsAttempted, playerStat.Stats.ThreePointersMade, playerStat.Stats.ThreePointersAttempted,
+                                                        playerStat.Stats.FreeThrowsMade, playerStat.Stats.FreeThrowsAttempted, playerStat.Stats.Rebounds, playerStat.Stats.Assists, playerStat.Stats.Steals,
+                                                        playerStat.Stats.Blocks, playerStat.Stats.Turnovers, playerStat.Stats.Fouls));
+
+                    HomeTotalPoints += playerStat.Stats.Points;
+                    HomeTotalFieldGoalsMade += playerStat.Stats.FieldGoalsMade;
+                    HomeTotalFieldGoalsAttempted += playerStat.Stats.FieldGoalsAttempted;
+                    HomeTotalThreePointersMade += playerStat.Stats.ThreePointersMade;
+                    HomeTotalThreePointersAttempted += playerStat.Stats.ThreePointersAttempted;
+                    HomeTotalFreeThrowsMade += playerStat.Stats.FreeThrowsMade;
+                    HomeTotalFreeThrowsAttempted += playerStat.Stats.FreeThrowsAttempted;
+                    HomeTotalRebounds += playerStat.Stats.Rebounds;
+                    HomeTotalAssists += playerStat.Stats.Assists;
+                    HomeTotalSteals += playerStat.Stats.Steals;
+                    HomeTotalBlocks += playerStat.Stats.Blocks;
+                    HomeTotalTurnovers += playerStat.Stats.Turnovers;
+                    HomeTotalFouls += playerStat.Stats.Fouls;
+
+
+                }
+                else if (GameModel.Game.GameStatus == GameStatus.Completed)
+                    Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+            }
+            PageLoad = true;
+
         }
-        PageLoad = true;
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task GetImageAsync()

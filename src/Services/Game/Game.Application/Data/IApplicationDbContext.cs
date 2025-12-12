@@ -6,5 +6,6 @@ public interface IApplicationDbContext
     DbSet<Team> Teams { get; }
     DbSet<Season> Seasons { get; }
     DbSet<Domain.Models.Game> Games { get; }
+    DbSet<Domain.Models.GameLineup> GameLineups { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

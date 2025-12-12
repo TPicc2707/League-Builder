@@ -18,7 +18,12 @@ public static class TeamExtensions
                 team.TeamAddress.ZipCode),
             Description: team.Description,
             ImageFile: team.ImageFile,
-            TeamStatus: team.TeamStatus
+            TeamStatus: team.TeamStatus,
+            TeamManager: new ManagerDto(
+                team.TeamManager.FirstName,
+                team.TeamManager.LastName,
+                team.TeamManager.EmailAddress
+                )
             ));
     }
 
@@ -39,7 +44,12 @@ public static class TeamExtensions
                 team.TeamAddress.ZipCode),
             Description: team.Description,
             ImageFile: team.ImageFile,
-            TeamStatus: team.TeamStatus
+            TeamStatus: team.TeamStatus,
+            TeamManager: new ManagerDto(
+                team.TeamManager.FirstName,
+                team.TeamManager.LastName,
+                team.TeamManager.EmailAddress
+                )
             );
     }
 }

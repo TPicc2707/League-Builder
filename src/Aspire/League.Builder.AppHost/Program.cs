@@ -22,6 +22,8 @@ var rabbitmq = builder
 
 var keycloak = builder
     .AddKeycloak("keycloak", 8080)
+    .WithEnvironment("KC_DB_USERNAME", "sa")
+    .WithEnvironment("KC_DB_PASSWORD", "password")
     .WithDataVolume()
     .WithLifetime(ContainerLifetime.Persistent);
 

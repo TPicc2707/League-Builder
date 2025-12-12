@@ -173,83 +173,100 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+            {
+                NavManager.NavigateTo("authentication/logout");
+            }
 
-        var leagueId = Guid.Parse(Id);
-        LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
-        if(LeagueByIdResponse == null)
-        {
-            LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueByIdResponse);
-        }
-        TeamsByLeagueResponse = await TeamLocalCache.GetTeamsByLeagueCache(Id);
-        if(TeamsByLeagueResponse == null)
-        {
-            TeamsByLeagueResponse = await TeamService.GetTeamsByLeague(leagueId);
-            await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsByLeagueResponse);
-        }
+            var leagueId = Guid.Parse(Id);
+            LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
+            if (LeagueByIdResponse == null)
+            {
+                LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
+                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueByIdResponse);
+            }
+            TeamsByLeagueResponse = await TeamLocalCache.GetTeamsByLeagueCache(Id);
+            if (TeamsByLeagueResponse == null)
+            {
+                TeamsByLeagueResponse = await TeamService.GetTeamsByLeague(leagueId);
+                await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsByLeagueResponse);
+            }
 
-        if (TeamsByLeagueResponse.Teams.Any())
-            disableSportDropdown = true;
-        model.Id = LeagueByIdResponse.League.Id;
-        model.Name = LeagueByIdResponse.League.Name;
-        model.OwnerFirstName = LeagueByIdResponse.League.OwnerFirstName;
-        model.OwnerLastName = LeagueByIdResponse.League.OwnerLastName;
-        model.Sport = LeagueByIdResponse.League.Sport;
-        model.EmailAddress = LeagueByIdResponse.League.EmailAddress;
-        model.Description = LeagueByIdResponse.League.Description;
-        model.ImageFile = LeagueByIdResponse.League.ImageFile;
-        PageLoad = true;
+            if (TeamsByLeagueResponse.Teams.Any())
+                disableSportDropdown = true;
+            model.Id = LeagueByIdResponse.League.Id;
+            model.Name = LeagueByIdResponse.League.Name;
+            model.OwnerFirstName = LeagueByIdResponse.League.OwnerFirstName;
+            model.OwnerLastName = LeagueByIdResponse.League.OwnerLastName;
+            model.Sport = LeagueByIdResponse.League.Sport;
+            model.EmailAddress = LeagueByIdResponse.League.EmailAddress;
+            model.Description = LeagueByIdResponse.League.Description;
+            model.ImageFile = LeagueByIdResponse.League.ImageFile;
+            PageLoad = true;
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task OnValidSubmit(EditContext context)
     {
-
-        if (model.Name != LeagueByIdResponse.League.Name)
+        try
         {
-            var deleteKeyPath = $"/{model.Sport}/{LeagueByIdResponse.League.Name}/{model.ImageFile}";
-
-            if (model.File == null)
+            if (model.Name != LeagueByIdResponse.League.Name)
             {
-                var uploadKeyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
-                await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
+                var deleteKeyPath = $"/{model.Sport}/{LeagueByIdResponse.League.Name}/{model.ImageFile}";
 
-                await AWSService.DeleteObject(deleteKeyPath);
+                if (model.File == null)
+                {
+                    var uploadKeyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
+                    await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
+
+                    await AWSService.DeleteObject(deleteKeyPath);
+
+                }
+                else
+                {
+                    model.ImageFile = model.File.Name;
+                    var uploadKeyPath = $"/{model.Sport}/{model.Name}/{model.File.Name}";
+                    await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
+
+                    await AWSService.DeleteObject(deleteKeyPath);
+                }
 
             }
             else
             {
-                model.ImageFile = model.File.Name;
-                var uploadKeyPath = $"/{model.Sport}/{model.Name}/{model.File.Name}";
-                await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
-
-                await AWSService.DeleteObject(deleteKeyPath);
+                if (model.File != null)
+                {
+                    model.ImageFile = model.File.Name;
+                    var uploadKeyPath = $"/{model.Sport}/{model.Name}/{model.File.Name}";
+                    await AWSService.UploadImages(uploadKeyPath, model.File);
+                }
             }
 
+            UpdateLeagueRequest request = new UpdateLeagueRequest(model.Id, model.Name, model.Sport, model.Description, model.ImageFile, model.OwnerFirstName, model.OwnerLastName, model.EmailAddress);
+            await LeagueService.UpdateLeague(request);
+            success = true;
+            await LeagueLocalCache.DeleteLeaguesCache();
+            await LeagueLocalCache.DeleteLeagueBySportCache(model.Sport);
+            await LeagueLocalCache.DeleteLeagueByNameCache();
+            await LeagueLocalCache.DeleteLeagueByIdCache(Id);
+            Snackbar.Add("League has been updated.", MudBlazor.Severity.Success);
+            NavManager.NavigateTo("/leagues");
+            StateHasChanged();
+
         }
-        else
+        catch (Exception ex)
         {
-            if (model.File != null)
-            {
-                model.ImageFile = model.File.Name;
-                var uploadKeyPath = $"/{model.Sport}/{model.Name}/{model.File.Name}";
-                await AWSService.UploadImages(uploadKeyPath, model.File);
-            }
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
         }
-
-        UpdateLeagueRequest request = new UpdateLeagueRequest(model.Id, model.Name, model.Sport, model.Description, model.ImageFile, model.OwnerFirstName, model.OwnerLastName, model.EmailAddress);
-        await LeagueService.UpdateLeague(request);
-        success = true;
-        await LeagueLocalCache.DeleteLeaguesCache();
-        await LeagueLocalCache.DeleteLeagueBySportCache(model.Sport);
-        await LeagueLocalCache.DeleteLeagueByNameCache();
-        await LeagueLocalCache.DeleteLeagueByIdCache(Id);
-        Snackbar.Add("League has been updated.", MudBlazor.Severity.Success);
-        NavManager.NavigateTo("/leagues");
-        StateHasChanged();
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)

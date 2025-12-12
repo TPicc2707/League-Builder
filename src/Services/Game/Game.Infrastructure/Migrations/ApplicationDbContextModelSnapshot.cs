@@ -18,7 +18,7 @@ namespace Game.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -61,7 +61,7 @@ namespace Game.Infrastructure.Migrations
                     b.Property<Guid?>("WinningTeamId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.ComplexProperty<Dictionary<string, object>>("GameDetail", "Game.Domain.Models.Game.GameDetail#GameDetail", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "GameDetail", "Game.Domain.Models.Game.GameDetail#GameDetail", b1 =>
                         {
                             b1.IsRequired();
 
@@ -91,6 +91,73 @@ namespace Game.Infrastructure.Migrations
                     b.HasIndex("WinningTeamId");
 
                     b.ToTable("Games");
+                });
+
+            modelBuilder.Entity("Game.Domain.Models.GameLineup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "BaseballLineup", "Game.Domain.Models.GameLineup.BaseballLineup#BaseballGameLineup", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<Guid>("Eighth")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("Fifth")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("First")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("Fourth")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("Ninth")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("Second")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("Seventh")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("Sixth")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("StartingPitcher")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<Guid>("Third")
+                                .HasColumnType("uniqueidentifier");
+                        });
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameId");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("GameLineups");
                 });
 
             modelBuilder.Entity("Game.Domain.Models.League", b =>
@@ -202,6 +269,21 @@ namespace Game.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("WinningTeamId")
                         .OnDelete(DeleteBehavior.NoAction);
+                });
+
+            modelBuilder.Entity("Game.Domain.Models.GameLineup", b =>
+                {
+                    b.HasOne("Game.Domain.Models.Game", null)
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Game.Domain.Models.Team", null)
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

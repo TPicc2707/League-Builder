@@ -91,9 +91,9 @@
                                                             }
                                                         </MudSelect>
                                                     }
-                                                    <MudTextField Required="true" Disabled="isGameCompleted" Label="Away Team Score" Class="mt-3"
+                                                    <MudTextField Required="true" Disabled="isGameCompleted" Label="@($"{AwayTeam.TeamName} Team Score")" Class="mt-3"
                                                                   @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
-                                                    <MudTextField Required="true" Disabled="isGameCompleted" Label="Home Team Score" Class="mt-3"
+                                                    <MudTextField Required="true" Disabled="isGameCompleted" Label="@($"{HomeTeam.TeamName} Team Score")" Class="mt-3"
                                                                   @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
                                                     <MudSelect Required="true" Disabled="isGameCompleted" Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
                                                         @foreach (var status in Enum.GetValues<GameStatus>())
@@ -154,9 +154,9 @@
                                                             }
                                                         </MudSelect>
                                                     }
-                                                    <MudTextField Required="true" ReadOnly="true" Label="Away Team Score" Class="mt-3"
+                                                    <MudTextField Required="true" ReadOnly="true" Label="@($"{AwayTeam.TeamName} Team Score")" Class="mt-3"
                                                                   @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
-                                                    <MudTextField Required="true" ReadOnly="true" Label="Home Team Score" Class="mt-3"
+                                                    <MudTextField Required="true" ReadOnly="true" Label="@($"{HomeTeam.TeamName} Team Score")" Class="mt-3"
                                                                   @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
                                                     <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
                                                         @foreach (var status in Enum.GetValues<GameStatus>())
@@ -234,84 +234,132 @@
     private GetGamesByTeamResponse TeamGamesResponse { get; set; }
     private GetSeasonByYearResponse SeasonResponse { get; set; }
     private GetStandingsByTeamResponse StandingsResponse { get; set; }
+    private GetTeamByIdResponse Team { get; set; }
     private FluentValidationValidator fluentValidationValidator;
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+            {
+                NavManager.NavigateTo("authentication/logout");
+            }
 
-        var gameId = Guid.Parse(Id);
-        GameModel = await GameLocalCache.GetGameByIdCache(Id);
-        if(GameModel == null)
-        {
-            GameModel = await GameService.GetGameById(gameId);
-            await GameLocalCache.SetGameByIdCache(Id, GameModel);
-        }
-        model.LeagueId = GameModel.Game.LeagueId;
-        TeamsResponse = await TeamLocalCache.GetTeamsByLeagueCache(model.LeagueId.ToString());
-        if (TeamsResponse == null)
-        {
-            TeamsResponse = await TeamService.GetTeamsByLeague(model.LeagueId);
-            await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsResponse);
-        }
-        Teams = TeamsResponse.Teams.ToList();
-        await CheckMaxGamesForTeam();
-        model.AwayTeamId = GameModel.Game.AwayTeam.Id;
-        model.HomeTeamId = GameModel.Game.HomeTeam.Id;
-        TeamsInGame = TeamsResponse.Teams.Where(t => t.Id == model.AwayTeamId || t.Id == model.HomeTeamId).ToList();
-        HomeTeam = TeamsInGame.FirstOrDefault(t => t.Id == model.HomeTeamId);
-        AwayTeam = TeamsInGame.FirstOrDefault(t => t.Id == model.AwayTeamId);
-        model.AwayTeamScore = GameModel.Game.GameDetail.AwayTeamScore;
-        model.HomeTeamScore = GameModel.Game.GameDetail.HomeTeamScore;
-        model.GameStatus = GameModel.Game.GameStatus;
-        model.WinningTeamId = GameModel.Game.WinningTeamId is not null ? (Guid)GameModel.Game.WinningTeamId : TeamsInGame.First().Id;
+            var gameId = Guid.Parse(Id);
+            GameModel = await GameLocalCache.GetGameByIdCache(Id);
+            if (GameModel == null)
+            {
+                GameModel = await GameService.GetGameById(gameId);
+                await GameLocalCache.SetGameByIdCache(Id, GameModel);
+            }
+            model.LeagueId = GameModel.Game.LeagueId;
+            TeamsResponse = await TeamLocalCache.GetTeamsByLeagueCache(model.LeagueId.ToString());
+            if (TeamsResponse == null)
+            {
+                TeamsResponse = await TeamService.GetTeamsByLeague(model.LeagueId);
+                await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsResponse);
+            }
+            Teams = TeamsResponse.Teams.ToList();
+            model.AwayTeamId = GameModel.Game.AwayTeam.Id;
+            model.HomeTeamId = GameModel.Game.HomeTeam.Id;
+            TeamsInGame = TeamsResponse.Teams.Where(t => t.Id == model.AwayTeamId || t.Id == model.HomeTeamId).ToList();
+            HomeTeam = TeamsInGame.FirstOrDefault(t => t.Id == model.HomeTeamId);
+            AwayTeam = TeamsInGame.FirstOrDefault(t => t.Id == model.AwayTeamId);
+            model.AwayTeamScore = GameModel.Game.GameDetail.AwayTeamScore;
+            model.HomeTeamScore = GameModel.Game.GameDetail.HomeTeamScore;
+            model.GameStatus = GameModel.Game.GameStatus;
+            model.WinningTeamId = GameModel.Game.WinningTeamId is not null ? (Guid)GameModel.Game.WinningTeamId : TeamsInGame.First().Id;
 
-        model.StartDate = GameModel.Game.GameDetail.StartTime;
-        model.StartTime = GameModel.Game.GameDetail.StartTime.TimeOfDay;
+            model.StartDate = GameModel.Game.GameDetail.StartTime;
+            model.StartTime = GameModel.Game.GameDetail.StartTime.TimeOfDay;
 
-        if(GameModel.Game.GameDetail.EndTime is not null)
-        {
-            model.EndDate = GameModel.Game.GameDetail.EndTime.Value;
-            model.EndTime = GameModel.Game.GameDetail.EndTime.Value.TimeOfDay;
+            if (GameModel.Game.GameDetail.EndTime is not null)
+            {
+                model.EndDate = GameModel.Game.GameDetail.EndTime.Value;
+                model.EndTime = GameModel.Game.GameDetail.EndTime.Value.TimeOfDay;
+            }
+            isGameCompleted = model.GameStatus == GameStatus.Completed ? true : false;
+            LeagueResponse = await LeagueLocalCache.GetLeagueByIdCache(model.LeagueId.ToString());
+            if (LeagueResponse == null)
+            {
+                LeagueResponse = await LeagueService.GetLeague(model.LeagueId);
+                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueResponse);
+            }
+            await GetImageAsync();
+            PageLoad = true;
+
         }
-        isGameCompleted = model.GameStatus == GameStatus.Completed ? true : false;
-        await GetImageAsync();
-        PageLoad = true;
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
-    private async Task CheckMaxGamesForTeam()
+    private async Task CheckMaxGamesForTeam(FluentValidation.Results.ValidationResult result)
     {
-        var teamsToRemove = new List<Guid>();
-        LeagueResponse = await LeagueLocalCache.GetLeagueByIdCache(model.LeagueId.ToString());
-        if(LeagueResponse == null)
+        try
         {
-            LeagueResponse = await LeagueService.GetLeague(model.LeagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(model.LeagueId.ToString(), LeagueResponse);
-        }
-        foreach (var team in TeamsResponse.Teams)
-        {
-            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(team.Id.ToString());
-            if(TeamGamesResponse == null)
-            {
-                TeamGamesResponse = await GameService.GetGamesByTeam(team.Id);
-                await GameLocalCache.SetGamesByTeamCache(team.Id.ToString(), TeamGamesResponse);
-            }
-            if (LeagueResponse.League.TotalGamesPerSeason <= TeamGamesResponse.Games.Count())
-                Teams.RemoveAll(x => x.Id == team.Id);
-        }
+            var teamsToRemove = new List<Guid>();
 
+            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(model.AwayTeamId.ToString());
+            if (TeamGamesResponse == null)
+            {
+                TeamGamesResponse = await GameService.GetGamesByTeam(model.AwayTeamId);
+                await GameLocalCache.SetGamesByTeamCache(model.AwayTeamId.ToString(), TeamGamesResponse);
+            }
+            if (LeagueResponse.League.TotalGamesPerSeason < TeamGamesResponse.Games.Where(x => x.GameDetail.StartTime.Year == model.StartDate.Value.Year).Count())
+            {
+                Team = await TeamLocalCache.GetTeamByIdCache(model.AwayTeamId.ToString());
+                if (Team == null)
+                {
+                    Team = await TeamService.GetTeamById(model.AwayTeamId);
+                    await TeamLocalCache.SetTeamByIdCache(model.AwayTeamId.ToString(), Team);
+                }
+                result.Errors.Add(new FluentValidation.Results.ValidationFailure(nameof(CreateGameModel.AwayTeamId), $"The away team '{Team.Team.TeamName}' has reached the maximum number of games ({LeagueResponse.League.TotalGamesPerSeason}) for the {model.StartDate.Value.Year} season."));
+            }
+
+            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(model.HomeTeamId.ToString());
+            if (TeamGamesResponse == null)
+            {
+                TeamGamesResponse = await GameService.GetGamesByTeam(model.HomeTeamId);
+                await GameLocalCache.SetGamesByTeamCache(model.AwayTeamId.ToString(), TeamGamesResponse);
+            }
+            if (LeagueResponse.League.TotalGamesPerSeason < TeamGamesResponse.Games.Where(x => x.GameDetail.StartTime.Year == model.StartDate.Value.Year).Count())
+            {
+                Team = await TeamLocalCache.GetTeamByIdCache(model.HomeTeamId.ToString());
+                if (Team == null)
+                {
+                    Team = await TeamService.GetTeamById(model.HomeTeamId);
+                    await TeamLocalCache.SetTeamByIdCache(model.HomeTeamId.ToString(), Team);
+                }
+                result.Errors.Add(new FluentValidation.Results.ValidationFailure(nameof(CreateGameModel.HomeTeamId), $"The home team '{Team.Team.TeamName}' has reached the maximum number of games ({LeagueResponse.League.TotalGamesPerSeason}) for the {model.StartDate.Value.Year} season."));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task OnValidSubmit(EditContext context)
     {
-        await SubmitGame();
-        success = true;
-        Snackbar.Add("Game has been updated.", MudBlazor.Severity.Success);
-        NavManager.NavigateTo($"/leaguegames/{model.LeagueId}");
-        StateHasChanged();
+        try
+        {
+            await SubmitGame();
+            success = true;
+            Snackbar.Add("Game has been updated.", MudBlazor.Severity.Success);
+            NavManager.NavigateTo($"/leaguegames/{model.LeagueId}");
+            StateHasChanged();
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)
@@ -356,6 +404,10 @@
         if (_index == 2)
         {
             var result = await UpdateGameValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(UpdateGameModel.StartDate), nameof(UpdateGameModel.StartTime), nameof(UpdateGameModel.EndDate), nameof(UpdateGameModel.EndTime)));
+
+            if (model.StartDate.HasValue)
+                await CheckMaxGamesForTeam(result);
+
 
             if (result.IsValid)
                 canProceed = true;

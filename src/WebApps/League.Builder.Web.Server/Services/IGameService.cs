@@ -2,12 +2,20 @@
 
 public interface IGameService
 {
+    [Get("/game-service/baseballgamelineups/game/{gameId}/{teamId}")]
+    Task<AnyBaseballGameLineupByGameIdResponse> AnyBaseballGameLineupByGameId(Guid gameId, Guid teamId);
     [Get("/game-service/games?pageIndex={pageIndex}&pageSize={pageSize}")]
     Task<GetGamesResponse> GetGames(int? pageIndex = 0, int? pageSize = 4);
     [Get("/game-service/games/{id}")]
     Task<GetGameByIdResponse> GetGameById(Guid id);
+    [Get("/game-service/baseballgamelineups/{id}")]
+    Task<GetBaseballGameLineupByIdResponse> GetBaseballGameLineupById(Guid id);
+    [Get("/game-service/baseballgamelineups/{gameId}/{teamId}")]
+    Task<GetBaseballGameLineupByGameIdResponse> GetBaseballGameLineupByGameId(Guid gameId, Guid teamId);
     [Get("/game-service/games/league/{leagueId}")]
     Task<GetGamesByLeagueResponse> GetGamesByLeague(Guid leagueId);
+    [Get("/game-service/games/league/date/{leagueId}/{date}")]
+    Task<GetLeagueGamesByDateResponse> GetLeagueGamesByDate(Guid leagueId, string date);
     [Get("/game-service/games/team/{teamId}")]
     Task<GetGamesByTeamResponse> GetGamesByTeam(Guid teamId);
     [Get("/standings-service/healthz")]
@@ -18,6 +26,12 @@ public interface IGameService
     Task<UpdateGameResponse> UpdateGame(UpdateGameRequest game);
     [Delete("/game-service/games/{id}")]
     Task<DeleteGameResponse> DeleteGame(Guid id);
+    [Post("/game-service/baseballgamelineups")]
+    Task<CreateGameResponse> CreateBaseballGameLineup(CreateBaseballGameLineupRequest gameLineup);
+    [Put("/game-service/baseballgamelineups")]
+    Task<UpdateGameResponse> UpdateBaseballGameLineup(UpdateBaseballGameLineupRequest gameLineup);
+    [Delete("/game-service/baseballgamelineups/{id}")]
+    Task<DeleteGameResponse> DeleteBaseballGameLineup(Guid id);
 
 
 }

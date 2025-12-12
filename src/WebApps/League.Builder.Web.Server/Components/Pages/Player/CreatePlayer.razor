@@ -43,9 +43,9 @@
                                                         <MudText Typo="Typo.h6" Style="font-weight: bold;">Player Contact Information</MudText>
                                                     </MudStack>                                                    
                                                     <MudTextField Required="true" Label="First Name" HelperText="Max. 50 characters"
-                                                                  @bind-Value="model.FirstName" For="@(() => model.FirstName)" />
+                                                                  @bind-Value="model.FirstName" For="@(() => model.FirstName)" Clearable />
                                                     <MudTextField Required="true" Label="Last Name" HelperText="Max. 50 characters"
-                                                                  @bind-Value="model.LastName" For="@(() => model.LastName)" />
+                                                                  @bind-Value="model.LastName" For="@(() => model.LastName)" Clearable />
                                                     <MudSelect Required="true" Class="mt-3" Label="Team" @bind-Value="teamId">
                                                         @foreach (var team in TeamsResponse.Teams.Data.Where(l => l.Id == teamId))
                                                         {
@@ -67,14 +67,18 @@
                                                         <MudText Typo="Typo.h6" Style="font-weight: bold;">Player Details</MudText>
                                                     </MudStack>
                                                     <MudTextField Required="true" Label="Email Address" Class="mt-3"
-                                                                  @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
-                                                    <MudTextField Required="true" Label="Phone Number" Class="mt-3"
-                                                                  @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" />
+                                                                  @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" Clearable />
+                                                    <MudTextField Mask="@phoneNumberMask" Required="true" Label="Phone Number" Class="mt-3"
+                                                                  @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" Clearable/>
                                                     <MudDatePicker Required="true" Class="mt-3" Label="Birth Date" Editable="true" @bind-Date="model.BirthDate" />
-                                                    <MudTextField Required="true" Label="Height" Class="mt-3"
-                                                                  @bind-Value="model.Height" For="@(() => model.Height)" />
+                                                    <MudSelect Required="true" @bind-Value="model.Height" Class="mt-3" Placeholder="@heightPlaceholder" Label="@heightPlaceholder">
+                                                        @foreach (var months in Constants.Height())
+                                                        {
+                                                            <MudSelectItem Value="months.Key">@months.Value</MudSelectItem>
+                                                        }
+                                                    </MudSelect>
                                                     <MudTextField Required="true" Label="Weight" Class="mt-3"
-                                                                  @bind-Value="model.Weight" For="@(() => model.Weight)" />
+                                                                  @bind-Value="model.Weight" For="@(() => model.Weight)" Clearable />
                                                     <MudSelect Required="true" Class="mt-3" Label="Number" @bind-Value="model.Number">
                                                         @foreach (var jerseyNumber in jerseyNumbers)
                                                         {
@@ -88,7 +92,7 @@
                                                         }
                                                     </MudSelect>
                                                     <MudTextField Label="Description" Class="mt-3"
-                                                                  @bind-Value="model.Description" For="@(() => model.Description)" />
+                                                                  @bind-Value="model.Description" For="@(() => model.Description)" Clearable />
                                                 </MudCardContent>
                                             </MudCard>
                                         </MudItem>
@@ -104,9 +108,9 @@
                                                         <MudText Typo="Typo.h6" Style="font-weight: bold;">Player Address</MudText>
                                                     </MudStack>
                                                     <MudTextField Required="true" Label="Address Line" Class="mt-3"
-                                                                  @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" />
+                                                                  @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" Clearable />
                                                     <MudTextField Required="true" Label="City" Class="mt-3"
-                                                                 @bind-Value="model.City" For="@(() => model.City)" />
+                                                                  @bind-Value="model.City" For="@(() => model.City)" Clearable />
                                                     <MudSelect Required="true" Class="mt-3" Label="State" @bind-Value="model.State">
                                                         @foreach (var state in states)
                                                         {
@@ -120,7 +124,7 @@
                                                         }
                                                     </MudSelect>
                                                     <MudTextField Required="true" Label="Zip Code" Class="mt-3"
-                                                                  @bind-Value="model.ZipCode" For="@(() => model.ZipCode)" />
+                                                                  @bind-Value="model.ZipCode" For="@(() => model.ZipCode)" Clearable />
                                                 </MudCardContent>
                                             </MudCard>
                                         </MudItem>
@@ -147,11 +151,15 @@
                                                     </MudSelect>
                                                     <MudTextField Required="true" ReadOnly="true" Label="Email Address" Class="mt-3"
                                                                   @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
-                                                    <MudTextField Required="true" ReadOnly="true" Label="Phone Number" Class="mt-3"
+                                                    <MudTextField Mask="@phoneNumberMask" Required="true" ReadOnly="true" Label="Phone Number" Class="mt-3"
                                                                   @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" />
                                                     <MudDatePicker Required="true" ReadOnly="true" Class="mt-3" Label="Birth Date" Editable="true" @bind-Date="model.BirthDate" />
-                                                    <MudTextField Required="true" ReadOnly="true" Label="Height" Class="mt-3"
-                                                                  @bind-Value="model.Height" For="@(() => model.Height)" />
+                                                    <MudSelect Required="true" @bind-Value="model.Height" Class="mt-3" Placeholder="@heightPlaceholder" Label="@heightPlaceholder" ReadOnly="true">
+                                                        @foreach (var months in Constants.Height())
+                                                        {
+                                                            <MudSelectItem Value="months.Key">@months.Value</MudSelectItem>
+                                                        }
+                                                    </MudSelect>                                                    
                                                     <MudTextField Required="true" ReadOnly="true" Label="Weight" Class="mt-3"
                                                                   @bind-Value="model.Weight" For="@(() => model.Weight)" />
                                                     <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Number" @bind-Value="model.Number">
@@ -254,6 +262,7 @@
     private GetSeasonByYearResponse SeasonByYearResponse { get; set; }
     private GetPlayersByTeamResponse PlayersByTeamResponse { get; set; }
     private string teamValue;
+    private string heightPlaceholder = "Height";
     string sport = string.Empty;
     private List<string> states;
     private List<string> countries;
@@ -268,6 +277,8 @@
     private MudFileUpload<IBrowserFile> _fileUpload;
     private FluentValidationValidator fluentValidationValidator;
     private int year;
+
+    public PatternMask phoneNumberMask = new PatternMask("(000)-000-0000");
 
     protected override async Task OnInitializedAsync()
     {
@@ -312,6 +323,8 @@
         states = Constants.States();
         countries = Constants.Countries();
         jerseyNumbers = Constants.JerseyNumbers();
+        model.Height = Constants.Height().First().Key;
+        model.Number = jerseyNumbers.First();
         RemoveTakenJerseyNumbers();
         PageLoad = true;
     }
@@ -322,7 +335,7 @@
         var keyPath = $"/{LeagueById.League.Sport}/{LeagueById.League.Name}/teams/{TeamById.Team.TeamName}/players/{String.Concat(model.FirstName, " ", model.LastName)}/{model.ImageFile}";
         var s3Success = await AWSService.UploadImages(keyPath, model.File);
         Models.Player.AddressModel address = new Models.Player.AddressModel(model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
-        Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(model.EmailAddress, model.PhoneNumber, model.BirthDate.Value, (int)model.Height, (int)model.Weight, model.Position, model.Number);
+        Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(model.EmailAddress, model.PhoneNumber, model.BirthDate.Value, model.Height, (int)model.Weight, model.Position, model.Number);
         CreatePlayerRequest request = new CreatePlayerRequest(new CreatePlayerRecord(teamId, model.FirstName, model.LastName, address, playerDetail, model.Description, model.ImageFile));
         await PlayerService.CreatePlayer(request);
         success = true;

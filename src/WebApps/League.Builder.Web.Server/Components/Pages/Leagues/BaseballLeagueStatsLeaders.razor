@@ -43,10 +43,10 @@
                     </MudExpansionPanel>
                 </MudExpansionPanels>
             </MudItem>
-            <MudItem>
-                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+            <MudItem Style="padding-top: 25px;">
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
                     <MudTabPanel Text="Hitting">
-                        <MudTable Items="@StatLeaders" Hover="true">
+                        <MudTable Items="@StatLeaders.Where(x => x.Position != PositionFilter.BASEBALL)" Hover="true" Style="padding-top: 25px;">
                             <ColGroup>
                                 <col />
                                 <col />
@@ -96,7 +96,7 @@
                                         <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
                                     </MudAvatar>
                                 </MudTd>
-                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;"><MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.PlayerId}")">@context.PlayerName</MudLink></MudTd>
                                 <MudTd DataLabel="Team" Style="font-size: 12px;">@context.Team</MudTd>
                                 <MudTd DataLabel="Games Played">@context.GamesPlayed</MudTd>
                                 <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
@@ -119,7 +119,7 @@
                         </MudTable>
                     </MudTabPanel>
                     <MudTabPanel Text="Pitching">
-                        <MudTable Items="@StatLeaders" Hover="true">
+                        <MudTable Items="@StatLeaders.Where(x => x.Position == PositionFilter.BASEBALL)" Hover="true" Style="padding-top: 25px;">
                             <ColGroup>
                                 <col />
                                 <col />
@@ -160,7 +160,7 @@
                                         <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
                                     </MudAvatar>
                                 </MudTd>
-                                <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+                                <MudTd DataLabel="Name" Style="font-size: 12px;"><MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.PlayerId}")">@context.PlayerName</MudLink></MudTd>
                                 <MudTd DataLabel="Team" Style="font-size: 12px;">@context.Team</MudTd>
                                 <MudTd DataLabel="Games Played">@context.GamesPlayed</MudTd>
                                 <MudTd DataLabel="Starts">@context.PitchingStarts</MudTd>
@@ -168,7 +168,7 @@
                                 <MudTd DataLabel="Wins">@context.PitchingWins</MudTd>
                                 <MudTd DataLabel="Losses">@context.PitchingLosses</MudTd>
                                 <MudTd DataLabel="Saves">@context.Saves</MudTd>
-                                <MudTd DataLabel="Innings Pitched">@context.InningsPitched</MudTd>
+                                <MudTd DataLabel="Innings Pitched">@context.InningsPitched.ToString("#0.0")</MudTd>
                                 <MudTd DataLabel="Hits">@context.HitsAllowed</MudTd>
                                 <MudTd DataLabel="Runs">@context.RunsAllowed</MudTd>
                                 <MudTd DataLabel="Walks">@context.WalksAllowed</MudTd>
@@ -208,38 +208,42 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+            {
+                NavManager.NavigateTo("authentication/logout");
+            }
 
-        SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
-        if(SeasonsModel == null)
-        {
-            SeasonsModel = await SeasonService.GetSeasons();
-            await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+            SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
+            if (SeasonsModel == null)
+            {
+                SeasonsModel = await SeasonService.GetSeasons();
+                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+            }
+            Season = SeasonsModel.Seasons.First();
+            var leagueId = Guid.Parse(Id);
+            LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(Id);
+            if (LeagueModel == null)
+            {
+                LeagueModel = await LeagueService.GetLeague(leagueId);
+                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueModel);
+            }
+            await CreateStatsLeadersByLeague(leagueId);
+            seasonValue = Season.Year;
+            PageLoad = true;
+
         }
-        Season = SeasonsModel.Seasons.First();
-        var leagueId = Guid.Parse(Id);
-        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(Id);
-        if(LeagueModel == null)
+        catch (Exception ex) 
         {
-            LeagueModel = await LeagueService.GetLeague(leagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueModel);
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
         }
-        await CreateStatsLeadersByLeague(leagueId);
-        seasonValue = Season.Year;
-        PageLoad = true;
     }
 
     private async Task CreateStatsLeadersByLeague(Guid leagueId)
     {
-        StatsModel = await StatsLocalCache.GetLeagueBaseballStatsBySeasonCache(Id, Season.Id.ToString());
-        if(StatsModel == null)
-        {
-            StatsModel = await StatsService.GetLeagueBaseballStatsBySeason(leagueId, Season.Id);
-            await StatsLocalCache.SetLeagueBaseballStatsBySeasonCache(Id, Season.Id.ToString(), StatsModel);
-        }
+        StatsModel = await StatsService.GetLeagueBaseballStatsBySeason(leagueId, Season.Id);
         await BuildStatLeaders();
     }
 
@@ -290,6 +294,7 @@
                     {
                         PlayerId = PlayerModel.Player.Id,
                         PlayerName = String.Concat(PlayerModel.Player.FirstName, " ", PlayerModel.Player.LastName),
+                        Position = PlayerModel.Player.PlayerDetail.Position,
                         Team = TeamModel.Team.TeamName,
                         AtBats = stat.HittingStats.AtBats,
                         Hits = stat.HittingStats.Hits,
@@ -342,11 +347,15 @@
                 statLeader.Walks += stat.HittingStats.Walks;
                 statLeader.HitByPitch += stat.HittingStats.HitByPitch;
                 statLeader.SacrificeFly += stat.HittingStats.SacrificeFly;
-                statLeader.OnBasePercentage = (statLeader.Hits + statLeader.Walks + statLeader.HitByPitch) == 0 || (statLeader.Hits + statLeader.Walks + statLeader.HitByPitch + statLeader.SacrificeFly) == 0 ? 0 : (decimal)(statLeader.Hits + statLeader.Walks + statLeader.HitByPitch) / (statLeader.Hits + stat.HittingStats.Walks + statLeader.HitByPitch + statLeader.SacrificeFly);
+                statLeader.OnBasePercentage = (statLeader.Hits + statLeader.Walks + statLeader.HitByPitch) == 0 || (statLeader.Hits + statLeader.Walks + statLeader.HitByPitch + statLeader.SacrificeFly) == 0 ? 0 : (decimal)(statLeader.Hits + statLeader.Walks + statLeader.HitByPitch) / (statLeader.Hits + statLeader.Walks + statLeader.HitByPitch + statLeader.SacrificeFly);
                 statLeader.PitchingStarts += stat.PitchingStats.Start ? 1 : 0;
                 statLeader.PitchingWins += stat.PitchingStats.Wins;
                 statLeader.PitchingLosses += stat.PitchingStats.Losses;
                 statLeader.InningsPitched += stat.PitchingStats.Innings;
+                double wholePart = Math.Floor((double)statLeader.InningsPitched);
+                double fractionalPart = (double)statLeader.InningsPitched - wholePart;
+                if (fractionalPart >= 0.3)
+                    statLeader.InningsPitched = (decimal)Math.Ceiling((double)statLeader.InningsPitched);
                 statLeader.HitsAllowed += stat.PitchingStats.HitsAllowed;
                 statLeader.RunsAllowed += stat.PitchingStats.Runs;
                 statLeader.WalksAllowed += stat.PitchingStats.WalksAllowed;
@@ -363,6 +372,7 @@
     {
         public Guid PlayerId { get; set; }
         public string PlayerName { get; set; }
+        public string Position { get; set; }
         public string Team { get; set; }
         public string Image { get; set; }
         public int GamesPlayed { get; set; }

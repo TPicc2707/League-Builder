@@ -351,28 +351,37 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+            {
+                NavManager.NavigateTo("authentication/logout");
+            }
 
-        SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
-        if (SeasonsModel == null)
-        {
-            SeasonsModel = await SeasonService.GetSeasons();
-            await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+            SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
+            if (SeasonsModel == null)
+            {
+                SeasonsModel = await SeasonService.GetSeasons();
+                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+            }
+            Season = SeasonsModel.Seasons.First();
+            var leagueId = Guid.Parse(Id);
+            LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(Id);
+            if (LeagueModel == null)
+            {
+                LeagueModel = await LeagueService.GetLeague(leagueId);
+                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueModel);
+            }
+            await CreateStatsLeadersByLeague(leagueId);
+            seasonValue = Season.Year;
+            PageLoad = true;
+
         }
-        Season = SeasonsModel.Seasons.First();
-        var leagueId = Guid.Parse(Id);
-        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(Id);
-        if (LeagueModel == null)
+        catch (Exception ex)
         {
-            LeagueModel = await LeagueService.GetLeague(leagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueModel);
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
         }
-        await CreateStatsLeadersByLeague(leagueId);
-        seasonValue = Season.Year;
-        PageLoad = true;
     }
 
     private async Task CreateStatsLeadersByLeague(Guid leagueId)

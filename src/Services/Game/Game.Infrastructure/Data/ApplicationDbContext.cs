@@ -12,6 +12,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<Season> Seasons => Set<Season>();
     public DbSet<Domain.Models.Game> Games => Set<Domain.Models.Game>();
+    public DbSet<GameLineup> GameLineups => Set<GameLineup>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

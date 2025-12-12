@@ -24,7 +24,7 @@ public class CreatePlayerModel
 
     public DateTime? BirthDate { get; set; }
 
-    public int? Height { get; set; }
+    public int Height { get; set; }
 
     public int? Weight { get; set; }
 

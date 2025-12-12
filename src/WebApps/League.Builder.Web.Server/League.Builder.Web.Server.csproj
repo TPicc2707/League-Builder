@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Version>1.1</Version>
@@ -11,14 +11,12 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Keycloak.Authentication" Version="9.2.1-preview.1.25222.1" />
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.10" />
-    <PackageReference Include="AWSSDK.S3" Version="4.0.10" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.12" />
+    <PackageReference Include="AWSSDK.S3" Version="4.0.11.2" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.2.0" />
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageReference Include="CommunityToolkit.Aspire.OllamaSharp" Version="9.9.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0" />
     <PackageReference Include="MudBlazor" Version="8.14.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />

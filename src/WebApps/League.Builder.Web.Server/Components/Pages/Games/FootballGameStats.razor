@@ -770,164 +770,173 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
-
-        var gameId = Guid.Parse(Id);
-        GameModel = await GameLocalCache.GetGameByIdCache(Id);
-        if (GameModel == null)
-        {
-            GameModel = await GameService.GetGameById(gameId);
-            await GameLocalCache.SetGameByIdCache(Id, GameModel);
-        }
-        AwayPlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
-        if (AwayPlayersModel == null)
-        {
-            AwayPlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
-            await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayersModel);
-        }
-        HomePlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
-        if (HomePlayersModel == null)
-        {
-            HomePlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
-            await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayersModel);
-        }
-        AwayPlayerStatsModel = await StatsLocalCache.GetFootballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
-        if (AwayPlayerStatsModel == null)
-        {
-            AwayPlayerStatsModel = await StatsService.GetFootballStatsByTeam(GameModel.Game.HomeTeam.Id);
-            await StatsLocalCache.SetFootballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayerStatsModel);
-        }
-        HomePlayerStatsModel = await StatsLocalCache.GetFootballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
-        if (HomePlayerStatsModel == null)
-        {
-            HomePlayerStatsModel = await StatsService.GetFootballStatsByTeam(GameModel.Game.HomeTeam.Id);
-            await StatsLocalCache.SetFootballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayerStatsModel);
-        }
-        foreach (var player in AwayPlayersModel.Players)
-        {
-            var playerStat = AwayPlayerStatsModel.FootballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
-
-            if (playerStat is not null)
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
             {
-                Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
-                                                   playerStat.OffensiveStats.PassingCompletions, playerStat.OffensiveStats.PassingAttempts, playerStat.OffensiveStats.PassingYards,
-                                                   playerStat.OffensiveStats.LongestPassingPlay, playerStat.OffensiveStats.PassingTouchdowns, playerStat.OffensiveStats.PassingInterceptions,
-                                                   playerStat.OffensiveStats.Sacks, playerStat.OffensiveStats.RushingAttempts, playerStat.OffensiveStats.RushingYards,
-                                                   playerStat.OffensiveStats.LongestRushingPlay, playerStat.OffensiveStats.RushingTouchdowns, playerStat.OffensiveStats.RushingFumbles, playerStat.OffensiveStats.RushingFumblesLost,
-                                                   playerStat.OffensiveStats.Receptions, playerStat.OffensiveStats.Targets, playerStat.OffensiveStats.ReceivingYards, playerStat.OffensiveStats.ReceivingTouchdowns,
-                                                   playerStat.OffensiveStats.ReceivingFumbles, playerStat.OffensiveStats.ReceivingFumblesLost, playerStat.OffensiveStats.YardsAfterCatch,
-                                                   playerStat.DefensiveStats.Tackles, playerStat.DefensiveStats.Sacks, playerStat.DefensiveStats.TacklesForLoss, playerStat.DefensiveStats.PassesDefended,
-                                                   playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
-                                                   playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
-                                                   playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
-                                                   playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
-                                                   playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
-
-                AwayTotalPassingCompletions += playerStat.OffensiveStats.PassingCompletions;
-                AwayTotalPassingAttempts += playerStat.OffensiveStats.PassingAttempts;
-                AwayTotalPassingYards += playerStat.OffensiveStats.PassingYards;
-                AwayTotalPassingTouchdowns += playerStat.OffensiveStats.PassingTouchdowns;
-                AwayTotalPassingInterceptions += playerStat.OffensiveStats.PassingInterceptions;
-                AwayTotalSacks += playerStat.OffensiveStats.Sacks;
-                AwayTotalRushingAttempts += playerStat.OffensiveStats.RushingAttempts;
-                AwayTotalRushingYards += playerStat.OffensiveStats.RushingYards;
-                AwayTotalRushingTouchdowns += playerStat.OffensiveStats.RushingTouchdowns;
-                AwayTotalRushingFumbles += playerStat.OffensiveStats.RushingFumbles;
-                AwayTotalRushingFumblesLost += playerStat.OffensiveStats.RushingFumblesLost;
-                AwayTotalReceptions += playerStat.OffensiveStats.Receptions;
-                AwayTotalTargets += playerStat.OffensiveStats.Targets;
-                AwayTotalReceivingYards += playerStat.OffensiveStats.ReceivingYards;
-                AwayTotalReceivingTouchdowns += playerStat.OffensiveStats.ReceivingTouchdowns;
-                AwayTotalReceivingFumbles += playerStat.OffensiveStats.ReceivingFumbles;
-                AwayTotalReceivingFumblesLost += playerStat.OffensiveStats.ReceivingFumblesLost;
-                AwayTotalYardsAfterCatch += playerStat.OffensiveStats.YardsAfterCatch;
-                AwayTotalTackles += playerStat.DefensiveStats.Tackles;
-                AwayTotalDefensiveSacks += playerStat.DefensiveStats.Sacks;
-                AwayTotalTacklesForLoss += playerStat.DefensiveStats.TacklesForLoss;
-                AwayTotalPassesDefended += playerStat.DefensiveStats.PassesDefended;
-                AwayTotalDefensiveInterceptions += playerStat.DefensiveStats.DefensiveInterceptions;
-                AwayTotalDefensiveInterceptionYards += playerStat.DefensiveStats.DefensiveInterceptionYards;
-                AwayTotalDefensiveTouchdowns += playerStat.DefensiveStats.DefensiveTouchdowns;
-                AwayTotalForcedFumbles += playerStat.DefensiveStats.ForcedFumbles;
-                AwayTotalRecoveredFumbles += playerStat.DefensiveStats.RecoveredFumbles;
-                AwayTotalFieldGoalsMade += playerStat.KickingStats.FieldGoalsMade;
-                AwayTotalFieldGoalsAttempted += playerStat.KickingStats.FieldGoalsAttempted;
-                AwayTotalExtraPointsMade += playerStat.KickingStats.ExtraPointsMade;
-                AwayTotalExtraPointsAttempted += playerStat.KickingStats.ExtraPointsAttempted;
-                AwayTotalPoints += playerStat.KickingStats.Points;
-                AwayTotalPunts += playerStat.KickingStats.Punts;
-                AwayTotalPuntingYards += playerStat.KickingStats.PuntingYards;
-
-
+                NavManager.NavigateTo("authentication/logout");
             }
-            else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
-        }
 
-        foreach (var player in HomePlayersModel.Players)
-        {
-            var playerStat = HomePlayerStatsModel.FootballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
-
-            if (playerStat is not null)
+            var gameId = Guid.Parse(Id);
+            GameModel = await GameLocalCache.GetGameByIdCache(Id);
+            if (GameModel == null)
             {
-                Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
-                                                   playerStat.OffensiveStats.PassingCompletions, playerStat.OffensiveStats.PassingAttempts, playerStat.OffensiveStats.PassingYards,
-                                                   playerStat.OffensiveStats.LongestPassingPlay, playerStat.OffensiveStats.PassingTouchdowns, playerStat.OffensiveStats.PassingInterceptions,
-                                                   playerStat.OffensiveStats.Sacks, playerStat.OffensiveStats.RushingAttempts, playerStat.OffensiveStats.RushingYards,
-                                                   playerStat.OffensiveStats.LongestRushingPlay, playerStat.OffensiveStats.RushingTouchdowns, playerStat.OffensiveStats.RushingFumbles, playerStat.OffensiveStats.RushingFumblesLost,
-                                                   playerStat.OffensiveStats.Receptions, playerStat.OffensiveStats.Targets, playerStat.OffensiveStats.ReceivingYards, playerStat.OffensiveStats.ReceivingTouchdowns,
-                                                   playerStat.OffensiveStats.ReceivingFumbles, playerStat.OffensiveStats.ReceivingFumblesLost, playerStat.OffensiveStats.YardsAfterCatch,
-                                                   playerStat.DefensiveStats.Tackles, playerStat.DefensiveStats.Sacks, playerStat.DefensiveStats.TacklesForLoss, playerStat.DefensiveStats.PassesDefended,
-                                                   playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
-                                                   playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
-                                                   playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
-                                                   playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
-                                                   playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
-
-                HomeTotalPassingCompletions += playerStat.OffensiveStats.PassingCompletions;
-                HomeTotalPassingAttempts += playerStat.OffensiveStats.PassingAttempts;
-                HomeTotalPassingYards += playerStat.OffensiveStats.PassingYards;
-                HomeTotalPassingTouchdowns += playerStat.OffensiveStats.PassingTouchdowns;
-                HomeTotalPassingInterceptions += playerStat.OffensiveStats.PassingInterceptions;
-                HomeTotalSacks += playerStat.OffensiveStats.Sacks;
-                HomeTotalRushingAttempts += playerStat.OffensiveStats.RushingAttempts;
-                HomeTotalRushingYards += playerStat.OffensiveStats.RushingYards;
-                HomeTotalRushingTouchdowns += playerStat.OffensiveStats.RushingTouchdowns;
-                HomeTotalRushingFumbles += playerStat.OffensiveStats.RushingFumbles;
-                HomeTotalRushingFumblesLost += playerStat.OffensiveStats.RushingFumblesLost;
-                HomeTotalReceptions += playerStat.OffensiveStats.Receptions;
-                HomeTotalTargets += playerStat.OffensiveStats.Targets;
-                HomeTotalReceivingYards += playerStat.OffensiveStats.ReceivingYards;
-                HomeTotalReceivingTouchdowns += playerStat.OffensiveStats.ReceivingTouchdowns;
-                HomeTotalReceivingFumbles += playerStat.OffensiveStats.ReceivingFumbles;
-                HomeTotalReceivingFumblesLost += playerStat.OffensiveStats.ReceivingFumblesLost;
-                HomeTotalYardsAfterCatch += playerStat.OffensiveStats.YardsAfterCatch;
-                HomeTotalTackles += playerStat.DefensiveStats.Tackles;
-                HomeTotalDefensiveSacks += playerStat.DefensiveStats.Sacks;
-                HomeTotalTacklesForLoss += playerStat.DefensiveStats.TacklesForLoss;
-                HomeTotalPassesDefended += playerStat.DefensiveStats.PassesDefended;
-                HomeTotalDefensiveInterceptions += playerStat.DefensiveStats.DefensiveInterceptions;
-                HomeTotalDefensiveInterceptionYards += playerStat.DefensiveStats.DefensiveInterceptionYards;
-                HomeTotalDefensiveTouchdowns += playerStat.DefensiveStats.DefensiveTouchdowns;
-                HomeTotalForcedFumbles += playerStat.DefensiveStats.ForcedFumbles;
-                HomeTotalRecoveredFumbles += playerStat.DefensiveStats.RecoveredFumbles;
-                HomeTotalFieldGoalsMade += playerStat.KickingStats.FieldGoalsMade;
-                HomeTotalFieldGoalsAttempted += playerStat.KickingStats.FieldGoalsAttempted;
-                HomeTotalExtraPointsMade += playerStat.KickingStats.ExtraPointsMade;
-                HomeTotalExtraPointsAttempted += playerStat.KickingStats.ExtraPointsAttempted;
-                HomeTotalPoints += playerStat.KickingStats.Points;
-                HomeTotalPunts += playerStat.KickingStats.Punts;
-                HomeTotalPuntingYards += playerStat.KickingStats.PuntingYards;
-
+                GameModel = await GameService.GetGameById(gameId);
+                await GameLocalCache.SetGameByIdCache(Id, GameModel);
             }
-            else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
-        }
+            AwayPlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
+            if (AwayPlayersModel == null)
+            {
+                AwayPlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
+                await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayersModel);
+            }
+            HomePlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
+            if (HomePlayersModel == null)
+            {
+                HomePlayersModel = await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
+                await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayersModel);
+            }
+            AwayPlayerStatsModel = await StatsLocalCache.GetFootballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString());
+            if (AwayPlayerStatsModel == null)
+            {
+                AwayPlayerStatsModel = await StatsService.GetFootballStatsByTeam(GameModel.Game.HomeTeam.Id);
+                await StatsLocalCache.SetFootballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayerStatsModel);
+            }
+            HomePlayerStatsModel = await StatsLocalCache.GetFootballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString());
+            if (HomePlayerStatsModel == null)
+            {
+                HomePlayerStatsModel = await StatsService.GetFootballStatsByTeam(GameModel.Game.HomeTeam.Id);
+                await StatsLocalCache.SetFootballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayerStatsModel);
+            }
+            foreach (var player in AwayPlayersModel.Players)
+            {
+                var playerStat = AwayPlayerStatsModel.FootballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
 
-        PageLoad = true;
+                if (playerStat is not null)
+                {
+                    Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                                                       playerStat.OffensiveStats.PassingCompletions, playerStat.OffensiveStats.PassingAttempts, playerStat.OffensiveStats.PassingYards,
+                                                       playerStat.OffensiveStats.LongestPassingPlay, playerStat.OffensiveStats.PassingTouchdowns, playerStat.OffensiveStats.PassingInterceptions,
+                                                       playerStat.OffensiveStats.Sacks, playerStat.OffensiveStats.RushingAttempts, playerStat.OffensiveStats.RushingYards,
+                                                       playerStat.OffensiveStats.LongestRushingPlay, playerStat.OffensiveStats.RushingTouchdowns, playerStat.OffensiveStats.RushingFumbles, playerStat.OffensiveStats.RushingFumblesLost,
+                                                       playerStat.OffensiveStats.Receptions, playerStat.OffensiveStats.Targets, playerStat.OffensiveStats.ReceivingYards, playerStat.OffensiveStats.ReceivingTouchdowns,
+                                                       playerStat.OffensiveStats.ReceivingFumbles, playerStat.OffensiveStats.ReceivingFumblesLost, playerStat.OffensiveStats.YardsAfterCatch,
+                                                       playerStat.DefensiveStats.Tackles, playerStat.DefensiveStats.Sacks, playerStat.DefensiveStats.TacklesForLoss, playerStat.DefensiveStats.PassesDefended,
+                                                       playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
+                                                       playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
+                                                       playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
+                                                       playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
+                                                       playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
+
+                    AwayTotalPassingCompletions += playerStat.OffensiveStats.PassingCompletions;
+                    AwayTotalPassingAttempts += playerStat.OffensiveStats.PassingAttempts;
+                    AwayTotalPassingYards += playerStat.OffensiveStats.PassingYards;
+                    AwayTotalPassingTouchdowns += playerStat.OffensiveStats.PassingTouchdowns;
+                    AwayTotalPassingInterceptions += playerStat.OffensiveStats.PassingInterceptions;
+                    AwayTotalSacks += playerStat.OffensiveStats.Sacks;
+                    AwayTotalRushingAttempts += playerStat.OffensiveStats.RushingAttempts;
+                    AwayTotalRushingYards += playerStat.OffensiveStats.RushingYards;
+                    AwayTotalRushingTouchdowns += playerStat.OffensiveStats.RushingTouchdowns;
+                    AwayTotalRushingFumbles += playerStat.OffensiveStats.RushingFumbles;
+                    AwayTotalRushingFumblesLost += playerStat.OffensiveStats.RushingFumblesLost;
+                    AwayTotalReceptions += playerStat.OffensiveStats.Receptions;
+                    AwayTotalTargets += playerStat.OffensiveStats.Targets;
+                    AwayTotalReceivingYards += playerStat.OffensiveStats.ReceivingYards;
+                    AwayTotalReceivingTouchdowns += playerStat.OffensiveStats.ReceivingTouchdowns;
+                    AwayTotalReceivingFumbles += playerStat.OffensiveStats.ReceivingFumbles;
+                    AwayTotalReceivingFumblesLost += playerStat.OffensiveStats.ReceivingFumblesLost;
+                    AwayTotalYardsAfterCatch += playerStat.OffensiveStats.YardsAfterCatch;
+                    AwayTotalTackles += playerStat.DefensiveStats.Tackles;
+                    AwayTotalDefensiveSacks += playerStat.DefensiveStats.Sacks;
+                    AwayTotalTacklesForLoss += playerStat.DefensiveStats.TacklesForLoss;
+                    AwayTotalPassesDefended += playerStat.DefensiveStats.PassesDefended;
+                    AwayTotalDefensiveInterceptions += playerStat.DefensiveStats.DefensiveInterceptions;
+                    AwayTotalDefensiveInterceptionYards += playerStat.DefensiveStats.DefensiveInterceptionYards;
+                    AwayTotalDefensiveTouchdowns += playerStat.DefensiveStats.DefensiveTouchdowns;
+                    AwayTotalForcedFumbles += playerStat.DefensiveStats.ForcedFumbles;
+                    AwayTotalRecoveredFumbles += playerStat.DefensiveStats.RecoveredFumbles;
+                    AwayTotalFieldGoalsMade += playerStat.KickingStats.FieldGoalsMade;
+                    AwayTotalFieldGoalsAttempted += playerStat.KickingStats.FieldGoalsAttempted;
+                    AwayTotalExtraPointsMade += playerStat.KickingStats.ExtraPointsMade;
+                    AwayTotalExtraPointsAttempted += playerStat.KickingStats.ExtraPointsAttempted;
+                    AwayTotalPoints += playerStat.KickingStats.Points;
+                    AwayTotalPunts += playerStat.KickingStats.Punts;
+                    AwayTotalPuntingYards += playerStat.KickingStats.PuntingYards;
+
+
+                }
+                else if (GameModel.Game.GameStatus == GameStatus.Completed)
+                    Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+            }
+
+            foreach (var player in HomePlayersModel.Players)
+            {
+                var playerStat = HomePlayerStatsModel.FootballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
+
+                if (playerStat is not null)
+                {
+                    Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                                                       playerStat.OffensiveStats.PassingCompletions, playerStat.OffensiveStats.PassingAttempts, playerStat.OffensiveStats.PassingYards,
+                                                       playerStat.OffensiveStats.LongestPassingPlay, playerStat.OffensiveStats.PassingTouchdowns, playerStat.OffensiveStats.PassingInterceptions,
+                                                       playerStat.OffensiveStats.Sacks, playerStat.OffensiveStats.RushingAttempts, playerStat.OffensiveStats.RushingYards,
+                                                       playerStat.OffensiveStats.LongestRushingPlay, playerStat.OffensiveStats.RushingTouchdowns, playerStat.OffensiveStats.RushingFumbles, playerStat.OffensiveStats.RushingFumblesLost,
+                                                       playerStat.OffensiveStats.Receptions, playerStat.OffensiveStats.Targets, playerStat.OffensiveStats.ReceivingYards, playerStat.OffensiveStats.ReceivingTouchdowns,
+                                                       playerStat.OffensiveStats.ReceivingFumbles, playerStat.OffensiveStats.ReceivingFumblesLost, playerStat.OffensiveStats.YardsAfterCatch,
+                                                       playerStat.DefensiveStats.Tackles, playerStat.DefensiveStats.Sacks, playerStat.DefensiveStats.TacklesForLoss, playerStat.DefensiveStats.PassesDefended,
+                                                       playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
+                                                       playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
+                                                       playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
+                                                       playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
+                                                       playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
+
+                    HomeTotalPassingCompletions += playerStat.OffensiveStats.PassingCompletions;
+                    HomeTotalPassingAttempts += playerStat.OffensiveStats.PassingAttempts;
+                    HomeTotalPassingYards += playerStat.OffensiveStats.PassingYards;
+                    HomeTotalPassingTouchdowns += playerStat.OffensiveStats.PassingTouchdowns;
+                    HomeTotalPassingInterceptions += playerStat.OffensiveStats.PassingInterceptions;
+                    HomeTotalSacks += playerStat.OffensiveStats.Sacks;
+                    HomeTotalRushingAttempts += playerStat.OffensiveStats.RushingAttempts;
+                    HomeTotalRushingYards += playerStat.OffensiveStats.RushingYards;
+                    HomeTotalRushingTouchdowns += playerStat.OffensiveStats.RushingTouchdowns;
+                    HomeTotalRushingFumbles += playerStat.OffensiveStats.RushingFumbles;
+                    HomeTotalRushingFumblesLost += playerStat.OffensiveStats.RushingFumblesLost;
+                    HomeTotalReceptions += playerStat.OffensiveStats.Receptions;
+                    HomeTotalTargets += playerStat.OffensiveStats.Targets;
+                    HomeTotalReceivingYards += playerStat.OffensiveStats.ReceivingYards;
+                    HomeTotalReceivingTouchdowns += playerStat.OffensiveStats.ReceivingTouchdowns;
+                    HomeTotalReceivingFumbles += playerStat.OffensiveStats.ReceivingFumbles;
+                    HomeTotalReceivingFumblesLost += playerStat.OffensiveStats.ReceivingFumblesLost;
+                    HomeTotalYardsAfterCatch += playerStat.OffensiveStats.YardsAfterCatch;
+                    HomeTotalTackles += playerStat.DefensiveStats.Tackles;
+                    HomeTotalDefensiveSacks += playerStat.DefensiveStats.Sacks;
+                    HomeTotalTacklesForLoss += playerStat.DefensiveStats.TacklesForLoss;
+                    HomeTotalPassesDefended += playerStat.DefensiveStats.PassesDefended;
+                    HomeTotalDefensiveInterceptions += playerStat.DefensiveStats.DefensiveInterceptions;
+                    HomeTotalDefensiveInterceptionYards += playerStat.DefensiveStats.DefensiveInterceptionYards;
+                    HomeTotalDefensiveTouchdowns += playerStat.DefensiveStats.DefensiveTouchdowns;
+                    HomeTotalForcedFumbles += playerStat.DefensiveStats.ForcedFumbles;
+                    HomeTotalRecoveredFumbles += playerStat.DefensiveStats.RecoveredFumbles;
+                    HomeTotalFieldGoalsMade += playerStat.KickingStats.FieldGoalsMade;
+                    HomeTotalFieldGoalsAttempted += playerStat.KickingStats.FieldGoalsAttempted;
+                    HomeTotalExtraPointsMade += playerStat.KickingStats.ExtraPointsMade;
+                    HomeTotalExtraPointsAttempted += playerStat.KickingStats.ExtraPointsAttempted;
+                    HomeTotalPoints += playerStat.KickingStats.Points;
+                    HomeTotalPunts += playerStat.KickingStats.Punts;
+                    HomeTotalPuntingYards += playerStat.KickingStats.PuntingYards;
+
+                }
+                else if (GameModel.Game.GameStatus == GameStatus.Completed)
+                    Model.Add(new FootballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+            }
+
+            PageLoad = true;
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task GetImageAsync()

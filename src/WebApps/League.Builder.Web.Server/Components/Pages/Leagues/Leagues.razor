@@ -73,7 +73,7 @@
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<LeagueModel, object>(x => x.Name)">Name</MudTableSortLabel></MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary">Owner</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Description</MudTh>
+                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Sport</MudTh>
                                                 <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
@@ -88,11 +88,8 @@
                                                     </MudTooltip>
                                                 </MudTd>                                                
                                                 <MudTd DataLabel="Owner">@String.Concat(context.OwnerFirstName, " ", context.OwnerLastName)</MudTd>
-                                                <MudTd DataLabel="Description">@context.Description</MudTd>
+                                                <MudTd DataLabel="Description">@context.Sport</MudTd>
                                                 <MudTd DataLabel="Links">
-                                                    <MudTooltip Text="Email" Color="Color.Secondary">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Email" Color="Color.Tertiary" Edge="Edge.Start" />
-                                                    </MudTooltip>
                                                     <AuthorizeView Roles="@Roles.ReadGames" Context="readGamesAuth2">
                                                         <MudTooltip Text="Games" Color="Color.Secondary">
                                                             <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/leaguegames/", context.Id)" />
@@ -249,57 +246,84 @@
 
     private async Task SearchAll()
     {
-        isSearchLoading = true;
-        LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();
-        if (LeaguesResponse == null)
+        try
         {
-            LeaguesResponse = await LeagueService.GetLeagues(1, 10000);
-            await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+            isSearchLoading = true;
+            LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();
+            if (LeaguesResponse == null)
+            {
+                LeaguesResponse = await LeagueService.GetLeagues(1, 10000);
+                await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+            }
+            Model = LeaguesResponse.Leagues.ToList();
+            await GetImageAsync();
+            expandSearchPanel = false;
+            isSearchLoading = false;
+
         }
-        Model = LeaguesResponse.Leagues.ToList();
-        await GetImageAsync();
-        expandSearchPanel = false;
-        isSearchLoading = false;
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task SearchBySport()
     {
-        isSearchLoading = true;
-        LeaguesBySportResponse = await LeagueLocalCache.GetLeaguesBySportCache(sport);
-        if (LeaguesBySportResponse == null)
+        try
         {
-            LeaguesBySportResponse = await LeagueService.GetLeaguesBySport(sport);
-            await LeagueLocalCache.SetLeaguesBySportCache(sport, LeaguesBySportResponse);
+            isSearchLoading = true;
+            LeaguesBySportResponse = await LeagueLocalCache.GetLeaguesBySportCache(sport);
+            if (LeaguesBySportResponse == null)
+            {
+                LeaguesBySportResponse = await LeagueService.GetLeaguesBySport(sport);
+                await LeagueLocalCache.SetLeaguesBySportCache(sport, LeaguesBySportResponse);
+            }
+            Model = LeaguesBySportResponse.Leagues.ToList();
+            await GetImageAsync();
+            prevSport = sport;
+            expandSearchPanel = false;
+            isSearchLoading = false;
+
         }
-        Model = LeaguesBySportResponse.Leagues.ToList();
-        await GetImageAsync();
-        prevSport = sport;
-        expandSearchPanel = false;
-        isSearchLoading = false;
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task SearchByName()
     {
-        isSearchLoading = true;
-        if(prevName == name)
+        try
         {
-            LeaguesByNameResponse = await LeagueLocalCache.GetLeaguesByNameCache(); 
-            if (LeaguesByNameResponse == null)
+            isSearchLoading = true;
+            if (prevName == name)
+            {
+                LeaguesByNameResponse = await LeagueLocalCache.GetLeaguesByNameCache();
+                if (LeaguesByNameResponse == null)
+                {
+                    LeaguesByNameResponse = await LeagueService.GetLeaguesByName(name);
+                    await LeagueLocalCache.SetLeaguesByNameCache(LeaguesByNameResponse);
+                }
+            }
+            else
             {
                 LeaguesByNameResponse = await LeagueService.GetLeaguesByName(name);
                 await LeagueLocalCache.SetLeaguesByNameCache(LeaguesByNameResponse);
             }
+            Model = LeaguesByNameResponse.Leagues.OrderBy(x => x.Name).ToList();
+            await GetImageAsync();
+            prevName = name;
+            expandSearchPanel = false;
+            isSearchLoading = false;
+
         }
-        else
+        catch (Exception ex)
         {
-            LeaguesByNameResponse = await LeagueService.GetLeaguesByName(name);
-            await LeagueLocalCache.SetLeaguesByNameCache(LeaguesByNameResponse);
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
         }
-        Model = LeaguesByNameResponse.Leagues.ToList();
-        await GetImageAsync();
-        prevName = name;
-        expandSearchPanel = false;
-        isSearchLoading = false;
     }
 
     private async Task GetImageAsync()

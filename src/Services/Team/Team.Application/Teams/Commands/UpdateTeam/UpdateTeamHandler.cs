@@ -33,6 +33,7 @@ public class UpdateTeamHandler(IApplicationDbContext dbContext, IPublishEndpoint
     private async Task UpdateTeamWithNewValues(Domain.Models.Team team, TeamDto teamDto)
     {
         var updatedTeamAddress = Address.Of(teamDto.TeamAddress.FirstName, teamDto.TeamAddress.LastName, teamDto.TeamAddress.EmailAddress, teamDto.TeamAddress.AddressLine, teamDto.TeamAddress.City, teamDto.TeamAddress.Country, teamDto.TeamAddress.State, teamDto.TeamAddress.ZipCode);
+        var updatedTeamManager = Manager.Of(teamDto.TeamManager.FirstName, teamDto.TeamManager.LastName, teamDto.TeamManager.EmailAddress);
 
         team.Update(
             leagueId: LeagueId.Of(teamDto.LeagueId),
@@ -40,6 +41,7 @@ public class UpdateTeamHandler(IApplicationDbContext dbContext, IPublishEndpoint
             teamAddress: updatedTeamAddress,
             description: teamDto.Description,
             imageFile: teamDto.ImageFile,
-            status: teamDto.TeamStatus);
+            status: teamDto.TeamStatus,
+            teamManager: updatedTeamManager);
     }
 }

@@ -33,6 +33,12 @@ public class UpdateTeamModel
     public IBrowserFile File { get; set; }
 
     public TeamStatus TeamStatus { get; set; }
+
+    public string ManagerFirstName { get; set; }
+
+    public string ManagerLastName { get; set; }
+
+    public string ManagerEmailAddress { get; set; }
 }
 
 public class UpdateTeamModelValidator : AbstractValidator<UpdateTeamModel>
@@ -52,8 +58,15 @@ public class UpdateTeamModelValidator : AbstractValidator<UpdateTeamModel>
         RuleFor(x => x.Country).NotEmpty().WithMessage("Country is required.");
         RuleFor(x => x.ZipCode).NotEmpty().WithMessage("Zip Code is required.");
         RuleFor(x => x.ZipCode).Matches(@"^\d{5}(-\d{4})?$").WithMessage("A valid Zip Code is required.");
-        RuleFor(x => x.EmailAddress).NotEmpty().WithMessage("Email Address is required");
-        RuleFor(x => x.EmailAddress).EmailAddress().WithMessage("A valid Email Address is required");
+        RuleFor(x => x.EmailAddress).NotEmpty().WithMessage("Email Address is required")
+                .EmailAddress().WithMessage("A valid Email Address is required");
+        RuleFor(x => x.ManagerFirstName).NotEmpty().WithMessage("Manager First Name is required.")
+                .Length(2, 50).WithMessage("Name must be between 2 and 50 characters");
+        RuleFor(x => x.ManagerLastName).NotEmpty().WithMessage("Manager Last Name is required.")
+                .Length(2, 50).WithMessage("Name must be between 2 and 50 characters");
+        RuleFor(x => x.ManagerEmailAddress).NotEmpty().WithMessage("Manager Email Address is required")
+                .EmailAddress().WithMessage("A valid Email Address is required");
+
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

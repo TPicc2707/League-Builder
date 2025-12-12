@@ -6,5 +6,6 @@ public record TeamDto(
     AddressDto TeamAddress,
     string Description,
     string ImageFile,
-    TeamStatus TeamStatus
+    TeamStatus TeamStatus,
+    ManagerDto TeamManager
 );

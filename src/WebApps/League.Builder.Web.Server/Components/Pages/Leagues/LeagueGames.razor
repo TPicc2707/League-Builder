@@ -24,15 +24,23 @@
                         </TitleContent>
                         <ChildContent>
                             <MudStack Justify="Justify.FlexStart" Row="true">
-                                <MudItem xs="4" md="4" lg="4">
-                                    <MudSelect @bind-Value="monthValue" Placeholder="@monthPlaceholder" Label="@monthPlaceholder">
+                                <MudItem xs="3" md="3" lg="3">
+                                    <MudSelect T="int" ValueChanged="AdjustDaysOfMonth" Value="@monthValue" Placeholder="@monthPlaceholder" Label="@monthPlaceholder">
                                         @foreach (var months in Constants.Months())
                                         {
                                             <MudSelectItem Value="months.Value">@months.Key</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
-                                <MudItem xs="4" md="4" lg="4">
+                                <MudItem xs="3" md="3" lg="3">
+                                    <MudSelect @bind-Value="dayValue" Placeholder="@dayPlaceholder" Label="@dayPlaceholder">
+                                        @foreach (var day in daysOfMonth)
+                                        {
+                                            <MudSelectItem Value="day">@day</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                <MudItem xs="3" md="3" lg="3">
                                     <MudSelect @bind-Value="seasonValue" Placeholder="@seasonPlaceholder" Label="@seasonPlaceholder">
                                         @foreach (var season in SeasonsModel.Seasons)
                                         {
@@ -40,7 +48,7 @@
                                         }
                                     </MudSelect>
                                 </MudItem>
-                                <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
+                                <MudItem xs="3" md="3" lg="3" Style="align-content: center; padding: 10px;">
                                     <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonGames" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
                                 </MudItem>
                             </MudStack>
@@ -53,7 +61,7 @@
                     <AuthorizeView Roles="@Roles.CreateGames" Context="createGameAuth">
                         <Authorized>
                             <MudItem>
-                                <MudTable Items="@Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month)" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                <MudTable Items="@LeagueGamesModel.Games" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                     <ColGroup>
                                         <col />
                                         <col />
@@ -68,10 +76,10 @@
                                         </MudStack>
                                     </ToolBarContent>
                                     <HeaderContent>
-                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<GameModel, object>(x => x.AwayTeam.TeamName)">Away Team</MudTableSortLabel></MudTh>
-                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<GameModel, object>(x => x.HomeTeam.TeamName)">Home Team</MudTableSortLabel></MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<GameModel, object>(x => x.AwayTeam.TeamName)">Away Team</MudTableSortLabel></MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<GameModel, object>(x => x.HomeTeam.TeamName)">Home Team</MudTableSortLabel></MudTh>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">Score</MudTh>
-                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<GameModel, object>(x => x.GameDetail.StartTime)">Start Time</MudTableSortLabel></MudTh>
+                                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<GameModel, object>(x => x.GameDetail.StartTime)">Start Time</MudTableSortLabel></MudTh>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">End Time</MudTh>
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
                                         <MudTh Class="mud-theme-primary"></MudTh>
@@ -106,6 +114,40 @@
                                             <MudTd></MudTd>
                                         }
                                         <MudTd DataLabel="Status">@Constants.GameStatus(context.GameStatus)</MudTd>
+                                        @if (context.GameStatus != GameStatus.Completed && context.GameStatus != GameStatus.InProgress)
+                                        {
+                                            <AuthorizeView Roles="@Roles.CreateGames" Context="statAuth">
+                                                <Authorized>
+                                                    <MudTd DataLabel="Stats">
+                                                        <MudTooltip Text="Game Lineup" Color="Color.Secondary">
+                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToCreateGameLineup(context.Id))">
+                                                                <MudIcon Icon="@Icons.Material.Filled.EventNote" />
+                                                            </MudLink>
+                                                        </MudTooltip>
+                                                    </MudTd>
+                                                </Authorized>
+                                                <NotAuthorized>
+                                                    <MudTd></MudTd>
+                                                </NotAuthorized>
+                                            </AuthorizeView>
+                                        }
+                                        else
+                                        {
+                                            <AuthorizeView Roles="@Roles.ReadGames" Context="statAuth">
+                                                <Authorized>
+                                                    <MudTd DataLabel="Stats">
+                                                        <MudTooltip Text="Game Lineup" Color="Color.Secondary">
+                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameLineup(context.Id))">
+                                                                <MudIcon Icon="@Icons.Material.Filled.EventNote" />
+                                                            </MudLink>
+                                                        </MudTooltip>
+                                                    </MudTd>
+                                                </Authorized>
+                                                <NotAuthorized>
+                                                    <MudTd></MudTd>
+                                                </NotAuthorized>
+                                            </AuthorizeView>
+                                        }
                                         <AuthorizeView Roles="@Roles.UpdateGames" Context="updateAuth">
                                             <Authorized>
                                                 <MudTd DataLabel="Edit">
@@ -141,27 +183,6 @@
                                         {
                                             <MudTd></MudTd>
                                         }
-                                        @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
-                                        {
-                                            <MudTd></MudTd>
-                                        }
-                                        else
-                                        {
-                                            <AuthorizeView Roles="@Roles.DeleteGames" Context="deleteAuth">
-                                                <Authorized>
-                                                    <MudTd DataLabel="Delete">
-                                                        <MudTooltip Text="Delete" Color="Color.Secondary">
-                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))">
-                                                                <MudIcon Icon="@Icons.Material.Filled.Delete" />
-                                                            </MudLink>
-                                                        </MudTooltip>
-                                                    </MudTd>
-                                                </Authorized>
-                                                <NotAuthorized>
-                                                    <MudTd></MudTd>
-                                                </NotAuthorized>
-                                            </AuthorizeView>
-                                        }
                                     </RowTemplate>
                                 </MudTable>
 
@@ -169,7 +190,7 @@
                         </Authorized>
                         <NotAuthorized>
                             <MudItem>
-                                <MudTable Items="@Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month)" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                <MudTable Items="@LeagueGamesModel.Games" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                     <ColGroup>
                                         <col />
                                         <col />
@@ -187,7 +208,6 @@
                                         <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
                                         <MudTh Class="mud-theme-primary"></MudTh>
                                         <MudTh Class="mud-theme-primary"></MudTh>
-                                        <MudTh Class="mud-theme-primary"></MudTh>
                                     </HeaderContent>
                                     <RowTemplate>
                                         <MudTd DataLabel="Away Team">
@@ -217,20 +237,27 @@
                                             <MudTd></MudTd>
                                         }
                                         <MudTd DataLabel="Status">@Constants.GameStatus(context.GameStatus)</MudTd>
-                                        <AuthorizeView Roles="@Roles.UpdateGames" Context="updateAuth">
-                                            <Authorized>
-                                                <MudTd DataLabel="Edit">
-                                                    <MudTooltip Text="Edit Game" Color="Color.Secondary">
-                                                        <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))">
-                                                            <MudIcon Icon="@Icons.Material.Filled.Edit" />
-                                                        </MudLink>
-                                                    </MudTooltip>
-                                                </MudTd>
-                                            </Authorized>
-                                            <NotAuthorized>
-                                                <MudTd></MudTd>
-                                            </NotAuthorized>
-                                        </AuthorizeView>
+                                        @if (context.GameStatus != GameStatus.Completed && context.GameStatus != GameStatus.InProgress)
+                                        {
+                                            <MudTd></MudTd>
+                                        }
+                                        else
+                                        {
+                                            <AuthorizeView Roles="@Roles.ReadGames" Context="statAuth">
+                                                <Authorized>
+                                                    <MudTd DataLabel="Stats">
+                                                        <MudTooltip Text="Game Lineup" Color="Color.Secondary">
+                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameLineup(context.Id))">
+                                                                <MudIcon Icon="@Icons.Material.Filled.EventNote" />
+                                                            </MudLink>
+                                                        </MudTooltip>
+                                                    </MudTd>
+                                                </Authorized>
+                                                <NotAuthorized>
+                                                    <MudTd></MudTd>
+                                                </NotAuthorized>
+                                            </AuthorizeView>
+                                        }
                                         @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
                                         {
                                             <AuthorizeView Roles="@Roles.ReadStats" Context="statAuth">
@@ -251,27 +278,6 @@
                                         else
                                         {
                                             <MudTd></MudTd>
-                                        }
-                                        @if (context.GameStatus == GameStatus.Completed || context.GameStatus == GameStatus.InProgress)
-                                        {
-                                            <MudTd></MudTd>
-                                        }
-                                        else
-                                        {
-                                            <AuthorizeView Roles="@Roles.DeleteGames" Context="deleteAuth">
-                                                <Authorized>
-                                                    <MudTd DataLabel="Delete">
-                                                        <MudTooltip Text="Delete" Color="Color.Secondary">
-                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))">
-                                                                <MudIcon Icon="@Icons.Material.Filled.Delete" />
-                                                            </MudLink>
-                                                        </MudTooltip>
-                                                    </MudTd>
-                                                </Authorized>
-                                                <NotAuthorized>
-                                                    <MudTd></MudTd>
-                                                </NotAuthorized>
-                                            </AuthorizeView>
                                         }
                                     </RowTemplate>
                                 </MudTable>
@@ -297,61 +303,85 @@
     private bool PageLoad = false;
     private Justify _justify = Justify.SpaceEvenly;
     private SeasonModel Season;
+    private List<GameModel> Games = new();
     private string seasonPlaceholder = "Season";
     private string monthPlaceholder = "Month";
+    private string dayPlaceholder = "Day";
     private int seasonValue;
     private int monthValue = DateTime.Now.Month;
+    private int dayValue = 1;
     private int Month;
+    private int Day;
     private int GameCount = 0;
     private bool expandSearchPanel = false;
-
+    private List<int> daysOfMonth;
 
     private GetSeasonsResponse SeasonsModel { get; set; }
     private GetSeasonByYearResponse SeasonModel { get; set; }
-    private GetGamesByLeagueResponse Model { get; set; }
+    private GetLeagueGamesByDateResponse LeagueGamesModel { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+            {
+                NavManager.NavigateTo("authentication/logout");
+            }
 
-        var leagueId = Guid.Parse(Id);
-        SeasonsModel = await LocalStorage.GetItemAsync<GetSeasonsResponse>("Seasons");
-        if(SeasonsModel == null)
-        {
-            SeasonsModel = await SeasonService.GetSeasons();
-            await LocalStorage.SetItemAsync("Seasons", SeasonsModel);
+            var leagueId = Guid.Parse(Id);
+            SeasonsModel = await LocalStorage.GetItemAsync<GetSeasonsResponse>("Seasons");
+            if (SeasonsModel == null)
+            {
+                SeasonsModel = await SeasonService.GetSeasons();
+                await LocalStorage.SetItemAsync("Seasons", SeasonsModel);
+            }
+            Season = SeasonsModel.Seasons.First();
+            Month = monthValue;
+            Day = dayValue;
+            seasonValue = Season.Year;
+            var date = new DateTime(Season.Year, Month, Day).ToString("yyyy-MM-dd");
+            LeagueGamesModel = await GamesService.GetLeagueGamesByDate(leagueId, date);
+            await GetImageAsync();
+            AdjustDaysOfMonth(Month);
+            PageLoad = true;
+
         }
-        Season = SeasonsModel.Seasons.First();
-        Model = await LocalStorage.GetItemAsync<GetGamesByLeagueResponse>($"GamesByLeague: {Id}");
-        if(Model == null)
+        catch (Exception ex)
         {
-            Model = await GamesService.GetGamesByLeague(leagueId);
-            await LocalStorage.SetItemAsync($"GamesByLeague: {Id}", Model);
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
         }
-        Month = monthValue;
-        GameCount = Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month).Count();
-        seasonValue = Season.Year;
-        await GetImageAsync();
-        PageLoad = true;
     }
 
     private async Task GetSeasonGames()
     {
-        PageLoad = false;
-        SeasonModel = await LocalStorage.GetItemAsync<GetSeasonByYearResponse>($"SeasonByYear: {seasonValue}");
-        if(SeasonModel == null)
+        try
         {
-            SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
-            await LocalStorage.SetItemAsync($"SeasonByYear: {seasonValue}", SeasonModel);
+            PageLoad = false;
+            var leagueId = Guid.Parse(Id);
+            SeasonModel = await LocalStorage.GetItemAsync<GetSeasonByYearResponse>($"SeasonByYear: {seasonValue}");
+            if (SeasonModel == null)
+            {
+                SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
+                await LocalStorage.SetItemAsync($"SeasonByYear: {seasonValue}", SeasonModel);
+            }
+            Season = SeasonModel.Season;
+            Month = monthValue;
+            Day = dayValue;
+            var date = new DateTime(Season.Year, Month, Day).ToString("yyyy-MM-dd");
+            LeagueGamesModel = await GamesService.GetLeagueGamesByDate(leagueId, date);
+            await GetImageAsync();
+            AdjustDaysOfMonth(Month);
+            StateHasChanged();
+            PageLoad = true;
+
         }
-        Season = SeasonModel.Season;
-        Month = monthValue;
-        GameCount = Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month).Count();
-        StateHasChanged();
-        PageLoad = true;
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task NavigateToUpdateGame(Guid id)
@@ -371,15 +401,10 @@
         NavManager.NavigateTo($"/creategame/{Id}");
     }
 
-    private async Task NavigateToGameStats(Guid id, Guid leagueId)
+    private async Task NavigateToCreateGameLineup(Guid id)
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        var claims = user.Claims;
-        var canEditStats = claims.Where(c => c.Value.Contains(Roles.UpdateStats)).Any();
-        var canCreateStats = claims.Where(c => c.Value.Contains(Roles.CreateStats)).Any();
-
         var idString = id.ToString();
+        var leagueId = Guid.Parse(Id);
         var league = await LocalStorage.GetItemAsync<GetLeagueByIdResponse>($"League: {Id}");
         if (league == null)
         {
@@ -387,28 +412,83 @@
             await LocalStorage.SetItemAsync($"League: {Id}", league);
         }
 
-        if(canEditStats && canCreateStats)
+        if (league.League.Sport == SportName.BASEBALL)
+            NavManager.NavigateTo($"/createbaseballgamelineup/{idString}");
+
+        if (league.League.Sport == SportName.FOOTBALL)
+            NavManager.NavigateTo($"/editfootballgamestats/{idString}");
+
+        if (league.League.Sport == SportName.BASKETBALL)
+            NavManager.NavigateTo($"/editbasketballgamestats/{idString}");
+    }
+
+    private async Task NavigateToGameLineup(Guid id)
+    {
+        var idString = id.ToString();
+        var leagueId = Guid.Parse(Id);
+        var league = await LocalStorage.GetItemAsync<GetLeagueByIdResponse>($"League: {Id}");
+        if (league == null)
         {
-            if (league.League.Sport == SportName.BASEBALL)
-                NavManager.NavigateTo($"/editbaseballgamestats/{idString}");
-
-            if (league.League.Sport == SportName.FOOTBALL)
-                NavManager.NavigateTo($"/editfootballgamestats/{idString}");
-
-            if (league.League.Sport == SportName.BASKETBALL)
-                NavManager.NavigateTo($"/editbasketballgamestats/{idString}");
+            league = await LeagueService.GetLeague(leagueId);
+            await LocalStorage.SetItemAsync($"League: {Id}", league);
         }
-        else
+
+        if (league.League.Sport == SportName.BASEBALL)
+            NavManager.NavigateTo($"/baseballgamelineup/{idString}");
+
+        if (league.League.Sport == SportName.FOOTBALL)
+            NavManager.NavigateTo($"/editfootballgamestats/{idString}");
+
+        if (league.League.Sport == SportName.BASKETBALL)
+            NavManager.NavigateTo($"/editbasketballgamestats/{idString}");
+    }
+
+    private async Task NavigateToGameStats(Guid id, Guid leagueId)
+    {
+        try
         {
-            if (league.League.Sport == SportName.BASEBALL)
-                NavManager.NavigateTo($"/baseballgamestats/{idString}");
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var claims = user.Claims;
+            var canEditStats = claims.Where(c => c.Value.Contains(Roles.UpdateStats)).Any();
+            var canCreateStats = claims.Where(c => c.Value.Contains(Roles.CreateStats)).Any();
 
-            if (league.League.Sport == SportName.FOOTBALL)
-                NavManager.NavigateTo($"/footballgamestats/{idString}");
+            var idString = id.ToString();
+            var league = await LocalStorage.GetItemAsync<GetLeagueByIdResponse>($"League: {Id}");
+            if (league == null)
+            {
+                league = await LeagueService.GetLeague(leagueId);
+                await LocalStorage.SetItemAsync($"League: {Id}", league);
+            }
 
-            if (league.League.Sport == SportName.BASKETBALL)
-                NavManager.NavigateTo($"/basketballgamestats/{idString}");
+            if (canEditStats && canCreateStats)
+            {
+                if (league.League.Sport == SportName.BASEBALL)
+                    NavManager.NavigateTo($"/editbaseballgamestats/{idString}");
 
+                if (league.League.Sport == SportName.FOOTBALL)
+                    NavManager.NavigateTo($"/editfootballgamestats/{idString}");
+
+                if (league.League.Sport == SportName.BASKETBALL)
+                    NavManager.NavigateTo($"/editbasketballgamestats/{idString}");
+            }
+            else
+            {
+                if (league.League.Sport == SportName.BASEBALL)
+                    NavManager.NavigateTo($"/baseballgamestats/{idString}");
+
+                if (league.League.Sport == SportName.FOOTBALL)
+                    NavManager.NavigateTo($"/footballgamestats/{idString}");
+
+                if (league.League.Sport == SportName.BASKETBALL)
+                    NavManager.NavigateTo($"/basketballgamestats/{idString}");
+
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
         }
     }
 
@@ -425,15 +505,11 @@
         {
             PageLoad = false;
             var leagueId = Guid.Parse(Id);
-            Model = await GameLocalCache.GetGamesByLeagueCache(Id);
-            if(Model == null)
-            {
-                Model = await GamesService.GetGamesByLeague(leagueId);
-                await GameLocalCache.SetGamesByLeagueCache(Id, Model);
-            }
             Month = monthValue;
-            GameCount = Model.Games.Where(x => x.SeasonId == Season.Id && x.GameDetail.StartTime.Month == Month).Count();
+            Day = dayValue;
             seasonValue = Season.Year;
+            var date = new DateTime(Season.Year, Month, Day).ToString("yyyy-MM-dd");
+            LeagueGamesModel = await GamesService.GetLeagueGamesByDate(leagueId, date);
             PageLoad = true;
         }
 
@@ -449,7 +525,7 @@
             await LocalStorage.SetItemAsync($"League: {Id}", league);
         }
 
-        foreach (var games in Model.Games)
+        foreach (var games in LeagueGamesModel.Games)
         {
             var awayTeam = await LocalStorage.GetItemAsync<GetTeamByIdResponse>($"Team: {games.AwayTeam.Id.ToString()}");
             if (awayTeam == null)
@@ -469,6 +545,22 @@
 
             var homeTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{homeTeam.Team.TeamName}/{homeTeam.Team.ImageFile}";
             games.HomeTeamImage = await AWSService.GetImage(homeTeamKeyPath);
+        }
+    }
+
+    private void AdjustDaysOfMonth(int value)
+    {
+        daysOfMonth = Constants.DaysOfMonth();
+
+        monthValue = value;
+
+        if (monthValue == 4 || monthValue == 6 || monthValue == 11)
+            daysOfMonth.Remove(31);
+
+        if (monthValue == 2)
+        {
+            daysOfMonth.Remove(30);
+            daysOfMonth.Remove(31);
         }
     }
 }

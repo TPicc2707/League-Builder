@@ -1,0 +1,251 @@
+﻿@page "/baseballgamelineup/{id}"
+@inject IGameService GameService
+@inject ITeamService TeamService
+@inject IPlayerService PlayerService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavManager
+@inject IAWSService AWSService
+
+<AuthorizeView Roles="@Roles.ReadGames" Context="auth">
+    <Authorized>
+        @if (PageLoad)
+        {
+            <MudItem Style="padding-top: 50px;">
+                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@AwayTeam.Team.TeamName vs @HomeTeam.Team.TeamName Lineups</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem Style="padding-top: 25px;">
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                    <MudTabPanel Text="@AwayTeam.Team.TeamName">
+                         <MudItem Style="padding-top: 25px;">
+                             <MudGrid>
+                                 <MudItem xs="12" md="12">
+                                     <MudStack Row="true">
+                                        <MudItem xs="6" md="6">
+                                            <MudPaper Class="ma-4 flex-grow-1">
+                                                <MudList T="string" Class="d-flex flex-column mud-height-full" Color="Color.Secondary">
+                                                    <MudItem Class="mud-theme-primary">
+                                                        <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Lineup</MudText>
+                                                    </MudItem>
+                                                    @foreach (var player in AwayLineup.Take(9))
+                                                    {
+                                                        <MudListItem Text="@String.Concat(player.BattingOrderPosition, ". ", player.PlayerName, ", ", player.Position)" />
+                                                    }
+                                                </MudList>
+                                            </MudPaper>
+                                        </MudItem>
+                                        <MudItem xs="6" md="6">
+                                            <MudPaper Class="ma-4 flex-grow-1">
+                                                <MudList T="string" Class="d-flex flex-column mud-height-full" Color="Color.Secondary">
+                                                    <MudItem Class="mud-theme-primary">
+                                                        <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Bench</MudText>
+                                                    </MudItem>
+                                                    @foreach (var player in AwayLineup.Skip(9))
+                                                    {
+                                                        <MudListItem Text="@String.Concat(player.PlayerName, ", ", player.Position)" />
+                                                    }
+                                                </MudList>
+                                            </MudPaper>
+                                        </MudItem>
+                                     </MudStack>
+                                    <MudPaper Class="ma-4 flex-grow-1 border border-solid" Style="border-color: #000000">
+                                        <MudList T="string" Color="Color.Secondary">
+                                            <MudItem Class="mud-theme-primary">
+                                                <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Starting Pitcher</MudText>
+                                            </MudItem>
+                                            @foreach (var player in AwayPitchers)
+                                            {
+                                                <MudListItem Text="@(AwayLineupResponse.GameLineup.BaseballLineup.StartingPitcher == player.Id ? String.Concat(player.FirstName, " ", player.LastName, ", Starter") : String.Concat(player.FirstName, " ", player.LastName))" />
+                                            }
+                                        </MudList>
+                                    </MudPaper>
+                                 </MudItem>
+                             </MudGrid>
+                         </MudItem>
+                    </MudTabPanel>
+                    <MudTabPanel Text="@HomeTeam.Team.TeamName">
+                        <MudItem Style="padding-top: 25px;">
+                            <MudGrid>
+                                <MudItem xs="12" md="12">
+                                    <MudStack Row="true">
+                                        <MudItem xs="6" md="6">
+                                            <MudPaper Class="ma-4 flex-grow-1">
+                                                <MudList T="string" Class="d-flex flex-column mud-height-full" Color="Color.Secondary">
+                                                    <MudItem Class="mud-theme-primary">
+                                                        <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Lineup</MudText>
+                                                    </MudItem>
+                                                    @foreach (var player in HomeLineup.Take(9))
+                                                    {
+                                                        <MudListItem Text="@String.Concat(player.BattingOrderPosition, ". ", player.PlayerName, ", ", player.Position)" />
+                                                    }
+                                                </MudList>
+                                            </MudPaper>
+                                        </MudItem>
+                                        <MudItem xs="6" md="6">
+                                            <MudPaper Class="ma-4 flex-grow-1">
+                                                <MudList T="string" Class="d-flex flex-column mud-height-full" Color="Color.Secondary">
+                                                    <MudItem Class="mud-theme-primary">
+                                                        <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Bench</MudText>
+                                                    </MudItem>
+                                                    @foreach (var player in HomeLineup.Skip(9))
+                                                    {
+                                                        <MudListItem Text="@String.Concat(player.PlayerName, ", ", player.Position)" />
+                                                    }
+                                                </MudList>
+                                            </MudPaper>
+                                        </MudItem>
+                                    </MudStack>
+
+                                    <MudPaper Class="ma-4 flex-grow-1 border border-solid" Style="border-color: #000000">
+                                        <MudList T="string" Color="Color.Secondary">
+                                            <MudItem Class="mud-theme-primary">
+                                                <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Starting Pitcher</MudText>
+                                            </MudItem>
+                                            @foreach (var player in HomePitchers)
+                                            {
+                                                <MudListItem Text="@(HomeLineupResponse.GameLineup.BaseballLineup.StartingPitcher == player.Id ? String.Concat(player.FirstName, " ", player.LastName, ", Starter") : String.Concat(player.FirstName, " ", player.LastName))" />
+                                            }
+                                        </MudList>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </MudItem>
+                    </MudTabPanel>
+                </MudTabs>
+            </MudItem>
+        }
+        else
+        {
+            <Loading />
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudText>You are not authorized to view this page...</MudText>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private bool PageLoad = false;
+    private int benchNumber = 9; //number of players allowed in the lineup this will increment starting at 10
+    private GetGameByIdResponse GameByIdResponse { get; set; }
+    private GetBaseballGameLineupByGameIdResponse AwayLineupResponse { get; set; }
+    private GetBaseballGameLineupByGameIdResponse HomeLineupResponse { get; set; }
+    private GetTeamByIdResponse AwayTeam { get; set; }
+    private GetTeamByIdResponse HomeTeam { get; set; }
+    private GetPlayersByTeamResponse AwayTeamPlayers { get; set; }
+    private GetPlayersByTeamResponse HomeTeamPlayers { get; set; }
+    private List<LineupListItem> AwayLineup = new();
+    private List<LineupListItem> HomeLineup = new();
+    private List<PlayerModel> AwayPitchers = new();
+    private List<PlayerModel> HomePitchers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+            {
+                NavManager.NavigateTo("authentication/logout");
+            }
+
+            var gameId = Guid.Parse(Id);
+            GameByIdResponse = await GameService.GetGameById(gameId);
+
+            AwayTeam = await TeamService.GetTeamById(GameByIdResponse.Game.AwayTeam.Id);
+            AwayTeamPlayers = await PlayerService.GetPlayersByTeam(AwayTeam.Team.Id);
+            AwayPitchers = AwayTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
+            AwayLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, AwayTeam.Team.Id);
+            CreateAwayLineup();
+            AwayLineup = AwayLineup.OrderBy(x => x.BattingOrderPosition).ToList();
+
+            HomeTeam = await TeamService.GetTeamById(GameByIdResponse.Game.HomeTeam.Id);
+            HomeTeamPlayers = await PlayerService.GetPlayersByTeam(HomeTeam.Team.Id);
+            HomePitchers = HomeTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
+            HomeLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, HomeTeam.Team.Id);
+            CreateHomeLineup();
+            HomeLineup = HomeLineup.OrderBy(x => x.BattingOrderPosition).ToList();
+
+            PageLoad = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
+        }
+    }
+
+    private void CreateAwayLineup()
+    {
+        foreach (var player in AwayTeamPlayers.Players.Where(x => x.PlayerDetail.Position != PositionFilter.BASEBALL))
+        {
+            var lineupPosition = new LineupListItem
+            {
+                PlayerId = player.Id,
+                TeamId = AwayTeam.Team.Id,
+                PlayerName = $"{player.FirstName} {player.LastName}",
+                Position = player.PlayerDetail.Position,
+            };
+            lineupPosition.BattingOrderPosition = SetupLineup(AwayLineupResponse.GameLineup.BaseballLineup, lineupPosition);
+
+            AwayLineup.Add(lineupPosition);
+        }
+    }
+
+    private void CreateHomeLineup()
+    {
+        foreach (var player in HomeTeamPlayers.Players.Where(x => x.PlayerDetail.Position != PositionFilter.BASEBALL))
+        {
+            var lineupPosition = new LineupListItem
+            {
+                PlayerId = player.Id,
+                TeamId = AwayTeam.Team.Id,
+                PlayerName = $"{player.FirstName} {player.LastName}",
+                Position = player.PlayerDetail.Position,
+            };
+            lineupPosition.BattingOrderPosition = SetupLineup(HomeLineupResponse.GameLineup.BaseballLineup, lineupPosition);
+
+            HomeLineup.Add(lineupPosition);
+        }
+    }
+
+
+    private int SetupLineup(BaseballGameLineup lineup, LineupListItem item)
+    {
+        switch (item.PlayerId)
+        {
+            case var first when first == lineup.First:
+                return 1;
+            case var second when second == lineup.Second:
+                return 2;
+            case var third when third == lineup.Third:
+                return 3;
+            case var fourth when fourth == lineup.Fourth:
+                return 4;
+            case var fifth when fifth == lineup.Fifth:
+                return 5;
+            case var sixth when sixth == lineup.Sixth:
+                return 6;
+            case var seventh when seventh == lineup.Seventh:
+                return 7;
+            case var eighth when eighth == lineup.Eighth:
+                return 8;
+            case var ninth when ninth == lineup.Ninth:
+                return 9;
+            default:
+                return benchNumber++;
+        }
+    }
+
+    public class LineupListItem
+    {
+        public Guid PlayerId { get; set; }
+        public Guid TeamId { get; set; }
+        public string PlayerName { get; set; }
+        public string Position { get; set; }
+        public int BattingOrderPosition { get; set; }
+    }
+
+}

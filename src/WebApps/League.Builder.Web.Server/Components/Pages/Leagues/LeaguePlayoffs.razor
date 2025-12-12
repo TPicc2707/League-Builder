@@ -64,36 +64,45 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
+            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+            {
+                NavManager.NavigateTo("authentication/logout");
+            }
 
-        var leagueId = Guid.Parse(Id);
-        SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
-        if(SeasonsModel == null)
-        {
-            SeasonsModel = await SeasonService.GetSeasons();
-            await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+            var leagueId = Guid.Parse(Id);
+            SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
+            if (SeasonsModel == null)
+            {
+                SeasonsModel = await SeasonService.GetSeasons();
+                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+            }
+            Season = SeasonsModel.Seasons.First();
+            Model = await StandingsLocalCache.GetStandingsByLeagueCache(Id);
+            if (Model == null)
+            {
+                Model = await StandingsService.GetStandingsByLeague(leagueId);
+                await StandingsLocalCache.SetStandingsByLeagueCache(Id, Model);
+            }
+            Standings = Model.Standings.Where(x => x.SeasonId == Season.Id);
+            LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(Id);
+            if (LeagueModel == null)
+            {
+                LeagueModel = await LeagueService.GetLeague(leagueId);
+                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueModel);
+            }
+            await GetImageAsync();
+            CalculatePlayoffTeams();
+            Standings = Standings.Where(x => x.SeasonId == Season.Id && x.StandingsDetail.PlayoffTeam == true).OrderByDescending(x => x.WinPercentage);
+            PageLoad = true;
+
         }
-        Season = SeasonsModel.Seasons.First();
-        Model = await StandingsLocalCache.GetStandingsByLeagueCache(Id);
-        if(Model == null)
+        catch (Exception ex)
         {
-            Model = await StandingsService.GetStandingsByLeague(leagueId);
-            await StandingsLocalCache.SetStandingsByLeagueCache(Id, Model);
+            Console.WriteLine(ex.Message);
+            NavManager.NavigateTo("/error");
         }
-        Standings = Model.Standings.Where(x => x.SeasonId == Season.Id);
-        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(Id);
-        if(LeagueModel == null)
-        {
-            LeagueModel = await LeagueService.GetLeague(leagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueModel);
-        }
-        await GetImageAsync();
-        CalculatePlayoffTeams();
-        Standings = Standings.Where(x => x.SeasonId == Season.Id && x.StandingsDetail.PlayoffTeam == true).OrderByDescending(x => x.WinPercentage);
-        PageLoad = true;
     }
 
 

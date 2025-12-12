@@ -63,7 +63,7 @@ public class PlayerConfiguration : IEntityTypeConfiguration<Domain.Models.Player
                    .IsRequired();
 
                 detailBuilder.Property(d => d.PhoneNumber)
-                   .HasMaxLength(10)
+                   .HasMaxLength(15)
                    .IsRequired();
 
                 detailBuilder.Property(d => d.BirthDate);

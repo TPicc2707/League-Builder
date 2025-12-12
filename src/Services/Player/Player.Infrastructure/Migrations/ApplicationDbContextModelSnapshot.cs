@@ -18,7 +18,7 @@ namespace Player.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -57,7 +57,7 @@ namespace Player.Infrastructure.Migrations
                     b.Property<Guid>("TeamId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.ComplexProperty<Dictionary<string, object>>("FirstName", "Player.Domain.Models.Player.FirstName#FirstName", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "FirstName", "Player.Domain.Models.Player.FirstName#FirstName", b1 =>
                         {
                             b1.IsRequired();
 
@@ -68,7 +68,7 @@ namespace Player.Infrastructure.Migrations
                                 .HasColumnName("FirstName");
                         });
 
-                    b.ComplexProperty<Dictionary<string, object>>("LastName", "Player.Domain.Models.Player.LastName#LastName", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "LastName", "Player.Domain.Models.Player.LastName#LastName", b1 =>
                         {
                             b1.IsRequired();
 
@@ -79,7 +79,7 @@ namespace Player.Infrastructure.Migrations
                                 .HasColumnName("LastName");
                         });
 
-                    b.ComplexProperty<Dictionary<string, object>>("PlayerAddress", "Player.Domain.Models.Player.PlayerAddress#Address", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "PlayerAddress", "Player.Domain.Models.Player.PlayerAddress#Address", b1 =>
                         {
                             b1.IsRequired();
 
@@ -109,7 +109,7 @@ namespace Player.Infrastructure.Migrations
                                 .HasColumnType("nvarchar(5)");
                         });
 
-                    b.ComplexProperty<Dictionary<string, object>>("PlayerDetail", "Player.Domain.Models.Player.PlayerDetail#PlayerDetail", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "PlayerDetail", "Player.Domain.Models.Player.PlayerDetail#PlayerDetail", b1 =>
                         {
                             b1.IsRequired();
 
@@ -129,8 +129,8 @@ namespace Player.Infrastructure.Migrations
 
                             b1.Property<string>("PhoneNumber")
                                 .IsRequired()
-                                .HasMaxLength(10)
-                                .HasColumnType("nvarchar(10)");
+                                .HasMaxLength(15)
+                                .HasColumnType("nvarchar(15)");
 
                             b1.Property<string>("Position")
                                 .IsRequired()

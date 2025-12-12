@@ -103,7 +103,7 @@
                             </TitleContent>
                             <ChildContent>
                                 <MudItem>
-                                    <MudTable Items="@Model" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                                    <MudTable Items="@Model" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000" RowsPerPage="25">
                                         <HeaderContent>
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
                                             <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.FirstName)">First Name</MudTableSortLabel></MudTh>
@@ -216,6 +216,14 @@
     private bool expandSearchPanel = true;
     private bool isSearchLoading = false;
     private bool PageLoad = false;
+    // private TableGroupDefinition<PlayerModel> tableGroupDefinition = new()
+    //     {
+    //         GroupName = "Team",
+    //         Indentation = false,
+    //         Expandable = true,
+    //         IsInitiallyExpanded = false,
+    //         Selector = (p) => p.TeamName
+    //     };
 
     private List<PlayerModel> Model { get; set; }
     private GetLeaguesResponse LeaguesResponse { get; set; }
@@ -314,7 +322,7 @@
     {
         isSearchLoading = true;
         DateTime date = (DateTime)birthdate;
-        DateTime prevDate = (DateTime)prevBirthdate;
+        DateTime prevDate = prevBirthdate is null ? DateTime.Now : (DateTime)prevBirthdate;
         string prevBirthDate = prevDate.ToString("yyyy-MM-dd");
         string birthDate = date.ToString("yyyy-MM-dd");
         if (_when == "By")

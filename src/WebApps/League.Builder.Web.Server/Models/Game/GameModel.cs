@@ -60,6 +60,7 @@ public record UpdateGameRequest(UpdateGameRecord Game);
 public record GetGamesResponse(PaginatedResult<GameModel> Games);
 public record GetGameByIdResponse(GameModel Game);
 public record GetGamesByLeagueResponse(IEnumerable<GameModel> Games);
+public record GetLeagueGamesByDateResponse(IEnumerable<GameModel> Games);
 public record GetGamesByTeamResponse(IEnumerable<GameModel> Games);
 public record CreateGameResponse(Guid Id);
 public record UpdateGameResponse(bool IsSuccess);

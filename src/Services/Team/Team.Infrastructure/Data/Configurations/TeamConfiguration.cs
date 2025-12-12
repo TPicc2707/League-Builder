@@ -65,5 +65,21 @@ public class TeamConfiguration : IEntityTypeConfiguration<Domain.Models.Team>
             .HasConversion(
                 s => s.ToString(),
                 dbStatus => (TeamStatus)Enum.Parse(typeof(TeamStatus), dbStatus));
+
+        builder.ComplexProperty(
+           t => t.TeamManager, addressBuilder =>
+           {
+               addressBuilder.Property(a => a.FirstName)
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+               addressBuilder.Property(a => a.LastName)
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+               addressBuilder.Property(a => a.EmailAddress)
+                   .HasMaxLength(150)
+                   .IsRequired();
+           });
     }
 }
