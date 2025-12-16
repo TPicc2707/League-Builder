@@ -116,6 +116,9 @@
                                 <MudTd DataLabel="On Base Plus Slugging">@context.OnBasePlusSlugging.ToString("#.000")</MudTd>
                                 <MudTd DataLabel="Sacrifice Fly">@context.SacrificeFly</MudTd>
                             </RowTemplate>
+                            <PagerContent>
+                                <MudTablePager />
+                            </PagerContent>
                         </MudTable>
                     </MudTabPanel>
                     <MudTabPanel Text="Pitching">
@@ -175,6 +178,9 @@
                                 <MudTd DataLabel="Strikeouts">@context.PitchingStrikeouts</MudTd>
                                 <MudTd DataLabel="Walks Hits Per Inning">@context.WalksHitsPerInning.ToString("#0.00")</MudTd>
                             </RowTemplate>
+                            <PagerContent>
+                                <MudTablePager />
+                            </PagerContent>
                         </MudTable>
                     </MudTabPanel>
                 </MudTabs>
