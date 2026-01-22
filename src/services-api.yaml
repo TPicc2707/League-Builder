@@ -1,0 +1,938 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: League Builder services (subset) on ECS/EC2
+
+Parameters:
+  LeagueApiImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/league-api:latest
+    Description: ECR image URI for league-api
+  LeagueApiPort:
+    Type: Number
+    Default: 6000
+  TeamApiImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/team-api:latest
+    Description: ECR image URI for team-api
+  TeamApiPort:
+    Type: Number
+    Default: 6001
+  PlayerApiImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/player-api:latest
+    Description: ECR image URI for player-api
+  PlayerApiPort:
+    Type: Number
+    Default: 6002
+  LeagueBuilderApiGatewayImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/league-builder-apigateway:latest
+    Description: ECR image URI for league-builder-apigateway
+  LeagueBuilderApiGatewayPort:
+    Type: Number
+    Default: 6003
+  SeasonApiImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/season-api:latest
+    Description: ECR image URI for season-api
+  SeasonApiPort:
+    Type: Number
+    Default: 6004
+  StandingsApiImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/standings-api:latest
+    Description: ECR image URI for standings-api
+  StandingsApiPort:
+    Type: Number
+    Default: 6005
+  GameApiImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/game-api:latest
+    Description: ECR image URI for game-api
+  GameApiPort:
+    Type: Number
+    Default: 6006
+  StatsApiImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/stats-api:latest
+    Description: ECR image URI for stats-api
+  StatsApiPort:
+    Type: Number
+    Default: 6007
+  LeagueBuilderWebServerImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/league-builder-web-server:latest
+    Description: ECR image URI for league-builder-web-server
+  LeagueBuilderWebServerPort:
+    Type: Number
+    Default: 6008
+  # Dev-only passwords (matches your docker-compose intent)
+  PostgresPassword:
+    Type: String
+    Default: postgres-dev-password
+    NoEcho: true
+  RabbitMqPassword:
+    Type: String
+    Default: rabbit-dev-password
+    NoEcho: true
+  SqlServerSaPassword:
+    Type: String
+    Default: SqlServer123!
+    NoEcho: true
+  KeycloakPassword:
+    Type: String
+    Default: password123
+    NoEcho: true
+
+
+Resources:
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  
+  ApiSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Fargate API tasks
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  LeagueApiLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/league-api
+      RetentionInDays: 7
+
+  LeagueApiTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: league-api
+      RequiresCompatibilities: 
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: league-api
+          Image: !Ref LeagueApiImage
+          PortMappings:
+            - ContainerPort: !Ref LeagueApiPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+            - Name: HTTP_PORTS
+              Value: !Sub '${LeagueApiPort}'
+            - Name: HTTPS_PORTS
+              Value: !Sub '${LeagueApiPort}'
+            - Name: ConnectionStrings__leagueDb
+              Value: !Sub 'Host=postgres.internal;Port=5432;Username=postgres;Password=${PostgresPassword};Database=leagueDb'
+            - Name: LEAGUEDB_HOST
+              Value: postgres.internal
+            - Name: LEAGUEDB_PORT
+              Value: '5432'
+            - Name: LEAGUEDB_USERNAME
+              Value: postgres
+            - Name: LEAGUEDB_PASSWORD
+              Value: !Ref PostgresPassword
+            - Name: LEAGUEDB_DATABASE
+              Value: leagueDb 
+            - Name: ConnectionStrings__rabbitmq
+              Value: !Sub 'amqp://guest:${RabbitMqPassword}@rabbitmq.internal:5672'
+            - Name: RABBITMQ_HOST
+              Value: rabbitmq.internal
+            - Name: RABBITMQ_PORT
+              Value: '5672'
+            - Name: RABBITMQ_USERNAME
+              Value: guest
+            - Name: RABBITMQ_PASSWORD
+              Value: !Ref RabbitMqPassword
+            - Name: KEYCLOAK_HTTP
+              Value: http://keycloak.internal:8080
+            - Name: KEYCLOAK_MANAGEMENT
+              Value: http://keycloak.internal:9000
+            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
+              Value: http://aspire.internal:18889
+            - Name: OTEL_EXPORTER_OTLP_PROTOCOL
+              Value: grpc
+            - Name: OTEL_SERVICE_NAME
+              Value: league-api
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/league-api
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+  
+  LeagueApiService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref LeagueApiTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref ApiSecurityGroup
+    
+    ########################################
+    # team-api
+    ########################################
+
+  TeamApiLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/team-api
+      RetentionInDays: 7
+
+  TeamApiTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: team-api
+      RequiresCompatibilities: 
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: team-api
+          Image: !Ref TeamApiImage
+          PortMappings:
+            - ContainerPort: !Ref TeamApiPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+            - Name: HTTP_PORTS
+              Value: !Sub '${TeamApiPort}'
+            - Name: HTTPS_PORTS
+              Value: !Sub '${TeamApiPort}'
+            - Name: ConnectionStrings__teamDb
+              Value: !Sub 'Server=sqlserver.internal,1433;User ID=sa;Password=${SqlServerSaPassword};TrustServerCertificate=true;Initial Catalog=teamDb'
+            - Name: TEAMDB_HOST
+              Value: sqlserver.internal
+            - Name: TEAMDB_PORT
+              Value: '1433'
+            - Name: TEAMDB_USERNAME
+              Value: sa
+            - Name: TEAMDB_PASSWORD
+              Value: !Ref SqlServerSaPassword
+            - Name: TEAMDB_DATABASE
+              Value: teamDb
+            - Name: ConnectionStrings__rabbitmq
+              Value: !Sub 'amqp://guest:${RabbitMqPassword}@rabbitmq.internal:5672'
+            - Name: RABBITMQ_HOST
+              Value: rabbitmq.internal
+            - Name: RABBITMQ_PORT
+              Value: '5672'
+            - Name: RABBITMQ_USERNAME
+              Value: guest
+            - Name: RABBITMQ_PASSWORD
+              Value: !Ref RabbitMqPassword
+            - Name: KEYCLOAK_HTTP
+              Value: http://keycloak.internal:8080
+            - Name: KEYCLOAK_MANAGEMENT
+              Value: http://keycloak.internal:9000
+            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
+              Value: http://aspire.internal:18889
+            - Name: OTEL_EXPORTER_OTLP_PROTOCOL
+              Value: grpc
+            - Name: OTEL_SERVICE_NAME
+              Value: team-api
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/team-api
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  TeamApiService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref TeamApiTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref ApiSecurityGroup
+
+    ########################################
+    # player-api
+    ########################################
+
+  PlayerApiLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/player-api
+      RetentionInDays: 7
+
+  PlayerApiTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: player-api
+      RequiresCompatibilities: 
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: player-api
+          Image: !Ref PlayerApiImage
+          PortMappings:
+            - ContainerPort: !Ref PlayerApiPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+            - Name: HTTP_PORTS
+              Value: !Sub '${PlayerApiPort}'
+            - Name: HTTPS_PORTS
+              Value: !Sub '${PlayerApiPort}'
+            - Name: ConnectionStrings__playerDb
+              Value: !Sub 'Server=sqlserver.internal,1433;User ID=sa;Password=${SqlServerSaPassword};TrustServerCertificate=true;Initial Catalog=playerDb'
+            - Name: PLAYERDB_HOST
+              Value: sqlserver.internal
+            - Name: PLAYERDB_PORT
+              Value: '1433'
+            - Name: PLAYERDB_USERNAME
+              Value: sa
+            - Name: PLAYERDB_PASSWORD
+              Value: !Ref SqlServerSaPassword
+            - Name: PLAYERDB_DATABASE
+              Value: playerDb
+            - Name: ConnectionStrings__rabbitmq
+              Value: !Sub 'amqp://guest:${RabbitMqPassword}@rabbitmq.internal:5672'
+            - Name: RABBITMQ_HOST
+              Value: rabbitmq.internal
+            - Name: RABBITMQ_PORT
+              Value: '5672'
+            - Name: RABBITMQ_USERNAME
+              Value: guest
+            - Name: RABBITMQ_PASSWORD
+              Value: !Ref RabbitMqPassword
+            - Name: KEYCLOAK_HTTP
+              Value: http://keycloak.internal:8080
+            - Name: KEYCLOAK_MANAGEMENT
+              Value: http://keycloak.internal:9000
+            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
+              Value: http://aspire.internal:18889
+            - Name: OTEL_EXPORTER_OTLP_PROTOCOL
+              Value: grpc
+            - Name: OTEL_SERVICE_NAME
+              Value: player-api
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/player-api
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  PlayerApiService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref PlayerApiTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref ApiSecurityGroup
+
+    ########################################
+    # stats-api
+    ########################################
+
+  StatsApiLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/stats-api
+      RetentionInDays: 7
+
+  StatsApiTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: stats-api
+      RequiresCompatibilities: 
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: stats-api
+          Image: !Ref StatsApiImage
+          PortMappings:
+            - ContainerPort: !Ref StatsApiPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+            - Name: HTTP_PORTS
+              Value: !Sub '${StatsApiPort}'
+            - Name: HTTPS_PORTS
+              Value: !Sub '${StatsApiPort}'
+            - Name: ConnectionStrings__statsDb
+              Value: !Sub 'Server=sqlserver.internal,1433;User ID=sa;Password=${SqlServerSaPassword};TrustServerCertificate=true;Initial Catalog=statsDb'
+            - Name: STATSDB_HOST
+              Value: sqlserver.internal
+            - Name: STATSDB_PORT
+              Value: '1433'
+            - Name: STATSDB_USERNAME
+              Value: sa
+            - Name: STATSDB_PASSWORD
+              Value: !Ref SqlServerSaPassword
+            - Name: STATSDB_DATABASE
+              Value: statsDb
+            - Name: ConnectionStrings__rabbitmq
+              Value: !Sub 'amqp://guest:${RabbitMqPassword}@rabbitmq.internal:5672'
+            - Name: RABBITMQ_HOST
+              Value: rabbitmq.internal
+            - Name: RABBITMQ_PORT
+              Value: '5672'
+            - Name: RABBITMQ_USERNAME
+              Value: guest
+            - Name: RABBITMQ_PASSWORD
+              Value: !Ref RabbitMqPassword
+            - Name: KEYCLOAK_HTTP
+              Value: http://keycloak.internal:8080
+            - Name: KEYCLOAK_MANAGEMENT
+              Value: http://keycloak.internal:9000
+            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
+              Value: http://aspire.internal:18889
+            - Name: OTEL_EXPORTER_OTLP_PROTOCOL
+              Value: grpc
+            - Name: OTEL_SERVICE_NAME
+              Value: stats-api
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/stats-api
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  StatsApiService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref StatsApiTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref ApiSecurityGroup
+
+    ########################################
+    # standings-api
+    ########################################
+
+  StandingsApiLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/standings-api
+      RetentionInDays: 7
+
+  StandingsApiTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: standings-api
+      RequiresCompatibilities: 
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: standings-api
+          Image: !Ref StandingsApiImage
+          PortMappings:
+            - ContainerPort: !Ref StandingsApiPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+            - Name: HTTP_PORTS
+              Value: !Sub '${StandingsApiPort}'
+            - Name: HTTPS_PORTS
+              Value: !Sub '${StandingsApiPort}'
+            - Name: ConnectionStrings__standingsDb
+              Value: !Sub 'Server=sqlserver.internal,1433;User ID=sa;Password=${SqlServerSaPassword};TrustServerCertificate=true;Initial Catalog=standingsDb'
+            - Name: STANDINGSDB_HOST
+              Value: sqlserver.internal
+            - Name: STANDINGSDB_PORT
+              Value: '1433'
+            - Name: STANDINGSDB_USERNAME
+              Value: sa
+            - Name: STANDINGSDB_PASSWORD
+              Value: !Ref SqlServerSaPassword
+            - Name: STANDINGSDB_DATABASE
+              Value: standingsDb
+            - Name: ConnectionStrings__rabbitmq
+              Value: !Sub 'amqp://guest:${RabbitMqPassword}@rabbitmq.internal:5672'
+            - Name: RABBITMQ_HOST
+              Value: rabbitmq.internal
+            - Name: RABBITMQ_PORT
+              Value: '5672'
+            - Name: RABBITMQ_USERNAME
+              Value: guest
+            - Name: RABBITMQ_PASSWORD
+              Value: !Ref RabbitMqPassword
+            - Name: KEYCLOAK_HTTP
+              Value: http://keycloak.internal:8080
+            - Name: KEYCLOAK_MANAGEMENT
+              Value: http://keycloak.internal:9000
+            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
+              Value: http://aspire.internal:18889
+            - Name: OTEL_EXPORTER_OTLP_PROTOCOL
+              Value: grpc
+            - Name: OTEL_SERVICE_NAME
+              Value: standings-api
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/standings-api
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  StandingsApiService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref StandingsApiTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref ApiSecurityGroup
+
+    ########################################
+    # season-api
+    ########################################
+
+  SeasonApiLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/season-api
+      RetentionInDays: 7
+
+  SeasonApiTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: season-api
+      RequiresCompatibilities: 
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: season-api
+          Image: !Ref SeasonApiImage
+          PortMappings:
+            - ContainerPort: !Ref SeasonApiPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+            - Name: HTTP_PORTS
+              Value: !Sub '${SeasonApiPort}'
+            - Name: HTTPS_PORTS
+              Value: !Sub '${SeasonApiPort}'
+            - Name: ConnectionStrings__seasonDb
+              Value: !Sub 'Host=postgres.internal;Port=5432;Username=postgres;Password=${PostgresPassword};Database=seasonDb'
+            - Name: SEASONDB_HOST
+              Value: postgres.internal
+            - Name: SEASONDB_PORT
+              Value: '5432'
+            - Name: SEASONDB_USERNAME
+              Value: postgres
+            - Name: SEASONDB_PASSWORD
+              Value: !Ref PostgresPassword
+            - Name: SEASONDB_DATABASE
+              Value: seasonDb
+            - Name: ConnectionStrings__rabbitmq
+              Value: !Sub 'amqp://guest:${RabbitMqPassword}@rabbitmq.internal:5672'
+            - Name: RABBITMQ_HOST
+              Value: rabbitmq.internal
+            - Name: RABBITMQ_PORT
+              Value: '5672'
+            - Name: RABBITMQ_USERNAME
+              Value: guest
+            - Name: RABBITMQ_PASSWORD
+              Value: !Ref RabbitMqPassword
+            - Name: KEYCLOAK_HTTP
+              Value: http://keycloak.internal:8080
+            - Name: KEYCLOAK_MANAGEMENT
+              Value: http://keycloak.internal:9000
+            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
+              Value: http://aspire.internal:18889
+            - Name: OTEL_EXPORTER_OTLP_PROTOCOL
+              Value: grpc
+            - Name: OTEL_SERVICE_NAME
+              Value: season-api
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/season-api
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  SeasonApiService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref SeasonApiTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref ApiSecurityGroup
+
+    ########################################
+    # game-api
+    ########################################
+
+  GameApiLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/game-api
+      RetentionInDays: 7
+
+  GameApiTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: game-api
+      RequiresCompatibilities: 
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: game-api
+          Image: !Ref GameApiImage
+          PortMappings:
+            - ContainerPort: !Ref GameApiPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+            - Name: HTTP_PORTS
+              Value: !Sub '${GameApiPort}'
+            - Name: HTTPS_PORTS
+              Value: !Sub '${GameApiPort}'
+            - Name: ConnectionStrings__gameDb
+              Value: !Sub 'Server=sqlserver.internal,1433;User ID=sa;Password=${SqlServerSaPassword};TrustServerCertificate=true;Initial Catalog=gameDb'
+            - Name: GAMEDB_HOST
+              Value: sqlserver.internal
+            - Name: GAMEDB_PORT
+              Value: '1433'
+            - Name: GAMEDB_USERNAME
+              Value: sa
+            - Name: GAMEDB_PASSWORD
+              Value: !Ref SqlServerSaPassword
+            - Name: GAMEDB_DATABASE
+              Value: gameDb
+            - Name: ConnectionStrings__rabbitmq
+              Value: !Sub 'amqp://guest:${RabbitMqPassword}@rabbitmq.internal:5672'
+            - Name: RABBITMQ_HOST
+              Value: rabbitmq.internal
+            - Name: RABBITMQ_PORT
+              Value: '5672'
+            - Name: RABBITMQ_USERNAME
+              Value: guest
+            - Name: RABBITMQ_PASSWORD
+              Value: !Ref RabbitMqPassword
+            - Name: KEYCLOAK_HTTP
+              Value: http://keycloak.internal:8080
+            - Name: KEYCLOAK_MANAGEMENT
+              Value: http://keycloak.internal:9000
+            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
+              Value: http://aspire.internal:18889
+            - Name: OTEL_EXPORTER_OTLP_PROTOCOL
+              Value: grpc
+            - Name: OTEL_SERVICE_NAME
+              Value: game-api
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/game-api
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  GameApiService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref GameApiTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref ApiSecurityGroup
+  
+  LeagueApiDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: league-api
+      NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+    
+  TeamApiDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: team-api
+      NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+  
+  PlayerApiDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: player-api
+      NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+  
+  StatsApiDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: stats-api
+      NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  GameApiDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: game-api
+      NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+  
+  StandingsApiDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: standings-api
+      NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  SeasonApiDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: season-api
+      NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+    ########################################
+    # league-builder-apigateway
+    ########################################
+
+  LeagueBuilderApiGatewayLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/league-builder-apigateway
+      RetentionInDays: 7
+
+  LeagueBuilderApiGatewayTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: league-builder-apigateway
+      RequiresCompatibilities: 
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: league-builder-apigateway
+          Image: !Ref LeagueBuilderApiGatewayImage
+          PortMappings:
+            - ContainerPort: !Ref LeagueBuilderApiGatewayPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+            - Name: HTTP_PORTS
+              Value: !Sub '${LeagueBuilderApiGatewayPort}'
+            - Name: HTTPS_PORTS
+              Value: !Sub '${LeagueBuilderApiGatewayPort}'
+            - Name: KEYCLOAK_HTTP
+              Value: http://keycloak.internal:8080
+            - Name: KEYCLOAK_MANAGEMENT
+              Value: http://keycloak.internal:9000
+            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
+              Value: http://aspire.internal:18889
+            - Name: OTEL_EXPORTER_OTLP_PROTOCOL
+              Value: grpc
+            - Name: OTEL_SERVICE_NAME
+              Value: league-builder-apigateway
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/league-builder-apigateway
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  LeagueBuilderApiGatewayService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref LeagueBuilderApiGatewayTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref ApiSecurityGroup
+
+  ########################################
+    # league-builder-web-server (public)
+  ########################################
+
+  LeagueBuilderWebServerLogs:
+  Type: AWS::Logs::LogGroup
+  Properties:
+    LogGroupName: /ecs/league-builder-web-server
+    RetentionInDays: 7
+
+  LeagueBuilderWebServerTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: league-builder-web-server
+      RequiresCompatibilities: 
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: league-builder-web-server
+          Image: !Ref LeagueBuilderWebServerImage
+          PortMappings:
+            - ContainerPort: !Ref LeagueBuilderWebServerPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/league-builder-web-server
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+   
+  LeagueBuilderWebServerService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref LeagueBuilderWebServerTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref ApiSecurityGroup
+
+
+
+
+
+
+

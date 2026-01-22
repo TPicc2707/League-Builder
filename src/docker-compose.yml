@@ -1,81 +1,99 @@
 services:
-  leaguedb:
-    image: postgres
+  
+  compose-dashboard:
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
 
-  teamdb:
-    image: mcr.microsoft.com/mssql/server
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
 
-  playerdb:
-    image: mcr.microsoft.com/mssql/server
+  ollama:
+    image: "ollama/ollama:0.13.0"
 
-  statsdb:
-    image: mcr.microsoft.com/mssql/server
+  leagueDb:
+    image: postgres:17.6
 
-  seasondb:
-    image: postgres
+  seasonDb:
+    image: postgres:17.6
 
-  gamedb:
-    image: mcr.microsoft.com/mssql/server
+  teamDb:
+    image: mcr.microsoft.com/mssql/server:2022-latest
 
-  standingsdb:
-    image: mcr.microsoft.com/mssql/server
+  playerDb:
+    image: mcr.microsoft.com/mssql/server:2022-latest
 
-  messagebroker:
-    image: rabbitmq:management
+  standingsDb:
+    image: mcr.microsoft.com/mssql/server:2022-latest
 
-  league.api:
-    image: ${DOCKER_REGISTRY-}leagueapi
-    build:
-      context: .
-      dockerfile: Services/League/League.API/Dockerfile
+  statsDb:
+    image: mcr.microsoft.com/mssql/server:2022-latest
 
-  team.api:
-    image: ${DOCKER_REGISTRY-}teamapi
-    build:
-      context: .
-      dockerfile: Services/Team/Team.API/Dockerfile
+  gameDb:
+    image: mcr.microsoft.com/mssql/server:2022-latest
 
-  player.api:
-    image: ${DOCKER_REGISTRY-}playerapi
-    build:
-      context: .
-      dockerfile: Services/Player/Player.API/Dockerfile
+  rabbitmq:
+    image: rabbitmq:4.2-management
 
-  league.builder.apigateway:
-    image: ${DOCKER_REGISTRY-}leaguebuilderapigateway
-    build:
-      context: .
-      dockerfile: ApiGateways/League.Builder.ApiGateway/Dockerfile
+  league_api:
+     image: ${DOCKER_REGISTRY-}league_api
+     build:
+       context: .
+       dockerfile: Services/League/League.API/Dockerfile
 
-  stats.api:
-    image: ${DOCKER_REGISTRY-}statsapi
-    build:
-      context: .
-      dockerfile: Services/Stats/Stats.API/Dockerfile
+  team_api:
+     image: ${DOCKER_REGISTRY-}team_api
+     build:
+       context: .
+       dockerfile: Services/Team/Team.API/Dockerfile
 
-  season.api:
-    image: ${DOCKER_REGISTRY-}seasonapi
-    build:
-      context: .
-      dockerfile: Services/Season/Season.API/Dockerfile
+  player_api:
+     image: ${DOCKER_REGISTRY-}player_api
+     build:
+       context: .
+       dockerfile: Services/Player/Player.API/Dockerfile
 
-  game.api:
-    image: ${DOCKER_REGISTRY-}gameapi
-    build:
-      context: .
-      dockerfile: Services/Game/Game.API/Dockerfile
+  season_api:
+     image: ${DOCKER_REGISTRY-}season_api
+     build:
+       context: .
+       dockerfile: Services/Season/Season.API/Dockerfile
 
-  standings.api:
-    image: ${DOCKER_REGISTRY-}standingsapi
-    build:
-      context: .
-      dockerfile: Services/Standings/Standings.API/Dockerfile
+  stats_api:
+     image: ${DOCKER_REGISTRY-}stats_api
+     build:
+       context: .
+       dockerfile: Services/Stats/Stats.API/Dockerfile
+
+  standings_api:
+     image: ${DOCKER_REGISTRY-}standings_api
+     build:
+       context: .
+       dockerfile: Services/Standings/Standings.API/Dockerfile
+
+  game_api:
+     image: ${DOCKER_REGISTRY-}game_api
+     build:
+       context: .
+       dockerfile: Services/Game/Game.API/Dockerfile
+  
+  league_builder_apigateway:
+     image: ${DOCKER_REGISTRY-}league_builder_apigateway
+     build:
+       context: .
+       dockerfile: ApiGateways/League.Builder.ApiGateway/Dockerfile
+
+  league_builder_web_server:
+     image: ${DOCKER_REGISTRY-}league_builder_web_server
+     build:
+       context: .
+       dockerfile: WebApps/League.Builder.Web.Server/Dockerfile
 
 volumes:
   postgres_league:
   postgres_season:
+  rabbitmq_data:
+  keycloak_data:
+  ollama_data:
 
-
-
-
-
+networks:
+  aspire:
+   driver: bridge

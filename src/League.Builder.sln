@@ -85,6 +85,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "League.Builder.ServiceDefau
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "League.Builder.Web.Server", "WebApps\League.Builder.Web.Server\League.Builder.Web.Server.csproj", "{8D3B476C-3D96-4460-B63B-D3505E1B0DFF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AWSDeployContainers", "AWSDeployContainers", "{146A2A36-DF88-4A7E-9AE0-3009EAF3EFEA}"
+	ProjectSection(SolutionItems) = preProject
+		cluster.yaml = cluster.yaml
+		docker-compose.override.yml = docker-compose.override.yml
+		docker-compose.yml = docker-compose.yml
+		network.yaml = network.yaml
+		services-api.yaml = services-api.yaml
+		services-infra.yaml = services-infra.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -1,0 +1,814 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: League Builder services (subset) on ECS/EC2
+
+Parameters:
+  PostgresImage:
+    Type: String
+    Default: docker.io/library/postgres:17.6
+
+  SqlImage:
+    Type: String
+    Default: mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
+
+  RabbitMqImage:
+    Type: String
+    Default: docker.io/library/rabbitmq:4.2-management
+
+  KeycloakImage:
+    Type: String
+    Default: quay.io/keycloak/keycloak:26.4
+
+  OllamaImage:
+    Type: String
+    Default: docker.io/ollama/ollama:0.13.0
+
+  AspireImage:
+    Type: String
+    Default: mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest
+
+  PostgresPassword:
+    Type: String
+    Default: postgres-dev-password
+    NoEcho: true
+
+  RabbitMqPassword:
+    Type: String
+    Default: rabbit-dev-password
+    NoEcho: true
+
+  SqlServerSaPassword:
+    Type: String
+    Default: SqlServer123!
+    NoEcho: true
+
+  KeycloakPassword:
+    Type: String
+    Default: password123
+    NoEcho: true
+
+Resources:
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+  
+  KeycloakCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: auth.myleaguebuilder.com
+      SubjectAlternativeNames:
+        - myleaguebuilder.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: auth.myleaguebuilder.com
+          HostedZoneId: Z017284424G0ZTG1FUTE6
+        - DomainName: myleaguebuilder.com
+          HostedZoneId: Z017284424G0ZTG1FUTE6
+
+  KeycloakDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: Z017284424G0ZTG1FUTE6
+      Name: auth.myleaguebuilder.com
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+
+  RabbitMQDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: Z017284424G0ZTG1FUTE6
+      Name: rabbit.myleaguebuilder.com.
+      Type: CNAME
+      TTL: 60
+      ResourceRecords:
+        - !GetAtt ApplicationLoadBalancer.DNSName
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow inbound UI
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 15672
+          ToPort: 15672
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+
+  RabbitMqSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow ALB to reach RabbitMQ
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 15672
+          ToPort: 15672
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+  
+  KeycloakTaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow ALB to reach Keycloak
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+        - IpProtocol: tcp
+          FromPort: 9000
+          ToPort: 9000
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
+  
+  PostgresTaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow Keycloak to reach Postgres
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref KeycloakTaskSecurityGroup
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: league-builder-alb
+      Scheme: internet-facing
+      Subnets:
+        - !ImportValue leaguebuilder-dev-PublicSubnet1
+        - !ImportValue leaguebuilder-dev-PublicSubnet2
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+
+  # ==========================
+  # EBS VOLUMES
+  # ==========================
+
+  PostgresVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqInstanceAZ
+      Size: 20
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.postgres-data
+
+  SqlVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !ImportValue leaguebuilder-dev-SqlOllamaInstanceAZ
+      Size: 40
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.sql-data
+
+  RabbitMqVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqInstanceAZ
+      Size: 20
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.rabbitmq-data
+
+  KeycloakVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqInstanceAZ
+      Size: 20
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.keycloak-data
+
+  OllamaVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !ImportValue leaguebuilder-dev-SqlOllamaInstanceAZ
+      Size: 40
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.ollama-data
+
+  # ==========================
+  # VOLUME ATTACHMENTS
+  # (assumes you mount these devices in user data, e.g. /mnt/postgres, etc.)
+  # ==========================
+
+  PostgresVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqECSInstance
+      VolumeId: !Ref PostgresVolume
+      Device: /dev/xvdf
+
+  SqlVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !ImportValue leaguebuilder-dev-SqlOllamaECSInstance
+      VolumeId: !Ref SqlVolume
+      Device: /dev/xvdg
+
+  RabbitMqVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqECSInstance
+      VolumeId: !Ref RabbitMqVolume
+      Device: /dev/xvdh
+
+  KeycloakVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqECSInstance
+      VolumeId: !Ref KeycloakVolume
+      Device: /dev/xvdi
+
+  OllamaVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !ImportValue leaguebuilder-dev-SqlOllamaECSInstance
+      VolumeId: !Ref OllamaVolume
+      Device: /dev/xvdj
+
+  PostgresLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/postgres
+      RetentionInDays: 7
+
+  PostgresTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: postgres
+      RequiresCompatibilities: [EC2]
+      NetworkMode: awsvpc
+      Cpu: "512"
+      Memory: "1024"
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: postgres
+          Image: !Ref PostgresImage
+          PortMappings:
+            - ContainerPort: 5432
+              HostPort: 5432
+              Protocol: tcp
+          Environment:
+            - Name: POSTGRES_USER
+              Value: postgres
+            - Name: POSTGRES_PASSWORD
+              Value: postgres-dev-password
+            - Name: POSTGRES_DB
+              Value: keycloak
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/postgres
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+          MountPoints:
+            - ContainerPath: /docker-entrypoint-initdb.d
+              SourceVolume: postgres-init
+      Volumes:
+        - Name: postgres-init
+          Host:
+            SourcePath: /ecs/postgres-init
+
+  PostgresService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: EC2
+      DesiredCount: 1
+      TaskDefinition: !Ref PostgresTask
+      PlacementConstraints:
+        - Type: memberOf
+          Expression: "attribute:Role == kpr"
+      ServiceRegistries:
+        - RegistryArn: !GetAtt PostgresDiscoveryService.Arn
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref PostgresTaskSecurityGroup
+
+  SqlServerLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/sqlserver
+      RetentionInDays: 7
+
+  SqlServerTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: sqlserver
+      RequiresCompatibilities: [EC2]
+      NetworkMode: awsvpc
+      Cpu: "2048"
+      Memory: "4096"
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: sql
+          Image: !Ref SqlImage
+          MemoryReservation: 4096
+          User: root
+          PortMappings:
+            - ContainerPort: 1433
+              HostPort: 1433
+              Protocol: tcp
+          Environment:
+            - Name: ACCEPT_EULA
+              Value: "Y"
+            - Name: SA_PASSWORD
+              Value: !Ref SqlServerSaPassword
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/sqlserver
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+          MountPoints:
+            - ContainerPath: /init
+              SourceVolume: sqlserver-init
+          EntryPoint:
+            - /bin/bash
+            - -c
+          Command:
+            - |
+
+                mkdir -p /var/opt/mssql/data /var/opt/mssql/log /var/opt/mssql/secrets
+
+                chown -R 10001:0 /var/opt/mssql
+                chmod -R 770 /var/opt/mssql
+
+                # Start SQL Server in background
+                /opt/mssql/bin/sqlservr &
+
+                # Wait for SQL Server to be ready
+                echo "Waiting for SQL Server..."
+                for i in {1..30}; do
+                  /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$SA_PASSWORD" -Q "SELECT 1" -C && break
+                  sleep 2
+                done
+
+                # Run initialization script
+                echo "Running initialization script..."
+                /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$SA_PASSWORD" -C -i /init/create-dbs.sql
+
+                # Keep container alive
+                wait
+      Volumes:
+        - Name: sqlserver-init
+          Host:
+            SourcePath: /ecs/sqlserver-init
+
+  SqlServerService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: EC2
+      DesiredCount: 1
+      TaskDefinition: !Ref SqlServerTask
+      PlacementConstraints:
+        - Type: memberOf
+          Expression: "attribute:Role == sqlollama"
+      ServiceRegistries:
+        - RegistryArn: !GetAtt SqlServerDiscoveryService.Arn
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !ImportValue leaguebuilder-dev-InstanceSG
+
+  RabbitMqLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/rabbitmq
+      RetentionInDays: 7
+
+  RabbitMqTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: rabbitmq
+      RequiresCompatibilities: [EC2]
+      NetworkMode: awsvpc
+      Cpu: "512"
+      Memory: "1024"
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: rabbitmq
+          Image: !Ref RabbitMqImage
+          PortMappings:
+            - ContainerPort: 5672
+              HostPort: 5672
+              Protocol: tcp
+            - ContainerPort: 15672
+              HostPort: 15672
+              Protocol: tcp
+          Environment:
+            - Name: RABBITMQ_DEFAULT_USER
+              Value: guest
+            - Name: RABBITMQ_DEFAULT_PASS
+              Value: !Ref RabbitMqPassword
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/rabbitmq
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  RabbitMqService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - ApplicationLoadBalancer
+      - RabbitMQListener
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: EC2
+      DesiredCount: 1
+      TaskDefinition: !Ref RabbitMqTask
+      PlacementConstraints:
+        - Type: memberOf
+          Expression: "attribute:Role == kpr"
+      ServiceRegistries:
+        - RegistryArn: !GetAtt RabbitMqDiscoveryService.Arn
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref RabbitMqSecurityGroup
+      LoadBalancers:
+        - TargetGroupArn: !Ref RabbitMQTargetGroup
+          ContainerName: rabbitmq
+          ContainerPort: 15672
+  
+  RabbitMQTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: 15672
+      TargetType: ip
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: "15672"
+      HealthCheckPath: /
+  
+  RabbitMQListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 15672
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref RabbitMQTargetGroup
+
+  KeycloakLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/keycloak
+      RetentionInDays: 7
+
+  KeycloakTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: keycloak
+      RequiresCompatibilities: [EC2]
+      NetworkMode: awsvpc
+      Cpu: "1024"
+      Memory: "2048"
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: keycloak
+          Image: !Ref KeycloakImage
+          Command: ["start", "--import-realm"]
+          PortMappings:
+            - ContainerPort: 8080
+              HostPort: 8080
+              Protocol: tcp
+            - ContainerPort: 9000
+              HostPort: 9000
+              Protocol: tcp
+          Environment:
+            - Name: KC_BOOTSTRAP_ADMIN_USERNAME
+              Value: admin
+            - Name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              Value: !Ref KeycloakPassword
+            - Name: KC_DB
+              Value: postgres
+            - Name: KC_DB_URL
+              Value: jdbc:postgresql://postgres.internal:5432/keycloak
+            - Name: KC_DB_USERNAME
+              Value: postgres
+            - Name: KC_DB_PASSWORD
+              Value: postgres-dev-password
+            - Name: KC_HOSTNAME
+              Value: https://auth.myleaguebuilder.com
+            - Name: KC_HOSTNAME_ADMIN
+              Value: https://auth.myleaguebuilder.com
+            - Name: KC_PROXY
+              Value: edge
+            - Name: KC_HTTP_ENABLED
+              Value: "true"
+            - Name: KC_HEALTH_ENABLED
+              Value: "true"
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - "curl -f http://localhost:9000/health/ready || exit 1"
+            Interval: 30
+            Timeout: 5
+            Retries: 5
+            StartPeriod: 300
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/keycloak
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  KeycloakService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - ApplicationLoadBalancer
+      - KeycloakHttpRedirectListener
+      - KeycloakHttpsListener
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: EC2
+      HealthCheckGracePeriodSeconds: 300
+      DesiredCount: 1
+      TaskDefinition: !Ref KeycloakTask
+      PlacementConstraints:
+        - Type: memberOf
+          Expression: "attribute:Role == kpr"
+      ServiceRegistries:
+        - RegistryArn: !GetAtt KeycloakDiscoveryService.Arn
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref KeycloakTaskSecurityGroup
+      LoadBalancers:
+        - TargetGroupArn: !Ref KeycloakTargetGroup
+          ContainerName: keycloak
+          ContainerPort: 8080
+
+  KeycloakTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: 8080
+      TargetType: ip
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: "9000"
+      HealthCheckPath: /health/ready
+  
+  KeycloakHttpRedirectListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: redirect
+          RedirectConfig:
+            Protocol: HTTPS
+            Port: "443"
+            StatusCode: HTTP_301
+  
+  KeycloakHttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref KeycloakCertificate
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref KeycloakTargetGroup
+
+  OllamaLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/ollama
+      RetentionInDays: 7
+
+  OllamaTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: ollama
+      RequiresCompatibilities: [EC2]
+      NetworkMode: awsvpc
+      Cpu: "2048"
+      Memory: "4096"
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: ollama
+          Image: !Ref OllamaImage
+          PortMappings:
+            - ContainerPort: 11434
+              HostPort: 11434
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/ollama
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  OllamaService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: EC2
+      DesiredCount: 1
+      TaskDefinition: !Ref OllamaTask
+      PlacementConstraints:
+        - Type: memberOf
+          Expression: "attribute:Role == sqlollama"
+      ServiceRegistries:
+        - RegistryArn: !GetAtt OllamaDiscoveryService.Arn
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !ImportValue leaguebuilder-dev-InstanceSG
+
+  AspireDashboardLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/aspire-dashboard
+      RetentionInDays: 7
+
+  AspireDashboardTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: aspire-dashboard
+      RequiresCompatibilities: [EC2]
+      NetworkMode: awsvpc
+      Cpu: "512"
+      Memory: "1024"
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: compose-dashboard
+          Image: !Ref AspireImage
+          PortMappings:
+            - ContainerPort: 17087
+              HostPort: 17087
+              Protocol: tcp
+          Environment:
+            - Name: ASPIRE_DASHBOARD_FORWARDEDHEADERS_ENABLED
+              Value: "true"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/aspire-dashboard
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  AspireDashboardService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: EC2
+      DesiredCount: 1
+      TaskDefinition: !Ref AspireDashboardTask
+      PlacementConstraints:
+        - Type: memberOf
+          Expression: "attribute:Role == sqlollama"
+      ServiceRegistries:
+        - RegistryArn: !GetAtt AspireDiscoveryService.Arn
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !ImportValue leaguebuilder-dev-InstanceSG
+  
+  ServiceDiscoveryNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+      Name: internal
+      Vpc: !ImportValue leaguebuilder-dev-VpcId
+      Description: "Private DNS namespace for League Builder services"
+  
+  PostgresDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: postgres
+      NamespaceId: !Ref ServiceDiscoveryNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  SqlServerDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: sqlserver
+      NamespaceId: !Ref ServiceDiscoveryNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+  
+  RabbitMqDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: rabbitmq
+      NamespaceId: !Ref ServiceDiscoveryNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  KeycloakDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: keycloak
+      NamespaceId: !Ref ServiceDiscoveryNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+  
+  OllamaDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: ollama
+      NamespaceId: !Ref ServiceDiscoveryNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+  
+  AspireDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: aspire
+      NamespaceId: !Ref ServiceDiscoveryNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+Outputs:
+  ServiceDiscoveryNamespaceId:
+    Value: !Ref ServiceDiscoveryNamespace
+    Export:
+      Name: leaguebuilder-dev-NamespaceId

@@ -72,7 +72,7 @@
                                     </ColGroup>
                                     <ToolBarContent>
                                         <MudStack Justify="Justify.FlexStart">
-                                            <MudButton OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
+                                            <MudButton Target="_top" OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
                                         </MudStack>
                                     </ToolBarContent>
                                     <HeaderContent>
@@ -120,7 +120,7 @@
                                                 <Authorized>
                                                     <MudTd DataLabel="Stats">
                                                         <MudTooltip Text="Game Lineup" Color="Color.Secondary">
-                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToCreateGameLineup(context.Id))">
+                                                            <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToCreateGameLineup(context.Id))">
                                                                 <MudIcon Icon="@Icons.Material.Filled.EventNote" />
                                                             </MudLink>
                                                         </MudTooltip>
@@ -137,7 +137,7 @@
                                                 <Authorized>
                                                     <MudTd DataLabel="Stats">
                                                         <MudTooltip Text="Game Lineup" Color="Color.Secondary">
-                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameLineup(context.Id))">
+                                                            <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToGameLineup(context.Id))">
                                                                 <MudIcon Icon="@Icons.Material.Filled.EventNote" />
                                                             </MudLink>
                                                         </MudTooltip>
@@ -152,7 +152,7 @@
                                             <Authorized>
                                                 <MudTd DataLabel="Edit">
                                                     <MudTooltip Text="Edit Game" Color="Color.Secondary">
-                                                        <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))">
+                                                        <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))">
                                                             <MudIcon Icon="@Icons.Material.Filled.Edit" />
                                                         </MudLink>
                                                     </MudTooltip>
@@ -168,7 +168,7 @@
                                                 <Authorized>
                                                     <MudTd DataLabel="Stats">
                                                         <MudTooltip Text="Game Stats" Color="Color.Secondary">
-                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))">
+                                                            <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))">
                                                                 <MudIcon Icon="@Icons.Material.Filled.QueryStats" />
                                                             </MudLink>
                                                         </MudTooltip>
@@ -247,7 +247,7 @@
                                                 <Authorized>
                                                     <MudTd DataLabel="Stats">
                                                         <MudTooltip Text="Game Lineup" Color="Color.Secondary">
-                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameLineup(context.Id))">
+                                                            <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToGameLineup(context.Id))">
                                                                 <MudIcon Icon="@Icons.Material.Filled.EventNote" />
                                                             </MudLink>
                                                         </MudTooltip>
@@ -264,7 +264,7 @@
                                                 <Authorized>
                                                     <MudTd DataLabel="Stats">
                                                         <MudTooltip Text="Game Stats" Color="Color.Secondary">
-                                                            <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))">
+                                                            <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))">
                                                                 <MudIcon Icon="@Icons.Material.Filled.QueryStats" />
                                                             </MudLink>
                                                         </MudTooltip>
@@ -294,7 +294,7 @@
         }
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 @code {

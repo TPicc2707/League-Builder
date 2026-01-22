@@ -1,0 +1,157 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Network stack for Aspire multi-service deployment
+
+Resources:
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: leaguebuilder-dev-vpc
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: leaguebuilder-dev-public-a
+  
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: leaguebuilder-dev-public-b
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP/HTTPS and dev traffic
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 6000
+          ToPort: 6000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 6001
+          ToPort: 6001
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 6002
+          ToPort: 6002
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 6003
+          ToPort: 6003
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 6004
+          ToPort: 6004
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 6005
+          ToPort: 6005
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 6006
+          ToPort: 6006
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 6007
+          ToPort: 6007
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 6008
+          ToPort: 6008
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 15672
+          ToPort: 15672
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 17087
+          ToPort: 17087
+          CidrIp: 0.0.0.0/0
+
+Outputs:
+  VpcId:
+    Value: !Ref VPC
+    Export:
+      Name: leaguebuilder-dev-VpcId
+
+  PublicSubnet1:
+    Value: !Ref PublicSubnet1
+    Export:
+      Name: leaguebuilder-dev-PublicSubnet1
+  
+  PublicSubnet2:
+    Value: !Ref PublicSubnet2
+    Export:
+      Name: leaguebuilder-dev-PublicSubnet2
+
+  InstanceSecurityGroupId:
+    Value: !Ref InstanceSecurityGroup
+    Export:
+      Name: leaguebuilder-dev-InstanceSG

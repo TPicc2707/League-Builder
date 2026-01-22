@@ -12,20 +12,25 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ApiGateways/League.Builder.ApiGateway/League.Builder.ApiGateway.csproj", "ApiGateways/League.Builder.ApiGateway/"]
+COPY ["Services/Game/Game.API/Game.API.csproj", "Services/Game/Game.API/"]
 COPY ["Aspire/League.Builder.ServiceDefaults/League.Builder.ServiceDefaults.csproj", "Aspire/League.Builder.ServiceDefaults/"]
-RUN dotnet restore "./ApiGateways/League.Builder.ApiGateway/League.Builder.ApiGateway.csproj"
+COPY ["Services/Game/Game.Application/Game.Application.csproj", "Services/Game/Game.Application/"]
+COPY ["BuildingBlocks/BuildingBlocks.Messaging/BuildingBlocks.Messaging.csproj", "BuildingBlocks/BuildingBlocks.Messaging/"]
+COPY ["BuildingBlocks/BuildingBlocks/BuildingBlocks.csproj", "BuildingBlocks/BuildingBlocks/"]
+COPY ["Services/Game/Game.Domain/Game.Domain.csproj", "Services/Game/Game.Domain/"]
+COPY ["Services/Game/Game.Infrastructure/Game.Infrastructure.csproj", "Services/Game/Game.Infrastructure/"]
+RUN dotnet restore "./Services/Game/Game.API/Game.API.csproj"
 COPY . .
-WORKDIR "/src/ApiGateways/League.Builder.ApiGateway"
-RUN dotnet build "./League.Builder.ApiGateway.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/Services/Game/Game.API"
+RUN dotnet build "./Game.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./League.Builder.ApiGateway.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./Game.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "League.Builder.ApiGateway.dll"]
+ENTRYPOINT ["dotnet", "Game.API.dll"]

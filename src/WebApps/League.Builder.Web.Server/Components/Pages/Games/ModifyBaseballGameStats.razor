@@ -550,7 +550,7 @@
         }
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 
@@ -1035,7 +1035,7 @@
                     {
                         HomeTotalWins += pitchingStatSelectedItem.Wins - gameStat.PitchingStats.Wins;
                         HomeTotalLosses += pitchingStatSelectedItem.Losses - gameStat.PitchingStats.Losses;
-                        HomeTotalPitchingRuns += pitchingStatSelectedItem.Runs - gameStat.PitchingStats.Runs;
+                        HomeTotalPitchingRuns += pitchingStatSelectedItem.PitchingRuns - gameStat.PitchingStats.Runs;
                         HomeTotalSaves += pitchingStatSelectedItem.Saves - gameStat.PitchingStats.Saves;
 
                         HomeTotalInnings += pitchingStatSelectedItem.Innings - gameStat.PitchingStats.Innings;
@@ -1080,7 +1080,7 @@
                     {
                         AwayTotalWins += pitchingStatSelectedItem.Wins;
                         AwayTotalLosses += pitchingStatSelectedItem.Losses;
-                        AwayTotalPitchingRuns += pitchingStatSelectedItem.Runs;
+                        AwayTotalPitchingRuns += pitchingStatSelectedItem.PitchingRuns;
                         AwayTotalSaves += pitchingStatSelectedItem.Saves;
                         AwayTotalInnings += pitchingStatSelectedItem.Innings;
                         double wholePart = Math.Floor((double)AwayTotalInnings);
@@ -1096,7 +1096,7 @@
                     {
                         HomeTotalWins += pitchingStatSelectedItem.Wins;
                         HomeTotalLosses += pitchingStatSelectedItem.Losses;
-                        HomeTotalPitchingRuns += pitchingStatSelectedItem.Runs;
+                        HomeTotalPitchingRuns += pitchingStatSelectedItem.PitchingRuns;
                         HomeTotalSaves += pitchingStatSelectedItem.Saves;
                         HomeTotalInnings += pitchingStatSelectedItem.Innings;
                         double wholePart = Math.Floor((double)HomeTotalInnings);

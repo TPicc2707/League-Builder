@@ -1,0 +1,154 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ECS cluster on EC2 for league-builder dev
+
+Parameters:
+  LeagueBuilderKeyPair:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: LeagueDemoKeyPair
+    Description: SSH key pair for the EC2 instance
+  ImageId:
+    Description: Image ID for EC2 instance
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id
+  SqlOllamaInstanceType:
+    Description: Instance type to launch EC2 instance
+    Type: String
+    Default: m5.2xlarge
+  KeycloakPostgresRabbitMqInstanceType:
+    Description: Instance type to launch EC2 instance
+    Type: String
+    Default: m5.xlarge
+
+Resources:
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: leaguebuilder-dev-cluster
+
+  EC2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AmazonEC2FullAccess
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2InstanceRole
+
+  SqlOllamaECSInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref SqlOllamaInstanceType
+      ImageId: !Ref ImageId
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      KeyName: !Ref LeagueBuilderKeyPair
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !ImportValue leaguebuilder-dev-PublicSubnet1
+          GroupSet:
+            - !ImportValue leaguebuilder-dev-InstanceSG
+      UserData:
+        Fn::Base64:
+          Fn::Sub: |
+            #!/bin/bash
+            yum update -y
+            mkdir -p /etc/ecs
+            mkdir -p /var/log/ecs
+            mkdir -p /ecs/sqlserver-init
+
+            cat << 'EOF' > /ecs/sqlserver-init/create-dbs.sql
+            CREATE DATABASE teamDB;
+            CREATE DATABASE playerDB;
+            CREATE DATABASE gameDB;
+            CREATE DATABASE standingsDB;
+            CREATE DATABASE statsDB;
+            GO
+            EOF
+            chown -R ecs:ecs /ecs
+            echo "ECS_CLUSTER=leaguebuilder-dev-cluster" >> /etc/ecs/ecs.config
+            echo "ECS_INSTANCE_ATTRIBUTES={\"Role\":\"sqlollama\"}" >> /etc/ecs/ecs.config
+            yum install -y ecs-init
+            systemctl enable --now ecs
+      Tags:
+        - Key: Name
+          Value: leaguebuilder-dev-sqlollama
+        - Key: Role
+          Value: sqlollama
+  
+  KeycloakPostgresRabbitMqECSInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref KeycloakPostgresRabbitMqInstanceType
+      ImageId: !Ref ImageId
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      KeyName: !Ref LeagueBuilderKeyPair
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !ImportValue leaguebuilder-dev-PublicSubnet2
+          GroupSet:
+            - !ImportValue leaguebuilder-dev-InstanceSG
+      UserData:
+        Fn::Base64:
+          Fn::Sub: |
+            #!/bin/bash
+            yum update -y
+            mkdir -p /etc/ecs
+            mkdir -p /var/log/ecs
+            mkdir -p /ecs/postgres-init
+
+            cat << 'EOF' > /ecs/postgres-init/01-init.sql
+            CREATE DATABASE leagueDB;
+            CREATE DATABASE seasonDB;
+            EOF
+
+            chown -R ecs:ecs /ecs
+            echo "ECS_CLUSTER=leaguebuilder-dev-cluster" >> /etc/ecs/ecs.config
+            echo "ECS_INSTANCE_ATTRIBUTES={\"Role\":\"kpr\"}" >> /etc/ecs/ecs.config
+            yum install -y ecs-init
+            systemctl enable --now ecs
+      Tags:
+        - Key: Name
+          Value: leaguebuilder-dev-kpr
+        - Key: Role
+          Value: kpr
+
+Outputs:
+  ECSClusterName:
+    Value: !Ref ECSCluster
+    Export:
+      Name: leaguebuilder-dev-ECSClusterName
+
+  LeagueBuilderSqlOllamaInstance:
+    Value: !Ref SqlOllamaECSInstance
+    Export:
+      Name: leaguebuilder-dev-SqlOllamaECSInstance
+
+  LeagueBuilderKeycloakPostgresRabbitMqInstance:
+    Value: !Ref KeycloakPostgresRabbitMqECSInstance
+    Export:
+      Name: leaguebuilder-dev-KeycloakPostgresRabbitMqECSInstance
+  
+  SqlOllamaInstanceAZ:
+    Value: !GetAtt SqlOllamaECSInstance.AvailabilityZone
+    Export:
+      Name: leaguebuilder-dev-SqlOllamaInstanceAZ
+
+  KeycloakPostgresRabbitMqInstanceAZ:
+    Value: !GetAtt KeycloakPostgresRabbitMqECSInstance.AvailabilityZone
+    Export:
+      Name: leaguebuilder-dev-KeycloakPostgresRabbitMqInstanceAZ

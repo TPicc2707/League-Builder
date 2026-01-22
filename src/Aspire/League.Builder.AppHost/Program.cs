@@ -2,40 +2,67 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 //Create Services
 
+var compose = builder.AddDockerComposeEnvironment("compose")
+                    .WithDashboard(dashboard =>
+                    {
+                        dashboard.WithHostPort(17087)
+                                 .WithForwardedHeaders(enabled: true);
+                    });
+
 var postgres = builder
         .AddPostgres("postgres", port: 5432)
         .WithPgAdmin()
         .WithDataVolume()
-        .WithLifetime(ContainerLifetime.Persistent);
+        .WithLifetime(ContainerLifetime.Persistent)
+        .PublishAsDockerComposeService((resource, service) =>
+        {
+            service.Name = "postgres";
+        });
 
 var password = builder.AddParameter("SqlServerSaPassword", secret: true);
 
 var sql = builder.AddSqlServer("sql", password)
           .WithDataVolume()
-          .WithLifetime(ContainerLifetime.Persistent);
+          .WithLifetime(ContainerLifetime.Persistent)
+          .PublishAsDockerComposeService((resource, service) =>
+          {
+              service.Name = "sql";
+          });
 
 var rabbitmq = builder
       .AddRabbitMQ("rabbitmq")
       .WithManagementPlugin()
       .WithDataVolume()
-      .WithLifetime(ContainerLifetime.Persistent);
+      .WithLifetime(ContainerLifetime.Persistent)
+      .PublishAsDockerComposeService((resource, service) =>
+      {
+          service.Name = "rabbitmq";
+      });
 
 var keycloak = builder
     .AddKeycloak("keycloak", 8080)
     .WithEnvironment("KC_DB_USERNAME", "sa")
     .WithEnvironment("KC_DB_PASSWORD", "password")
     .WithDataVolume()
-    .WithLifetime(ContainerLifetime.Persistent);
+    .WithLifetime(ContainerLifetime.Persistent)
+    .PublishAsDockerComposeService((resource, service) =>
+    {
+        service.Name = "keycloak";
+    });
 
 var ollama = builder
       .AddOllama("ollama", 11434)
       .WithDataVolume()
       .WithLifetime(ContainerLifetime.Persistent)
-      .WithOpenWebUI();
+      .WithOpenWebUI()
+      .PublishAsDockerComposeService((resource, service) =>
+      {
+          service.Name = "ollama";
+      });
 
 var llama = ollama.AddModel("llama3.2");
 
-//Postgress
+//Postgres
 var leagueDb = postgres.AddDatabase("leagueDb");
 var seasonDb = postgres.AddDatabase("seasonDb");
 
@@ -62,7 +89,11 @@ var league = builder
             .WithReference(keycloak)
             .WaitFor(leagueDb)
             .WaitFor(rabbitmq)
-            .WaitFor(keycloak);
+            .WaitFor(keycloak)
+            .PublishAsDockerComposeService((resource, service) =>
+            {
+                service.Name = "league-api";
+            });
 
 
 var team = builder
@@ -80,7 +111,11 @@ var team = builder
             .WithReference(keycloak)
             .WaitFor(teamDb)
             .WaitFor(rabbitmq)
-            .WaitFor(keycloak);
+            .WaitFor(keycloak)
+            .PublishAsDockerComposeService((resource, service) =>
+            {
+                service.Name = "team-api";
+            });
 
 
 var player = builder
@@ -98,7 +133,11 @@ var player = builder
             .WithReference(keycloak)
             .WaitFor(playerDb)
             .WaitFor(rabbitmq)
-            .WaitFor(keycloak);
+            .WaitFor(keycloak)
+            .PublishAsDockerComposeService((resource, service) =>
+            {
+                service.Name = "player-api";
+            });
 
 
 var stats = builder
@@ -116,7 +155,11 @@ var stats = builder
             .WithReference(keycloak)
             .WaitFor(statsDb)
             .WaitFor(rabbitmq)
-            .WaitFor(keycloak);
+            .WaitFor(keycloak)
+            .PublishAsDockerComposeService((resource, service) =>
+            {
+                service.Name = "stats-api";
+            });
 
 
 var standings = builder
@@ -134,7 +177,11 @@ var standings = builder
                 .WithReference(keycloak)
                 .WaitFor(standingsDb)
                 .WaitFor(rabbitmq)
-                .WaitFor(keycloak);
+                .WaitFor(keycloak)
+                .PublishAsDockerComposeService((resource, service) =>
+                {
+                    service.Name = "standings-api";
+                });
 
 
 var season = builder
@@ -152,7 +199,11 @@ var season = builder
             .WithReference(keycloak)
             .WaitFor(seasonDb)
             .WaitFor(rabbitmq)
-            .WaitFor(keycloak);
+            .WaitFor(keycloak)
+            .PublishAsDockerComposeService((resource, service) =>
+            {
+                service.Name = "season-api";
+            });
 
 var game = builder
             .AddProject<Projects.Game_API>("game-api",
@@ -169,7 +220,11 @@ var game = builder
             .WithReference(keycloak)
             .WaitFor(gameDb)
             .WaitFor(rabbitmq)
-            .WaitFor(keycloak);
+            .WaitFor(keycloak)
+            .PublishAsDockerComposeService((resource, service) =>
+            {
+                service.Name = "game-api";
+            });
 
 
 var apiGateway = builder
@@ -196,7 +251,11 @@ var apiGateway = builder
                 .WaitFor(game)
                 .WaitFor(standings)
                 .WaitFor(season)
-                .WithReference(keycloak);
+                .WithReference(keycloak)
+                .PublishAsDockerComposeService((resource, service) =>
+                {
+                    service.Name = "league-builder-apigateway";
+                });
 
 
 builder.AddProject<Projects.League_Builder_Web_Server>("league-builder-web-server",
@@ -214,7 +273,11 @@ builder.AddProject<Projects.League_Builder_Web_Server>("league-builder-web-serve
                 .WithReference(llama)
                 .WaitFor(apiGateway)
                 .WaitFor(keycloak)
-                .WaitFor(llama);
+                .WaitFor(llama)
+                .PublishAsDockerComposeService((resource, service) =>
+                {
+                    service.Name = "league-builder-web-server";
+                });
 
 
 builder.Build().Run();

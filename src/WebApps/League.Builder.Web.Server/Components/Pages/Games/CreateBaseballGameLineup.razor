@@ -125,7 +125,7 @@
         }
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 @code {
@@ -166,67 +166,79 @@
             var gameId = Guid.Parse(Id);
 
             GameByIdResponse = await GameService.GetGameById(gameId);
-            AwayTeam = await TeamService.GetTeamById(GameByIdResponse.Game.AwayTeam.Id);
-            IsAwayLineupCreated = await GameService.AnyBaseballGameLineupByGameId(gameId, AwayTeam.Team.Id);
-            HomeTeam = await TeamService.GetTeamById(GameByIdResponse.Game.HomeTeam.Id);
-            IsHomeLineupCreated = await GameService.AnyBaseballGameLineupByGameId(gameId, HomeTeam.Team.Id);
-            AwayTeamPlayers = await PlayerService.GetPlayersByTeam(AwayTeam.Team.Id);
-            AwayPitchers = AwayTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
-            if (IsAwayLineupCreated.IsLineupCreated)
-                AwayLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, AwayTeam.Team.Id);
+            await SetupAwayTeam(gameId);  //Away Team Lineup Creation
 
-            foreach (var player in AwayTeamPlayers.Players.Where(x => x.PlayerDetail.Position != PositionFilter.BASEBALL))
-            {
-                var lineupPosition = new DropItem
-                {
-                    PlayerId = player.Id,
-                    TeamId = AwayTeam.Team.Id,
-                    PlayerName = $"{player.FirstName} {player.LastName}",
-                    Position = player.PlayerDetail.Position,
-                    Selector = positionSelector <= 9 ? lineupDropzone : benchDropzone,
-                    IsLocked = IsAwayLineupCreated.IsLineupCreated ? true : false
-                };
-                lineupPosition.BattingOrderPosition = IsAwayLineupCreated.IsLineupCreated ? SetupLineup(AwayLineupResponse.GameLineup.BaseballLineup, lineupPosition) : positionSelector;
-
-                AwayLineup.Add(lineupPosition);
-                positionSelector++;
-            }
             positionSelector = 1;
             benchSelector = 9;
-            HomeTeamPlayers = await PlayerService.GetPlayersByTeam(HomeTeam.Team.Id);
-            HomePitchers = HomeTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
-            if (IsHomeLineupCreated.IsLineupCreated)
-                HomeLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, HomeTeam.Team.Id);
 
-            foreach (var player in HomeTeamPlayers.Players.Where(x => x.PlayerDetail.Position != PositionFilter.BASEBALL))
-            {
+            await SetupHomeTeam(gameId); //Home Team Lineup Creation
 
-                var lineupPosition = new DropItem
-                {
-                    PlayerId = player.Id,
-                    TeamId = HomeTeam.Team.Id,
-                    PlayerName = $"{player.FirstName} {player.LastName}",
-                    Position = player.PlayerDetail.Position,
-                    Selector = positionSelector <= 9 ? lineupDropzone : benchDropzone,
-                    IsLocked = IsHomeLineupCreated.IsLineupCreated ? true : false
-                };
-                lineupPosition.BattingOrderPosition = IsHomeLineupCreated.IsLineupCreated ? SetupLineup(HomeLineupResponse.GameLineup.BaseballLineup, lineupPosition) : positionSelector;
-                HomeLineup.Add(lineupPosition);
-                positionSelector++;
-            }
-            AwayLineup = AwayLineup.OrderBy(x => x.BattingOrderPosition).ToList();
-            HomeLineup = HomeLineup.OrderBy(x => x.BattingOrderPosition).ToList();
-            IsAwayLocked = IsAwayLineupCreated.IsLineupCreated ? true : false;
-            IsHomeLocked = IsHomeLineupCreated.IsLineupCreated ? true : false;
             positionSelector = 1;
             PageLoad = true;
-
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
             NavManager.NavigateTo("/error");
         }
+    }
+
+    private async Task SetupAwayTeam(Guid gameId)
+    {
+        AwayTeam = await TeamService.GetTeamById(GameByIdResponse.Game.AwayTeam.Id);
+        IsAwayLineupCreated = await GameService.AnyBaseballGameLineupByGameId(gameId, AwayTeam.Team.Id);
+        AwayTeamPlayers = await PlayerService.GetPlayersByTeam(AwayTeam.Team.Id);
+        AwayPitchers = AwayTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
+        if (IsAwayLineupCreated.IsLineupCreated)
+            AwayLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, AwayTeam.Team.Id);
+
+        foreach (var player in AwayTeamPlayers.Players.Where(x => x.PlayerDetail.Position != PositionFilter.BASEBALL))
+        {
+            var lineupPosition = new DropItem
+            {
+                PlayerId = player.Id,
+                TeamId = AwayTeam.Team.Id,
+                PlayerName = $"{player.FirstName} {player.LastName}",
+                Position = player.PlayerDetail.Position,
+                Selector = positionSelector <= 9 ? lineupDropzone : benchDropzone,
+                IsLocked = IsAwayLineupCreated.IsLineupCreated ? true : false
+            };
+            lineupPosition.BattingOrderPosition = IsAwayLineupCreated.IsLineupCreated ? SetupLineup(AwayLineupResponse.GameLineup.BaseballLineup, lineupPosition) : positionSelector;
+
+            AwayLineup.Add(lineupPosition);
+            positionSelector++;
+        }
+        AwayLineup = AwayLineup.OrderBy(x => x.BattingOrderPosition).ToList();
+        IsAwayLocked = IsAwayLineupCreated.IsLineupCreated ? true : false;
+
+    }
+
+    private async Task SetupHomeTeam(Guid gameId)
+    {
+        HomeTeam = await TeamService.GetTeamById(GameByIdResponse.Game.HomeTeam.Id);
+        IsHomeLineupCreated = await GameService.AnyBaseballGameLineupByGameId(gameId, HomeTeam.Team.Id);
+        HomeTeamPlayers = await PlayerService.GetPlayersByTeam(HomeTeam.Team.Id);
+        HomePitchers = HomeTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
+        if (IsHomeLineupCreated.IsLineupCreated)
+            HomeLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, HomeTeam.Team.Id);
+        foreach (var player in HomeTeamPlayers.Players.Where(x => x.PlayerDetail.Position != PositionFilter.BASEBALL))
+        {
+
+            var lineupPosition = new DropItem
+            {
+                PlayerId = player.Id,
+                TeamId = HomeTeam.Team.Id,
+                PlayerName = $"{player.FirstName} {player.LastName}",
+                Position = player.PlayerDetail.Position,
+                Selector = positionSelector <= 9 ? lineupDropzone : benchDropzone,
+                IsLocked = IsHomeLineupCreated.IsLineupCreated ? true : false
+            };
+            lineupPosition.BattingOrderPosition = IsHomeLineupCreated.IsLineupCreated ? SetupLineup(HomeLineupResponse.GameLineup.BaseballLineup, lineupPosition) : positionSelector;
+            HomeLineup.Add(lineupPosition);
+            positionSelector++;
+        }
+        HomeLineup = HomeLineup.OrderBy(x => x.BattingOrderPosition).ToList();
+        IsHomeLocked = IsHomeLineupCreated.IsLineupCreated ? true : false;
     }
 
     private void AwayLineupItemUpdated(MudItemDropInfo<DropItem> dropItem)

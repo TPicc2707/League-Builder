@@ -121,7 +121,7 @@
         }
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 
@@ -154,19 +154,8 @@
             var gameId = Guid.Parse(Id);
             GameByIdResponse = await GameService.GetGameById(gameId);
 
-            AwayTeam = await TeamService.GetTeamById(GameByIdResponse.Game.AwayTeam.Id);
-            AwayTeamPlayers = await PlayerService.GetPlayersByTeam(AwayTeam.Team.Id);
-            AwayPitchers = AwayTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
-            AwayLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, AwayTeam.Team.Id);
-            CreateAwayLineup();
-            AwayLineup = AwayLineup.OrderBy(x => x.BattingOrderPosition).ToList();
-
-            HomeTeam = await TeamService.GetTeamById(GameByIdResponse.Game.HomeTeam.Id);
-            HomeTeamPlayers = await PlayerService.GetPlayersByTeam(HomeTeam.Team.Id);
-            HomePitchers = HomeTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
-            HomeLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, HomeTeam.Team.Id);
-            CreateHomeLineup();
-            HomeLineup = HomeLineup.OrderBy(x => x.BattingOrderPosition).ToList();
+            await SetupAwayTeam(gameId);
+            await SetupHomeTeam(gameId);
 
             PageLoad = true;
         }
@@ -175,6 +164,28 @@
             Console.WriteLine(ex.Message);
             NavManager.NavigateTo("/error");
         }
+    }
+
+    private async Task SetupAwayTeam(Guid gameId)
+    {
+        AwayTeam = await TeamService.GetTeamById(GameByIdResponse.Game.AwayTeam.Id);
+        AwayTeamPlayers = await PlayerService.GetPlayersByTeam(AwayTeam.Team.Id);
+        AwayPitchers = AwayTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
+        AwayLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, AwayTeam.Team.Id);
+        CreateAwayLineup();
+        AwayLineup = AwayLineup.OrderBy(x => x.BattingOrderPosition).ToList();
+
+    }
+
+    private async Task SetupHomeTeam(Guid gameId)
+    {
+        HomeTeam = await TeamService.GetTeamById(GameByIdResponse.Game.HomeTeam.Id);
+        HomeTeamPlayers = await PlayerService.GetPlayersByTeam(HomeTeam.Team.Id);
+        HomePitchers = HomeTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
+        HomeLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, HomeTeam.Team.Id);
+        CreateHomeLineup();
+        HomeLineup = HomeLineup.OrderBy(x => x.BattingOrderPosition).ToList();
+
     }
 
     private void CreateAwayLineup()
