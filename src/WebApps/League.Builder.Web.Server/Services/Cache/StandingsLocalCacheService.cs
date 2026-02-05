@@ -1,43 +1,56 @@
-﻿using Blazored.LocalStorage;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace League.Builder.Web.Server.Services.Cache;
 
 public class StandingsLocalCacheService : IStandingsLocalCacheService
 {
-    private readonly ILocalStorageService _localStorage;
+    private readonly IDistributedCache? _cache;
 
-    public StandingsLocalCacheService(ILocalStorageService localStorage)
+    public StandingsLocalCacheService(IDistributedCache cache)
     {
-        _localStorage = localStorage ?? throw new ArgumentNullException(nameof(localStorage));
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     }
 
     public async Task<GetStandingsByLeagueResponse> GetStandingsByLeagueCache(string leagueId)
     {
-        return await _localStorage.GetItemAsync<GetStandingsByLeagueResponse>($"StandingsByLeague: {leagueId}");
+        string? standingsCache = await _cache.GetStringAsync($"StandingsByLeague: {leagueId}");
+
+        if (standingsCache is not null)
+            return JsonSerializer.Deserialize<GetStandingsByLeagueResponse>(standingsCache);
+
+        return null;
     }
 
     public async Task<GetStandingsByTeamResponse> GetStandingsByTeamCache(string teamId)
     {
-        return await _localStorage.GetItemAsync<GetStandingsByTeamResponse>($"StandingsByTeam: {teamId}");
+        string? standingsCache = await _cache.GetStringAsync($"StandingsByTeam: {teamId}");
+
+        if (standingsCache is not null)
+            return JsonSerializer.Deserialize<GetStandingsByTeamResponse>(standingsCache);
+
+        return null;
     }
 
     public async Task SetStandingsByLeagueCache(string leagueId, GetStandingsByLeagueResponse standingsByLeagueResponse)
     {
-        await _localStorage.SetItemAsync($"StandingsByLeague: {leagueId}", standingsByLeagueResponse);
+        string serializedStandings = JsonSerializer.Serialize(standingsByLeagueResponse);
+        await _cache.SetStringAsync($"StandingsByLeague: {leagueId}", serializedStandings, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
     public async Task SetStandingsByTeamCache(string teamId, GetStandingsByTeamResponse standingsByTeamResponse)
     {
-        await _localStorage.SetItemAsync($"StandingsByTeam: {teamId}", standingsByTeamResponse);
+        string serializedStandings = JsonSerializer.Serialize(standingsByTeamResponse);
+        await _cache.SetStringAsync($"StandingsByTeam: {teamId}", serializedStandings, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
     public async Task DeleteStandingsByLeagueCache(string leagueId)
     {
-        await _localStorage.RemoveItemAsync($"StandingsByLeague: {leagueId}");
+        await _cache.RemoveAsync($"StandingsByLeague: {leagueId}");
     }
 
     public async Task DeleteStandingsByTeamCache(string teamId)
     {
-        await _localStorage.RemoveItemAsync($"StandingsByTeam: {teamId}");
+        await _cache.RemoveAsync($"StandingsByTeam: {teamId}");
     }
 }

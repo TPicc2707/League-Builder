@@ -7,6 +7,7 @@
 @inject IGameService GameService
 @inject IStandingsService StandingsService
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
 @inject IValidator<UpdateGameModel> UpdateGameValidator
@@ -17,8 +18,10 @@
 @inject IGameLocalCacheService GameLocalCache
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject IStandingsLocalCacheService StandingsLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
-<AuthorizeView Roles="@String.Concat(Roles.UpdateGames, ", ", Roles.ReadGames, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.UpdateStandings, ", ", Roles.ReadStandings)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.UpdateGames, ", ", Roles.UpdateStandings)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -236,16 +239,12 @@
     private GetStandingsByTeamResponse StandingsResponse { get; set; }
     private GetTeamByIdResponse Team { get; set; }
     private FluentValidationValidator fluentValidationValidator;
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             var gameId = Guid.Parse(Id);
             GameModel = await GameLocalCache.GetGameByIdCache(Id);
             if (GameModel == null)
@@ -288,11 +287,15 @@
             }
             await GetImageAsync();
             PageLoad = true;
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -339,7 +342,12 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -357,7 +365,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }

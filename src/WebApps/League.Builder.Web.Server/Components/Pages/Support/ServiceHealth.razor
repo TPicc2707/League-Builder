@@ -7,7 +7,10 @@
 @inject IStatsService StatsService
 @inject ISeasonService SeasonService
 @inject IHttpContextAccessor HttpContextAccessor
-@inject NavigationManager NavManager;
+@inject NavigationManager NavManager
+@inject ErrorState ErrorState
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 @if(PageLoad)
 {
@@ -443,7 +446,7 @@
             </MudItem>
         </Authorized>
         <NotAuthorized>
-            <MudText>You are not authorized to view this page...</MudText>
+            <NoAccess />
         </NotAuthorized>
         </AuthorizeView>
 }
@@ -461,29 +464,39 @@ else
     private HealthReport GameHealth = default!;
     private HealthReport StatsHealth = default!;
     private HealthReport SeasonHealth = default!;
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
+            var leagueResult = await LeagueService.GetLeagueHealth();
+            var teamResult = await TeamService.GetTeamHealth();
+            var playerResult = await PlayerService.GetPlayerHealth();
+            var standingsResult = await StandingsService.GetStandingsHealth();
+            var gameResult = await GameService.GetGameHealth();
+            var statsResult = await StatsService.GetStatsHealth();
+            var seasonResult = await SeasonService.GetSeasonHealth();
+            LeagueHealth = DeserializeHealthResponse(leagueResult);
+            TeamHealth = DeserializeHealthResponse(teamResult);
+            PlayerHealth = DeserializeHealthResponse(playerResult);
+            PlayerHealth = DeserializeHealthResponse(playerResult);
+            StandingsHealth = DeserializeHealthResponse(standingsResult);
+            GameHealth = DeserializeHealthResponse(gameResult);
+            StatsHealth = DeserializeHealthResponse(statsResult);
+            SeasonHealth = DeserializeHealthResponse(seasonResult);
+            PageLoad = true;
         }
-        var leagueResult = await LeagueService.GetLeagueHealth();
-        var teamResult = await TeamService.GetTeamHealth();
-        var playerResult = await PlayerService.GetPlayerHealth();
-        var standingsResult = await StandingsService.GetStandingsHealth();
-        var gameResult = await GameService.GetGameHealth();
-        var statsResult = await StatsService.GetStatsHealth();
-        var seasonResult = await SeasonService.GetSeasonHealth();
-        LeagueHealth = DeserializeHealthResponse(leagueResult);
-        TeamHealth = DeserializeHealthResponse(teamResult);
-        PlayerHealth = DeserializeHealthResponse(playerResult);
-        PlayerHealth = DeserializeHealthResponse(playerResult);
-        StandingsHealth = DeserializeHealthResponse(standingsResult);
-        GameHealth = DeserializeHealthResponse(gameResult);
-        StatsHealth = DeserializeHealthResponse(statsResult);
-        SeasonHealth = DeserializeHealthResponse(seasonResult);
-        PageLoad = true;
+        catch (Exception ex)
+        {
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
+        }
     }
 
     public HealthReport DeserializeHealthResponse(string httpResponseContent)

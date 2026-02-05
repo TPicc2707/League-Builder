@@ -3,13 +3,15 @@
 @using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject ISnackbar Snackbar
-@inject NavigationManager NavManager;
+@inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IAWSService AWSService
 @inject IValidator<CreateLeagueModel> CreateLeagueValidator
 @inject IDialogService DialogService
-@inject ILocalStorageService LocalStorage
 @inject ILeagueLocalCacheService LeagueLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 <AuthorizeView Roles="@Roles.CreateLeagues" Context="auth">
     <Authorized>
@@ -141,7 +143,7 @@
         </MudItem>
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 
@@ -149,12 +151,9 @@
     private int _index;
     private bool canProceed = false;
     private List<string> errors = new();
+    private IJSObjectReference? _module;
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-        {
-            NavManager.NavigateTo("authentication/logout");
-        }
     }
 
     // Add image selection when next version is worked
@@ -206,7 +205,7 @@
     private async Task OnValidSubmit(EditContext context)
     {
         try
-        {
+        {       
             model.ImageFile = model.File.Name;
             string keyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
             var s3Success = await AWSService.UploadImages(keyPath, model.File);
@@ -220,13 +219,18 @@
             Snackbar.Add("League has been created.", MudBlazor.Severity.Success);
             NavManager.NavigateTo("/leagues");
             StateHasChanged();
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
+
     }
 
     private Task OpenErrorDialogAsync()

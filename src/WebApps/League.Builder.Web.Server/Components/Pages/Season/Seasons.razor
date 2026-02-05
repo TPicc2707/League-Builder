@@ -2,9 +2,12 @@
 @using League.Builder.Web.Server.Services.Cache
 @inject ISeasonService SeasonService
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IDialogService DialogService
 @inject ISeasonLocalCacheService SeasonLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 <AuthorizeView Roles="@Roles.CreateSeasons" Context="auth">
     <Authorized>
@@ -75,27 +78,37 @@
 
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 @code {
     private bool PageLoad = false;
     GetSeasonsResponse Model { get; set; }
     private bool expandSearchPanel = false;
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
+            Model = await SeasonLocalCache.GetSeasonsCache();
+            if (Model == null)
+            {
+                Model = await SeasonService.GetSeasons();
+                await SeasonLocalCache.SetSeasonsCache(Model);
+            }
+            PageLoad = true;
         }
-        Model = await SeasonLocalCache.GetSeasonsCache();
-        if(Model == null)
+        catch (Exception ex)
         {
-            Model = await SeasonService.GetSeasons();
-            await SeasonLocalCache.SetSeasonsCache(Model);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
-        PageLoad = true;
     }
 
     private async Task NavigateToCreateGame()

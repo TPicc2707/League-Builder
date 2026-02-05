@@ -97,17 +97,7 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
-
   
-  ApiSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Security group for Fargate API tasks
-      VpcId: !ImportValue leaguebuilder-dev-VpcId
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          CidrIp: 0.0.0.0/0
-
   LeagueApiLogs:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -134,6 +124,8 @@ Resources:
           Environment:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: !Sub "http://+:${LeagueApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${LeagueApiPort}'
             - Name: HTTPS_PORTS
@@ -179,6 +171,8 @@ Resources:
   
   LeagueApiService:
     Type: AWS::ECS::Service
+    DependsOn:
+      - LeagueApiListenerRule
     Properties:
       Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
       LaunchType: FARGATE
@@ -186,12 +180,56 @@ Resources:
       TaskDefinition: !Ref LeagueApiTask
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          AssignPublicIp: ENABLED
           Subnets:
             - !ImportValue leaguebuilder-dev-PublicSubnet1
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
-            - !Ref ApiSecurityGroup
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+      LoadBalancers:
+        - TargetGroupArn: !Ref LeagueApiTargetGroup
+          ContainerName: league-api
+          ContainerPort: !Ref LeagueApiPort
+  
+  LeagueApiTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: !Ref LeagueApiPort
+      TargetType: ip
+      HealthCheckPath: /healthz
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200-399"
+  
+  LeagueApiListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
+      Priority: 20
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - league.myleaguebuilder.com
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref LeagueApiTargetGroup
+  
+  LeagueApiListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
+      Priority: 20
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - league.myleaguebuilder.com
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref LeagueApiTargetGroup
     
     ########################################
     # team-api
@@ -223,6 +261,8 @@ Resources:
           Environment:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: http://+:8080
             - Name: HTTP_PORTS
               Value: !Sub '${TeamApiPort}'
             - Name: HTTPS_PORTS
@@ -275,12 +315,12 @@ Resources:
       TaskDefinition: !Ref TeamApiTask
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          AssignPublicIp: ENABLED
           Subnets:
             - !ImportValue leaguebuilder-dev-PublicSubnet1
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
-            - !Ref ApiSecurityGroup
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
 
     ########################################
     # player-api
@@ -312,6 +352,8 @@ Resources:
           Environment:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: http://+:8080
             - Name: HTTP_PORTS
               Value: !Sub '${PlayerApiPort}'
             - Name: HTTPS_PORTS
@@ -364,12 +406,12 @@ Resources:
       TaskDefinition: !Ref PlayerApiTask
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          AssignPublicIp: ENABLED
           Subnets:
             - !ImportValue leaguebuilder-dev-PublicSubnet1
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
-            - !Ref ApiSecurityGroup
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
 
     ########################################
     # stats-api
@@ -401,6 +443,8 @@ Resources:
           Environment:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: http://+:8080
             - Name: HTTP_PORTS
               Value: !Sub '${StatsApiPort}'
             - Name: HTTPS_PORTS
@@ -453,12 +497,12 @@ Resources:
       TaskDefinition: !Ref StatsApiTask
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          AssignPublicIp: ENABLED
           Subnets:
             - !ImportValue leaguebuilder-dev-PublicSubnet1
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
-            - !Ref ApiSecurityGroup
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
 
     ########################################
     # standings-api
@@ -489,6 +533,8 @@ Resources:
           Environment:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: http://+:8080
             - Name: HTTP_PORTS
               Value: !Sub '${StandingsApiPort}'
             - Name: HTTPS_PORTS
@@ -541,12 +587,12 @@ Resources:
       TaskDefinition: !Ref StandingsApiTask
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          AssignPublicIp: ENABLED
           Subnets:
             - !ImportValue leaguebuilder-dev-PublicSubnet1
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
-            - !Ref ApiSecurityGroup
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
 
     ########################################
     # season-api
@@ -578,6 +624,8 @@ Resources:
           Environment:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: http://+:8080
             - Name: HTTP_PORTS
               Value: !Sub '${SeasonApiPort}'
             - Name: HTTPS_PORTS
@@ -630,12 +678,12 @@ Resources:
       TaskDefinition: !Ref SeasonApiTask
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          AssignPublicIp: ENABLED
           Subnets:
             - !ImportValue leaguebuilder-dev-PublicSubnet1
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
-            - !Ref ApiSecurityGroup
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
 
     ########################################
     # game-api
@@ -667,6 +715,8 @@ Resources:
           Environment:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: http://+:8080
             - Name: HTTP_PORTS
               Value: !Sub '${GameApiPort}'
             - Name: HTTPS_PORTS
@@ -719,13 +769,13 @@ Resources:
       TaskDefinition: !Ref GameApiTask
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          AssignPublicIp: ENABLED
           Subnets:
             - !ImportValue leaguebuilder-dev-PublicSubnet1
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
-            - !Ref ApiSecurityGroup
-  
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+
   LeagueApiDiscoveryService:
     Type: AWS::ServiceDiscovery::Service
     Properties:
@@ -840,6 +890,8 @@ Resources:
           Environment:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: http://+:8080
             - Name: HTTP_PORTS
               Value: !Sub '${LeagueBuilderApiGatewayPort}'
             - Name: HTTPS_PORTS
@@ -870,22 +922,22 @@ Resources:
       TaskDefinition: !Ref LeagueBuilderApiGatewayTask
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          AssignPublicIp: ENABLED
           Subnets:
             - !ImportValue leaguebuilder-dev-PublicSubnet1
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
-            - !Ref ApiSecurityGroup
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
 
   ########################################
     # league-builder-web-server (public)
   ########################################
 
   LeagueBuilderWebServerLogs:
-  Type: AWS::Logs::LogGroup
-  Properties:
-    LogGroupName: /ecs/league-builder-web-server
-    RetentionInDays: 7
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/league-builder-web-server
+      RetentionInDays: 7
 
   LeagueBuilderWebServerTask:
     Type: AWS::ECS::TaskDefinition
@@ -907,6 +959,8 @@ Resources:
           Environment:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: http://+:8080
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -923,15 +977,12 @@ Resources:
       TaskDefinition: !Ref LeagueBuilderWebServerTask
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
+          AssignPublicIp: ENABLED
           Subnets:
             - !ImportValue leaguebuilder-dev-PublicSubnet1
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
-            - !Ref ApiSecurityGroup
-
-
-
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
 
 
 

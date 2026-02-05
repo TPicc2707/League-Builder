@@ -1,58 +1,77 @@
-﻿using Blazored.LocalStorage;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace League.Builder.Web.Server.Services.Cache;
 
 public class SeasonLocalCacheService : ISeasonLocalCacheService
 {
-    private readonly ILocalStorageService _localStorage;
+    private readonly IDistributedCache? _cache;
 
-    public SeasonLocalCacheService(ILocalStorageService localStorage)
+    public SeasonLocalCacheService(IDistributedCache cache)
     {
-        _localStorage = localStorage ?? throw new ArgumentNullException(nameof(localStorage));
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     }
 
     public async Task<GetSeasonsResponse> GetSeasonsCache()
     {
-        return await _localStorage.GetItemAsync<GetSeasonsResponse>("Seasons");
+        string? seasonsCache = await _cache.GetStringAsync("Seasons");
+
+        if (seasonsCache is not null)
+            return JsonSerializer.Deserialize<GetSeasonsResponse>(seasonsCache);
+
+        return null;
     }
 
     public async Task<GetSeasonByIdResponse> GetSeasonByIdCache(string id)
     {
-        return await _localStorage.GetItemAsync<GetSeasonByIdResponse>($"Season: {id}");
+        string? seasonsCache = await _cache.GetStringAsync($"Season: {id}");
+
+        if (seasonsCache is not null)
+            return JsonSerializer.Deserialize<GetSeasonByIdResponse>(seasonsCache);
+
+        return null;
     }
 
     public async Task<GetSeasonByYearResponse> GetSeasonByYearCache(int year)
     {
-        return await _localStorage.GetItemAsync<GetSeasonByYearResponse>($"SeasonByYear: {year}");
+        string? seasonsCache = await _cache.GetStringAsync($"SeasonByYear: {year}");
+
+        if (seasonsCache is not null)
+            return JsonSerializer.Deserialize<GetSeasonByYearResponse>(seasonsCache);
+
+        return null;
     }
 
     public async Task SetSeasonsCache(GetSeasonsResponse seasonsResponse)
     {
-        await _localStorage.SetItemAsync("Seasons", seasonsResponse);
+        string serializedSeasons = JsonSerializer.Serialize(seasonsResponse);
+        await _cache.SetStringAsync("Seasons", serializedSeasons, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
     public async Task SetSeasonByIdCache(string id, GetSeasonByIdResponse seasonByIdResponse)
     {
-        await _localStorage.SetItemAsync($"Season: {id}", seasonByIdResponse);
+        string serializedSeasons = JsonSerializer.Serialize(seasonByIdResponse);
+        await _cache.SetStringAsync($"Season: {id}", serializedSeasons, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
     public async Task SetSeasonByYearCache(int year, GetSeasonByYearResponse seasonByYearResponse)
     {
-        await _localStorage.SetItemAsync($"SeasonByYear: {year}", seasonByYearResponse);
+        string serializedSeasons = JsonSerializer.Serialize(seasonByYearResponse);
+        await _cache.SetStringAsync($"SeasonByYear: {year}", serializedSeasons, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
     public async Task DeleteSeasonsCache()
     {
-        await _localStorage.RemoveItemAsync("Seasons");
+        await _cache.RemoveAsync("Seasons");
     }
 
     public async Task DeleteSeasonByIdCache(string id)
     {
-        await _localStorage.RemoveItemAsync($"Season: {id}");
+        await _cache.RemoveAsync($"Season: {id}");
     }
 
     public async Task DeleteSeasonByYearCache(int year)
     {
-        await _localStorage.RemoveItemAsync($"SeasonByYear: {year}");
+        await _cache.RemoveAsync($"SeasonByYear: {year}");
     }
 }

@@ -1,0 +1,171 @@
+﻿@page "/teamhistory/{id}"
+@inject ILeagueService LeagueService
+@inject ITeamService TeamService
+@inject IGameService GameService
+@inject IStandingsService StandingsService
+@inject ISeasonService SeasonService
+@inject IAWSService AWSService
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject IGameLocalCacheService GameLocalCache
+@inject IStandingsLocalCacheService StandingsLocalCache
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject ErrorState ErrorState
+@inject NavigationManager NavManager
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
+
+@if (PageLoad)
+{
+    <AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadGames)" Context="auth">
+        <Authorized>
+            <MudItem Style="padding-top: 100px">
+                <MudItem xs="12" md="12" lg="12" Style="padding-bottom: 25px;">
+                    <MudCard Class="border border-solid" Style="border-color: #000000">
+                        <MudCardContent>
+                            <MudStack Row="true">
+                                <MudItem xs="4" md="4" lg="4">
+                                    <MudImage Src="@TeamByIdResponse.Team.Image" Width="225" Height="225" Alt="Swedish Farm House" Elevation="25" Class="rounded-lg ma-4" />
+                                </MudItem>
+                                <MudItem xs="6" md="6" lg="6" Class="ma-4">
+                                    <MudText Typo="Typo.h4" Align="Align.Start" Style="font-weight:bold;">@TeamByIdResponse.Team.TeamName</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px; font-weight:bold;">@TeamByIdResponse.Team.LeagueName</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 20px; font-weight: bold;">Total Record: @TotalWins - @TotalLosses</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px; font-weight: bold;">
+                                        League Championships: 0
+                                    </MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px; font-weight: bold;">Playoff Appearances: 0</MudText>
+                                </MudItem>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudItem>
+            <MudItem>
+                <MudTable Items="@TeamStandingsResponse.Standings.OrderByDescending(x => x.Year)" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+                    <HeaderContent>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.Wins)">Season</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.Wins)">Wins</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.Losses)">Losses</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.WinPercentage)">PCT</MudTableSortLabel></MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Playoffs</MudTh>
+                        <MudTh Style="font-weight:bold" Class="mud-theme-primary">League Champion</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Season">
+                            <MudText Style="margin-left: 5px;">@context.Year</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Wins">
+                            <MudText Style="margin-left: 10px;">@context.StandingsDetail.Wins</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Losses">
+                            <MudText Style="margin-left: 15px;">@context.StandingsDetail.Losses</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Win Percentage">
+                            <MudText>@context.WinPercentage.ToString("#.000")</MudText>
+                        </MudTd>
+                        <MudTd DataLabel="Playoffs">
+                            <MudText Style="margin-left: 15px;">
+                                <MudIcon Color="Color.Error" Icon="@Icons.Material.Filled.Clear" />
+                            </MudText>
+                        </MudTd>
+                        <MudTd DataLabel="League Champion">
+                            <MudText Style="margin-left: 40px;">
+                                <MudIcon Color="Color.Error" Icon="@Icons.Material.Filled.Clear" />
+                            </MudText>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+        </Authorized>
+        <NotAuthorized>
+            <NoAccess />
+        </NotAuthorized>
+    </AuthorizeView>
+}
+else
+{
+    <Loading />
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private bool PageLoad = false;
+    private GetTeamByIdResponse TeamByIdResponse { get; set; }
+    private GetGamesByTeamResponse TeamGamesResponse { get; set; }
+    private GetStandingsByTeamResponse TeamStandingsResponse { get; set; }
+    private GetSeasonsResponse SeasonsResponse { get; set; }
+    private int TotalWins = 0;
+    private int TotalLosses = 0;
+    private IJSObjectReference? _module;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            TeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(Id);
+            if (TeamByIdResponse is null)
+            {
+                TeamByIdResponse = await TeamService.GetTeamById(Guid.Parse(Id));
+                await TeamLocalCache.SetTeamByIdCache(Id, TeamByIdResponse);
+            }
+            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(Id);
+            if (TeamGamesResponse is null)
+            {
+                TeamGamesResponse = await GameService.GetGamesByTeam(Guid.Parse(Id));
+                await GameLocalCache.SetGamesByTeamCache(Id, TeamGamesResponse);
+            }
+            TeamStandingsResponse = await StandingsLocalCache.GetStandingsByTeamCache(Id);
+            if (TeamStandingsResponse is null)
+            {
+                TeamStandingsResponse = await StandingsService.GetStandingsByTeam(Guid.Parse(Id));
+                await StandingsLocalCache.SetStandingsByTeamCache(Id, TeamStandingsResponse);
+            }
+            SeasonsResponse = await SeasonLocalCache.GetSeasonsCache();
+            if (SeasonsResponse is null)
+            {
+                SeasonsResponse = await SeasonService.GetSeasons();
+                await SeasonLocalCache.SetSeasonsCache(SeasonsResponse);
+            }
+
+            foreach (var standing in TeamStandingsResponse.Standings)
+            {
+                var season = SeasonsResponse.Seasons.FirstOrDefault(x => x.Id == standing.SeasonId);
+                standing.Year = season.Year;
+                standing.WinPercentage = standing.StandingsDetail.Wins != 0 | standing.StandingsDetail.GamesPlayed != 0 ? (decimal)standing.StandingsDetail.Wins / standing.StandingsDetail.GamesPlayed : 0;
+                TotalWins += standing.StandingsDetail.Wins;
+                TotalLosses += standing.StandingsDetail.Losses;
+            }
+            await GetImageAsync();
+            PageLoad = true;
+
+        }
+        catch (Exception ex)
+        {
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
+        }
+    }
+
+    private async Task GetImageAsync()
+    {
+        var league = await LeagueLocalCache.GetLeagueByIdCache(TeamByIdResponse.Team.LeagueId.ToString());
+        if(league is null)
+        {
+            league = await LeagueService.GetLeague(TeamByIdResponse.Team.LeagueId);
+            await LeagueLocalCache.SetLeagueByIdCache(TeamByIdResponse.Team.LeagueId.ToString(), league);
+        }
+        TeamByIdResponse.Team.LeagueName = league.League.Name;
+        TeamByIdResponse.Team.Sport = league.League.Sport;
+        var keyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{TeamByIdResponse.Team.TeamName}/{TeamByIdResponse.Team.ImageFile}";
+        TeamByIdResponse.Team.Image = await AWSService.GetImage(keyPath);
+    }
+}

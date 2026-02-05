@@ -5,6 +5,7 @@
 @inject IStandingsService StandingsService
 @inject ISeasonService SeasonService
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
 @inject IWebHostEnvironment env
@@ -15,8 +16,10 @@
 @inject ITeamLocalCacheService TeamLocalCache
 @inject ISeasonLocalCacheService SeasonLocalCache
 @inject IStandingsLocalCacheService StandingsLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
-<AuthorizeView Roles="@String.Concat(Roles.CreateTeams, ", ", Roles.CreateStandings, ", ", Roles.ReadSeasons, ", ", Roles.ReadLeagues)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.CreateTeams, ", ", Roles.CreateStandings)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -229,14 +232,14 @@
         }
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 @code {
     // Add image selection when next version is worked
     [Parameter]
     public string Id { get; set; }
-
+    private IJSObjectReference? _module;
     CreateTeamModel model = new CreateTeamModel();
     private GetLeaguesResponse LeaguesResponse { get; set; }
     private GetSeasonByYearResponse SeasonModel { get; set; }
@@ -255,56 +258,79 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
-        leagueId = Guid.Parse(Id);
+            leagueId = Guid.Parse(Id);
 
-        LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();
-        if (LeaguesResponse == null)
+            LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();
+            if (LeaguesResponse == null)
+            {
+                LeaguesResponse = await LeagueService.GetLeagues();
+                await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+            }
+
+            states = Constants.States();
+            countries = Constants.Countries();
+            PageLoad = true;
+        }
+        catch (Exception ex)
         {
-            LeaguesResponse = await LeagueService.GetLeagues();
-            await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
 
-        states = Constants.States();
-        countries = Constants.Countries();
-        PageLoad = true;
     }
 
     private async Task OnValidSubmit(EditContext context)
     {
-        var league = LeaguesResponse.Leagues.FirstOrDefault(l => l.Id == Guid.Parse(Id));
-        model.ImageFile = model.File.Name;
-        var keyPath = $"/{league.Sport}/{league.Name}/teams/{model.TeamName}/{model.ImageFile}";
-        var s3Success = await AWSService.UploadImages(keyPath, model.File);
-        Models.Team.AddressModel address = new Models.Team.AddressModel(model.FirstName, model.LastName, model.EmailAddress, model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
-        Models.Team.ManagerModel manager = new Models.Team.ManagerModel(model.ManagerFirstName, model.ManagerFirstName, model.ManagerEmailAddress);
-        CreateTeamRequest request = new CreateTeamRequest(new CreateTeamRecord(leagueId, model.TeamName, address, model.Description, model.ImageFile, manager));
-        var response = await TeamService.CreateTeam(request);
-
-        //Create Standings after Team Creation
-        SeasonModel = await SeasonLocalCache.GetSeasonByYearCache(DateTime.Now.Year);
-        if(SeasonModel == null)
+        try
         {
-            SeasonModel = await SeasonService.GetSeasonByYear(DateTime.Now.Year);
-            await SeasonLocalCache.SetSeasonByYearCache(DateTime.Now.Year, SeasonModel);
-        }
-        StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0, false, false);
-        TeamDetailModel teamDetailModel = new TeamDetailModel(response.Id, model.TeamName);
-        CreateStandingsModel createStandingsModel = new CreateStandingsModel(leagueId, SeasonModel.Season.Id, standingsDetailModel, teamDetailModel);
-        CreateStandingsRequest standingsRequest = new CreateStandingsRequest(createStandingsModel);
-        await StandingsService.CreateStandings(standingsRequest);
-        await StandingsLocalCache.DeleteStandingsByLeagueCache(leagueId.ToString());
+            var league = LeaguesResponse.Leagues.FirstOrDefault(l => l.Id == Guid.Parse(Id));
+            model.ImageFile = model.File.Name;
+            var keyPath = $"/{league.Sport}/{league.Name}/teams/{model.TeamName}/{model.ImageFile}";
+            var s3Success = await AWSService.UploadImages(keyPath, model.File);
+            Models.Team.AddressModel address = new Models.Team.AddressModel(model.FirstName, model.LastName, model.EmailAddress, model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
+            Models.Team.ManagerModel manager = new Models.Team.ManagerModel(model.ManagerFirstName, model.ManagerFirstName, model.ManagerEmailAddress);
+            CreateTeamRequest request = new CreateTeamRequest(new CreateTeamRecord(leagueId, model.TeamName, address, model.Description, model.ImageFile, manager));
+            var response = await TeamService.CreateTeam(request);
 
-        success = true;
-        await TeamLocalCache.DeleteTeamsCache();
-        await TeamLocalCache.DeleteTeamsByNameCache();
-        await TeamLocalCache.DeleteTeamsByLeagueCache(Id);
-        Snackbar.Add("Team has been created.", MudBlazor.Severity.Success);
-        NavManager.NavigateTo($"/teamsbyleague/{leagueId.ToString()}");
-        StateHasChanged();
+            //Create Standings after Team Creation
+            SeasonModel = await SeasonLocalCache.GetSeasonByYearCache(DateTime.Now.Year);
+            if (SeasonModel == null)
+            {
+                SeasonModel = await SeasonService.GetSeasonByYear(DateTime.Now.Year);
+                await SeasonLocalCache.SetSeasonByYearCache(DateTime.Now.Year, SeasonModel);
+            }
+            StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0, false, false);
+            TeamDetailModel teamDetailModel = new TeamDetailModel(response.Id, model.TeamName);
+            CreateStandingsModel createStandingsModel = new CreateStandingsModel(leagueId, SeasonModel.Season.Id, standingsDetailModel, teamDetailModel);
+            CreateStandingsRequest standingsRequest = new CreateStandingsRequest(createStandingsModel);
+            await StandingsService.CreateStandings(standingsRequest);
+            await StandingsLocalCache.DeleteStandingsByLeagueCache(leagueId.ToString());
+
+            success = true;
+            await TeamLocalCache.DeleteTeamsCache();
+            await TeamLocalCache.DeleteTeamsByNameCache();
+            await TeamLocalCache.DeleteTeamsByLeagueCache(Id);
+            Snackbar.Add("Team has been created.", MudBlazor.Severity.Success);
+            NavManager.NavigateTo($"/teamsbyleague/{leagueId.ToString()}");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)

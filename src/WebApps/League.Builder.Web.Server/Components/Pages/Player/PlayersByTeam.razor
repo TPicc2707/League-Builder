@@ -5,14 +5,16 @@
 @inject ISeasonService SeasonService
 @inject IStandingsService StandingsService
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IAWSService AWSService
-@inject ILocalStorageService LocalStorage
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
 @inject IPlayerLocalCacheService PlayerLocalCache
 @inject ISeasonLocalCacheService SeasonLocalCache
 @inject IStandingsLocalCacheService StandingsLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -261,7 +263,7 @@
         }
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 @code {
@@ -278,7 +280,7 @@
     private int NumberPlayersToShow = 100;
     private bool IsTeamMaxOnPlayers = false;
     private int year;
-
+    private IJSObjectReference? _module;
     private GetTeamByIdResponse Team { get; set; }
     private GetPlayersByTeamResponse Players { get; set; }
     private GetLeaguesResponse LeaguesResponse { get; set; }
@@ -291,53 +293,61 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
+            var teamId = Guid.Parse(Id);
+            year = DateTime.Now.Year;
+            Team = await TeamLocalCache.GetTeamByIdCache(Id);
+            if (Team == null)
+            {
+                Team = await TeamService.GetTeamById(teamId);
+                await TeamLocalCache.SetTeamByIdCache(Id, Team);
+            }
+            Players = await PlayerLocalCache.GetPlayersByTeamCache(Id);
+            if (Players == null)
+            {
+                Players = await PlayerService.GetPlayersByTeam(teamId);
+                await PlayerLocalCache.SetPlayersByTeamCache(Id, Players);
+            }
+            LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();
+            if (LeaguesResponse == null)
+            {
+                LeaguesResponse = await LeagueService.GetLeagues();
+                await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+            }
+            SeasonByYearResponse = await SeasonLocalCache.GetSeasonByYearCache(year);
+            if (SeasonByYearResponse == null)
+            {
+                SeasonByYearResponse = await SeasonService.GetSeasonByYear(year);
+                await SeasonLocalCache.SetSeasonByYearCache(year, SeasonByYearResponse);
+            }
+            await StandingsLocalCache.DeleteStandingsByTeamCache(Id);
+            StandingsByTeamResponse = await StandingsLocalCache.GetStandingsByTeamCache(Id);
+            if (StandingsByTeamResponse == null)
+            {
+                StandingsByTeamResponse = await StandingsService.GetStandingsByTeam(teamId);
+                await StandingsLocalCache.SetStandingsByTeamCache(Id, StandingsByTeamResponse);
+            }
+            record = StandingsByTeamResponse.Standings.FirstOrDefault(x => x.SeasonId == SeasonByYearResponse.Season.Id);
 
-        var teamId = Guid.Parse(Id);
-        year = DateTime.Now.Year;
-        Team = await TeamLocalCache.GetTeamByIdCache(Id);
-        if(Team == null)
-        {
-            Team = await TeamService.GetTeamById(teamId);
-            await TeamLocalCache.SetTeamByIdCache(Id, Team);
+            var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == Team.Team.LeagueId);
+            IsTeamMaxOnPlayers = Players.Players.Count() == league.MaximumTotalTeamPlayers ? true : false;
+            await GetTeamImageAsync(league);
+            await GetImageAsync();
+            AdminMailUrl = $"mailto:{Team.Team.TeamAddress.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
+            ManagerMailUrl = $"mailto:{Team.Team.TeamManager.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
+            PageLoad = true;
         }
-        Players = await PlayerLocalCache.GetPlayersByTeamCache(Id);
-        if(Players == null)
+        catch (Exception ex)
         {
-            Players = await PlayerService.GetPlayersByTeam(teamId);
-            await PlayerLocalCache.SetPlayersByTeamCache(Id, Players);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
-        LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();  
-        if (LeaguesResponse == null)
-        {
-            LeaguesResponse = await LeagueService.GetLeagues();
-            await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
-        }
-        SeasonByYearResponse = await SeasonLocalCache.GetSeasonByYearCache(year);
-        if (SeasonByYearResponse == null)
-        {
-            SeasonByYearResponse = await SeasonService.GetSeasonByYear(year);
-            await SeasonLocalCache.SetSeasonByYearCache(year, SeasonByYearResponse);
-        }
-        await StandingsLocalCache.DeleteStandingsByTeamCache(Id);
-        StandingsByTeamResponse = await StandingsLocalCache.GetStandingsByTeamCache(Id);
-        if (StandingsByTeamResponse == null)
-        {
-            StandingsByTeamResponse = await StandingsService.GetStandingsByTeam(teamId);
-            await StandingsLocalCache.SetStandingsByTeamCache(Id, StandingsByTeamResponse);
-        }
-        record = StandingsByTeamResponse.Standings.FirstOrDefault(x => x.SeasonId == SeasonByYearResponse.Season.Id);
-
-        var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == Team.Team.LeagueId);
-        IsTeamMaxOnPlayers = Players.Players.Count() == league.MaximumTotalTeamPlayers ? true : false;
-        await GetTeamImageAsync(league);
-        await GetImageAsync();
-        AdminMailUrl = $"mailto:{Team.Team.TeamAddress.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
-        ManagerMailUrl = $"mailto:{Team.Team.TeamManager.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
-        PageLoad = true;
     }
 
     private string GetStatLink(PlayerModel player)

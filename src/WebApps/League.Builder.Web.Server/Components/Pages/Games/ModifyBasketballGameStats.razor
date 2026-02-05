@@ -8,15 +8,17 @@
 @inject IAWSService AWSService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IGameLocalCacheService GameLocalCache
 @inject IPlayerLocalCacheService PlayerLocalCache
 @inject IStatsLocalCacheService StatsLocalCache
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
-
-<AuthorizeView Roles="@String.Concat(Roles.CreateStats, ", ", Roles.UpdateStats, ", ", Roles.ReadStats, ", ", Roles.ReadGames, ", ", Roles.ReadPlayers)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.CreateStats, ", ", Roles.UpdateStats)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -389,7 +391,7 @@
     GetBasketballStatsByTeamResponse AwayPlayerStatsModel { get; set; }
     GetBasketballStatsByTeamResponse HomePlayerStatsModel { get; set; }
     GetBasketballStatsByPlayerResponse PlayerStatsModel { get; set; }
-
+    private IJSObjectReference? _module;
     private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
     private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
     private int AwayTotalPoints = 0;
@@ -425,11 +427,6 @@
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             var gameId = Guid.Parse(Id);
             GameModel = await GameLocalCache.GetGameByIdCache(Id);
             if (GameModel == null)
@@ -519,11 +516,15 @@
                     Model.Add(new CreateBasketballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
             }
             PageLoad = true;
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -604,8 +605,8 @@
                                                                 basketballStatSelectedItem.Blocks, basketballStatSelectedItem.Turnovers, basketballStatSelectedItem.Fouls);
 
                     UpdateBasketballStatsModel basketballStatsModel = new UpdateBasketballStatsModel(gameStat.Id, basketballStatSelectedItem.LeagueId, basketballStatSelectedItem.TeamId,
-                                                                                               basketballStatSelectedItem.PlayerId, basketballStatSelectedItem.SeasonId,
-                                                                                               basketballStatSelectedItem.GameId, statsModel);
+                                                                                                basketballStatSelectedItem.PlayerId, basketballStatSelectedItem.SeasonId,
+                                                                                                basketballStatSelectedItem.GameId, statsModel);
 
                     UpdateBasketballStatsRequest request = new UpdateBasketballStatsRequest(basketballStatsModel);
                     await StatsService.UpdateBasketballStats(request);
@@ -653,15 +654,15 @@
                 else
                 {
                     CreateBasketballPlayerStatsModel statsModel = new CreateBasketballPlayerStatsModel(basketballStatSelectedItem.Start, basketballStatSelectedItem.Minutes,
-                                                                                                       basketballStatSelectedItem.Points, basketballStatSelectedItem.FieldGoalsMade,
-                                                                                                       basketballStatSelectedItem.FieldGoalsAttempted, basketballStatSelectedItem.ThreePointersMade,
-                                                                                                       basketballStatSelectedItem.ThreePointersAttempted, basketballStatSelectedItem.FreeThrowsMade,
-                                                                                                       basketballStatSelectedItem.FreeThrowsAttempted, basketballStatSelectedItem.Rebounds, basketballStatSelectedItem.Assists, basketballStatSelectedItem.Steals,
-                                                                                                       basketballStatSelectedItem.Blocks, basketballStatSelectedItem.Turnovers, basketballStatSelectedItem.Fouls);
+                                                                                                        basketballStatSelectedItem.Points, basketballStatSelectedItem.FieldGoalsMade,
+                                                                                                        basketballStatSelectedItem.FieldGoalsAttempted, basketballStatSelectedItem.ThreePointersMade,
+                                                                                                        basketballStatSelectedItem.ThreePointersAttempted, basketballStatSelectedItem.FreeThrowsMade,
+                                                                                                        basketballStatSelectedItem.FreeThrowsAttempted, basketballStatSelectedItem.Rebounds, basketballStatSelectedItem.Assists, basketballStatSelectedItem.Steals,
+                                                                                                        basketballStatSelectedItem.Blocks, basketballStatSelectedItem.Turnovers, basketballStatSelectedItem.Fouls);
 
                     CreateBasketballStatsModel basketballStatsModel = new CreateBasketballStatsModel(basketballStatSelectedItem.LeagueId, basketballStatSelectedItem.TeamId,
-                                                                                               basketballStatSelectedItem.PlayerId, basketballStatSelectedItem.SeasonId,
-                                                                                               basketballStatSelectedItem.GameId, statsModel);
+                                                                                                basketballStatSelectedItem.PlayerId, basketballStatSelectedItem.SeasonId,
+                                                                                                basketballStatSelectedItem.GameId, statsModel);
 
                     CreateBasketballStatsRequest request = new CreateBasketballStatsRequest(basketballStatsModel);
                     await StatsService.CreateBasketballStats(request);
@@ -712,7 +713,12 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }

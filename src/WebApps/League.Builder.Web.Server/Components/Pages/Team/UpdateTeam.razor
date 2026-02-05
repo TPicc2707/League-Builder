@@ -1,20 +1,21 @@
 ﻿@page "/updateteam/{id}"
 @using League.Builder.Web.Server.Services.Cache
-@using League.Builder.Web.Server.Services.Cache
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
 @inject IWebHostEnvironment env
 @inject IAWSService AWSService
 @inject IValidator<UpdateTeamModel> UpdateTeamValidator
 @inject IDialogService DialogService
-@inject ILocalStorageService LocalStorage
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
-<AuthorizeView Roles="@String.Concat(Roles.UpdateTeams, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.UpdateTeams)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -227,7 +228,7 @@
         }
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 @code {
@@ -249,102 +250,124 @@
     private List<string> errors = new();
     private MudFileUpload<IBrowserFile> _fileUpload;
     private FluentValidationValidator fluentValidationValidator;
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
+            var teamId = Guid.Parse(Id);
+            TeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(Id);
+            if (TeamByIdResponse == null)
+            {
+                TeamByIdResponse = await TeamService.GetTeamById(teamId);
+                await TeamLocalCache.SetTeamByIdCache(Id, TeamByIdResponse);
+            }
+            League = await LeagueLocalCache.GetLeagueByIdCache(TeamByIdResponse.Team.LeagueId.ToString());
+            if (League == null)
+            {
+                League = await LeagueService.GetLeague(TeamByIdResponse.Team.LeagueId);
+                await LeagueLocalCache.SetLeagueByIdCache(TeamByIdResponse.Team.LeagueId.ToString(), League);
+            }
+            Leagues = await LeagueLocalCache.GetLeaguesBySportCache(League.League.Sport);
+            if (Leagues == null)
+            {
+                Leagues = await LeagueService.GetLeaguesBySport(League.League.Sport);
+                await LeagueLocalCache.SetLeaguesBySportCache(League.League.Sport, Leagues);
+            }
+            states = Constants.States();
+            countries = Constants.Countries();
+            model.Id = TeamByIdResponse.Team.Id;
+            model.LeagueId = TeamByIdResponse.Team.LeagueId;
+            model.TeamName = TeamByIdResponse.Team.TeamName;
+            model.FirstName = TeamByIdResponse.Team.TeamAddress.FirstName;
+            model.LastName = TeamByIdResponse.Team.TeamAddress.LastName;
+            model.ManagerFirstName = TeamByIdResponse.Team.TeamManager?.FirstName;
+            model.ManagerLastName = TeamByIdResponse.Team.TeamManager?.LastName;
+            model.ManagerEmailAddress = TeamByIdResponse.Team.TeamManager?.EmailAddress;
+            model.AddressLine = TeamByIdResponse.Team.TeamAddress.AddressLine;
+            model.City = TeamByIdResponse.Team.TeamAddress.City;
+            model.EmailAddress = TeamByIdResponse.Team.TeamAddress.EmailAddress;
+            model.State = TeamByIdResponse.Team.TeamAddress.State;
+            model.Country = TeamByIdResponse.Team.TeamAddress.Country;
+            model.ZipCode = TeamByIdResponse.Team.TeamAddress.ZipCode;
+            model.Description = TeamByIdResponse.Team.Description;
+            model.ImageFile = TeamByIdResponse.Team.ImageFile;
+            model.TeamStatus = TeamByIdResponse.Team.TeamStatus;
+            PageLoad = true;
         }
-
-        var teamId = Guid.Parse(Id);
-        TeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(Id);
-        if(TeamByIdResponse == null)
+        catch (Exception ex)
         {
-            TeamByIdResponse = await TeamService.GetTeamById(teamId);
-            await TeamLocalCache.SetTeamByIdCache(Id, TeamByIdResponse);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
-        League = await LeagueLocalCache.GetLeagueByIdCache(TeamByIdResponse.Team.LeagueId.ToString());
-        if (League == null)
-        {
-            League = await LeagueService.GetLeague(TeamByIdResponse.Team.LeagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(TeamByIdResponse.Team.LeagueId.ToString(), League);
-        }
-        Leagues = await LeagueLocalCache.GetLeaguesBySportCache(League.League.Sport);
-        if(Leagues == null)
-        {
-            Leagues = await LeagueService.GetLeaguesBySport(League.League.Sport);
-            await LeagueLocalCache.SetLeaguesBySportCache(League.League.Sport, Leagues);
-        }
-        states = Constants.States();
-        countries = Constants.Countries();
-        model.Id = TeamByIdResponse.Team.Id;
-        model.LeagueId = TeamByIdResponse.Team.LeagueId;
-        model.TeamName = TeamByIdResponse.Team.TeamName;
-        model.FirstName = TeamByIdResponse.Team.TeamAddress.FirstName;
-        model.LastName = TeamByIdResponse.Team.TeamAddress.LastName;
-        model.ManagerFirstName = TeamByIdResponse.Team.TeamManager?.FirstName;
-        model.ManagerLastName = TeamByIdResponse.Team.TeamManager?.LastName;
-        model.ManagerEmailAddress = TeamByIdResponse.Team.TeamManager?.EmailAddress;
-        model.AddressLine = TeamByIdResponse.Team.TeamAddress.AddressLine;
-        model.City = TeamByIdResponse.Team.TeamAddress.City;
-        model.EmailAddress = TeamByIdResponse.Team.TeamAddress.EmailAddress;
-        model.State = TeamByIdResponse.Team.TeamAddress.State;
-        model.Country = TeamByIdResponse.Team.TeamAddress.Country;
-        model.ZipCode = TeamByIdResponse.Team.TeamAddress.ZipCode;
-        model.Description = TeamByIdResponse.Team.Description;
-        model.ImageFile = TeamByIdResponse.Team.ImageFile;
-        model.TeamStatus = TeamByIdResponse.Team.TeamStatus;
-        PageLoad = true;
     }
 
     private async Task OnValidSubmit(EditContext context)
     {
-        if (model.TeamName != TeamByIdResponse.Team.TeamName)
+        try
         {
-            var deleteKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{TeamByIdResponse.Team.TeamName}/{model.ImageFile}";
-
-            if (model.File == null)
+            if (model.TeamName != TeamByIdResponse.Team.TeamName)
             {
-                var uploadKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
-                await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
+                var deleteKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{TeamByIdResponse.Team.TeamName}/{model.ImageFile}";
 
-                await AWSService.DeleteObject(deleteKeyPath);
+                if (model.File == null)
+                {
+                    var uploadKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
+                    await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
+
+                    await AWSService.DeleteObject(deleteKeyPath);
+
+                }
+                else
+                {
+                    model.ImageFile = model.File.Name;
+                    var uploadKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
+                    await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
+
+                    await AWSService.DeleteObject(deleteKeyPath);
+                }
 
             }
             else
             {
-                model.ImageFile = model.File.Name;
-                var uploadKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
-                await AWSService.CopyObjectToNewFolder(deleteKeyPath, uploadKeyPath);
-
-                await AWSService.DeleteObject(deleteKeyPath);
+                if (model.File != null)
+                {
+                    model.ImageFile = model.File.Name;
+                    var uploadKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
+                    await AWSService.UploadImages(uploadKeyPath, model.File);
+                }
             }
 
+            Models.Team.AddressModel address = new Models.Team.AddressModel(model.FirstName, model.LastName, model.EmailAddress, model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
+            Models.Team.ManagerModel manager = new Models.Team.ManagerModel(model.ManagerFirstName, model.ManagerLastName, model.ManagerEmailAddress);
+            UpdateTeamRequest request = new UpdateTeamRequest(new UpdateTeamRecord(model.Id, model.LeagueId, model.TeamName, address, model.Description, model.ImageFile, (int)model.TeamStatus, manager));
+            Console.WriteLine(request.Team.TeamStatus);
+            await TeamService.UpdateTeam(request);
+            success = true;
+            await TeamLocalCache.DeleteTeamsCache();
+            await TeamLocalCache.DeleteTeamsByNameCache();
+            await TeamLocalCache.DeleteTeamByIdCache(Id);
+            await TeamLocalCache.DeleteTeamsByLeagueCache(model.LeagueId.ToString());
+            Snackbar.Add("Team has been updated.", MudBlazor.Severity.Success);
+            NavManager.NavigateTo($"/teamsbyleague/{model.LeagueId.ToString()}");
+            StateHasChanged();
         }
-        else
+        catch (Exception ex)
         {
-            if (model.File != null)
+            if (KeycloakTokenService.ShouldForceLogout())
             {
-                model.ImageFile = model.File.Name;
-                var uploadKeyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{model.TeamName}/{model.ImageFile}";
-                await AWSService.UploadImages(uploadKeyPath, model.File);
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
             }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
-
-        Models.Team.AddressModel address = new Models.Team.AddressModel(model.FirstName, model.LastName, model.EmailAddress, model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
-        Models.Team.ManagerModel manager = new Models.Team.ManagerModel(model.ManagerFirstName, model.ManagerLastName, model.ManagerEmailAddress);
-        UpdateTeamRequest request = new UpdateTeamRequest(new UpdateTeamRecord(model.Id, model.LeagueId, model.TeamName, address, model.Description, model.ImageFile, (int)model.TeamStatus, manager));
-        Console.WriteLine(request.Team.TeamStatus);
-        await TeamService.UpdateTeam(request);
-        success = true;
-        await TeamLocalCache.DeleteTeamsCache();
-        await TeamLocalCache.DeleteTeamsByNameCache();
-        await TeamLocalCache.DeleteTeamByIdCache(Id);
-        await TeamLocalCache.DeleteTeamsByLeagueCache(model.LeagueId.ToString());
-        Snackbar.Add("Team has been updated.", MudBlazor.Severity.Success);
-        NavManager.NavigateTo($"/teamsbyleague/{model.LeagueId.ToString()}");
-        StateHasChanged();
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)

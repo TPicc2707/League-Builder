@@ -1,0 +1,19 @@
+﻿<MudItem Style="padding-top: 50px;">
+    <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+        <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">
+            <MudStack Row="true" Justify="Justify.Center">
+                <MudAvatar Size="Size.Medium">
+                    <MudImage Src="@Game.AwayTeamImage" Alt="Team Image"></MudImage>
+                </MudAvatar>
+                @Game.AwayTeam.TeamName vs @Game.HomeTeam.TeamName
+                <MudAvatar Size="Size.Medium">
+                    <MudImage Src="@Game.HomeTeamImage" Alt="Team Image"></MudImage>
+                </MudAvatar>
+            </MudStack>
+        </MudText>
+    </MudPaper>
+</MudItem>
+
+@code {
+    [Parameter] public GameModel Game { get; set; }
+}

@@ -1,0 +1,12 @@
+﻿<MudTooltip Text="@Tooltip" Color="Color.Secondary">
+    <MudIconButton Icon="@Icon"
+                   Color="Color.Secondary"
+                   Edge="Edge.Start"
+                   Href="@Href" />
+</MudTooltip>
+
+@code {
+    [Parameter] public string Tooltip { get; set; }
+    [Parameter] public string Icon { get; set; }
+    [Parameter] public string Href { get; set; }
+}

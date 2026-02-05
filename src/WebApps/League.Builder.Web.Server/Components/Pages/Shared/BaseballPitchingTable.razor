@@ -1,0 +1,46 @@
+﻿<MudTable Items="@Stats" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <ColGroup>
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary">W</MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary">L</MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary">IP</MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+        @if (context.Start)
+        {
+            <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
+        }
+        else
+        {
+            <MudTd DataLabel="S"></MudTd>
+        }
+        <MudTd DataLabel="W">@context.Wins</MudTd>
+        <MudTd DataLabel="L">@context.Losses</MudTd>
+        <MudTd DataLabel="IP">@context.Innings</MudTd>
+        <MudTd DataLabel="H">@context.HitsAllowed</MudTd>
+        <MudTd DataLabel="R">@context.PitchingRuns</MudTd>
+        <MudTd DataLabel="BB">@context.WalksAllowed</MudTd>
+        <MudTd DataLabel="K">@context.PitchingStrikeouts</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public IEnumerable<BaseballGameStatsModel> Stats { get; set; }
+}

@@ -1,6 +1,7 @@
 ﻿@page "/baseballleaguestatsleaders/{id}"
 @using League.Builder.Web.Server.Services.Cache
-@inject NavigationManager NavManager;
+@inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject ISeasonService SeasonService
 @inject IStatsService StatsService
 @inject ITeamService TeamService
@@ -13,6 +14,8 @@
 @inject IStatsLocalCacheService StatsLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
 @inject IPlayerLocalCacheService PlayerLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.ReadLeagues)" Context="auth">
@@ -205,7 +208,7 @@
     private string placeholder = "Season";
     private int seasonValue;
     private bool expandSearchPanel = false;
-
+    private IJSObjectReference? _module;
     private GetPlayerByIdResponse PlayerModel { get; set; }
     private GetTeamByIdResponse TeamModel { get; set; }
     private GetLeagueByIdResponse LeagueModel { get; set; }
@@ -216,11 +219,6 @@
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
             if (SeasonsModel == null)
             {
@@ -238,11 +236,15 @@
             await CreateStatsLeadersByLeague(leagueId);
             seasonValue = Season.Year;
             PageLoad = true;
-
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }

@@ -2,26 +2,16 @@
 
 public static class AuthorizationStatus
 {
-    public static async Task<bool> IsUserAccessTokenExpired(IHttpContextAccessor httpContextAccessor)
+
+    public static bool TokenIsExpiringSoon(string expiresAt)
     {
-        var httpContext = httpContextAccessor.HttpContext;
-        var accessToken = await httpContext.GetTokenAsync("access_token");
+        if (string.IsNullOrEmpty(expiresAt))
+            return true; // force refresh if missing
 
-        if (accessToken is null) return false;
+        var expiry = DateTime.Parse(expiresAt).ToUniversalTime();
+        var now = DateTime.UtcNow;
 
-        var securityToken = ConvertJwtStringToJwtSecurityToken(accessToken);
-        var expiry = securityToken.Claims.Where(c => c.Type.Equals("exp")).FirstOrDefault();
-
-        if (expiry != null)
-        {
-            var dateTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(expiry.Value)).DateTime.ToLocalTime();
-            int value = DateTime.Compare(dateTime, DateTime.Now);
-
-            if (value < 0)
-                return true;
-        }
-
-        return false;
+        return expiry <= now.AddSeconds(60);  //refresh with 1 minute left
     }
 
     public static async Task<bool> IsRefreshUserToken(IHttpContextAccessor httpContextAccessor)
@@ -34,7 +24,7 @@ public static class AuthorizationStatus
         var securityToken = ConvertJwtStringToJwtSecurityToken(accessToken);
         var expiry = securityToken.Claims.Where(c => c.Type.Equals("exp")).FirstOrDefault();
 
-        if (expiry != null)
+        if (expiry is not null)
         {
             var dateTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(expiry.Value)).DateTime.ToLocalTime();
             int value = DateTime.Compare(dateTime, DateTime.Now);

@@ -1,11 +1,14 @@
 ﻿@page "/"
 @using League.Builder.Web.Server.Services.Cache
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 <AuthorizeView Roles="@String.Concat(Roles.CreateLeagues, ", ", Roles.CreateTeams, ", ", Roles.CreatePlayers)" Context="auth">
     <Authorized>
@@ -203,23 +206,6 @@
         </NotAuthorized>
     </AuthorizeView>
 </MudItem>
-@*     <MudCarousel Class="mud-width-full" Style="height: 75vh;" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="true" AutoCycle="true" TData="object">
-        <MudCarouselItem Transition="transition">
-            <MudItem class="d-flex" style="height:50%">
-                <MudImage Fluid="true" Src="images/league-builder.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
-            </MudItem>
-        </MudCarouselItem>
-        <MudCarouselItem Transition="transition">
-            <MudItem class="d-flex" style="height:100%">
-                <MudImage Fluid="true" Src="images/baseball-1.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
-            </MudItem>
-        </MudCarouselItem>
-        <MudCarouselItem Transition="transition">
-            <MudItem class="d-flex" style="height:100%">
-                <MudImage Fluid="true" Src="images/basketball.png" Alt="League" Elevation="25" Class="mx-auto my-auto" />
-            </MudItem>
-        </MudCarouselItem>
-    </MudCarousel> *@
 
 @code {
     private Transition transition = Transition.Fade;
@@ -232,44 +218,51 @@
     private Guid teamId;
     private bool PageLoad = false;
     private string UserName = string.Empty;
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
-        var user = HttpContextAccessor.HttpContext.User;
-        UserName = user.Identity.Name;
-
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
+            var user = HttpContextAccessor.HttpContext.User;
+            UserName = user.Identity.Name;
+            if (user != null)
+            {
+                if (user.IsInRole(Roles.ReadLeagues))
+                {
+                    LeagueModel = await LeagueLocalCache.GetLeaguesCache();
+                    if (LeagueModel == null)
+                    {
+                        LeagueModel = await LeagueService.GetLeagues(1, 1000);
+                        await LeagueLocalCache.SetLeaguesCache(LeagueModel);
+                    }
+                    leagueId = LeagueModel.Leagues.First().Id;
+                }
 
-        if(user != null)
+                if (user.IsInRole(Roles.ReadTeams))
+                {
+                    TeamModel = await TeamLocalCache.GetTeamsCache();
+                    if (TeamModel == null)
+                    {
+                        TeamModel = await TeamService.GetTeams(0, 1000);
+                        await TeamLocalCache.SetTeamsCache(TeamModel);
+                    }
+                    teamId = TeamModel.Teams.Data.First().Id;
+
+                }
+            }
+            PageLoad = true;
+        }
+        catch (Exception ex)
         {
-            if (user.IsInRole(Roles.ReadLeagues))
+            if (KeycloakTokenService.ShouldForceLogout())
             {
-                LeagueModel = await LeagueLocalCache.GetLeaguesCache();
-                if(LeagueModel == null)
-                {
-                    LeagueModel = await LeagueService.GetLeagues(1, 1000);
-                    await LeagueLocalCache.SetLeaguesCache(LeagueModel);
-                }
-                leagueId = LeagueModel.Leagues.First().Id;
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
             }
-
-            if (user.IsInRole(Roles.ReadTeams))
-            {
-                TeamModel = await TeamLocalCache.GetTeamsCache();
-                if(TeamModel == null)
-                {
-                    TeamModel = await TeamService.GetTeams(0, 1000);
-                    await TeamLocalCache.SetTeamsCache(TeamModel);
-                }
-                teamId = TeamModel.Teams.Data.First().Id;
-                
-            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
-
-        PageLoad = true;
     }
 
     void SetImageFit(ObjectFit value)

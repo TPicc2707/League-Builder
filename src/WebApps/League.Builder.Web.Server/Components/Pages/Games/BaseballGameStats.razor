@@ -7,7 +7,10 @@
 @inject IPlayerService PlayerService
 @inject IAWSService AWSService
 @inject ISnackbar Snackbar
-@inject NavigationManager NavManager;
+@inject NavigationManager NavManager
+@inject ErrorState ErrorState
+@inject KeycloakTokenService KeycloakTokenService
+@inject IJSRuntime JsRuntime
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IGameLocalCacheService GameLocalCache
 @inject IPlayerLocalCacheService PlayerLocalCache
@@ -19,358 +22,20 @@
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="padding-top: 50px;">
-                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">
-                        <MudStack Row="true" Justify="Justify.Center">
-                            <MudAvatar Size="Size.Medium">
-                                <MudImage Src="@GameModel.Game.AwayTeamImage" Alt="Team Image"></MudImage>
-                            </MudAvatar>
-                            @GameModel.Game.AwayTeam.TeamName vs @GameModel.Game.HomeTeam.TeamName
-                            <MudAvatar Size="Size.Medium">
-                                <MudImage Src="@GameModel.Game.HomeTeamImage" Alt="Team Image"></MudImage>
-                            </MudAvatar>
-                        </MudStack>
-                    </MudText>
-                </MudPaper>
-            </MudItem>
+            <TeamHeader Game="GameModel.Game" />
             <MudItem Style="padding-top: 25px;">
                 <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudTabPanel Text="@String.Concat(GameModel.Game.AwayTeam.TeamName + " Stats")">
-                        <MudItem Style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">AB</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">RBI</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">HBP</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">SB</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TB</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">2B</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">3B</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">HR</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">SF</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                    <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
-                                    <MudTd DataLabel="Runs">@context.Runs</MudTd>
-                                    <MudTd DataLabel="Hits">@context.Hits</MudTd>
-                                    <MudTd DataLabel="RBI">@context.RunsBattedIn</MudTd>
-                                    <MudTd DataLabel="BB">@context.Walks</MudTd>
-                                    <MudTd DataLabel="HBP">@context.HitByPitch</MudTd>
-                                    <MudTd DataLabel="K">@context.Strikeouts</MudTd>
-                                    <MudTd DataLabel="SB">@context.StolenBases</MudTd>
-                                    <MudTd DataLabel="TB">@context.TotalBases</MudTd>
-                                    <MudTd DataLabel="2B">@context.Doubles</MudTd>
-                                    <MudTd DataLabel="3B">@context.Triples</MudTd>
-                                    <MudTd DataLabel="HR">@context.HomeRuns</MudTd>
-                                    <MudTd DataLabel="SF">@context.SacrificeFly</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudItem>
-                        <MudItem Style="padding-top: 25px;">
-                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
-                                <thead>
-                                    <tr class="mud-theme-primary">
-                                        <th></th>
-                                        <th>AB</th>
-                                        <th>R</th>
-                                        <th>H</th>
-                                        <th>RBI</th>
-                                        <th>BB</th>
-                                        <th>HBP</th>
-                                        <th>K</th>
-                                        <th>SB</th>
-                                        <th>TB</th>
-                                        <th>2B</th>
-                                        <th>3B</th>
-                                        <th>HR</th>
-                                        <th>SF</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Totals:</td>
-                                        <td>@AwayTotalAtBats</td>
-                                        <td>@AwayTotalRuns</td>
-                                        <td>@AwayTotalHits</td>
-                                        <td>@AwayTotalRBIs</td>
-                                        <td>@AwayTotalWalks</td>
-                                        <td>@AwayTotalHBPs</td>
-                                        <td>@AwayTotalStrikeouts</td>
-                                        <td>@AwayTotalSBs</td>
-                                        <td>@AwayTotalTBs</td>
-                                        <td>@AwayTotalDoubles</td>
-                                        <td>@AwayTotalTriples</td>
-                                        <td>@AwayTotalHomeRuns</td>
-                                        <td>@AwayTotalSFs</td>
-                                    </tr>
-                                </tbody>
-                            </MudSimpleTable>
-                        </MudItem>
-                        <MudItem Style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">W</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">L</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">IP</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                    @if (context.Start)
-                                    {
-                                        <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
-                                    }
-                                    else
-                                    {
-                                        <MudTd DataLabel="S"></MudTd>
-                                    }
-                                    <MudTd DataLabel="W">@context.Wins</MudTd>
-                                    <MudTd DataLabel="L">@context.Losses</MudTd>
-                                    <MudTd DataLabel="IP">@context.Innings</MudTd>
-                                    <MudTd DataLabel="H">@context.HitsAllowed</MudTd>
-                                    <MudTd DataLabel="R">@context.PitchingRuns</MudTd>
-                                    <MudTd DataLabel="BB">@context.WalksAllowed</MudTd>
-                                    <MudTd DataLabel="K">@context.PitchingStrikeouts</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudItem>
-                        <MudItem Style="padding-top: 25px;">
-                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
-                                <thead>
-                                    <tr class="mud-theme-primary">
-                                        <th></th>
-                                        <th></th>
-                                        <th>W</th>
-                                        <th>L</th>
-                                        <th>IP</th>
-                                        <th>H</th>
-                                        <th>R</th>
-                                        <th>BB</th>
-                                        <th>K</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Totals:</td>
-                                        <td></td>
-                                        <td>@AwayTotalWins</td>
-                                        <td>@AwayTotalLosses</td>
-                                        <td>@AwayTotalInnings</td>
-                                        <td>@AwayTotalHitsAllowed</td>
-                                        <td>@AwayTotalPitchingRuns</td>
-                                        <td>@AwayTotalWalksAllowed</td>
-                                        <td>@AwayTotalPitchingStrikeouts</td>
-                                    </tr>
-                                </tbody>
-                            </MudSimpleTable>
-                        </MudItem>
+                    <MudTabPanel Text="@($"{GameModel.Game.AwayTeam.TeamName} Stats")">
+                        <BaseballHittingTable Stats="Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" />
+                        <BaseballHittingTotals Totals="AwayHittingTotals" />
+                        <BaseballPitchingTable Stats="Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id)" />
+                        <BaseballPitchingTotals Totals="AwayPitchingTotals" />
                     </MudTabPanel>
                     <MudTabPanel Text="@String.Concat(GameModel.Game.HomeTeam.TeamName + " Stats")">
-                        <MudItem Style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">AB</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">RBI</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">HBP</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">SB</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TB</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">2B</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">3B</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">HR</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">SF</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                    <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
-                                    <MudTd DataLabel="Runs">@context.Runs</MudTd>
-                                    <MudTd DataLabel="Hits">@context.Hits</MudTd>
-                                    <MudTd DataLabel="RBI">@context.RunsBattedIn</MudTd>
-                                    <MudTd DataLabel="BB">@context.Walks</MudTd>
-                                    <MudTd DataLabel="HBP">@context.HitByPitch</MudTd>
-                                    <MudTd DataLabel="K">@context.Strikeouts</MudTd>
-                                    <MudTd DataLabel="SB">@context.StolenBases</MudTd>
-                                    <MudTd DataLabel="TB">@context.TotalBases</MudTd>
-                                    <MudTd DataLabel="2B">@context.Doubles</MudTd>
-                                    <MudTd DataLabel="3B">@context.Triples</MudTd>
-                                    <MudTd DataLabel="HR">@context.HomeRuns</MudTd>
-                                    <MudTd DataLabel="SF">@context.SacrificeFly</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudItem>
-                        <MudItem Style="padding-top: 25px;">
-                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
-                                <thead>
-                                    <tr class="mud-theme-primary">
-                                        <th></th>
-                                        <th>AB</th>
-                                        <th>R</th>
-                                        <th>H</th>
-                                        <th>RBI</th>
-                                        <th>BB</th>
-                                        <th>HBP</th>
-                                        <th>K</th>
-                                        <th>SB</th>
-                                        <th>TB</th>
-                                        <th>2B</th>
-                                        <th>3B</th>
-                                        <th>HR</th>
-                                        <th>SF</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Totals:</td>
-                                        <td>@HomeTotalAtBats</td>
-                                        <td>@HomeTotalRuns</td>
-                                        <td>@HomeTotalHits</td>
-                                        <td>@HomeTotalRBIs</td>
-                                        <td>@HomeTotalWalks</td>
-                                        <td>@HomeTotalHBPs</td>
-                                        <td>@HomeTotalStrikeouts</td>
-                                        <td>@HomeTotalSBs</td>
-                                        <td>@HomeTotalTBs</td>
-                                        <td>@HomeTotalDoubles</td>
-                                        <td>@HomeTotalTriples</td>
-                                        <td>@HomeTotalHomeRuns</td>
-                                        <td>@HomeTotalSFs</td>
-                                    </tr>
-                                </tbody>
-                            </MudSimpleTable>
-                        </MudItem>
-                        <MudItem Style="padding-top: 25px;">
-                            <MudTable Items="@Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" Hover="true" Class="border border-solid" Style="border-color: #000000">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">W</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">L</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">IP</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                    @if (context.Start)
-                                    {
-                                        <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
-                                    }
-                                    else
-                                    {
-                                        <MudTd DataLabel="S"></MudTd>
-                                    }
-                                    <MudTd DataLabel="W">@context.Wins</MudTd>
-                                    <MudTd DataLabel="L">@context.Losses</MudTd>
-                                    <MudTd DataLabel="IP">@context.Innings</MudTd>
-                                    <MudTd DataLabel="H">@context.HitsAllowed</MudTd>
-                                    <MudTd DataLabel="R">@context.PitchingRuns</MudTd>
-                                    <MudTd DataLabel="BB">@context.WalksAllowed</MudTd>
-                                    <MudTd DataLabel="K">@context.PitchingStrikeouts</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudItem>
-                        <MudItem Style="padding-top: 25px;">
-                            <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
-                                <thead>
-                                    <tr class="mud-theme-primary">
-                                        <th></th>
-                                        <th></th>
-                                        <th>W</th>
-                                        <th>L</th>
-                                        <th>IP</th>
-                                        <th>H</th>
-                                        <th>R</th>
-                                        <th>BB</th>
-                                        <th>K</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Totals:</td>
-                                        <td></td>
-                                        <td>@HomeTotalWins</td>
-                                        <td>@HomeTotalLosses</td>
-                                        <td>@HomeTotalInnings</td>
-                                        <td>@HomeTotalHitsAllowed</td>
-                                        <td>@HomeTotalPitchingRuns</td>
-                                        <td>@HomeTotalWalksAllowed</td>
-                                        <td>@HomeTotalPitchingStrikeouts</td>
-                                    </tr>
-                                </tbody>
-                            </MudSimpleTable>
-                        </MudItem>
+                        <BaseballHittingTable Stats="Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" />
+                        <BaseballHittingTotals Totals="HomeHittingTotals" />
+                        <BaseballPitchingTable Stats="Model.Where(x => x.TeamId == GameModel.Game.HomeTeam.Id)" />
+                        <BaseballPitchingTotals Totals="HomePitchingTotals" />
                     </MudTabPanel>
                 </MudTabs>
 
@@ -390,7 +55,7 @@
     [Parameter]
     public string Id { get; set; }
     private bool PageLoad = false;
-    List<BaseballStatsModel> Model = new List<BaseballStatsModel>();
+    List<BaseballGameStatsModel> Model = new List<BaseballGameStatsModel>();
     GetGameByIdResponse GameModel { get; set; }
     GetPlayersByTeamResponse AwayPlayersModel { get; set; }
     GetPlayersByTeamResponse HomePlayersModel { get; set; }
@@ -399,6 +64,7 @@
     GetLeagueByIdResponse LeagueByIdResponse { get; set; }
     GetTeamByIdResponse AwayTeamByIdResponse { get; set; }
     GetTeamByIdResponse HomeTeamByIdResponse { get; set; }
+    private IJSObjectReference? _module;
 
     private int AwayTotalAtBats = 0;
     private int AwayTotalHits = 0;
@@ -422,6 +88,36 @@
     private int AwayTotalWalksAllowed = 0;
     private int AwayTotalPitchingStrikeouts = 0;
 
+    private BaseballHittingTotalsModel AwayHittingTotals => new()
+    {
+        AtBats = AwayTotalAtBats,
+        Runs = AwayTotalRuns,
+        Hits = AwayTotalHits,
+        RBIs = AwayTotalRBIs,
+        Walks = AwayTotalWalks,
+        HBPs = AwayTotalHBPs,
+        Strikeouts = AwayTotalStrikeouts,
+        SBs = AwayTotalSBs,
+        TBs = AwayTotalTBs,
+        Doubles = AwayTotalDoubles,
+        Triples = AwayTotalTriples,
+        HomeRuns = AwayTotalHomeRuns,
+        SFs = AwayTotalSFs
+    };
+
+    private BaseballPitchingTotalsModel AwayPitchingTotals => new()
+    {
+        Wins = AwayTotalWins,
+        Losses = AwayTotalLosses,
+        Runs = AwayTotalPitchingRuns,
+        Saves = AwayTotalSaves,
+        Innings = AwayTotalInnings,
+        HitsAllowed = AwayTotalHitsAllowed,
+        WalksAllowed = AwayTotalWalksAllowed,
+        Strikeouts = AwayTotalPitchingStrikeouts
+    };
+
+
     private int HomeTotalAtBats = 0;
     private int HomeTotalHits = 0;
     private int HomeTotalRuns = 0;
@@ -444,16 +140,41 @@
     private int HomeTotalWalksAllowed = 0;
     private int HomeTotalPitchingStrikeouts = 0;
 
+    private BaseballHittingTotalsModel HomeHittingTotals => new()
+    {
+        AtBats = HomeTotalAtBats,
+        Runs = HomeTotalRuns,
+        Hits = HomeTotalHits,
+        RBIs = HomeTotalRBIs,
+        Walks = HomeTotalWalks,
+        HBPs = HomeTotalHBPs,
+        Strikeouts = HomeTotalStrikeouts,
+        SBs = HomeTotalSBs,
+        TBs = HomeTotalTBs,
+        Doubles = HomeTotalDoubles,
+        Triples = HomeTotalTriples,
+        HomeRuns = HomeTotalHomeRuns,
+        SFs = HomeTotalSFs
+    };
+
+    private BaseballPitchingTotalsModel HomePitchingTotals => new()
+    {
+        Wins = HomeTotalWins,
+        Losses = HomeTotalLosses,
+        Runs = HomeTotalPitchingRuns,
+        Saves = HomeTotalSaves,
+        Innings = HomeTotalInnings,
+        HitsAllowed = HomeTotalHitsAllowed,
+        WalksAllowed = HomeTotalWalksAllowed,
+        Strikeouts = HomeTotalPitchingStrikeouts
+    };
+
+
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             var gameId = Guid.Parse(Id);
             GameModel = await GameLocalCache.GetGameByIdCache(Id);
             if (GameModel == null)
@@ -491,7 +212,7 @@
                 var playerStat = AwayPlayerStatsModel.BaseballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
                 if (playerStat is not null)
                 {
-                    Model.Add(new BaseballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                    Model.Add(new BaseballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
                                                         playerStat.HittingStats.AtBats, playerStat.HittingStats.Hits, playerStat.HittingStats.TotalBases, playerStat.HittingStats.Runs, playerStat.HittingStats.Doubles,
                                                         playerStat.HittingStats.Triples, playerStat.HittingStats.HomeRuns, playerStat.HittingStats.RunsBattedIn, playerStat.HittingStats.StolenBases,
                                                         playerStat.HittingStats.Strikeouts, playerStat.HittingStats.Walks, playerStat.HittingStats.HitByPitch, playerStat.HittingStats.SacrificeFly, playerStat.PitchingStats.Wins, playerStat.PitchingStats.Losses, playerStat.PitchingStats.Runs,
@@ -520,16 +241,17 @@
                     AwayTotalHitsAllowed += playerStat.PitchingStats.HitsAllowed;
                     AwayTotalWalksAllowed += playerStat.PitchingStats.WalksAllowed;
                     AwayTotalPitchingStrikeouts += playerStat.PitchingStats.PitchingStrikeouts;
+
                 }
                 else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                    Model.Add(new BaseballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+                    Model.Add(new BaseballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
             }
             foreach (var player in HomePlayersModel.Players)
             {
                 var playerStat = HomePlayerStatsModel.BaseballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
                 if (playerStat is not null)
                 {
-                    Model.Add(new BaseballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                    Model.Add(new BaseballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
                                             playerStat.HittingStats.AtBats, playerStat.HittingStats.Hits, playerStat.HittingStats.TotalBases, playerStat.HittingStats.Runs, playerStat.HittingStats.Doubles,
                                             playerStat.HittingStats.Triples, playerStat.HittingStats.HomeRuns, playerStat.HittingStats.RunsBattedIn, playerStat.HittingStats.StolenBases,
                                             playerStat.HittingStats.Strikeouts, playerStat.HittingStats.Walks, playerStat.HittingStats.HitByPitch, playerStat.HittingStats.SacrificeFly, playerStat.PitchingStats.Wins, playerStat.PitchingStats.Losses, playerStat.PitchingStats.Runs,
@@ -562,14 +284,18 @@
 
                 }
                 else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                    Model.Add(new BaseballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+                    Model.Add(new BaseballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
             }
             PageLoad = true;
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -601,86 +327,5 @@
         GameModel.Game.HomeTeamImage = await AWSService.GetImage(homeTeamKeyPath);
     }
 
-    public class BaseballStatsModel
-    {
-        public BaseballStatsModel()
-        {
-
-        }
-
-        public BaseballStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName)
-        {
-            LeagueId = leagueId;
-            TeamId = teamId;
-            PlayerId = playerId;
-            SeasonId = seasonId;
-            GameId = gameId;
-            PlayerName = String.Concat(firstName + " " + lastName);
-        }
-
-        public BaseballStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName,
-                                       int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn,
-                                        int stolenBases, int strikeouts, int walks, int hitByPitch, int sacrificeFly, int wins, int losses, int pitchingRuns, bool start, int saves, decimal innings,
-                                        int hitsAllowed, int walksAllowed, int pitchingStrikeouts)
-        {
-            LeagueId = leagueId;
-            TeamId = teamId;
-            PlayerId = playerId;
-            SeasonId = seasonId;
-            GameId = gameId;
-            PlayerName = String.Concat(firstName + " " + lastName);
-            AtBats = atBats;
-            Hits = hits;
-            TotalBases = totalBases;
-            Runs = runs;
-            Doubles = doubles;
-            Triples = triples;
-            HomeRuns = homeRuns;
-            RunsBattedIn = runsBattedIn;
-            StolenBases = stolenBases;
-            Strikeouts = strikeouts;
-            Walks = walks;
-            HitByPitch = hitByPitch;
-            SacrificeFly = sacrificeFly;
-            Wins = wins;
-            Losses = losses;
-            PitchingRuns = pitchingRuns;
-            Start = start;
-            Saves = saves;
-            Innings = innings;
-            HitsAllowed = hitsAllowed;
-            WalksAllowed = walksAllowed;
-            PitchingStrikeouts = pitchingStrikeouts;
-        }
-
-        public Guid LeagueId { get; set; }
-        public Guid TeamId { get; set; }
-        public Guid PlayerId { get; set; }
-        public Guid SeasonId { get; set; }
-        public Guid GameId { get; set; }
-        public string PlayerName { get; set; }
-        public int AtBats { get; set; }
-        public int Hits { get; set; }
-        public int TotalBases { get; set; }
-        public int Runs { get; set; }
-        public int Doubles { get; set; }
-        public int Triples { get; set; }
-        public int HomeRuns { get; set; }
-        public int RunsBattedIn { get; set; }
-        public int StolenBases { get; set; }
-        public int Strikeouts { get; set; }
-        public int Walks { get; set; }
-        public int HitByPitch { get; set; }
-        public int SacrificeFly { get; set; }
-        public int Wins { get; set; }
-        public int Losses { get; set; }
-        public int PitchingRuns { get; set; }
-        public bool Start { get; set; }
-        public int Saves { get; set; }
-        public decimal Innings { get; set; }
-        public int HitsAllowed { get; set; }
-        public int WalksAllowed { get; set; }
-        public int PitchingStrikeouts { get; set; }
-    }
 }
 

@@ -1,5 +1,7 @@
 ﻿@page "/support"
 @inject ISupportService SupportService
+@inject ErrorState ErrorState
+@inject NavigationManager NavManager
 
 <MudItem Style="padding-top: 50px;">
     <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
@@ -44,8 +46,17 @@
 
     private async Task DoSend(MouseEventArgs e)
     {
-        PageLoad = false;
-        Response = await SupportService.SupportChat(queryTerm);
-        PageLoad = true;
+        try
+        {
+            PageLoad = false;
+            Response = await SupportService.SupportChat(queryTerm);
+            PageLoad = true;
+
+        }
+        catch (Exception ex)
+        {
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
+        }
     }
 }

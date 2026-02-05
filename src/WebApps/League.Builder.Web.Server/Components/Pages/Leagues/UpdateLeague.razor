@@ -3,6 +3,7 @@
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
 @inject IAWSService AWSService
@@ -10,8 +11,10 @@
 @inject IDialogService DialogService
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
-<AuthorizeView Roles="@String.Concat(Roles.UpdateLeagues, ", ", Roles.ReadLeagues)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.UpdateLeagues)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -150,7 +153,7 @@
 
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 @code {
@@ -170,16 +173,12 @@
     private bool canProceed = false;
     private List<string> errors = new();
     private FluentValidationValidator fluentValidationValidator;
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             var leagueId = Guid.Parse(Id);
             LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
             if (LeagueByIdResponse == null)
@@ -205,11 +204,15 @@
             model.Description = LeagueByIdResponse.League.Description;
             model.ImageFile = LeagueByIdResponse.League.ImageFile;
             PageLoad = true;
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -260,11 +263,15 @@
             Snackbar.Add("League has been updated.", MudBlazor.Severity.Success);
             NavManager.NavigateTo("/leagues");
             StateHasChanged();
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }

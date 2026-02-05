@@ -1,6 +1,12 @@
-﻿@inherits LayoutComponentBase
-@inject ILocalStorageService localStorage
+﻿@using League.Builder.Web.Server.Models
+@inherits LayoutComponentBase
+@inject IDistributedCache Cache
 @inject ISnackbar Snackbar
+@inject NavigationManager NavManager
+@inject IHttpClientFactory ClientFactory
+@inject IJSRuntime JS
+@inject ErrorState ErrorState
+@inject IHttpContextAccessor HttpContextAccessor
 
 <MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="MyCustomTheme" />
 <MudPopoverProvider />
@@ -52,13 +58,18 @@
         <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowCircleUp" />
     </MudScrollToTop>
 </MudLayout>
+<form id="logoutForm" method="post" action="/authentication/signout">
+    <AntiforgeryToken />
+</form>
 @code {
     bool _drawerOpen = false;
     private string version = string.Empty;
     private string date = DateTime.Now.Year.ToString();
     private bool _open = false;
+    private bool _initialized = false;
     private bool _isDarkMode;
     private MudThemeProvider _mudThemeProvider;
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
@@ -72,7 +83,12 @@
         {
             _isDarkMode = await _mudThemeProvider.GetSystemPreference();
             await _mudThemeProvider.WatchSystemPreference(OnSystemDarkModeChanged);
+            _initialized = true;
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+            _ = CheckRefreshOnLoad();
             StateHasChanged();
+
+            NavManager.LocationChanged += OnLocationChanged;
         }
     }
 
@@ -85,8 +101,66 @@
 
     private async Task ClearCache()
     {
-        await localStorage.ClearAsync();
         Snackbar.Add("All Local Cache has been cleared from application.", MudBlazor.Severity.Success);
+    }
+
+    private async Task CheckRefreshOnLoad()
+    {
+        try
+        {
+            var result = await _module.InvokeAsync<RefreshResult>("refreshToken");
+
+            if (result.Anonymous)
+                return;
+
+            if (!result.Active)
+            {
+                ErrorState.Message = "Your session has expired. Please log in again.";
+                NavManager.NavigateTo("/error", forceLoad: true);
+                return;
+            }
+
+            if (result.Refreshed)
+                Console.WriteLine("Token refreshed");
+            else
+                Console.WriteLine("No refresh needed");
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine($"Unexpected error in CheckRefreshLoad: {ex.Message}");
+
+        }
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        try
+        {
+            var result = await _module.InvokeAsync<RefreshResult>("refreshToken");
+
+            if (result.Anonymous)
+                return;
+
+            if (!result.Active)
+            {
+                ErrorState.Message = "Your session has expired. Please log in again.";
+                NavManager.NavigateTo("/error", forceLoad: true);
+                return;
+            }
+
+            if (result.Refreshed)
+                Console.WriteLine("Token refreshed");
+            else
+                Console.WriteLine("No refresh needed");
+        }
+        catch (TaskCanceledException)
+        {
+            
+        }
+        catch (Exception ex) 
+        {
+            Console.WriteLine($"Unexpected error in OnLocationChanged: {ex.Message}");
+        }
     }
 
     private void ToggleOpen() => _open = !_open;

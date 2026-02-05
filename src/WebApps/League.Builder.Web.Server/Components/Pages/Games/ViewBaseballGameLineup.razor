@@ -4,7 +4,10 @@
 @inject IPlayerService PlayerService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IAWSService AWSService
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 <AuthorizeView Roles="@Roles.ReadGames" Context="auth">
     <Authorized>
@@ -23,7 +26,7 @@
                                  <MudItem xs="12" md="12">
                                      <MudStack Row="true">
                                         <MudItem xs="6" md="6">
-                                            <MudPaper Class="ma-4 flex-grow-1">
+                                            <MudPaper Class="ma-4 flex-grow-1 border border-solid" Style=" border-color: #000000">
                                                 <MudList T="string" Class="d-flex flex-column mud-height-full" Color="Color.Secondary">
                                                     <MudItem Class="mud-theme-primary">
                                                         <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Lineup</MudText>
@@ -36,7 +39,7 @@
                                             </MudPaper>
                                         </MudItem>
                                         <MudItem xs="6" md="6">
-                                            <MudPaper Class="ma-4 flex-grow-1">
+                                            <MudPaper Class="ma-4 flex-grow-1 border border-solid" Style=" border-color: #000000">
                                                 <MudList T="string" Class="d-flex flex-column mud-height-full" Color="Color.Secondary">
                                                     <MudItem Class="mud-theme-primary">
                                                         <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Bench</MudText>
@@ -70,7 +73,7 @@
                                 <MudItem xs="12" md="12">
                                     <MudStack Row="true">
                                         <MudItem xs="6" md="6">
-                                            <MudPaper Class="ma-4 flex-grow-1">
+                                            <MudPaper Class="ma-4 flex-grow-1 border border-solid" Style=" border-color: #000000">
                                                 <MudList T="string" Class="d-flex flex-column mud-height-full" Color="Color.Secondary">
                                                     <MudItem Class="mud-theme-primary">
                                                         <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Lineup</MudText>
@@ -83,7 +86,7 @@
                                             </MudPaper>
                                         </MudItem>
                                         <MudItem xs="6" md="6">
-                                            <MudPaper Class="ma-4 flex-grow-1">
+                                            <MudPaper Class="ma-4 flex-grow-1 border border-solid" Style=" border-color: #000000">
                                                 <MudList T="string" Class="d-flex flex-column mud-height-full" Color="Color.Secondary">
                                                     <MudItem Class="mud-theme-primary">
                                                         <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Bench</MudText>
@@ -141,16 +144,12 @@
     private List<LineupListItem> HomeLineup = new();
     private List<PlayerModel> AwayPitchers = new();
     private List<PlayerModel> HomePitchers = new();
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             var gameId = Guid.Parse(Id);
             GameByIdResponse = await GameService.GetGameById(gameId);
 
@@ -158,12 +157,19 @@
             await SetupHomeTeam(gameId);
 
             PageLoad = true;
+
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
+
     }
 
     private async Task SetupAwayTeam(Guid gameId)

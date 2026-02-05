@@ -1,0 +1,42 @@
+﻿<MudSimpleTable Class="border border-solid" Style="border-color: #000000">
+    <thead>
+        <tr class="mud-theme-primary">
+            <th></th>
+            <th>AB</th>
+            <th>R</th>
+            <th>H</th>
+            <th>RBI</th>
+            <th>BB</th>
+            <th>HBP</th>
+            <th>K</th>
+            <th>SB</th>
+            <th>TB</th>
+            <th>2B</th>
+            <th>3B</th>
+            <th>HR</th>
+            <th>SF</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Totals:</td>
+            <td>@Totals.AtBats</td>
+            <td>@Totals.Runs</td>
+            <td>@Totals.Hits</td>
+            <td>@Totals.RBIs</td>
+            <td>@Totals.Walks</td>
+            <td>@Totals.HBPs</td>
+            <td>@Totals.Strikeouts</td>
+            <td>@Totals.SBs</td>
+            <td>@Totals.TBs</td>
+            <td>@Totals.Doubles</td>
+            <td>@Totals.Triples</td>
+            <td>@Totals.HomeRuns</td>
+            <td>@Totals.SFs</td>
+        </tr>
+    </tbody>
+</MudSimpleTable>
+
+@code {
+    [Parameter] public BaseballHittingTotalsModel Totals { get; set; }
+}

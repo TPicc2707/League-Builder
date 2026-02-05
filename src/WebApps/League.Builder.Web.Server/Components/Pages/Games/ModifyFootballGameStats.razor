@@ -8,15 +8,17 @@
 @inject IAWSService AWSService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IGameLocalCacheService GameLocalCache
 @inject IPlayerLocalCacheService PlayerLocalCache
 @inject IStatsLocalCacheService StatsLocalCache
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
-
-<AuthorizeView Roles="@String.Concat(Roles.CreateStats, ", ", Roles.UpdateStats, ", ", Roles.ReadStats, ", ", Roles.ReadGames, ", ", Roles.ReadPlayers)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.CreateStats, ", ", Roles.UpdateStats)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -1039,7 +1041,7 @@
     GetLeagueByIdResponse LeagueByIdResponse { get; set; }
     GetTeamByIdResponse AwayTeamByIdResponse { get; set; }
     GetTeamByIdResponse HomeTeamByIdResponse { get; set; }
-
+    private IJSObjectReference? _module;
     GetPlayersByTeamResponse AwayPlayersModel { get; set; }
     GetPlayersByTeamResponse HomePlayersModel { get; set; }
     GetFootballStatsByTeamResponse AwayPlayerStatsModel { get; set; }
@@ -1118,13 +1120,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-       try
+        try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             var gameId = Guid.Parse(Id);
             GameModel = await GameLocalCache.GetGameByIdCache(Id);
             if (GameModel == null)
@@ -1164,18 +1161,18 @@
                 if (playerStat is not null)
                 {
                     Model.Add(new CreateFootballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
-                                                       playerStat.OffensiveStats.PassingCompletions, playerStat.OffensiveStats.PassingAttempts, playerStat.OffensiveStats.PassingYards,
-                                                       playerStat.OffensiveStats.LongestPassingPlay, playerStat.OffensiveStats.PassingTouchdowns, playerStat.OffensiveStats.PassingInterceptions,
-                                                       playerStat.OffensiveStats.Sacks, playerStat.OffensiveStats.RushingAttempts, playerStat.OffensiveStats.RushingYards,
-                                                       playerStat.OffensiveStats.LongestRushingPlay, playerStat.OffensiveStats.RushingTouchdowns, playerStat.OffensiveStats.RushingFumbles, playerStat.OffensiveStats.RushingFumblesLost,
-                                                       playerStat.OffensiveStats.Receptions, playerStat.OffensiveStats.Targets, playerStat.OffensiveStats.ReceivingYards, playerStat.OffensiveStats.ReceivingTouchdowns,
-                                                       playerStat.OffensiveStats.ReceivingFumbles, playerStat.OffensiveStats.ReceivingFumblesLost, playerStat.OffensiveStats.YardsAfterCatch,
-                                                       playerStat.DefensiveStats.Tackles, playerStat.DefensiveStats.Sacks, playerStat.DefensiveStats.TacklesForLoss, playerStat.DefensiveStats.PassesDefended,
-                                                       playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
-                                                       playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
-                                                       playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
-                                                       playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
-                                                       playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
+                                                        playerStat.OffensiveStats.PassingCompletions, playerStat.OffensiveStats.PassingAttempts, playerStat.OffensiveStats.PassingYards,
+                                                        playerStat.OffensiveStats.LongestPassingPlay, playerStat.OffensiveStats.PassingTouchdowns, playerStat.OffensiveStats.PassingInterceptions,
+                                                        playerStat.OffensiveStats.Sacks, playerStat.OffensiveStats.RushingAttempts, playerStat.OffensiveStats.RushingYards,
+                                                        playerStat.OffensiveStats.LongestRushingPlay, playerStat.OffensiveStats.RushingTouchdowns, playerStat.OffensiveStats.RushingFumbles, playerStat.OffensiveStats.RushingFumblesLost,
+                                                        playerStat.OffensiveStats.Receptions, playerStat.OffensiveStats.Targets, playerStat.OffensiveStats.ReceivingYards, playerStat.OffensiveStats.ReceivingTouchdowns,
+                                                        playerStat.OffensiveStats.ReceivingFumbles, playerStat.OffensiveStats.ReceivingFumblesLost, playerStat.OffensiveStats.YardsAfterCatch,
+                                                        playerStat.DefensiveStats.Tackles, playerStat.DefensiveStats.Sacks, playerStat.DefensiveStats.TacklesForLoss, playerStat.DefensiveStats.PassesDefended,
+                                                        playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
+                                                        playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
+                                                        playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
+                                                        playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
+                                                        playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
 
                     AwayTotalPassingCompletions += playerStat.OffensiveStats.PassingCompletions;
                     AwayTotalPassingAttempts += playerStat.OffensiveStats.PassingAttempts;
@@ -1225,18 +1222,18 @@
                 if (playerStat is not null)
                 {
                     Model.Add(new CreateFootballStatsForm(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
-                                                       playerStat.OffensiveStats.PassingCompletions, playerStat.OffensiveStats.PassingAttempts, playerStat.OffensiveStats.PassingYards,
-                                                       playerStat.OffensiveStats.LongestPassingPlay, playerStat.OffensiveStats.PassingTouchdowns, playerStat.OffensiveStats.PassingInterceptions,
-                                                       playerStat.OffensiveStats.Sacks, playerStat.OffensiveStats.RushingAttempts, playerStat.OffensiveStats.RushingYards,
-                                                       playerStat.OffensiveStats.LongestRushingPlay, playerStat.OffensiveStats.RushingTouchdowns, playerStat.OffensiveStats.RushingFumbles, playerStat.OffensiveStats.RushingFumblesLost,
-                                                       playerStat.OffensiveStats.Receptions, playerStat.OffensiveStats.Targets, playerStat.OffensiveStats.ReceivingYards, playerStat.OffensiveStats.ReceivingTouchdowns,
-                                                       playerStat.OffensiveStats.ReceivingFumbles, playerStat.OffensiveStats.ReceivingFumblesLost, playerStat.OffensiveStats.YardsAfterCatch,
-                                                       playerStat.DefensiveStats.Tackles, playerStat.DefensiveStats.Sacks, playerStat.DefensiveStats.TacklesForLoss, playerStat.DefensiveStats.PassesDefended,
-                                                       playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
-                                                       playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
-                                                       playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
-                                                       playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
-                                                       playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
+                                                        playerStat.OffensiveStats.PassingCompletions, playerStat.OffensiveStats.PassingAttempts, playerStat.OffensiveStats.PassingYards,
+                                                        playerStat.OffensiveStats.LongestPassingPlay, playerStat.OffensiveStats.PassingTouchdowns, playerStat.OffensiveStats.PassingInterceptions,
+                                                        playerStat.OffensiveStats.Sacks, playerStat.OffensiveStats.RushingAttempts, playerStat.OffensiveStats.RushingYards,
+                                                        playerStat.OffensiveStats.LongestRushingPlay, playerStat.OffensiveStats.RushingTouchdowns, playerStat.OffensiveStats.RushingFumbles, playerStat.OffensiveStats.RushingFumblesLost,
+                                                        playerStat.OffensiveStats.Receptions, playerStat.OffensiveStats.Targets, playerStat.OffensiveStats.ReceivingYards, playerStat.OffensiveStats.ReceivingTouchdowns,
+                                                        playerStat.OffensiveStats.ReceivingFumbles, playerStat.OffensiveStats.ReceivingFumblesLost, playerStat.OffensiveStats.YardsAfterCatch,
+                                                        playerStat.DefensiveStats.Tackles, playerStat.DefensiveStats.Sacks, playerStat.DefensiveStats.TacklesForLoss, playerStat.DefensiveStats.PassesDefended,
+                                                        playerStat.DefensiveStats.DefensiveInterceptions, playerStat.DefensiveStats.DefensiveInterceptionYards, playerStat.DefensiveStats.LongestDefensiveInterceptionPlay,
+                                                        playerStat.DefensiveStats.DefensiveTouchdowns, playerStat.DefensiveStats.ForcedFumbles, playerStat.DefensiveStats.RecoveredFumbles,
+                                                        playerStat.KickingStats.FieldGoalsMade, playerStat.KickingStats.FieldGoalsAttempted, playerStat.KickingStats.ExtraPointsMade, playerStat.KickingStats.ExtraPointsAttempted,
+                                                        playerStat.KickingStats.LongestKick, playerStat.KickingStats.Points,
+                                                        playerStat.KickingStats.Punts, playerStat.KickingStats.PuntingYards, playerStat.KickingStats.LongestPunt));
 
                     HomeTotalPassingCompletions += playerStat.OffensiveStats.PassingCompletions;
                     HomeTotalPassingAttempts += playerStat.OffensiveStats.PassingAttempts;
@@ -1283,7 +1280,12 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -1481,15 +1483,15 @@
                                                                 form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
 
                     UpdateFootballDefensiveStatsModel defensiveStatsModel = new UpdateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                                  form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                                  form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
+                                                                                                                    form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
+                                                                                                                    form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                     UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
                                                                                                             form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                     UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, passingStatSelectedItem.LeagueId, passingStatSelectedItem.TeamId,
-                                                                                               passingStatSelectedItem.PlayerId, passingStatSelectedItem.SeasonId,
-                                                                                               passingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
+                                                                                                passingStatSelectedItem.PlayerId, passingStatSelectedItem.SeasonId,
+                                                                                                passingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
 
                     UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
                     await StatsService.UpdateFootballStats(request);
@@ -1532,15 +1534,15 @@
                                                                 form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
 
                     CreateFootballDefensiveStatsModel defensiveStatsModel = new CreateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                                  form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                                  form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
+                                                                                                                    form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
+                                                                                                                    form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                     CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
                                                                                                             form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                     CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(passingStatSelectedItem.LeagueId, passingStatSelectedItem.TeamId,
-                                                                                               passingStatSelectedItem.PlayerId, passingStatSelectedItem.SeasonId,
-                                                                                               passingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
+                                                                                                passingStatSelectedItem.PlayerId, passingStatSelectedItem.SeasonId,
+                                                                                                passingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
 
                     CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
 
@@ -1575,11 +1577,15 @@
 
                 }
             }
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -1609,15 +1615,15 @@
                                                                 form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
 
                     UpdateFootballDefensiveStatsModel defensiveStatsModel = new UpdateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                                  form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                                  form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
+                                                                                                                    form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
+                                                                                                                    form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                     UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
                                                                                                             form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                     UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, rushingStatSelectedItem.LeagueId, rushingStatSelectedItem.TeamId,
-                                                                                               rushingStatSelectedItem.PlayerId, rushingStatSelectedItem.SeasonId,
-                                                                                               rushingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
+                                                                                                rushingStatSelectedItem.PlayerId, rushingStatSelectedItem.SeasonId,
+                                                                                                rushingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
 
                     UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
                     await StatsService.UpdateFootballStats(request);
@@ -1658,15 +1664,15 @@
                                                                 form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
 
                     CreateFootballDefensiveStatsModel defensiveStatsModel = new CreateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                                  form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                                  form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
+                                                                                                                    form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
+                                                                                                                    form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                     CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
                                                                                                             form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                     CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(rushingStatSelectedItem.LeagueId, rushingStatSelectedItem.TeamId,
-                                                                                               rushingStatSelectedItem.PlayerId, rushingStatSelectedItem.SeasonId,
-                                                                                               rushingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
+                                                                                                rushingStatSelectedItem.PlayerId, rushingStatSelectedItem.SeasonId,
+                                                                                                rushingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
 
                     CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
 
@@ -1702,7 +1708,12 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -1732,15 +1743,15 @@
                                                                 receivingStatSelectedItem.ReceivingFumbles, receivingStatSelectedItem.ReceivingFumblesLost, receivingStatSelectedItem.YardsAfterCatch);
 
                     UpdateFootballDefensiveStatsModel defensiveStatsModel = new UpdateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                                  form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                                  form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
+                                                                                                                    form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
+                                                                                                                    form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                     UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
                                                                                                             form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                     UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, receivingStatSelectedItem.LeagueId, receivingStatSelectedItem.TeamId,
-                                                                                               receivingStatSelectedItem.PlayerId, receivingStatSelectedItem.SeasonId,
-                                                                                               receivingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
+                                                                                                receivingStatSelectedItem.PlayerId, receivingStatSelectedItem.SeasonId,
+                                                                                                receivingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
 
                     UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
                     await StatsService.UpdateFootballStats(request);
@@ -1785,15 +1796,15 @@
                                                                 receivingStatSelectedItem.ReceivingFumbles, receivingStatSelectedItem.ReceivingFumblesLost, receivingStatSelectedItem.YardsAfterCatch);
 
                     CreateFootballDefensiveStatsModel defensiveStatsModel = new CreateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss, form.PassesDefended,
-                                                                                                                  form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
-                                                                                                                  form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
+                                                                                                                    form.DefensiveInterceptions, form.DefensiveInterceptionYards, form.LongestDefensiveInterceptionPlay,
+                                                                                                                    form.DefensiveTouchdowns, form.ForcedFumbles, form.RecoveredFumbles);
 
                     CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
                                                                                                             form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
 
                     CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(receivingStatSelectedItem.LeagueId, receivingStatSelectedItem.TeamId,
-                                                                                               receivingStatSelectedItem.PlayerId, receivingStatSelectedItem.SeasonId,
-                                                                                               receivingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
+                                                                                                receivingStatSelectedItem.PlayerId, receivingStatSelectedItem.SeasonId,
+                                                                                                receivingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
 
                     CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
 
@@ -1832,7 +1843,12 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -1883,96 +1899,101 @@
 
                     if (defensiveStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
                     {
-                    AwayTotalTackles += defensiveStatSelectedItem.Tackles - gameStat.DefensiveStats.Tackles;
-                    AwayTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks - gameStat.DefensiveStats.Sacks;
-                    AwayTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss - gameStat.DefensiveStats.TacklesForLoss;
-                    AwayTotalPassesDefended += defensiveStatSelectedItem.PassesDefended - gameStat.DefensiveStats.PassesDefended;
-                    AwayTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions - gameStat.DefensiveStats.DefensiveInterceptions;
-                    AwayTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards - gameStat.DefensiveStats.DefensiveInterceptionYards;
-                    AwayTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns - gameStat.DefensiveStats.DefensiveTouchdowns;
-                    AwayTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles - gameStat.DefensiveStats.ForcedFumbles;
-                    AwayTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles - gameStat.DefensiveStats.RecoveredFumbles;
+                        AwayTotalTackles += defensiveStatSelectedItem.Tackles - gameStat.DefensiveStats.Tackles;
+                        AwayTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks - gameStat.DefensiveStats.Sacks;
+                        AwayTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss - gameStat.DefensiveStats.TacklesForLoss;
+                        AwayTotalPassesDefended += defensiveStatSelectedItem.PassesDefended - gameStat.DefensiveStats.PassesDefended;
+                        AwayTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions - gameStat.DefensiveStats.DefensiveInterceptions;
+                        AwayTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards - gameStat.DefensiveStats.DefensiveInterceptionYards;
+                        AwayTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns - gameStat.DefensiveStats.DefensiveTouchdowns;
+                        AwayTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles - gameStat.DefensiveStats.ForcedFumbles;
+                        AwayTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles - gameStat.DefensiveStats.RecoveredFumbles;
                     }
                     else
                     {
-                    HomeTotalTackles += defensiveStatSelectedItem.Tackles - gameStat.DefensiveStats.Tackles;
-                    HomeTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks - gameStat.DefensiveStats.Sacks;
-                    HomeTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss - gameStat.DefensiveStats.TacklesForLoss;
-                    HomeTotalPassesDefended += defensiveStatSelectedItem.PassesDefended - gameStat.DefensiveStats.PassesDefended;
-                    HomeTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions - gameStat.DefensiveStats.DefensiveInterceptions;
-                    HomeTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards - gameStat.DefensiveStats.DefensiveInterceptionYards;
-                    HomeTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns - gameStat.DefensiveStats.DefensiveTouchdowns;
-                    HomeTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles - gameStat.DefensiveStats.ForcedFumbles;
-                    HomeTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles - gameStat.DefensiveStats.RecoveredFumbles;
+                        HomeTotalTackles += defensiveStatSelectedItem.Tackles - gameStat.DefensiveStats.Tackles;
+                        HomeTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks - gameStat.DefensiveStats.Sacks;
+                        HomeTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss - gameStat.DefensiveStats.TacklesForLoss;
+                        HomeTotalPassesDefended += defensiveStatSelectedItem.PassesDefended - gameStat.DefensiveStats.PassesDefended;
+                        HomeTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions - gameStat.DefensiveStats.DefensiveInterceptions;
+                        HomeTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards - gameStat.DefensiveStats.DefensiveInterceptionYards;
+                        HomeTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns - gameStat.DefensiveStats.DefensiveTouchdowns;
+                        HomeTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles - gameStat.DefensiveStats.ForcedFumbles;
+                        HomeTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles - gameStat.DefensiveStats.RecoveredFumbles;
                     }
 
                     Snackbar.Add("Players Defensive Stats have been saved.", MudBlazor.Severity.Success);
                     StateHasChanged();
-            }
-            else
-            {
-                CreateFootballOffensiveStatsModel offensiveStatsModel = new CreateFootballOffensiveStatsModel(form.PassingCompletions, form.PassingAttempts,
-                                                        form.PassingYards, form.LongestPassingPlay,
-                                                        form.PassingTouchdowns, form.PassingInterceptions,
-                                                        form.Sacks, form.RushingAttempts,
-                                                        form.RushingYards, form.LongestRushingPlay, form.RushingTouchdowns, form.RushingFumbles,
-                                                        form.RushingFumblesLost, form.Receptions, form.Targets, form.ReceivingYards, form.ReceivingTouchdowns,
-                                                        form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
-
-                CreateFootballDefensiveStatsModel defensiveStatsModel = new CreateFootballDefensiveStatsModel(defensiveStatSelectedItem.Tackles, defensiveStatSelectedItem.DefensiveSacks, defensiveStatSelectedItem.TacklesForLoss,
-                                                                                                            defensiveStatSelectedItem.PassesDefended, defensiveStatSelectedItem.DefensiveInterceptions, defensiveStatSelectedItem.DefensiveInterceptionYards,
-                                                                                                            defensiveStatSelectedItem.LongestDefensiveInterceptionPlay, defensiveStatSelectedItem.DefensiveTouchdowns, defensiveStatSelectedItem.ForcedFumbles,
-                                                                                                            defensiveStatSelectedItem.RecoveredFumbles);
-
-                CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
-                                                                                                    form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
-
-                CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(defensiveStatSelectedItem.LeagueId, defensiveStatSelectedItem.TeamId,
-                                                                                        defensiveStatSelectedItem.PlayerId, defensiveStatSelectedItem.SeasonId,
-                                                                                        defensiveStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
-
-                CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
-
-                await StatsService.CreateFootballStats(request);
-                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(defensiveStatSelectedItem.LeagueId.ToString(), defensiveStatSelectedItem.SeasonId.ToString());
-                await StatsLocalCache.DeleteFootballStatsByTeamCache(defensiveStatSelectedItem.TeamId.ToString());
-                await StatsLocalCache.DeleteFootballStatsByPlayerCache(defensiveStatSelectedItem.PlayerId.ToString());
-                await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(defensiveStatSelectedItem.PlayerId.ToString(), defensiveStatSelectedItem.SeasonId.ToString());
-
-                if (defensiveStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
-                {
-                AwayTotalTackles += defensiveStatSelectedItem.Tackles;
-                AwayTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks;
-                AwayTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss;
-                AwayTotalPassesDefended += defensiveStatSelectedItem.PassesDefended;
-                AwayTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions;
-                AwayTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards;
-                AwayTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns;
-                AwayTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles;
-                AwayTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles;
                 }
                 else
                 {
-                HomeTotalTackles += defensiveStatSelectedItem.Tackles;
-                HomeTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks;
-                HomeTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss;
-                HomeTotalPassesDefended += defensiveStatSelectedItem.PassesDefended;
-                HomeTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions;
-                HomeTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards;
-                HomeTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns;
-                HomeTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles;
-                HomeTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles;
+                    CreateFootballOffensiveStatsModel offensiveStatsModel = new CreateFootballOffensiveStatsModel(form.PassingCompletions, form.PassingAttempts,
+                                                            form.PassingYards, form.LongestPassingPlay,
+                                                            form.PassingTouchdowns, form.PassingInterceptions,
+                                                            form.Sacks, form.RushingAttempts,
+                                                            form.RushingYards, form.LongestRushingPlay, form.RushingTouchdowns, form.RushingFumbles,
+                                                            form.RushingFumblesLost, form.Receptions, form.Targets, form.ReceivingYards, form.ReceivingTouchdowns,
+                                                            form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
+
+                    CreateFootballDefensiveStatsModel defensiveStatsModel = new CreateFootballDefensiveStatsModel(defensiveStatSelectedItem.Tackles, defensiveStatSelectedItem.DefensiveSacks, defensiveStatSelectedItem.TacklesForLoss,
+                                                                                                                defensiveStatSelectedItem.PassesDefended, defensiveStatSelectedItem.DefensiveInterceptions, defensiveStatSelectedItem.DefensiveInterceptionYards,
+                                                                                                                defensiveStatSelectedItem.LongestDefensiveInterceptionPlay, defensiveStatSelectedItem.DefensiveTouchdowns, defensiveStatSelectedItem.ForcedFumbles,
+                                                                                                                defensiveStatSelectedItem.RecoveredFumbles);
+
+                    CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(form.FieldGoalsMade, form.FieldGoalsAttempted, form.ExtraPointsMade,
+                                                                                                        form.ExtraPointsAttempted, form.LongestKick, form.Points, form.Punts, form.PuntingYards, form.LongestPunt);
+
+                    CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(defensiveStatSelectedItem.LeagueId, defensiveStatSelectedItem.TeamId,
+                                                                                            defensiveStatSelectedItem.PlayerId, defensiveStatSelectedItem.SeasonId,
+                                                                                            defensiveStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
+
+                    CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
+
+                    await StatsService.CreateFootballStats(request);
+                    await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(defensiveStatSelectedItem.LeagueId.ToString(), defensiveStatSelectedItem.SeasonId.ToString());
+                    await StatsLocalCache.DeleteFootballStatsByTeamCache(defensiveStatSelectedItem.TeamId.ToString());
+                    await StatsLocalCache.DeleteFootballStatsByPlayerCache(defensiveStatSelectedItem.PlayerId.ToString());
+                    await StatsLocalCache.DeletePlayerFootballStatsBySeasonCache(defensiveStatSelectedItem.PlayerId.ToString(), defensiveStatSelectedItem.SeasonId.ToString());
+
+                    if (defensiveStatSelectedItem.TeamId == GameModel.Game.AwayTeam.Id)
+                    {
+                        AwayTotalTackles += defensiveStatSelectedItem.Tackles;
+                        AwayTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks;
+                        AwayTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss;
+                        AwayTotalPassesDefended += defensiveStatSelectedItem.PassesDefended;
+                        AwayTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions;
+                        AwayTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards;
+                        AwayTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns;
+                        AwayTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles;
+                        AwayTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles;
+                    }
+                    else
+                    {
+                        HomeTotalTackles += defensiveStatSelectedItem.Tackles;
+                        HomeTotalDefensiveSacks += defensiveStatSelectedItem.DefensiveSacks;
+                        HomeTotalTacklesForLoss += defensiveStatSelectedItem.TacklesForLoss;
+                        HomeTotalPassesDefended += defensiveStatSelectedItem.PassesDefended;
+                        HomeTotalDefensiveInterceptions += defensiveStatSelectedItem.DefensiveInterceptions;
+                        HomeTotalDefensiveInterceptionYards += defensiveStatSelectedItem.DefensiveInterceptionYards;
+                        HomeTotalDefensiveTouchdowns += defensiveStatSelectedItem.DefensiveTouchdowns;
+                        HomeTotalForcedFumbles += defensiveStatSelectedItem.ForcedFumbles;
+                        HomeTotalRecoveredFumbles += defensiveStatSelectedItem.RecoveredFumbles;
+                    }
+
+                    Snackbar.Add("Players Defensive Stats have been saved.", MudBlazor.Severity.Success);
+                    StateHasChanged();
+
                 }
-
-                Snackbar.Add("Players Defensive Stats have been saved.", MudBlazor.Severity.Success);
-                StateHasChanged();
-
             }
-          }
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -2002,16 +2023,16 @@
                                                                 form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
 
                     UpdateFootballDefensiveStatsModel defensiveStatsModel = new UpdateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss,
-                                                                                                                  form.PassesDefended, form.DefensiveInterceptions, form.DefensiveInterceptionYards,
-                                                                                                                  form.LongestDefensiveInterceptionPlay, form.DefensiveTouchdowns, form.ForcedFumbles,
-                                                                                                                  form.RecoveredFumbles);
+                                                                                                                    form.PassesDefended, form.DefensiveInterceptions, form.DefensiveInterceptionYards,
+                                                                                                                    form.LongestDefensiveInterceptionPlay, form.DefensiveTouchdowns, form.ForcedFumbles,
+                                                                                                                    form.RecoveredFumbles);
 
                     UpdateFootballKickingStatsModel kickingStatsModel = new UpdateFootballKickingStatsModel(kickingStatSelectedItem.FieldGoalsMade, kickingStatSelectedItem.FieldGoalsAttempted, kickingStatSelectedItem.ExtraPointsMade,
                                                                                                             kickingStatSelectedItem.ExtraPointsAttempted, kickingStatSelectedItem.LongestKick, kickingStatSelectedItem.Points, kickingStatSelectedItem.Punts, kickingStatSelectedItem.PuntingYards, kickingStatSelectedItem.LongestPunt);
 
                     UpdateFootballStatsModel footballStatsModel = new UpdateFootballStatsModel(gameStat.Id, kickingStatSelectedItem.LeagueId, kickingStatSelectedItem.TeamId,
-                                                                                               kickingStatSelectedItem.PlayerId, kickingStatSelectedItem.SeasonId,
-                                                                                               kickingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
+                                                                                                kickingStatSelectedItem.PlayerId, kickingStatSelectedItem.SeasonId,
+                                                                                                kickingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
 
                     UpdateFootballStatsRequest request = new UpdateFootballStatsRequest(footballStatsModel);
                     await StatsService.UpdateFootballStats(request);
@@ -2056,16 +2077,16 @@
                                                                 form.ReceivingFumbles, form.ReceivingFumblesLost, form.YardsAfterCatch);
 
                     CreateFootballDefensiveStatsModel defensiveStatsModel = new CreateFootballDefensiveStatsModel(form.Tackles, form.DefensiveSacks, form.TacklesForLoss,
-                                                                                                                  form.PassesDefended, form.DefensiveInterceptions, form.DefensiveInterceptionYards,
-                                                                                                                  form.LongestDefensiveInterceptionPlay, form.DefensiveTouchdowns, form.ForcedFumbles,
-                                                                                                                  form.RecoveredFumbles);
+                                                                                                                    form.PassesDefended, form.DefensiveInterceptions, form.DefensiveInterceptionYards,
+                                                                                                                    form.LongestDefensiveInterceptionPlay, form.DefensiveTouchdowns, form.ForcedFumbles,
+                                                                                                                    form.RecoveredFumbles);
 
                     CreateFootballKickingStatsModel kickingStatsModel = new CreateFootballKickingStatsModel(kickingStatSelectedItem.FieldGoalsMade, kickingStatSelectedItem.FieldGoalsAttempted, kickingStatSelectedItem.ExtraPointsMade,
                                                                                                             kickingStatSelectedItem.ExtraPointsAttempted, kickingStatSelectedItem.LongestKick, kickingStatSelectedItem.Points, kickingStatSelectedItem.Punts, kickingStatSelectedItem.PuntingYards, kickingStatSelectedItem.LongestPunt);
 
                     CreateFootballStatsModel footballStatsModel = new CreateFootballStatsModel(kickingStatSelectedItem.LeagueId, kickingStatSelectedItem.TeamId,
-                                                                                               kickingStatSelectedItem.PlayerId, kickingStatSelectedItem.SeasonId,
-                                                                                               kickingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
+                                                                                                kickingStatSelectedItem.PlayerId, kickingStatSelectedItem.SeasonId,
+                                                                                                kickingStatSelectedItem.GameId, offensiveStatsModel, defensiveStatsModel, kickingStatsModel);
 
                     CreateFootballStatsRequest request = new CreateFootballStatsRequest(footballStatsModel);
 
@@ -2105,7 +2126,12 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }

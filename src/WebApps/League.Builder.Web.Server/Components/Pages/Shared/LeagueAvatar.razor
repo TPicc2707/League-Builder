@@ -1,0 +1,20 @@
+﻿<MudAvatar Size="@Size" Class="@Class">
+    <MudImage Src="@Src"
+              Alt="@Alt"
+              Style="@($"width:{SizePx}px; height: {SizePx}px; border-radius: 50%;")" />
+</MudAvatar>
+
+@code {
+    [Parameter] public string Src { get; set; }
+    [Parameter] public string Alt { get; set; } = "League Image";
+    [Parameter] public Size Size { get; set; } = Size.Small;
+    [Parameter] public string Class { get; set; }
+
+    private int SizePx => Size switch
+    {
+        Size.Small => 32,
+        Size.Medium => 40,
+        Size.Large => 48,
+        _ => 32
+    };
+}

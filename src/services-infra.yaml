@@ -16,15 +16,15 @@ Parameters:
 
   KeycloakImage:
     Type: String
-    Default: quay.io/keycloak/keycloak:26.4
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/custom-keycloak:latest
 
   OllamaImage:
     Type: String
     Default: docker.io/ollama/ollama:0.13.0
-
-  AspireImage:
+  
+  RedisImage:
     Type: String
-    Default: mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest
+    Default: redis:7
 
   PostgresPassword:
     Type: String
@@ -72,6 +72,38 @@ Resources:
           HostedZoneId: Z017284424G0ZTG1FUTE6
         - DomainName: myleaguebuilder.com
           HostedZoneId: Z017284424G0ZTG1FUTE6
+  
+  LeagueApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: league.myleaguebuilder.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: league.myleaguebuilder.com
+          HostedZoneId: Z017284424G0ZTG1FUTE6
+  
+  HttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref KeycloakCertificate
+      DefaultActions:
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: 404
+            ContentType: text/plain
+            MessageBody: "Not Found"
+  
+  LeagueApiListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Certificates:
+        - CertificateArn: !Ref LeagueApiCertificate
+
 
   KeycloakDNSRecord:
     Type: AWS::Route53::RecordSet
@@ -92,25 +124,16 @@ Resources:
       TTL: 60
       ResourceRecords:
         - !GetAtt ApplicationLoadBalancer.DNSName
-
-  ALBSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+  
+  LeagueApiDNSRecord:
+    Type: AWS::Route53::RecordSet
     Properties:
-      GroupDescription: Allow inbound UI
-      VpcId: !ImportValue leaguebuilder-dev-VpcId
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 15672
-          ToPort: 15672
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
+      HostedZoneId: Z017284424G0ZTG1FUTE6
+      Name: league.myleaguebuilder.com.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
 
   RabbitMqSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -121,8 +144,12 @@ Resources:
         - IpProtocol: tcp
           FromPort: 15672
           ToPort: 15672
-          SourceSecurityGroupId: !Ref ALBSecurityGroup
-  
+          SourceSecurityGroupId: !ImportValue leaguebuilder-dev-ALBSecurityGroupId
+        - IpProtocol: tcp
+          FromPort: 5672
+          ToPort: 5672
+          SourceSecurityGroupId: !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+
   KeycloakTaskSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -132,11 +159,11 @@ Resources:
         - IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
-          SourceSecurityGroupId: !Ref ALBSecurityGroup
+          SourceSecurityGroupId: !ImportValue leaguebuilder-dev-ALBSecurityGroupId
         - IpProtocol: tcp
           FromPort: 9000
           ToPort: 9000
-          SourceSecurityGroupId: !Ref ALBSecurityGroup
+          SourceSecurityGroupId: !ImportValue leaguebuilder-dev-ALBSecurityGroupId
   
   PostgresTaskSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -158,7 +185,7 @@ Resources:
         - !ImportValue leaguebuilder-dev-PublicSubnet1
         - !ImportValue leaguebuilder-dev-PublicSubnet2
       SecurityGroups:
-        - !Ref ALBSecurityGroup
+        - !ImportValue leaguebuilder-dev-ALBSecurityGroupId
 
   # ==========================
   # EBS VOLUMES
@@ -213,6 +240,16 @@ Resources:
       Tags:
         - Key: Name
           Value: league.builder.ollama-data
+  
+  RedisVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !ImportValue leaguebuilder-dev-SqlOllamaInstanceAZ
+      Size: 40
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.redis-data
 
   # ==========================
   # VOLUME ATTACHMENTS
@@ -253,6 +290,13 @@ Resources:
       InstanceId: !ImportValue leaguebuilder-dev-SqlOllamaECSInstance
       VolumeId: !Ref OllamaVolume
       Device: /dev/xvdj
+  
+  RedisVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !ImportValue leaguebuilder-dev-SqlOllamaECSInstance
+      VolumeId: !Ref RedisVolume
+      Device: /dev/xvdt
 
   PostgresLogs:
     Type: AWS::Logs::LogGroup
@@ -516,10 +560,8 @@ Resources:
           Command: ["start", "--import-realm"]
           PortMappings:
             - ContainerPort: 8080
-              HostPort: 8080
               Protocol: tcp
             - ContainerPort: 9000
-              HostPort: 9000
               Protocol: tcp
           Environment:
             - Name: KC_BOOTSTRAP_ADMIN_USERNAME
@@ -544,14 +586,16 @@ Resources:
               Value: "true"
             - Name: KC_HEALTH_ENABLED
               Value: "true"
+            - Name: KC_HTTP_MANAGEMENT_PORT
+              Value: "9000"
           HealthCheck:
             Command:
               - CMD-SHELL
-              - "curl -f http://localhost:9000/health/ready || exit 1"
-            Interval: 30
+              - "exit 0"
+            Interval: 15
             Timeout: 5
-            Retries: 5
-            StartPeriod: 300
+            Retries: 6
+            StartPeriod: 90
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -564,7 +608,6 @@ Resources:
     DependsOn:
       - ApplicationLoadBalancer
       - KeycloakHttpRedirectListener
-      - KeycloakHttpsListener
     Properties:
       Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
       LaunchType: EC2
@@ -574,8 +617,9 @@ Resources:
       PlacementConstraints:
         - Type: memberOf
           Expression: "attribute:Role == kpr"
-      ServiceRegistries:
-        - RegistryArn: !GetAtt KeycloakDiscoveryService.Arn
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 0
+        MaximumPercent: 100
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
@@ -599,6 +643,11 @@ Resources:
       HealthCheckProtocol: HTTP
       HealthCheckPort: "9000"
       HealthCheckPath: /health/ready
+      HealthCheckIntervalSeconds: 15
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+
   
   KeycloakHttpRedirectListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -613,15 +662,17 @@ Resources:
             Port: "443"
             StatusCode: HTTP_301
   
-  KeycloakHttpsListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
+  KeycloakListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
-      LoadBalancerArn: !Ref ApplicationLoadBalancer
-      Port: 443
-      Protocol: HTTPS
-      Certificates:
-        - CertificateArn: !Ref KeycloakCertificate
-      DefaultActions:
+      ListenerArn: !Ref HttpsListener
+      Priority: 10
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - auth.myleaguebuilder.com
+      Actions:
         - Type: forward
           TargetGroupArn: !Ref KeycloakTargetGroup
 
@@ -674,51 +725,57 @@ Resources:
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
             - !ImportValue leaguebuilder-dev-InstanceSG
-
-  AspireDashboardLogs:
+  
+  RedisLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: /ecs/aspire-dashboard
+      LogGroupName: /ecs/redis
       RetentionInDays: 7
 
-  AspireDashboardTask:
+  RedisTask:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: aspire-dashboard
+      Family: redis
       RequiresCompatibilities: [EC2]
       NetworkMode: awsvpc
-      Cpu: "512"
-      Memory: "1024"
+      Cpu: "256"
+      Memory: "512"
       ExecutionRoleArn: !Ref TaskExecutionRole
       ContainerDefinitions:
-        - Name: compose-dashboard
-          Image: !Ref AspireImage
+        - Name: redis
+          Image: !Ref RedisImage
           PortMappings:
-            - ContainerPort: 17087
-              HostPort: 17087
+            - ContainerPort: 6379
+              HostPort: 6379
               Protocol: tcp
-          Environment:
-            - Name: ASPIRE_DASHBOARD_FORWARDEDHEADERS_ENABLED
-              Value: "true"
+          Command: ["redis-server", "--appendonly", "yes"]
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - "redis-cli ping || exit 1"
+            Interval: 10
+            Timeout: 5
+            Retries: 5
+            StartPeriod: 20
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: /ecs/aspire-dashboard
+              awslogs-group: /ecs/redis
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
 
-  AspireDashboardService:
+  RedisService:
     Type: AWS::ECS::Service
+    DependsOn: RedisTask
     Properties:
       Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
       LaunchType: EC2
-      DesiredCount: 1
-      TaskDefinition: !Ref AspireDashboardTask
+      TaskDefinition: !Ref RedisTask
       PlacementConstraints:
         - Type: memberOf
           Expression: "attribute:Role == sqlollama"
       ServiceRegistries:
-        - RegistryArn: !GetAtt AspireDiscoveryService.Arn
+        - RegistryArn: !GetAtt RedisDiscoveryService.Arn
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
@@ -727,6 +784,7 @@ Resources:
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
             - !ImportValue leaguebuilder-dev-InstanceSG
+
   
   ServiceDiscoveryNamespace:
     Type: AWS::ServiceDiscovery::PrivateDnsNamespace
@@ -770,18 +828,6 @@ Resources:
             TTL: 10
       HealthCheckCustomConfig:
         FailureThreshold: 1
-
-  KeycloakDiscoveryService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties:
-      Name: keycloak
-      NamespaceId: !Ref ServiceDiscoveryNamespace
-      DnsConfig:
-        DnsRecords:
-          - Type: A
-            TTL: 10
-      HealthCheckCustomConfig:
-        FailureThreshold: 1
   
   OllamaDiscoveryService:
     Type: AWS::ServiceDiscovery::Service
@@ -795,10 +841,10 @@ Resources:
       HealthCheckCustomConfig:
         FailureThreshold: 1
   
-  AspireDiscoveryService:
+  RedisDiscoveryService:
     Type: AWS::ServiceDiscovery::Service
     Properties:
-      Name: aspire
+      Name: redis
       NamespaceId: !Ref ServiceDiscoveryNamespace
       DnsConfig:
         DnsRecords:
@@ -812,3 +858,9 @@ Outputs:
     Value: !Ref ServiceDiscoveryNamespace
     Export:
       Name: leaguebuilder-dev-NamespaceId
+
+  HttpsListenerArn:
+    Value: !Ref HttpsListener
+    Export:
+      Name: leaguebuilder-dev-HttpsListenerArn
+  

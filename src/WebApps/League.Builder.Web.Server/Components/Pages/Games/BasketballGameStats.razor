@@ -7,7 +7,10 @@
 @inject IPlayerService PlayerService
 @inject IAWSService AWSService
 @inject ISnackbar Snackbar
-@inject NavigationManager NavManager;
+@inject NavigationManager NavManager
+@inject ErrorState ErrorState
+@inject KeycloakTokenService KeycloakTokenService
+@inject IJSRuntime JsRuntime
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IGameLocalCacheService GameLocalCache
 @inject IPlayerLocalCacheService PlayerLocalCache
@@ -275,6 +278,7 @@
     GetLeagueByIdResponse LeagueByIdResponse { get; set; }
     GetTeamByIdResponse AwayTeamByIdResponse { get; set; }
     GetTeamByIdResponse HomeTeamByIdResponse { get; set; }
+    private IJSObjectReference? _module;
 
     private int AwayTotalPoints = 0;
     private int AwayTotalFieldGoalsMade = 0;
@@ -309,11 +313,6 @@
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             var gameId = Guid.Parse(Id);
             GameModel = await GameLocalCache.GetGameByIdCache(Id);
             if (GameModel == null)
@@ -403,11 +402,15 @@
                     Model.Add(new BasketballStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
             }
             PageLoad = true;
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }

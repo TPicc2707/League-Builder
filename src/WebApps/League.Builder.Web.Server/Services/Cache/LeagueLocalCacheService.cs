@@ -1,73 +1,98 @@
-﻿using Blazored.LocalStorage;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace League.Builder.Web.Server.Services.Cache;
 
 public class LeagueLocalCacheService : ILeagueLocalCacheService
 {
-    private readonly ILocalStorageService _localStorage;
+    private readonly IDistributedCache? _cache;
 
-    public LeagueLocalCacheService(ILocalStorageService localStorage)
+    public LeagueLocalCacheService(IDistributedCache cache)
     {
-        _localStorage = localStorage ?? throw new ArgumentNullException(nameof(localStorage));
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     }
 
     public async Task<GetLeaguesResponse> GetLeaguesCache()
     {
-        return await _localStorage.GetItemAsync<GetLeaguesResponse>("Leagues");
+        string? leaguesCache = await _cache.GetStringAsync("Leagues");
+
+        if (leaguesCache is not null)
+            return JsonSerializer.Deserialize<GetLeaguesResponse>(leaguesCache);
+
+        return null;
     }
 
     public async Task<GetLeagueByIdResponse> GetLeagueByIdCache(string id)
     {
-        return await _localStorage.GetItemAsync<GetLeagueByIdResponse>($"League: {id}");
+        string? leagueCache = await _cache.GetStringAsync($"League: {id}");
+
+        if (leagueCache is not null)
+            return JsonSerializer.Deserialize<GetLeagueByIdResponse>(leagueCache);
+
+        return null;
     }
 
     public async Task<GetLeaguesBySportResponse> GetLeaguesBySportCache(string sport)
     {
-        return await _localStorage.GetItemAsync<GetLeaguesBySportResponse>($"LeaguesBySport: {sport}");
+        string? leaguesCache = await _cache.GetStringAsync($"LeaguesBySport: {sport}");
+
+        if (leaguesCache is not null)
+            return JsonSerializer.Deserialize<GetLeaguesBySportResponse>(leaguesCache);
+
+        return null;
     }
 
     public async Task<GetLeaguesByNameResponse> GetLeaguesByNameCache()
     {
-        return await _localStorage.GetItemAsync<GetLeaguesByNameResponse>($"LeaguesByName");
+        string? leaguesCache = await _cache.GetStringAsync($"LeaguesByName");
+
+        if (leaguesCache is not null)
+            return JsonSerializer.Deserialize<GetLeaguesByNameResponse>(leaguesCache);
+
+        return null;
     }
 
     public async Task SetLeaguesCache(GetLeaguesResponse leaguesResponse)
     {
-        await _localStorage.SetItemAsync("Leagues", leaguesResponse);
+        string serializedLeague = JsonSerializer.Serialize(leaguesResponse);
+        await _cache.SetStringAsync("Leagues", serializedLeague, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
     public async Task SetLeagueByIdCache(string id, GetLeagueByIdResponse leagueByIdResponse)
     {
-        await _localStorage.SetItemAsync($"League: {id}", leagueByIdResponse);
+        string serializedLeague = JsonSerializer.Serialize(leagueByIdResponse);
+        await _cache.SetStringAsync($"League: {id}", serializedLeague, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
     public async Task SetLeaguesBySportCache(string sport, GetLeaguesBySportResponse leaguesBySportResponse)
     {
-        await _localStorage.SetItemAsync($"LeaguesBySport: {sport}", leaguesBySportResponse);
+        string serializedLeague = JsonSerializer.Serialize(leaguesBySportResponse);
+        await _cache.SetStringAsync($"LeaguesBySport: {sport}", serializedLeague, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
     public async Task SetLeaguesByNameCache(GetLeaguesByNameResponse leaguesByNameResponse)
     {
-        await _localStorage.SetItemAsync($"LeaguesByName", leaguesByNameResponse);
+        string serializedLeague = JsonSerializer.Serialize(leaguesByNameResponse);
+        await _cache.SetStringAsync($"LeaguesByName", serializedLeague, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
     public async Task DeleteLeaguesCache()
     {
-        await _localStorage.RemoveItemAsync("Leagues");
+        await _cache.RemoveAsync("Leagues");
     }
 
     public async Task DeleteLeagueByIdCache(string id)
     {
-        await _localStorage.RemoveItemAsync($"League: {id}");
+        await _cache.RemoveAsync($"League: {id}");
     }
 
     public async Task DeleteLeagueBySportCache(string sport)
     {
-        await _localStorage.RemoveItemAsync($"LeaguesBySport: {sport}");
+        await _cache.RemoveAsync($"LeaguesBySport: {sport}");
     }
 
     public async Task DeleteLeagueByNameCache()
     {
-        await _localStorage.RemoveItemAsync("LeaguesByName");
+        await _cache.RemoveAsync("LeaguesByName");
     }
 }

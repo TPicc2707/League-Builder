@@ -9,7 +9,8 @@
 @inject IStandingsService StandingsService
 @inject IAWSService AWSService
 @inject IDialogService DialogService
-@inject NavigationManager NavManager;
+@inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IPlayerLocalCacheService PlayerLocalCache
 @inject IStatsLocalCacheService StatsLocalCache
@@ -18,6 +19,8 @@
 @inject ITeamLocalCacheService TeamLocalCache
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject IStandingsLocalCacheService StandingsLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -656,7 +659,7 @@
         }
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 
@@ -669,7 +672,7 @@
     private string seasonPlaceholder = "Season";
     private string imageFile = string.Empty;
     private bool expandSearchPanel = false;
-
+    private IJSObjectReference? _module;
     private int teamSeasonPassingCompletions = 0;
     private int teamSeasonPassingAttempts = 0;
     private decimal teamSeasonPassingCompletionPercentage = 0;
@@ -786,36 +789,44 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
+            var teamId = Guid.Parse(Id);
+            int year = DateTime.Now.Year;
+            SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
+            if (SeasonsModel == null)
+            {
+                SeasonsModel = await SeasonService.GetSeasons();
+                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+            }
+            Season = SeasonsModel.Seasons.FirstOrDefault(x => x.Year == year);
+            seasonValue = Season.Year;
+            TeamModel = await TeamLocalCache.GetTeamByIdCache(Id);
+            if (TeamModel == null)
+            {
+                TeamModel = await TeamService.GetTeamById(teamId);
+                await TeamLocalCache.SetTeamByIdCache(Id, TeamModel);
+            }
+            LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(TeamModel.Team.LeagueId.ToString());
+            if (LeagueModel == null)
+            {
+                LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
+                await LeagueLocalCache.SetLeagueByIdCache(TeamModel.Team.LeagueId.ToString(), LeagueModel);
+            }
+            await CreatePlayerStats(year, teamId);
+            await GetTeamImageAsync();
+            PageLoad = true;
         }
-
-        var teamId = Guid.Parse(Id);
-        int year = DateTime.Now.Year;
-        SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
-        if (SeasonsModel == null)
+        catch (Exception ex)
         {
-            SeasonsModel = await SeasonService.GetSeasons();
-            await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
-        Season = SeasonsModel.Seasons.FirstOrDefault(x => x.Year == year);
-        seasonValue = Season.Year;
-        TeamModel = await TeamLocalCache.GetTeamByIdCache(Id);
-        if (TeamModel == null)
-        {
-            TeamModel = await TeamService.GetTeamById(teamId);
-            await TeamLocalCache.SetTeamByIdCache(Id, TeamModel);
-        }
-        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(TeamModel.Team.LeagueId.ToString());
-        if (LeagueModel == null)
-        {
-            LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(TeamModel.Team.LeagueId.ToString(), LeagueModel);
-        }
-        await CreatePlayerStats(year, teamId);
-        await GetTeamImageAsync();
-        PageLoad = true;
     }
 
     private async Task GetTeamStatsBySeason()

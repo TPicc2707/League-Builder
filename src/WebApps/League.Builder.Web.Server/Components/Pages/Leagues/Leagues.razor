@@ -1,10 +1,14 @@
 ﻿@page "/leagues"
 @using League.Builder.Web.Server.Services.Cache
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject ILeagueService LeagueService
 @inject IAWSService AWSService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ILeagueLocalCacheService LeagueLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <AuthorizeView Roles="@Roles.ReadLeagues" Context="auth">
     <Authorized>
@@ -18,30 +22,49 @@
                         <MudItem>
                             <MudTabs Elevation="2" Centered="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000">
                                 <MudTabPanel Text="Search All">
-                                    <MudButton OnClick="SearchAll" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Search All</MudButton>
+                                    <MudButton OnClick="@(() => ExecuteSearch(SearchAllInternal))" 
+                                            Variant="Variant.Filled" 
+                                            Color="Color.Primary" 
+                                            Class="ml-auto" 
+                                            FullWidth="true">
+                                            Search All
+                                    </MudButton>
                                 </MudTabPanel>
                                 <MudTabPanel Text="Sport">
                                     <MudStack Row="true">
-                                        <MudItem xs="8" md="8" lg="8">
+                                        <MudItem xs="8">
                                             <MudSelect @bind-Value="sport" Label="Sport">
                                                 @foreach (var sport in Constants.Sports())
                                                 {
-                                                    <MudSelectItem Value="sport">@sport</MudSelectItem>
+                                                    <MudSelectItem Value="@sport">@sport</MudSelectItem>
                                                 }
                                             </MudSelect>
                                         </MudItem>
-                                        <MudItem xs="4" md="4" lg="4" Style="align-content: center">
-                                            <MudButton Disabled="@(sport == string.Empty ? true : false)" OnClick="SearchBySport" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                        <MudItem xs="4" Style="align-content: center">
+                                            <MudButton Disabled="@(string.IsNullOrEmpty(sport))" 
+                                                       OnClick="@(() => ExecuteSearch(SearchBySportInternal))" 
+                                                       Variant="Variant.Filled" Color="Color.Primary" 
+                                                       Class="ml-auto" 
+                                                       Style="width: 200px;">
+                                                       Search
+                                            </MudButton>
                                         </MudItem>
                                     </MudStack>
                                 </MudTabPanel>
                                 <MudTabPanel Text="Name">
                                     <MudStack Row="true">
-                                        <MudItem xs="9" md="9" lg="9">
+                                        <MudItem xs="9">
                                             <MudTextField @bind-Value="name" Placeholder="Name" />
                                         </MudItem>
-                                        <MudItem xs="3" md="3" lg="3">
-                                            <MudButton Disabled="@(name == string.Empty ? true : false)" OnClick="SearchByName" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                        <MudItem xs="3">
+                                            <MudButton Disabled="@(string.IsNullOrEmpty(name))"
+                                                       OnClick="@(() => ExecuteSearch(SearchByNameInternal))" 
+                                                       Variant="Variant.Filled" 
+                                                       Color="Color.Primary" 
+                                                       Class="ml-auto" 
+                                                       Style="width: 200px;">
+                                                       Search
+                                            </MudButton>
                                         </MudItem>
                                     </MudStack>
                                 </MudTabPanel>
@@ -66,7 +89,7 @@
                                         <MudTable Items="@Model" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <ToolBarContent>
                                                 <MudStack Justify="Justify.FlexStart">
-                                                    <MudButton OnClick="NavigateToCreateLeague" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
+                                                    <MudButton Href="/createleague/" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
                                                 </MudStack>
                                             </ToolBarContent>
                                             <HeaderContent>
@@ -78,9 +101,7 @@
                                             </HeaderContent>
                                             <RowTemplate>
                                                 <MudTd DataLabel="">
-                                                    <MudAvatar Size="Size.Small">
-                                                        <MudImage Src="@context.Image" Alt="League Image"></MudImage>
-                                                    </MudAvatar>
+                                                    <LeagueAvatar Src="@context.Image" Size="Size.Small" />
                                                 </MudTd>
                                                 <MudTd DataLabel="League Name">
                                                     <MudTooltip Text="League Details" Color="Color.Secondary">
@@ -90,47 +111,37 @@
                                                 <MudTd DataLabel="Owner">@String.Concat(context.OwnerFirstName, " ", context.OwnerLastName)</MudTd>
                                                 <MudTd DataLabel="Description">@context.Sport</MudTd>
                                                 <MudTd DataLabel="Links">
-                                                    <AuthorizeView Roles="@Roles.ReadGames" Context="readGamesAuth2">
-                                                        <MudTooltip Text="Games" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/leaguegames/", context.Id)" />
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
-                                                    <AuthorizeView Roles="@Roles.ReadStandings" Context="readStandingsAuth2">
-                                                        <MudTooltip Text="Standings" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.BarChart" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/leaguestandings/", context.Id)" />
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
-                                                    <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth2">
-                                                        <MudTooltip Text="Stats" Color="Color.Secondary">
-                                                            @if (context.Sport == SportName.BASEBALL)
-                                                            {
-                                                                <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/baseballleaguestatsleaders/", context.Id)" />
-                                                            }
-                                                            @if (context.Sport == SportName.BASKETBALL)
-                                                            {
-                                                                <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/basketballleaguestatsleaders/", context.Id)" />
-                                                            }
-                                                            @if (context.Sport == SportName.FOOTBALL)
-                                                            {
-                                                                <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/footballleaguestatsleaders/", context.Id)" />
-                                                            }
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
-                                                    <AuthorizeView Roles="@Roles.ReadLeagues" Context="leagueHistoryAuth">
-                                                        <MudTooltip Text="League History" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.MenuBook" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/leaguehistory/", context.Id)" />
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
-                                                    <AuthorizeView Roles="@Roles.UpdateLeagues" Context="updateSettingsAuth">
-                                                        <MudTooltip Text="Settings" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateleaguesettings/", context.Id)" />
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
-                                                    <AuthorizeView Roles="@Roles.UpdateLeagues" Context="updateAuth2">
-                                                        <MudTooltip Text="Update" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateleague/", context.Id)" />
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
+                                                    @if (CanReadGames)
+                                                    {
+                                                        <LeagueActionIcon Tooltip="Games"
+                                                                          Icon="@Icons.Material.Filled.CalendarMonth"
+                                                                          Href="@($"/leaguegames/{context.Id}")" />
+                                                    }
+                                                    @if (CanReadStandings)
+                                                    {
+                                                        <LeagueActionIcon Tooltip="Standings"
+                                                                          Icon="@Icons.Material.Filled.BarChart"
+                                                                          Href="@($"/leaguestandings/{context.Id}")" />
+                                                    }
+                                                    @if (CanReadStats)
+                                                    {
+                                                        @StatsIcon(context)
+                                                    }
+                                                    @if (CanReadLeagues)
+                                                    {
+                                                        <LeagueActionIcon Tooltip="League History"
+                                                                          Icon="@Icons.Material.Filled.MenuBook"
+                                                                          Href="@($"/leaguehistory/{context.Id}")" />
+                                                    }
+                                                    @if (CanUpdateLeagues)
+                                                    {
+                                                        <LeagueActionIcon Tooltip="Settings"
+                                                                          Icon="@Icons.Material.Filled.Settings"
+                                                                          Href="@($"/updateleaguesettings/{context.Id}")" />
+                                                        <LeagueActionIcon Tooltip="Update"
+                                                                          Icon="@Icons.Material.Filled.Update"
+                                                                          Href="@($"/updateleague/{context.Id}")" />
+                                                    }
                                                 </MudTd>
                                             </RowTemplate>
                                             <PagerContent>
@@ -150,9 +161,7 @@
                                             </HeaderContent>
                                             <RowTemplate>
                                                 <MudTd DataLabel="">
-                                                    <MudAvatar Size="Size.Small">
-                                                        <MudImage Src="@context.Image" Alt="League Image"></MudImage>
-                                                    </MudAvatar>
+                                                    <LeagueAvatar Src="@context.Image" Size="Size.Small" />
                                                 </MudTd>
                                                 <MudTd DataLabel="League Name">
                                                     <MudTooltip Text="League Details" Color="Color.Secondary">
@@ -164,42 +173,37 @@
                                                     <MudTooltip Text="Email" Color="Color.Secondary">
                                                         <MudIconButton Icon="@Icons.Material.Filled.Email" Color="Color.Tertiary" Edge="Edge.Start" />
                                                     </MudTooltip>
-                                                    <AuthorizeView Roles="@Roles.ReadGames" Context="readGamesAuth2">
-                                                        <MudTooltip Text="Games" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/leaguegames/", context.Id)" />
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
-                                                    <AuthorizeView Roles="@Roles.ReadStandings" Context="readStandingsAuth2">
-                                                        <MudTooltip Text="Standings" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.BarChart" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/leaguestandings/", context.Id)" />
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
-                                                    <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth2">
-                                                        <MudTooltip Text="Stats" Color="Color.Secondary">
-                                                            @if (context.Sport == SportName.BASEBALL)
-                                                            {
-                                                                <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/baseballleaguestatsleaders/", context.Id)" />
-                                                            }
-                                                            @if (context.Sport == SportName.BASKETBALL)
-                                                            {
-                                                                <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/basketballleaguestatsleaders/", context.Id)" />
-                                                            }
-                                                            @if (context.Sport == SportName.FOOTBALL)
-                                                            {
-                                                                <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/footballleaguestatsleaders/", context.Id)" />
-                                                            }
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
-                                                    <AuthorizeView Roles="@Roles.ReadLeagues" Context="leagueHistoryAuth">
-                                                        <MudTooltip Text="League History" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.MenuBook" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/leaguehistory/", context.Id)" />
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
-                                                    <AuthorizeView Roles="@Roles.UpdateLeagues" Context="updateAuth2">
-                                                        <MudTooltip Text="Update" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateleague/", context.Id)" />
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
+                                                    @if (CanReadGames)
+                                                    {
+                                                        <LeagueActionIcon Tooltip="Games"
+                                                                          Icon="@Icons.Material.Filled.CalendarMonth"
+                                                                          Href="@($"/leaguegames/{context.Id}")" />
+                                                    }
+                                                    @if (CanReadStandings)
+                                                    {
+                                                        <LeagueActionIcon Tooltip="Standings"
+                                                                          Icon="@Icons.Material.Filled.BarChart"
+                                                                          Href="@($"/leaguestandings/{context.Id}")" />
+                                                    }
+                                                    @if (CanReadStats)
+                                                    {
+                                                        @StatsIcon(context)
+                                                    }
+                                                    @if (CanReadLeagues)
+                                                    {
+                                                        <LeagueActionIcon Tooltip="League History"
+                                                                          Icon="@Icons.Material.Filled.MenuBook"
+                                                                          Href="@($"/leaguehistory/{context.Id}")" />
+                                                    }
+                                                    @if(CanUpdateLeagues)
+                                                    {
+                                                        <LeagueActionIcon Tooltip="Settings"
+                                                                          Icon="@Icons.Material.Filled.Settings"
+                                                                          Href="@($"/updateleaguesettings/{context.Id}")" />
+                                                        <LeagueActionIcon Tooltip="Update"
+                                                                          Icon="@Icons.Material.Filled.Update"
+                                                                          Href="@($"/updateleague/{context.Id}")" />
+                                                    }
                                                 </MudTd>
                                             </RowTemplate>
                                             <PagerContent>
@@ -226,114 +230,107 @@
 
 @code {
     private string sport = string.Empty;
-    private string prevSport = string.Empty;
     private string name = string.Empty;
-    private string prevName = string.Empty;
+    private string lastNameSearched = string.Empty;
     private GetLeaguesResponse LeaguesResponse { get; set; }
     private GetLeaguesBySportResponse LeaguesBySportResponse { get; set; }
     private GetLeaguesByNameResponse LeaguesByNameResponse { get; set; }
     private bool expandSearchPanel = true;
     private bool isSearchLoading = false;
     private List<LeagueModel> Model { get; set; }
+    private IJSObjectReference? _module;
+    private bool CanReadGames;
+    private bool CanReadStandings;
+    private bool CanReadStats;
+    private bool CanReadLeagues;
+    private bool CanUpdateLeagues;
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-        {
-            NavManager.NavigateTo("authentication/logout");
-        }
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-        if(await AuthorizationStatus.IsRefreshUserToken(HttpContextAccessor))
-        {
-            //refresh token
-
-        }
+        CanReadGames = user.IsInRole(Roles.ReadGames);
+        CanReadStandings = user.IsInRole(Roles.ReadStandings);
+        CanReadStats = user.IsInRole(Roles.ReadStats);
+        CanReadLeagues = user.IsInRole(Roles.ReadLeagues);
+        CanUpdateLeagues = user.IsInRole(Roles.UpdateLeagues);
     }
 
-    private async Task SearchAll()
+    private async Task ExecuteSearch(Func<Task> searchFunc)
     {
         try
         {
             isSearchLoading = true;
-            LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();
-            if (LeaguesResponse == null)
-            {
-                LeaguesResponse = await LeagueService.GetLeagues(1, 10000);
-                await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
-            }
-            Model = LeaguesResponse.Leagues.ToList();
-            await GetImageAsync();
+            await searchFunc();
             expandSearchPanel = false;
-            isSearchLoading = false;
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                await TriggerLogout();
+                return;
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
-    }
-
-    private async Task SearchBySport()
-    {
-        try
+        finally
         {
-            isSearchLoading = true;
-            LeaguesBySportResponse = await LeagueLocalCache.GetLeaguesBySportCache(sport);
-            if (LeaguesBySportResponse == null)
-            {
-                LeaguesBySportResponse = await LeagueService.GetLeaguesBySport(sport);
-                await LeagueLocalCache.SetLeaguesBySportCache(sport, LeaguesBySportResponse);
-            }
-            Model = LeaguesBySportResponse.Leagues.ToList();
-            await GetImageAsync();
-            prevSport = sport;
-            expandSearchPanel = false;
             isSearchLoading = false;
-
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            NavManager.NavigateTo("/error");
         }
     }
 
-    private async Task SearchByName()
+    private async Task SearchAllInternal()
     {
-        try
-        {
-            isSearchLoading = true;
-            if (prevName == name)
-            {
-                LeaguesByNameResponse = await LeagueLocalCache.GetLeaguesByNameCache();
-                if (LeaguesByNameResponse == null)
-                {
-                    LeaguesByNameResponse = await LeagueService.GetLeaguesByName(name);
-                    await LeagueLocalCache.SetLeaguesByNameCache(LeaguesByNameResponse);
-                }
-            }
-            else
-            {
-                LeaguesByNameResponse = await LeagueService.GetLeaguesByName(name);
-                await LeagueLocalCache.SetLeaguesByNameCache(LeaguesByNameResponse);
-            }
-            Model = LeaguesByNameResponse.Leagues.OrderBy(x => x.Name).ToList();
-            await GetImageAsync();
-            prevName = name;
-            expandSearchPanel = false;
-            isSearchLoading = false;
+        var response = await LeagueLocalCache.GetLeaguesCache()
+                        ?? await LeagueService.GetLeagues(1, 10000);
 
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            NavManager.NavigateTo("/error");
-        }
+        if(response is not null)
+            await LeagueLocalCache.SetLeaguesCache(response);
+
+        Model = response.Leagues.ToList();
+        await LoadImages();
     }
 
-    private async Task GetImageAsync()
+    private async Task SearchBySportInternal()
     {
+        var response = await LeagueLocalCache.GetLeaguesBySportCache(sport)
+                        ?? await LeagueService.GetLeaguesBySport(sport);
+        if(response is not null)
+            await LeagueLocalCache.SetLeaguesBySportCache(sport, response);
+        Model = response.Leagues.ToList();
+        await LoadImages();
+    }
+
+    private async Task SearchByNameInternal()
+    {
+        GetLeaguesByNameResponse response;
+        if(lastNameSearched == name)
+        {
+            response = await LeagueLocalCache.GetLeaguesByNameCache();
+            if(response is null)
+            {
+                response = await LeagueService.GetLeaguesByName(name);
+                await LeagueLocalCache.SetLeaguesByNameCache(response);
+            }
+        }
+        else
+        {
+            response = await LeagueService.GetLeaguesByName(name);
+            await LeagueLocalCache.SetLeaguesByNameCache(response);
+            lastNameSearched = name;
+        }
+
+        Model = response.Leagues.OrderBy(x => x.Name).ToList();
+        await LoadImages();
+    }
+
+    private async Task LoadImages()
+    {
+        if(Model is null)
+            return;
+
         foreach (var league in Model)
         {
             string keyPath = $"/{league.Sport}/{league.Name}/{league.ImageFile}";
@@ -341,8 +338,32 @@
         }
     }
 
-    private async Task NavigateToCreateLeague()
+    private async Task TriggerLogout()
     {
-        NavManager.NavigateTo($"/createleague/");
+        _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+        await _module.InvokeVoidAsync("logout");
     }
+}
+
+@functions{
+    private RenderFragment StatsIcon(LeagueModel league) => __builder =>
+    {
+        if(!CanReadStats) return;
+
+        var url = league.Sport switch
+        {
+            SportName.BASEBALL => $"/baseballleaguestatsleaders/{league.Id}",
+            SportName.BASKETBALL => $"/basketballleaguestatsleaders/{league.Id}",
+            SportName.FOOTBALL => $"/footballleaguestatsleaders/{league.Id}",
+            _ => null
+        };
+
+        if(url is not null)
+        {
+            <MudTooltip Text="Stats" Color="Color.Secondary">
+                <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@url" />
+            </MudTooltip>            
+            ;
+        }
+    };
 }

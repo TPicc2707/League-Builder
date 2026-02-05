@@ -8,15 +8,17 @@
 @inject IAWSService AWSService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IGameLocalCacheService GameLocalCache
 @inject IPlayerLocalCacheService PlayerLocalCache
 @inject IStatsLocalCacheService StatsLocalCache
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
-
-<AuthorizeView Roles="@String.Concat(Roles.CreateStats, ", ", Roles.UpdateStats, ", ", Roles.ReadStats, ", ", Roles.ReadGames, ", ", Roles.ReadPlayers)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.CreateStats, ", ", Roles.UpdateStats)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -78,60 +80,60 @@
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                    <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
+                                    <MudTd DataLabel="At Bats"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.AtBats</MudText></MudTd>
                                     <MudTd DataLabel="Runs">@context.Runs</MudTd>
                                     <MudTd DataLabel="Hits">@context.Hits</MudTd>
-                                    <MudTd DataLabel="RBI">@context.RunsBattedIn</MudTd>
-                                    <MudTd DataLabel="BB">@context.Walks</MudTd>
-                                    <MudTd DataLabel="HBP">@context.HitByPitch</MudTd>
+                                    <MudTd DataLabel="RBI"><MudText Style="margin-left: 7px; font-size: .875rem;">@context.RunsBattedIn</MudText></MudTd>
+                                    <MudTd DataLabel="BB"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Walks</MudText></MudTd>
+                                    <MudTd DataLabel="HBP"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.HitByPitch</MudText></MudTd>
                                     <MudTd DataLabel="K">@context.Strikeouts</MudTd>
-                                    <MudTd DataLabel="SB">@context.StolenBases</MudTd>
-                                    <MudTd DataLabel="TB">@context.TotalBases</MudTd>
-                                    <MudTd DataLabel="2B">@context.Doubles</MudTd>
-                                    <MudTd DataLabel="3B">@context.Triples</MudTd>
-                                    <MudTd DataLabel="HR">@context.HomeRuns</MudTd>
-                                    <MudTd DataLabel="SF">@context.SacrificeFly</MudTd>
+                                    <MudTd DataLabel="SB"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.StolenBases</MudText></MudTd>
+                                    <MudTd DataLabel="TB"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.TotalBases</MudText></MudTd>
+                                    <MudTd DataLabel="2B"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Doubles</MudText></MudTd>
+                                    <MudTd DataLabel="3B"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Triples</MudText></MudTd>
+                                    <MudTd DataLabel="HR"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.HomeRuns</MudText></MudTd>
+                                    <MudTd DataLabel="SF"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.SacrificeFly</MudText></MudTd>
                                 </RowTemplate>
                                 <RowEditingTemplate>
                                     <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
                                     <MudTd DataLabel="At Bats">
-                                        <MudTextField @bind-Value="context.AtBats" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.AtBats" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="Runs">
-                                        <MudTextField @bind-Value="context.Runs" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Runs" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="Hits">
-                                        <MudTextField @bind-Value="context.Hits" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Hits" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="RBI">
-                                        <MudTextField @bind-Value="context.RunsBattedIn" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.RunsBattedIn" Style="margin-left: 7px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="BB">
-                                        <MudTextField @bind-Value="context.Walks" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Walks" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="HBP">
-                                        <MudTextField @bind-Value="context.HitByPitch" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.HitByPitch" Style="margin-left: 7px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="K">
-                                        <MudTextField @bind-Value="context.Strikeouts" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Strikeouts" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="SB">
-                                        <MudTextField @bind-Value="context.StolenBases" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.StolenBases" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="TB">
-                                        <MudTextField @bind-Value="context.TotalBases" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.TotalBases" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="2B">
-                                        <MudTextField @bind-Value="context.Doubles" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Doubles" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="3B">
-                                        <MudTextField @bind-Value="context.Triples" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Triples" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="HR">
-                                        <MudTextField @bind-Value="context.HomeRuns" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.HomeRuns" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="SF">
-                                        <MudTextField @bind-Value="context.SacrificeFly" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.SacrificeFly" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                 </RowEditingTemplate>
                                 <EditButtonContent Context="button">
@@ -163,19 +165,19 @@
                                 <tbody>
                                     <tr>
                                         <td>Totals:</td>
-                                        <td>@AwayTotalAtBats</td>
+                                        <td><span style="margin-left: 5px;">@AwayTotalAtBats</span></td>
                                         <td>@AwayTotalRuns</td>
                                         <td>@AwayTotalHits</td>
-                                        <td>@AwayTotalRBIs</td>
-                                        <td>@AwayTotalWalks</td>
-                                        <td>@AwayTotalHBPs</td>
+                                        <td><span style="margin-left: 7px;">@AwayTotalRBIs</span></td>
+                                        <td><span style="margin-left: 5px;">@AwayTotalWalks</span></td>
+                                        <td><span style="margin-left: 7px;">@AwayTotalHBPs</span></td>
                                         <td>@AwayTotalStrikeouts</td>
-                                        <td>@AwayTotalSBs</td>
-                                        <td>@AwayTotalTBs</td>
-                                        <td>@AwayTotalDoubles</td>
-                                        <td>@AwayTotalTriples</td>
-                                        <td>@AwayTotalHomeRuns</td>
-                                        <td>@AwayTotalSFs</td>
+                                        <td><span style="margin-left: 5px;">@AwayTotalSBs</span></td>
+                                        <td><span style="margin-left: 5px;">@AwayTotalTBs</span></td>
+                                        <td><span style="margin-left: 5px;">@AwayTotalDoubles</span></td>
+                                        <td><span style="margin-left: 5px;">@AwayTotalTriples</span></td>
+                                        <td><span style="margin-left: 5px;">@AwayTotalHomeRuns</span></td>
+                                        <td><span style="margin-left: 5px;">@AwayTotalSFs</span></td>
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
@@ -220,10 +222,10 @@
                                     }
                                     <MudTd DataLabel="W">@context.Wins</MudTd>
                                     <MudTd DataLabel="L">@context.Losses</MudTd>
-                                    <MudTd DataLabel="IP">@context.Innings</MudTd>
+                                    <MudTd DataLabel="IP"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Innings</MudText></MudTd>
                                     <MudTd DataLabel="H">@context.HitsAllowed</MudTd>
                                     <MudTd DataLabel="R">@context.PitchingRuns</MudTd>
-                                    <MudTd DataLabel="BB">@context.WalksAllowed</MudTd>
+                                    <MudTd DataLabel="BB"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.WalksAllowed</MudText></MudTd>
                                     <MudTd DataLabel="K">@context.PitchingStrikeouts</MudTd>
                                 </RowTemplate>
                                 <RowEditingTemplate>
@@ -232,25 +234,25 @@
                                         <MudCheckBox @bind-Value="context.Start" Color="Color.Primary"></MudCheckBox>
                                     </MudTd>
                                     <MudTd DataLabel="W">
-                                        <MudTextField @bind-Value="context.Wins" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Wins" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="L">
-                                        <MudTextField @bind-Value="context.Losses" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Losses" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="IP">
-                                        <MudTextField @bind-Value="context.Innings" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Innings" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="H">
-                                        <MudTextField @bind-Value="context.HitsAllowed" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.HitsAllowed" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="R">
-                                        <MudTextField @bind-Value="context.PitchingRuns" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.PitchingRuns" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="BB">
-                                        <MudTextField @bind-Value="context.WalksAllowed" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.WalksAllowed" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="K">
-                                        <MudTextField @bind-Value="context.PitchingStrikeouts" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.PitchingStrikeouts" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                 </RowEditingTemplate>
                                 <EditButtonContent Context="button">
@@ -279,10 +281,10 @@
                                         <td></td>
                                         <td>@AwayTotalWins</td>
                                         <td>@AwayTotalLosses</td>
-                                        <td>@AwayTotalInnings</td>
+                                        <td><span style="margin-left: 5px;">@AwayTotalInnings</span></td>
                                         <td>@AwayTotalHitsAllowed</td>
                                         <td>@AwayTotalPitchingRuns</td>
-                                        <td>@AwayTotalWalksAllowed</td>
+                                        <td><span style="margin-left: 5px;">@AwayTotalWalksAllowed</span></td>
                                         <td>@AwayTotalPitchingStrikeouts</td>
                                     </tr>
                                 </tbody>
@@ -330,60 +332,60 @@
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
-                                    <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
+                                    <MudTd DataLabel="At Bats"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.AtBats</MudText></MudTd>
                                     <MudTd DataLabel="Runs">@context.Runs</MudTd>
                                     <MudTd DataLabel="Hits">@context.Hits</MudTd>
-                                    <MudTd DataLabel="RBI">@context.RunsBattedIn</MudTd>
-                                    <MudTd DataLabel="BB">@context.Walks</MudTd>
-                                    <MudTd DataLabel="HBP">@context.HitByPitch</MudTd>
+                                    <MudTd DataLabel="RBI"><MudText Style="margin-left: 7px; font-size: .875rem;">@context.RunsBattedIn</MudText></MudTd>
+                                    <MudTd DataLabel="BB"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Walks</MudText></MudTd>
+                                    <MudTd DataLabel="HBP"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.HitByPitch</MudText></MudTd>
                                     <MudTd DataLabel="K">@context.Strikeouts</MudTd>
-                                    <MudTd DataLabel="SB">@context.StolenBases</MudTd>
-                                    <MudTd DataLabel="TB">@context.TotalBases</MudTd>
-                                    <MudTd DataLabel="2B">@context.Doubles</MudTd>
-                                    <MudTd DataLabel="3B">@context.Triples</MudTd>
-                                    <MudTd DataLabel="HR">@context.HomeRuns</MudTd>
-                                    <MudTd DataLabel="SF">@context.SacrificeFly</MudTd>
+                                    <MudTd DataLabel="SB"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.StolenBases</MudText></MudTd>
+                                    <MudTd DataLabel="TB"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.TotalBases</MudText></MudTd>
+                                    <MudTd DataLabel="2B"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Doubles</MudText></MudTd>
+                                    <MudTd DataLabel="3B"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Triples</MudText></MudTd>
+                                    <MudTd DataLabel="HR"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.HomeRuns</MudText></MudTd>
+                                    <MudTd DataLabel="SF"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.SacrificeFly</MudText></MudTd>
                                 </RowTemplate>
                                 <RowEditingTemplate>
                                     <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
                                     <MudTd DataLabel="At Bats">
-                                        <MudTextField @bind-Value="context.AtBats" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.AtBats" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="Runs">
-                                        <MudTextField @bind-Value="context.Runs" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Runs" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="Hits">
-                                        <MudTextField @bind-Value="context.Hits" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Hits" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="RBI">
-                                        <MudTextField @bind-Value="context.RunsBattedIn" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.RunsBattedIn" Style="margin-left: 7px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="BB">
-                                        <MudTextField @bind-Value="context.Walks" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Walks" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="HBP">
-                                        <MudTextField @bind-Value="context.HitByPitch" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.HitByPitch" Style="margin-left: 7px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="K">
-                                        <MudTextField @bind-Value="context.Strikeouts" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Strikeouts" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="SB">
-                                        <MudTextField @bind-Value="context.StolenBases" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.StolenBases" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="TB">
-                                        <MudTextField @bind-Value="context.TotalBases" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.TotalBases" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="2B">
-                                        <MudTextField @bind-Value="context.Doubles" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Doubles" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="3B">
-                                        <MudTextField @bind-Value="context.Triples" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Triples" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="HR">
-                                        <MudTextField @bind-Value="context.HomeRuns" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.HomeRuns" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="SF">
-                                        <MudTextField @bind-Value="context.SacrificeFly" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.SacrificeFly" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                 </RowEditingTemplate>
                                 <EditButtonContent Context="button">
@@ -414,19 +416,19 @@
                                 <tbody>
                                     <tr>
                                         <td>Totals:</td>
-                                        <td>@HomeTotalAtBats</td>
+                                        <td><span style="margin-left: 5px;">@HomeTotalAtBats</span></td>
                                         <td>@HomeTotalRuns</td>
                                         <td>@HomeTotalHits</td>
-                                        <td>@HomeTotalRBIs</td>
-                                        <td>@HomeTotalWalks</td>
-                                        <td>@HomeTotalHBPs</td>
+                                        <td><span style="margin-left: 7px;">@HomeTotalRBIs</span></td>
+                                        <td><span style="margin-left: 5px;">@HomeTotalWalks</span></td>
+                                        <td><span style="margin-left: 7px;">@HomeTotalHBPs</span></td>
                                         <td>@HomeTotalStrikeouts</td>
-                                        <td>@HomeTotalSBs</td>
-                                        <td>@HomeTotalTBs</td>
-                                        <td>@HomeTotalDoubles</td>
-                                        <td>@HomeTotalTriples</td>
-                                        <td>@HomeTotalHomeRuns</td>
-                                        <td>@HomeTotalSFs</td>
+                                        <td><span style="margin-left: 5px;">@HomeTotalSBs</span></td>
+                                        <td><span style="margin-left: 5px;">@HomeTotalTBs</span></td>
+                                        <td><span style="margin-left: 5px;">@HomeTotalDoubles</span></td>
+                                        <td><span style="margin-left: 5px;">@HomeTotalTriples</span></td>
+                                        <td><span style="margin-left: 5px;">@HomeTotalHomeRuns</span></td>
+                                        <td><span style="margin-left: 5px;">@HomeTotalSFs</span></td>
                                     </tr>
                                 </tbody>
                             </MudSimpleTable>
@@ -471,10 +473,10 @@
                                     }
                                     <MudTd DataLabel="W">@context.Wins</MudTd>
                                     <MudTd DataLabel="L">@context.Losses</MudTd>
-                                    <MudTd DataLabel="IP">@context.Innings</MudTd>
+                                    <MudTd DataLabel="IP"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Innings</MudText></MudTd>
                                     <MudTd DataLabel="H">@context.HitsAllowed</MudTd>
                                     <MudTd DataLabel="R">@context.PitchingRuns</MudTd>
-                                    <MudTd DataLabel="BB">@context.WalksAllowed</MudTd>
+                                    <MudTd DataLabel="BB"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.WalksAllowed</MudText></MudTd>
                                     <MudTd DataLabel="K">@context.PitchingStrikeouts</MudTd>
                                 </RowTemplate>
                                 <RowEditingTemplate>
@@ -483,25 +485,25 @@
                                         <MudCheckBox @bind-Value="context.Start" Color="Color.Primary"></MudCheckBox>
                                     </MudTd>
                                     <MudTd DataLabel="W">
-                                        <MudTextField @bind-Value="context.Wins" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Wins" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="L">
-                                        <MudTextField @bind-Value="context.Losses" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Losses" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="IP">
-                                        <MudTextField @bind-Value="context.Innings" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.Innings" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="H">
-                                        <MudTextField @bind-Value="context.HitsAllowed" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.HitsAllowed" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="R">
-                                        <MudTextField @bind-Value="context.PitchingRuns" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.PitchingRuns" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="BB">
-                                        <MudTextField @bind-Value="context.WalksAllowed" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.WalksAllowed" Style="margin-left: 5px; font-size: .875rem;" Required />
                                     </MudTd>
                                     <MudTd DataLabel="K">
-                                        <MudTextField @bind-Value="context.PitchingStrikeouts" Style="font-size: 12px;" Required />
+                                        <MudTextField @bind-Value="context.PitchingStrikeouts" Style="font-size: .875rem;" Required />
                                     </MudTd>
                                 </RowEditingTemplate>
                                 <EditButtonContent Context="button">
@@ -530,10 +532,10 @@
                                         <td></td>
                                         <td>@HomeTotalWins</td>
                                         <td>@HomeTotalLosses</td>
-                                        <td>@HomeTotalInnings</td>
+                                        <td><span style="margin-left: 5px;">@HomeTotalInnings</span></td>
                                         <td>@HomeTotalHitsAllowed</td>
                                         <td>@HomeTotalPitchingRuns</td>
-                                        <td>@HomeTotalWalksAllowed</td>
+                                        <td><span style="margin-left: 5px;">@HomeTotalWalksAllowed</span></td>
                                         <td>@HomeTotalPitchingStrikeouts</td>
                                     </tr>
                                 </tbody>
@@ -572,7 +574,7 @@
     GetBaseballStatsByTeamResponse AwayPlayerStatsModel { get; set; }
     GetBaseballStatsByTeamResponse HomePlayerStatsModel { get; set; }
     GetBaseballStatsByPlayerResponse PlayerStatsModel { get; set; }
-
+    private IJSObjectReference? _module;
     private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
     private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
     private int AwayTotalAtBats = 0;
@@ -624,11 +626,6 @@
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             var gameId = Guid.Parse(Id);
             GameModel = await GameLocalCache.GetGameByIdCache(Id);
             if (GameModel == null)
@@ -741,11 +738,15 @@
             }
             await GetImageAsync();
             PageLoad = true;
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -859,8 +860,8 @@
                                                                                                                 form.HitsAllowed, form.WalksAllowed, form.PitchingStrikeouts);
 
                     UpdateBaseballStatsModel baseballStatsModel = new UpdateBaseballStatsModel(gameStat.Id, hittingStatSelectedItem.LeagueId, hittingStatSelectedItem.TeamId,
-                                                                                               hittingStatSelectedItem.PlayerId, hittingStatSelectedItem.SeasonId,
-                                                                                               hittingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
+                                                                                                hittingStatSelectedItem.PlayerId, hittingStatSelectedItem.SeasonId,
+                                                                                                hittingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
 
                     UpdateBaseballStatsRequest request = new UpdateBaseballStatsRequest(baseballStatsModel);
                     await StatsService.UpdateBaseballStats(request);
@@ -919,8 +920,8 @@
                                                                                                                 form.HitsAllowed, form.WalksAllowed, form.PitchingStrikeouts);
 
                     CreateBaseballStatsModel baseballStatsModel = new CreateBaseballStatsModel(hittingStatSelectedItem.LeagueId, hittingStatSelectedItem.TeamId,
-                                                                                               hittingStatSelectedItem.PlayerId, hittingStatSelectedItem.SeasonId,
-                                                                                               hittingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
+                                                                                                hittingStatSelectedItem.PlayerId, hittingStatSelectedItem.SeasonId,
+                                                                                                hittingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
 
                     CreateBaseballStatsRequest request = new CreateBaseballStatsRequest(baseballStatsModel);
                     await StatsService.CreateBaseballStats(request);
@@ -970,7 +971,12 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -979,6 +985,7 @@
     {
         try
         {
+
             if (pitchingStatSelectedItem is not null)
             {
                 var form = Model.FirstOrDefault(x => x.PlayerId == pitchingStatSelectedItem.PlayerId);
@@ -1006,8 +1013,8 @@
                                                                                                                 pitchingStatSelectedItem.HitsAllowed, pitchingStatSelectedItem.WalksAllowed, pitchingStatSelectedItem.PitchingStrikeouts);
 
                     UpdateBaseballStatsModel baseballStatsModel = new UpdateBaseballStatsModel(gameStat.Id, pitchingStatSelectedItem.LeagueId, pitchingStatSelectedItem.TeamId,
-                                                                                               pitchingStatSelectedItem.PlayerId, pitchingStatSelectedItem.SeasonId,
-                                                                                               pitchingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
+                                                                                                pitchingStatSelectedItem.PlayerId, pitchingStatSelectedItem.SeasonId,
+                                                                                                pitchingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
 
                     UpdateBaseballStatsRequest request = new UpdateBaseballStatsRequest(baseballStatsModel);
                     await StatsService.UpdateBaseballStats(request);
@@ -1065,8 +1072,8 @@
                                                                                                                 pitchingStatSelectedItem.HitsAllowed, pitchingStatSelectedItem.WalksAllowed, pitchingStatSelectedItem.PitchingStrikeouts);
 
                     CreateBaseballStatsModel baseballStatsModel = new CreateBaseballStatsModel(pitchingStatSelectedItem.LeagueId, pitchingStatSelectedItem.TeamId,
-                                                                                               pitchingStatSelectedItem.PlayerId, pitchingStatSelectedItem.SeasonId,
-                                                                                               pitchingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
+                                                                                                pitchingStatSelectedItem.PlayerId, pitchingStatSelectedItem.SeasonId,
+                                                                                                pitchingStatSelectedItem.GameId, hittingStatsModel, pitchingStatsModel);
 
                     CreateBaseballStatsRequest request = new CreateBaseballStatsRequest(baseballStatsModel);
                     await StatsService.CreateBaseballStats(request);
@@ -1113,11 +1120,15 @@
                     StateHasChanged();
                 }
             }
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }

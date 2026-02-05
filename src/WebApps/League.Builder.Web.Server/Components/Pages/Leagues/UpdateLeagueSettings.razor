@@ -2,12 +2,15 @@
 @using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
 @inject IValidator<UpdateLeagueSettingsModel> UpdateLeagueSettingsValidator
 @inject ILeagueLocalCacheService LeagueLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
-<AuthorizeView Roles="@String.Concat(Roles.UpdateLeagues, ", ", Roles.ReadLeagues)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.UpdateLeagues)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -52,7 +55,7 @@
         }
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 
@@ -64,16 +67,12 @@
     private GetLeagueByIdResponse LeagueByIdResponse { get; set; }
     bool success;
     private FluentValidationValidator fluentValidationValidator;
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             if (LeagueByIdResponse is null)
             {
                 var leagueId = Guid.Parse(Id);
@@ -95,7 +94,12 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -117,11 +121,15 @@
             await LeagueLocalCache.DeleteLeagueBySportCache(LeagueByIdResponse.League.Sport);
             await LeagueLocalCache.DeleteLeagueByNameCache();
             PageLoad = true;
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
         

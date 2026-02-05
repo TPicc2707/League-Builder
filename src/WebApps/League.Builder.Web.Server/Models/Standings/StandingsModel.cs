@@ -12,6 +12,7 @@ public class StandingsModel
     public StandingsDetailModel StandingsDetail { get ; set; } = default!;
     public StandingsStatus StandingsStatus { get; set; } = default!;
     public TeamDetailModel Team { get; set; } = default!;
+    public int Year { get; set; } = default!;
 }
 
 public record CreateStandingsModel(

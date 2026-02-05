@@ -4,7 +4,13 @@ services:
     image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.4
+    image: ${DOCKER_REGISTRY-}keycloak
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+  distributedcache:
+      image: redis
 
   ollama:
     image: "ollama/ollama:0.13.0"

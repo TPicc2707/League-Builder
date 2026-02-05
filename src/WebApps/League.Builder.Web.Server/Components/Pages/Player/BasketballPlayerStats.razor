@@ -8,7 +8,8 @@
 @inject ILeagueService LeagueService
 @inject IAWSService AWSService
 @inject IDialogService DialogService
-@inject NavigationManager NavManager;
+@inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISeasonLocalCacheService SeasonLocalCache
 @inject IPlayerLocalCacheService PlayerLocalCache
@@ -16,6 +17,8 @@
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject IStatsLocalCacheService StatLocalCache
 @inject IGameLocalCacheService GameLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames, ", ", Roles.ReadTeams)" Context="auth">
     <Authorized>
@@ -280,7 +283,7 @@
 
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 
@@ -293,7 +296,7 @@
     private string imageFile = string.Empty;
     string address = string.Empty;
     private bool expandSearchPanel = false;
-
+    private IJSObjectReference? _module;
     private List<PlayerStatRecord> PlayerStats = new List<PlayerStatRecord>();
     private int seasonPoints;
     private int seasonFieldGoalsMade;
@@ -328,21 +331,31 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
+            int year = DateTime.Now.Year;
+            SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
+            if (SeasonsModel == null)
+            {
+                SeasonsModel = await SeasonService.GetSeasons();
+                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
+            }
+            seasonValue = SeasonsModel.Seasons.FirstOrDefault(x => x.Year == year).Year;
+            await CreatePlayerStats(year);
+            PageLoad = true;
+
+        }
+        catch (Exception ex)
+        {
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
 
-        int year = DateTime.Now.Year;
-        SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
-        if (SeasonsModel == null)
-        {
-            SeasonsModel = await SeasonService.GetSeasons();
-            await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
-        }
-        seasonValue = SeasonsModel.Seasons.FirstOrDefault(x => x.Year == year).Year;
-        await CreatePlayerStats(year);
-        PageLoad = true;
     }
 
     private async Task GetPlayerStatsBySeason()

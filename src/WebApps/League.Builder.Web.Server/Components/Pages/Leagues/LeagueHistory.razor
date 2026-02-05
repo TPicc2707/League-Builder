@@ -5,12 +5,14 @@
 @inject IStandingsService StandingsService
 @inject IAWSService AWSService
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
 @inject ISeasonLocalCacheService SeasonLocalCache
 @inject IStandingsLocalCacheService StandingsLocalCache
-
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadLeagues, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames)" Context="Auth">
     <Authorized>
@@ -78,16 +80,12 @@
     public GetSeasonsResponse GetSeasonsResponse { get; set; }
     public GetStandingsByLeagueResponse GetStandingsByLeagueResponse { get; set; }
     public List<LeagueChampion> Champs { get; set; } = new();
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             var leagueId = Guid.Parse(Id);
             LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
             if (LeagueByIdResponse == null)
@@ -135,9 +133,15 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
+
     }
 
     private async Task GetImageAsync(LeagueChampion champion)

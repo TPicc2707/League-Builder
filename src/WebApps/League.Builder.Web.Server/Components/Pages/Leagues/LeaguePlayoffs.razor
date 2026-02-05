@@ -4,6 +4,7 @@
 @inject ISeasonService SeasonService
 @inject ITeamService TeamService
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ILeagueService LeagueService
 @inject IAWSService AWSService
@@ -11,6 +12,8 @@
 @inject ITeamLocalCacheService TeamLocalCache
 @inject ISeasonLocalCacheService SeasonLocalCache
 @inject IStandingsLocalCacheService StandingsLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStandings, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames)" Context="auth">
@@ -55,7 +58,7 @@
     private SeasonModel Season;
     private GetSeasonsResponse SeasonsModel { get; set; }
     private IEnumerable<StandingsModel> Standings;
-
+    private IJSObjectReference? _module;
     private GetSeasonByYearResponse SeasonModel { get; set; }
     private GetStandingsByLeagueResponse Model { get; set; }
     private GetLeagueByIdResponse LeagueModel { get; set; }
@@ -66,11 +69,6 @@
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             var leagueId = Guid.Parse(Id);
             SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
             if (SeasonsModel == null)
@@ -96,11 +94,15 @@
             CalculatePlayoffTeams();
             Standings = Standings.Where(x => x.SeasonId == Season.Id && x.StandingsDetail.PlayoffTeam == true).OrderByDescending(x => x.WinPercentage);
             PageLoad = true;
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }

@@ -62,6 +62,15 @@ var ollama = builder
 
 var llama = ollama.AddModel("llama3.2");
 
+// Suppress ASPIRECERTIFICATES001 for evaluation API usage
+#pragma warning disable ASPIRECERTIFICATES001
+    var cache = builder.AddRedis("cache")
+    .WithoutHttpsCertificate()
+    .WithDataVolume(isReadOnly: false)
+    .WithPersistence(interval: TimeSpan.FromMinutes(5), keysChangedThreshold: 100)
+    .WithRedisCommander();
+#pragma warning restore ASPIRECERTIFICATES001
+
 //Postgres
 var leagueDb = postgres.AddDatabase("leagueDb");
 var seasonDb = postgres.AddDatabase("seasonDb");
@@ -271,9 +280,11 @@ builder.AddProject<Projects.League_Builder_Web_Server>("league-builder-web-serve
                 .WithReference(apiGateway)
                 .WithReference(keycloak)
                 .WithReference(llama)
+                .WithReference(cache)
                 .WaitFor(apiGateway)
                 .WaitFor(keycloak)
                 .WaitFor(llama)
+                .WaitFor(cache)
                 .PublishAsDockerComposeService((resource, service) =>
                 {
                     service.Name = "league-builder-web-server";

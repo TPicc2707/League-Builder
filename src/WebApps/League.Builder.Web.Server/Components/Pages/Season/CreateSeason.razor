@@ -4,15 +4,18 @@
 @inject ITeamService TeamsService
 @inject IStandingsService StandingsService
 @inject ISnackbar Snackbar
-@inject NavigationManager NavManager;
+@inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IValidator<CreateSeasonModel> CreateSeasonValidator
 @inject IDialogService DialogService
 @inject ISeasonLocalCacheService SeasonLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
 @inject IStandingsLocalCacheService StandingsLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
-<AuthorizeView Roles="@String.Concat(Roles.CreateSeasons, ", ", Roles.ReadSeasons, ", ", Roles.ReadTeams)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.CreateSeasons)" Context="auth">
     <Authorized>
         <MudItem Style="padding-top: 50px;">
             <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
@@ -84,7 +87,7 @@
         </MudItem>
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 
@@ -92,10 +95,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-        {
-            NavManager.NavigateTo("authentication/logout");
-        }
     }
 
     CreateSeasonModel model = new CreateSeasonModel();
@@ -106,39 +105,53 @@
     private GetTeamsResponse TeamsModel { get; set; }
     private GetSeasonByIdResponse SeasonModel { get; set; }
     private FluentValidationValidator fluentValidationValidator;
+    private IJSObjectReference? _module;
 
     private async Task OnValidSubmit(EditContext context)
     {
-        CreateSeasonRequest request = new CreateSeasonRequest(model.Year, model.Description);
-        var response = await SeasonService.CreateSeason(request);
-        await SeasonLocalCache.DeleteSeasonsCache();
+        try
+        {
+            CreateSeasonRequest request = new CreateSeasonRequest(model.Year, model.Description);
+            var response = await SeasonService.CreateSeason(request);
+            await SeasonLocalCache.DeleteSeasonsCache();
 
-        TeamsModel = await TeamLocalCache.GetTeamsCache();
-        if(TeamsModel == null)
-        {
-            TeamsModel = await TeamsService.GetTeams(0, 1000);
-            await TeamLocalCache.SetTeamsCache(TeamsModel);
-        }
-        SeasonModel = await SeasonLocalCache.GetSeasonByIdCache(response.Id.ToString());
-        if(SeasonModel == null)
-        {
-            SeasonModel = await SeasonService.GetSeason(response.Id);
-            await SeasonLocalCache.SetSeasonByIdCache(response.Id.ToString(), SeasonModel);
-        }
-        StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0, false, false);
-        foreach(var team in TeamsModel.Teams.Data)
-        {
-            TeamDetailModel teamDetailModel = new TeamDetailModel(team.Id, team.TeamName);
-            CreateStandingsModel createStandingsModel = new CreateStandingsModel(team.LeagueId, SeasonModel.Season.Id, standingsDetailModel, teamDetailModel);
-            CreateStandingsRequest standingsRequest = new CreateStandingsRequest(createStandingsModel);
-            await StandingsService.CreateStandings(standingsRequest);
-            await StandingsLocalCache.DeleteStandingsByLeagueCache(team.LeagueId.ToString());
-        }
+            TeamsModel = await TeamLocalCache.GetTeamsCache();
+            if (TeamsModel == null)
+            {
+                TeamsModel = await TeamsService.GetTeams(0, 1000);
+                await TeamLocalCache.SetTeamsCache(TeamsModel);
+            }
+            SeasonModel = await SeasonLocalCache.GetSeasonByIdCache(response.Id.ToString());
+            if (SeasonModel == null)
+            {
+                SeasonModel = await SeasonService.GetSeason(response.Id);
+                await SeasonLocalCache.SetSeasonByIdCache(response.Id.ToString(), SeasonModel);
+            }
+            StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0, false, false);
+            foreach (var team in TeamsModel.Teams.Data)
+            {
+                TeamDetailModel teamDetailModel = new TeamDetailModel(team.Id, team.TeamName);
+                CreateStandingsModel createStandingsModel = new CreateStandingsModel(team.LeagueId, SeasonModel.Season.Id, standingsDetailModel, teamDetailModel);
+                CreateStandingsRequest standingsRequest = new CreateStandingsRequest(createStandingsModel);
+                await StandingsService.CreateStandings(standingsRequest);
+                await StandingsLocalCache.DeleteStandingsByLeagueCache(team.LeagueId.ToString());
+            }
 
-        success = true;
-        NavManager.NavigateTo("/seasons");
-        Snackbar.Add("Season has been created.", MudBlazor.Severity.Success);
-        StateHasChanged();
+            success = true;
+            NavManager.NavigateTo("/seasons");
+            Snackbar.Add("Season has been created.", MudBlazor.Severity.Success);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)

@@ -7,10 +7,15 @@
 @inject IDialogService DialogService
 @inject IAWSService AWSService
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject ILocalStorageService LocalStorage
 @inject IGameLocalCacheService GameLocalCache
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject ILeagueLocalCacheService LeagueLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadGames, ", ", Roles.ReadSeasons)" Context="auth">
     <Authorized>
@@ -72,7 +77,7 @@
                                     </ColGroup>
                                     <ToolBarContent>
                                         <MudStack Justify="Justify.FlexStart">
-                                            <MudButton Target="_top" OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
+                                            <MudButton Target="_blank" Href="@($"/creategame/{Id}")" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
                                         </MudStack>
                                     </ToolBarContent>
                                     <HeaderContent>
@@ -120,7 +125,7 @@
                                                 <Authorized>
                                                     <MudTd DataLabel="Stats">
                                                         <MudTooltip Text="Game Lineup" Color="Color.Secondary">
-                                                            <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToCreateGameLineup(context.Id))">
+                                                            <MudLink Target="_blank" Color="Color.Tertiary" Href="@($"{NavigateEditSportLineup}{context.Id}")">
                                                                 <MudIcon Icon="@Icons.Material.Filled.EventNote" />
                                                             </MudLink>
                                                         </MudTooltip>
@@ -137,7 +142,7 @@
                                                 <Authorized>
                                                     <MudTd DataLabel="Stats">
                                                         <MudTooltip Text="Game Lineup" Color="Color.Secondary">
-                                                            <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToGameLineup(context.Id))">
+                                                            <MudLink Target="_blank" Color="Color.Tertiary" Href="@($"{NavigateSportLineup}{context.Id}")">
                                                                 <MudIcon Icon="@Icons.Material.Filled.EventNote" />
                                                             </MudLink>
                                                         </MudTooltip>
@@ -152,7 +157,7 @@
                                             <Authorized>
                                                 <MudTd DataLabel="Edit">
                                                     <MudTooltip Text="Edit Game" Color="Color.Secondary">
-                                                        <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateGame(context.Id))">
+                                                        <MudLink Target="_blank" Color="Color.Tertiary" Href="@($"/updategame/{context.Id}")">
                                                             <MudIcon Icon="@Icons.Material.Filled.Edit" />
                                                         </MudLink>
                                                     </MudTooltip>
@@ -168,7 +173,7 @@
                                                 <Authorized>
                                                     <MudTd DataLabel="Stats">
                                                         <MudTooltip Text="Game Stats" Color="Color.Secondary">
-                                                            <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))">
+                                                            <MudLink Target="_blank" Color="Color.Tertiary" Href="@(editStats ? $"{NavigateEditSportStats}{context.Id}" : $"{NavigateSportStats}{context.Id}")">
                                                                 <MudIcon Icon="@Icons.Material.Filled.QueryStats" />
                                                             </MudLink>
                                                         </MudTooltip>
@@ -247,7 +252,7 @@
                                                 <Authorized>
                                                     <MudTd DataLabel="Stats">
                                                         <MudTooltip Text="Game Lineup" Color="Color.Secondary">
-                                                            <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToGameLineup(context.Id))">
+                                                            <MudLink Target="_blank" Color="Color.Tertiary" Href="@($"{NavigateSportLineup}{context.Id}")">
                                                                 <MudIcon Icon="@Icons.Material.Filled.EventNote" />
                                                             </MudLink>
                                                         </MudTooltip>
@@ -264,7 +269,7 @@
                                                 <Authorized>
                                                     <MudTd DataLabel="Stats">
                                                         <MudTooltip Text="Game Stats" Color="Color.Secondary">
-                                                            <MudLink Target="_blank" Color="Color.Tertiary" OnClick="@(() => NavigateToGameStats(context.Id, context.LeagueId))">
+                                                            <MudLink Target="_blank" Color="Color.Tertiary" Href="@(editStats ? $"{NavigateEditSportStats}{context.Id}" : $"{NavigateSportStats}{context.Id}")">
                                                                 <MudIcon Icon="@Icons.Material.Filled.QueryStats" />
                                                             </MudLink>
                                                         </MudTooltip>
@@ -315,26 +320,35 @@
     private int GameCount = 0;
     private bool expandSearchPanel = false;
     private List<int> daysOfMonth;
-
+    private string NavigateEditSportLineup = string.Empty;
+    private string NavigateSportLineup = string.Empty;
+    private string NavigateEditSportStats = string.Empty;
+    private string NavigateSportStats = string.Empty;
+    private bool editStats = false;
     private GetSeasonsResponse SeasonsModel { get; set; }
     private GetSeasonByYearResponse SeasonModel { get; set; }
     private GetLeagueGamesByDateResponse LeagueGamesModel { get; set; }
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
-
             var leagueId = Guid.Parse(Id);
-            SeasonsModel = await LocalStorage.GetItemAsync<GetSeasonsResponse>("Seasons");
+            var league = await LeagueLocalCache.GetLeagueByIdCache(Id);
+            if (league == null)
+            {
+                league = await LeagueService.GetLeague(leagueId);
+                await LeagueLocalCache.SetLeagueByIdCache(Id, league);
+            }
+            await NavigateToCreateGameLineup(league.League.Sport);
+            await NavigateToGameLineup(league.League.Sport);
+            await NavigateToGameStats(league.League.Sport);
+            SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
             if (SeasonsModel == null)
             {
                 SeasonsModel = await SeasonService.GetSeasons();
-                await LocalStorage.SetItemAsync("Seasons", SeasonsModel);
+                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
             }
             Season = SeasonsModel.Seasons.First();
             Month = monthValue;
@@ -349,7 +363,12 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -360,11 +379,11 @@
         {
             PageLoad = false;
             var leagueId = Guid.Parse(Id);
-            SeasonModel = await LocalStorage.GetItemAsync<GetSeasonByYearResponse>($"SeasonByYear: {seasonValue}");
+            SeasonModel = await SeasonLocalCache.GetSeasonByYearCache(seasonValue);
             if (SeasonModel == null)
             {
                 SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
-                await LocalStorage.SetItemAsync($"SeasonByYear: {seasonValue}", SeasonModel);
+                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
             }
             Season = SeasonModel.Season;
             Month = monthValue;
@@ -379,15 +398,14 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
-    }
-
-    private async Task NavigateToUpdateGame(Guid id)
-    {
-        var idString = id.ToString();
-        NavManager.NavigateTo($"/updategame/{idString}");
     }
 
     private async Task NavigateToDeleteGame(Guid id)
@@ -401,49 +419,31 @@
         NavManager.NavigateTo($"/creategame/{Id}");
     }
 
-    private async Task NavigateToCreateGameLineup(Guid id)
+    private async Task NavigateToCreateGameLineup(string sport)
     {
-        var idString = id.ToString();
-        var leagueId = Guid.Parse(Id);
-        var league = await LocalStorage.GetItemAsync<GetLeagueByIdResponse>($"League: {Id}");
-        if (league == null)
-        {
-            league = await LeagueService.GetLeague(leagueId);
-            await LocalStorage.SetItemAsync($"League: {Id}", league);
-        }
+        if (sport == SportName.BASEBALL)
+            NavigateEditSportLineup = "/createbaseballgamelineup/";
 
-        if (league.League.Sport == SportName.BASEBALL)
-            NavManager.NavigateTo($"/createbaseballgamelineup/{idString}");
+        if (sport == SportName.FOOTBALL)
+            NavigateEditSportLineup = "/createfootballgamelineup/";
 
-        if (league.League.Sport == SportName.FOOTBALL)
-            NavManager.NavigateTo($"/editfootballgamestats/{idString}");
-
-        if (league.League.Sport == SportName.BASKETBALL)
-            NavManager.NavigateTo($"/editbasketballgamestats/{idString}");
+        if (sport == SportName.BASKETBALL)
+            NavigateEditSportLineup = "/createbasketballgamelineup/";
     }
 
-    private async Task NavigateToGameLineup(Guid id)
+    private async Task NavigateToGameLineup(string sport)
     {
-        var idString = id.ToString();
-        var leagueId = Guid.Parse(Id);
-        var league = await LocalStorage.GetItemAsync<GetLeagueByIdResponse>($"League: {Id}");
-        if (league == null)
-        {
-            league = await LeagueService.GetLeague(leagueId);
-            await LocalStorage.SetItemAsync($"League: {Id}", league);
-        }
+        if (sport == SportName.BASEBALL)
+            NavigateSportLineup = "/baseballgamelineup/";
 
-        if (league.League.Sport == SportName.BASEBALL)
-            NavManager.NavigateTo($"/baseballgamelineup/{idString}");
+        if (sport == SportName.FOOTBALL)
+            NavigateSportLineup = "/footballgamelineup/";
 
-        if (league.League.Sport == SportName.FOOTBALL)
-            NavManager.NavigateTo($"/editfootballgamestats/{idString}");
-
-        if (league.League.Sport == SportName.BASKETBALL)
-            NavManager.NavigateTo($"/editbasketballgamestats/{idString}");
+        if (sport == SportName.BASKETBALL)
+            NavigateSportLineup = "/basketballgamelineup/";
     }
 
-    private async Task NavigateToGameStats(Guid id, Guid leagueId)
+    private async Task NavigateToGameStats(string sport)
     {
         try
         {
@@ -453,41 +453,41 @@
             var canEditStats = claims.Where(c => c.Value.Contains(Roles.UpdateStats)).Any();
             var canCreateStats = claims.Where(c => c.Value.Contains(Roles.CreateStats)).Any();
 
-            var idString = id.ToString();
-            var league = await LocalStorage.GetItemAsync<GetLeagueByIdResponse>($"League: {Id}");
-            if (league == null)
-            {
-                league = await LeagueService.GetLeague(leagueId);
-                await LocalStorage.SetItemAsync($"League: {Id}", league);
-            }
-
             if (canEditStats && canCreateStats)
             {
-                if (league.League.Sport == SportName.BASEBALL)
-                    NavManager.NavigateTo($"/editbaseballgamestats/{idString}");
+                editStats = true;
+                if (sport == SportName.BASEBALL)
+                    NavigateEditSportStats = "/editbaseballgamestats/";
 
-                if (league.League.Sport == SportName.FOOTBALL)
-                    NavManager.NavigateTo($"/editfootballgamestats/{idString}");
+                if (sport == SportName.FOOTBALL)
+                    NavigateEditSportStats = "/editfootballgamestats/";
 
-                if (league.League.Sport == SportName.BASKETBALL)
-                    NavManager.NavigateTo($"/editbasketballgamestats/{idString}");
+                if (sport == SportName.BASKETBALL)
+                    NavigateEditSportStats = "/editbasketballgamestats/";
             }
             else
             {
-                if (league.League.Sport == SportName.BASEBALL)
-                    NavManager.NavigateTo($"/baseballgamestats/{idString}");
+                canEditStats = false;
 
-                if (league.League.Sport == SportName.FOOTBALL)
-                    NavManager.NavigateTo($"/footballgamestats/{idString}");
+                if (sport == SportName.BASEBALL)
+                    NavigateSportStats = "/baseballgamestats/";
 
-                if (league.League.Sport == SportName.BASKETBALL)
-                    NavManager.NavigateTo($"/basketballgamestats/{idString}");
+                if (sport == SportName.FOOTBALL)
+                    NavigateSportStats = "/footballgamestats/";
+
+                if (sport == SportName.BASKETBALL)
+                    NavigateSportStats = "/basketballgamestats/";
 
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -518,26 +518,26 @@
     private async Task GetImageAsync()
     {
         var leagueId = Guid.Parse(Id);
-        var league = await LocalStorage.GetItemAsync<GetLeagueByIdResponse>($"League: {Id}");
+        var league = await LeagueLocalCache.GetLeagueByIdCache(Id);
         if (league == null)
         {
             league = await LeagueService.GetLeague(leagueId);
-            await LocalStorage.SetItemAsync($"League: {Id}", league);
+            await LeagueLocalCache.SetLeagueByIdCache(Id, league);
         }
 
         foreach (var games in LeagueGamesModel.Games)
         {
-            var awayTeam = await LocalStorage.GetItemAsync<GetTeamByIdResponse>($"Team: {games.AwayTeam.Id.ToString()}");
+            var awayTeam = await TeamLocalCache.GetTeamByIdCache(games.AwayTeam.Id.ToString());
             if (awayTeam == null)
             {
                 awayTeam = await TeamService.GetTeamById(games.AwayTeam.Id);
-                await LocalStorage.SetItemAsync($"Team: {games.AwayTeam.Id.ToString()}", awayTeam);
+                await TeamLocalCache.SetTeamByIdCache(games.AwayTeam.Id.ToString(), awayTeam);
             }
-            var homeTeam = await LocalStorage.GetItemAsync<GetTeamByIdResponse>($"Team: {games.HomeTeam.Id.ToString()}");
+            var homeTeam = await TeamLocalCache.GetTeamByIdCache(games.HomeTeam.Id.ToString());
             if (homeTeam == null)
             {
                 homeTeam = await TeamService.GetTeamById(games.HomeTeam.Id);
-                await LocalStorage.SetItemAsync($"Team: {games.HomeTeam.Id.ToString()}", homeTeam);
+                await TeamLocalCache.SetTeamByIdCache(games.HomeTeam.Id.ToString(), homeTeam);
             }
 
             var awayTeamKeyPath = $"/{league.League.Sport}/{league.League.Name}/teams/{awayTeam.Team.TeamName}/{awayTeam.Team.ImageFile}";

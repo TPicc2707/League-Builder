@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@inject IJSRuntime JS
+@inject NavigationManager NavManager
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -20,3 +24,20 @@
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
 </body>
 </html>
+
+
+@code{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var ctx = HttpContextAccessor.HttpContext;
+
+        if(ctx?.Items.TryGetValue("ForceLogout", out var flag) == true && flag is true)
+        {
+            var _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+
+            await _module.InvokeVoidAsync("logout");
+            NavManager.NavigateTo("/error", forceLoad: true);
+        }
+
+    }
+}

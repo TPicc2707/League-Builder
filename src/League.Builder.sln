@@ -90,9 +90,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AWSDeployContainers", "AWSD
 		cluster.yaml = cluster.yaml
 		docker-compose.override.yml = docker-compose.override.yml
 		docker-compose.yml = docker-compose.yml
+		Dockerfile = Dockerfile
 		network.yaml = network.yaml
 		services-api.yaml = services-api.yaml
 		services-infra.yaml = services-infra.yaml
+		shared-sg.yaml = shared-sg.yaml
 	EndProjectSection
 EndProject
 Global

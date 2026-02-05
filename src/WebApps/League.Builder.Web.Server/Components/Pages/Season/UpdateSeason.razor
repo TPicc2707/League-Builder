@@ -4,6 +4,7 @@
 @inject ITeamService TeamsService
 @inject IStandingsService StandingsService
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
 @inject IValidator<UpdateSeasonModel> UpdateSeasonValidator
@@ -11,8 +12,10 @@
 @inject ISeasonLocalCacheService SeasonLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
 @inject IStandingsLocalCacheService StandingsLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
-<AuthorizeView Roles="@String.Concat(Roles.UpdateSeasons, ", ", Roles.ReadSeasons)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.UpdateSeasons)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -91,7 +94,7 @@
         }
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 @code {
@@ -107,40 +110,63 @@
     GetSeasonByIdResponse GetSeasonModel { get; set; }
     public bool PageLoad = false;
     private FluentValidationValidator fluentValidationValidator;
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
+            var seasonId = Guid.Parse(Id);
+            GetSeasonModel = await SeasonLocalCache.GetSeasonByIdCache(Id);
+            if (GetSeasonModel == null)
+            {
+                GetSeasonModel = await SeasonService.GetSeason(seasonId);
+                await SeasonLocalCache.SetSeasonByIdCache(Id, GetSeasonModel);
+            }
+
+            model.Id = GetSeasonModel.Season.Id;
+            model.Year = GetSeasonModel.Season.Year;
+            model.Description = GetSeasonModel.Season.Description;
+            isYearOver = model.Year < DateTime.Now.Year ? true : false;
+            PageLoad = true;
+        }
+        catch (Exception ex)
+        {
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
 
-        var seasonId = Guid.Parse(Id);
-        GetSeasonModel = await SeasonLocalCache.GetSeasonByIdCache(Id);
-        if (GetSeasonModel == null)
-        {
-            GetSeasonModel = await SeasonService.GetSeason(seasonId);
-            await SeasonLocalCache.SetSeasonByIdCache(Id, GetSeasonModel);
-        }
-
-        model.Id = GetSeasonModel.Season.Id;
-        model.Year = GetSeasonModel.Season.Year;
-        model.Description = GetSeasonModel.Season.Description;
-        isYearOver = model.Year < DateTime.Now.Year ? true : false;
-        PageLoad = true;
     }
 
     private async Task OnValidSubmit(EditContext context)
     {
-        UpdateSeasonRequest request = new UpdateSeasonRequest(model.Id, model.Year, model.Description);
-        await SeasonService.UpdateSeason(request);
-        success = true;
-        await SeasonLocalCache.DeleteSeasonsCache();
-        await SeasonLocalCache.DeleteSeasonByIdCache(model.Id.ToString());
-        await SeasonLocalCache.DeleteSeasonByYearCache(model.Year);
-        NavManager.NavigateTo("/seasons");
-        Snackbar.Add("Season has been updated.", MudBlazor.Severity.Success);
-        StateHasChanged();
+        try
+        {
+            UpdateSeasonRequest request = new UpdateSeasonRequest(model.Id, model.Year, model.Description);
+            await SeasonService.UpdateSeason(request);
+            success = true;
+            await SeasonLocalCache.DeleteSeasonsCache();
+            await SeasonLocalCache.DeleteSeasonByIdCache(model.Id.ToString());
+            await SeasonLocalCache.DeleteSeasonByYearCache(model.Year);
+            NavManager.NavigateTo("/seasons");
+            Snackbar.Add("Season has been updated.", MudBlazor.Severity.Success);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
+        }
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)

@@ -1,6 +1,7 @@
 ﻿@page "/players"
 @using League.Builder.Web.Server.Services.Cache
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject IPlayerService PlayerService
@@ -9,6 +10,8 @@
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
 @inject IPlayerLocalCacheService PlayerLocalCache
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 <AuthorizeView Roles="@Roles.ReadPlayers" Context="auth">
     <Authorized>
@@ -58,7 +61,7 @@
                                             </MudItem>
                                             <MudItem xs="4" md="4" lg="4">
                                                 <MudSelect @bind-Value="position" Label="Position" Disabled="@(sport == string.Empty ? true : false)">
-                                                    @foreach (var position in Constants.Positions(sport))
+                                                    @foreach (var position in Constants.PositionsBySport(sport))
                                                     {
                                                         <MudSelectItem Value="position">@position</MudSelectItem>
                                                     }
@@ -216,15 +219,7 @@
     private bool expandSearchPanel = true;
     private bool isSearchLoading = false;
     private bool PageLoad = false;
-    // private TableGroupDefinition<PlayerModel> tableGroupDefinition = new()
-    //     {
-    //         GroupName = "Team",
-    //         Indentation = false,
-    //         Expandable = true,
-    //         IsInitiallyExpanded = false,
-    //         Selector = (p) => p.TeamName
-    //     };
-
+    private IJSObjectReference? _module;
     private List<PlayerModel> Model { get; set; }
     private GetLeaguesResponse LeaguesResponse { get; set; }
     private GetPlayersResponse PlayersResponse { get; set; }
@@ -238,32 +233,46 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
-        }
+            TeamsResponse = await TeamLocalCache.GetTeamsCache();  //If a team is added need to delete local storage
+            if (TeamsResponse == null)
+            {
+                TeamsResponse = await TeamService.GetTeams(0, 1000);
+                await TeamLocalCache.SetTeamsCache(TeamsResponse);
+            }
 
-        TeamsResponse = await TeamLocalCache.GetTeamsCache();  //If a team is added need to delete local storage
-        if (TeamsResponse == null)
+            LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();  //If a league is added need to delete local storage
+            if (LeaguesResponse == null)
+            {
+                LeaguesResponse = await LeagueService.GetLeagues();
+                await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+            }
+
+            PageLoad = true;
+
+        }
+        catch (Exception ex)
         {
-            TeamsResponse = await TeamService.GetTeams(0, 1000);
-            await TeamLocalCache.SetTeamsCache(TeamsResponse);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
-
-        LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();  //If a league is added need to delete local storage
-        if (LeaguesResponse == null)
-        {
-            LeaguesResponse = await LeagueService.GetLeagues();
-            await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
-        }
-
-        PageLoad = true;
     }
 
     private async Task SearchAll()
     {
         isSearchLoading = true; //If a player is added need to delete local storage
-        PlayersResponse = await PlayerService.GetPlayers(0, 1000);
+        PlayersResponse = await PlayerLocalCache.GetPlayersCache();
+        if(PlayersResponse is null)
+        {
+            PlayersResponse = await PlayerService.GetPlayers(0, 1000);
+            await PlayerLocalCache.SetPlayersCache(PlayersResponse);
+        }
         Model = PlayersResponse.Players.Data.ToList();
         await GetImageAsync();
         expandSearchPanel = false;

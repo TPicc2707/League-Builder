@@ -1,7 +1,11 @@
 ﻿@page "/error"
+@inject ErrorState ErrorState
 
 <MudPaper Class="pa-6 mt-6" Outlined="true" Elevation="0">
     <MudText Typo="Typo.h5" Color="Color.Error">An unexpected error has occurred.</MudText>
+    <MudText Typo="Typo.body1" Class="mt-2">
+        @ErrorState.Message
+    </MudText>
     <MudText Typo="Typo.body1" Class="mt-2">
         We're sorry for the inconvenience. Please try refreshing the page or contact support if the problem persists.
     </MudText>

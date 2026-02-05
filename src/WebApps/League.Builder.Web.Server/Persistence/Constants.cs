@@ -26,7 +26,7 @@
             };
         }
 
-        public static List<string> Positions(string sport)
+        public static List<string> PositionsBySport(string sport)
         {
             if (sport == BASEBALL)
             {
@@ -73,6 +73,20 @@
             }
 
             return new List<string>();
+        }
+
+        public static Dictionary<string, string> BaseballPositions()
+        {
+            return new Dictionary<string, string>
+            {
+                    { "Catcher", "C" },
+                    { "First Baseman", "1B" },
+                    { "Second Baseman", "2B" },
+                    { "Shortstop", "SS" },
+                    { "Third Baseman", "3B" },
+                    { "Outfield", "OF" },
+                    { "Pitcher", "P" },
+              };
         }
 
         public static List<string> States()

@@ -7,6 +7,9 @@
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ITeamLocalCacheService TeamLocalCache
 @inject ILeagueLocalCacheService LeagueLocalCache
+@inject ErrorState ErrorState
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -110,6 +113,11 @@
                                                         }
                                                     </MudTooltip>
                                                 </AuthorizeView>
+                                                <AuthorizeView Roles="@Roles.ReadTeams" Context="teamHistoryAuth">
+                                                    <MudTooltip Text="Team History" Color="Color.Secondary">
+                                                        <MudIconButton Icon="@Icons.Material.Filled.MenuBook" Color="Color.Tertiary" Edge="Edge.Start" Target="_blank" Href="@String.Concat("/teamhistory/", context.Id)" />
+                                                    </MudTooltip>
+                                                </AuthorizeView>
                                                 <AuthorizeView Roles="@Roles.UpdateTeams" Context="updateAuth">
                                                     <MudTooltip Text="Update" Color="Color.Secondary">
                                                         <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateteam/", context.Id)" />
@@ -152,20 +160,30 @@
     private bool expandSearchPanel = true;
     private bool isSearchLoading = false;
     private string sport = string.Empty;
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
+        try
         {
-            NavManager.NavigateTo("authentication/logout");
+            LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();  //If a league is added need to delete local storage
+            if (LeaguesResponse == null)
+            {
+                LeaguesResponse = await LeagueService.GetLeagues();
+                await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+            }
+            PageLoad = true;
         }
-        LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();  //If a league is added need to delete local storage
-        if (LeaguesResponse == null)
+        catch (Exception ex)
         {
-            LeaguesResponse = await LeagueService.GetLeagues();
-            await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
-        PageLoad = true;
     }
 
     private async Task SearchAll()

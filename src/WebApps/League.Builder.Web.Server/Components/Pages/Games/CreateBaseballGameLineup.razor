@@ -4,10 +4,13 @@
 @inject IPlayerService PlayerService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject NavigationManager NavManager
+@inject ErrorState ErrorState
 @inject IAWSService AWSService
 @inject ISnackbar Snackbar
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
 
-<AuthorizeView Roles="@String.Concat(Roles.ReadGames, ", ", Roles.CreateGames)" Context="auth">
+<AuthorizeView Roles="@String.Concat(Roles.CreateGames)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
@@ -154,16 +157,15 @@
     private Guid HomeSelectedValue;
     private bool IsAwayLocked = false;
     private bool IsHomeLocked = false;
+    private Dictionary<string, string> BaseballPositions = new();
+    private IJSObjectReference? _module;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            if (await AuthorizationStatus.IsUserAccessTokenExpired(HttpContextAccessor))
-            {
-                NavManager.NavigateTo("authentication/logout");
-            }
             var gameId = Guid.Parse(Id);
+            BaseballPositions = Constants.BaseballPositions();
 
             GameByIdResponse = await GameService.GetGameById(gameId);
             await SetupAwayTeam(gameId);  //Away Team Lineup Creation
@@ -178,7 +180,12 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
             NavManager.NavigateTo("/error");
         }
     }
@@ -199,7 +206,7 @@
                 PlayerId = player.Id,
                 TeamId = AwayTeam.Team.Id,
                 PlayerName = $"{player.FirstName} {player.LastName}",
-                Position = player.PlayerDetail.Position,
+                Position = BaseballPositions.FirstOrDefault(x => x.Key == player.PlayerDetail.Position).Value,
                 Selector = positionSelector <= 9 ? lineupDropzone : benchDropzone,
                 IsLocked = IsAwayLineupCreated.IsLineupCreated ? true : false
             };
@@ -229,7 +236,7 @@
                 PlayerId = player.Id,
                 TeamId = HomeTeam.Team.Id,
                 PlayerName = $"{player.FirstName} {player.LastName}",
-                Position = player.PlayerDetail.Position,
+                Position = BaseballPositions.FirstOrDefault(x => x.Key == player.PlayerDetail.Position).Value,
                 Selector = positionSelector <= 9 ? lineupDropzone : benchDropzone,
                 IsLocked = IsHomeLineupCreated.IsLineupCreated ? true : false
             };
@@ -303,62 +310,85 @@
 
     private async Task SaveAwayLineup()
     {
-        if(AwaySelectedValue == Guid.Empty)
+        try
         {
-            Snackbar.Add("Please select a Starting Pitcher.", MudBlazor.Severity.Error);
-        }
-        else if(AwayLineup.Where(x => x.Selector == lineupDropzone).Count() < 9)
-        {
-            Snackbar.Add("Please have 9 hitters in the Lineup", MudBlazor.Severity.Error);
-        }
-        else
-        {
-            var players = AwayLineup.OrderBy(x => x.BattingOrderPosition);
-            var gameId = Guid.Parse(Id);
-            var pitcher = AwayPitchers.FirstOrDefault(x => x.Id == AwaySelectedValue);
-            var lineupDetails = new BaseballGameLineup(players.First().PlayerId, players.Skip(1).First().PlayerId, players.Skip(2).First().PlayerId, players.Skip(3).First().PlayerId,
-                                                       players.Skip(4).First().PlayerId, players.Skip(5).First().PlayerId, players.Skip(6).First().PlayerId,
-                                                       players.Skip(7).First().PlayerId, players.Skip(8).First().PlayerId, pitcher.Id);
+            if (AwaySelectedValue == Guid.Empty)
+            {
+                Snackbar.Add("Please select a Starting Pitcher.", MudBlazor.Severity.Error);
+            }
+            else if (AwayLineup.Where(x => x.Selector == lineupDropzone).Count() < 9)
+            {
+                Snackbar.Add("Please have 9 hitters in the Lineup", MudBlazor.Severity.Error);
+            }
+            else
+            {
+                var players = AwayLineup.OrderBy(x => x.BattingOrderPosition);
+                var gameId = Guid.Parse(Id);
+                var pitcher = AwayPitchers.FirstOrDefault(x => x.Id == AwaySelectedValue);
+                var lineupDetails = new BaseballGameLineup(players.First().PlayerId, players.Skip(1).First().PlayerId, players.Skip(2).First().PlayerId, players.Skip(3).First().PlayerId,
+                                                            players.Skip(4).First().PlayerId, players.Skip(5).First().PlayerId, players.Skip(6).First().PlayerId,
+                                                            players.Skip(7).First().PlayerId, players.Skip(8).First().PlayerId, pitcher.Id);
 
-            var request = new CreateBaseballGameLineupRequest(new CreateBaseballGameLineupRecord(gameId, AwayTeam.Team.Id, lineupDetails));
-            var response = await GameService.CreateBaseballGameLineup(request);
-            foreach (var player in players)
-                player.IsLocked = true;
+                var request = new CreateBaseballGameLineupRequest(new CreateBaseballGameLineupRecord(gameId, AwayTeam.Team.Id, lineupDetails));
+                var response = await GameService.CreateBaseballGameLineup(request);
+                foreach (var player in players)
+                    player.IsLocked = true;
 
-            IsAwayLocked = true;
-            Snackbar.Add("Away Lineup has been created.", MudBlazor.Severity.Success);
-            StateHasChanged();
+                IsAwayLocked = true;
+                Snackbar.Add("Away Lineup has been created.", MudBlazor.Severity.Success);
+                StateHasChanged();
+            }
+
+        }
+        catch (Exception ex)
+        {
+            if (KeycloakTokenService.ShouldForceLogout())
+            {
+                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+                await _module.InvokeVoidAsync("logout");
+            }
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
     }   
 
     private async Task SaveHomeLineup()
     {
-        if (HomeSelectedValue == Guid.Empty)
+        try
         {
-            Snackbar.Add("Please select a Starting Pitcher.", MudBlazor.Severity.Error);
+            if (HomeSelectedValue == Guid.Empty)
+            {
+                Snackbar.Add("Please select a Starting Pitcher.", MudBlazor.Severity.Error);
+            }
+            else if (HomeLineup.Where(x => x.Selector == lineupDropzone).Count() < 9)
+            {
+                Snackbar.Add("Please have 9 hitters in the Lineup", MudBlazor.Severity.Error);
+            }
+            else
+            {
+                var players = HomeLineup.OrderBy(x => x.BattingOrderPosition);
+                var gameId = Guid.Parse(Id);
+                var pitcher = HomePitchers.FirstOrDefault(x => x.Id == HomeSelectedValue);
+                var lineupDetails = new BaseballGameLineup(players.First().PlayerId, players.Skip(1).First().PlayerId, players.Skip(2).First().PlayerId, players.Skip(3).First().PlayerId,
+                                                            players.Skip(4).First().PlayerId, players.Skip(5).First().PlayerId, players.Skip(6).First().PlayerId,
+                                                            players.Skip(7).First().PlayerId, players.Skip(8).First().PlayerId, pitcher.Id);
+
+
+                var request = new CreateBaseballGameLineupRequest(new CreateBaseballGameLineupRecord(gameId, HomeTeam.Team.Id, lineupDetails));
+                var response = await GameService.CreateBaseballGameLineup(request);
+                foreach (var player in players)
+                    player.IsLocked = true;
+
+                IsHomeLocked = true;
+                Snackbar.Add("Home Lineup has been created.", MudBlazor.Severity.Success);
+                StateHasChanged();
+            }
+
         }
-        else if (HomeLineup.Where(x => x.Selector == lineupDropzone).Count() < 9)
+        catch (Exception ex)
         {
-            Snackbar.Add("Please have 9 hitters in the Lineup", MudBlazor.Severity.Error);
-        }
-        else
-        {
-            var players = HomeLineup.OrderBy(x => x.BattingOrderPosition);
-            var gameId = Guid.Parse(Id);
-            var pitcher = HomePitchers.FirstOrDefault(x => x.Id == HomeSelectedValue);
-            var lineupDetails = new BaseballGameLineup(players.First().PlayerId, players.Skip(1).First().PlayerId, players.Skip(2).First().PlayerId, players.Skip(3).First().PlayerId,
-                                                       players.Skip(4).First().PlayerId, players.Skip(5).First().PlayerId, players.Skip(6).First().PlayerId,
-                                                       players.Skip(7).First().PlayerId, players.Skip(8).First().PlayerId, pitcher.Id);
-
-
-            var request = new CreateBaseballGameLineupRequest(new CreateBaseballGameLineupRecord(gameId, HomeTeam.Team.Id, lineupDetails));
-            var response = await GameService.CreateBaseballGameLineup(request);
-            foreach (var player in players)
-                player.IsLocked = true;
-
-            IsHomeLocked = true;
-            Snackbar.Add("Home Lineup has been created.", MudBlazor.Severity.Success);
-            StateHasChanged();
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
         }
     }
 
