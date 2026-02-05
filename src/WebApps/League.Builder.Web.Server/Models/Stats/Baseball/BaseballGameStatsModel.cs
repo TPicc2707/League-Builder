@@ -7,7 +7,7 @@ public class BaseballGameStatsModel
 
     }
 
-    public BaseballGameStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName)
+    public BaseballGameStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName, string position)
     {
         LeagueId = leagueId;
         TeamId = teamId;
@@ -15,9 +15,10 @@ public class BaseballGameStatsModel
         SeasonId = seasonId;
         GameId = gameId;
         PlayerName = $"{firstName} {lastName}";
+        Position = position;
     }
 
-    public BaseballGameStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName,
+    public BaseballGameStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName, string position,
                                    int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn,
                                     int stolenBases, int strikeouts, int walks, int hitByPitch, int sacrificeFly, int wins, int losses, int pitchingRuns, bool start, int saves, decimal innings,
                                     int hitsAllowed, int walksAllowed, int pitchingStrikeouts)
@@ -28,6 +29,7 @@ public class BaseballGameStatsModel
         SeasonId = seasonId;
         GameId = gameId;
         PlayerName = $"{firstName} {lastName}";
+        Position = position;
         AtBats = atBats;
         Hits = hits;
         TotalBases = totalBases;
@@ -58,6 +60,7 @@ public class BaseballGameStatsModel
     public Guid SeasonId { get; set; }
     public Guid GameId { get; set; }
     public string PlayerName { get; set; }
+    public string Position { get; set; }
     public int AtBats { get; set; }
     public int Hits { get; set; }
     public int TotalBases { get; set; }
