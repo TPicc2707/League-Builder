@@ -1,0 +1,69 @@
+﻿<MudItem Style="padding-top: 25px;">
+    <MudTable Items="@Stats" Hover="true" Class="border border-solid" Style="border-color: #000000">
+        <ColGroup>
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">MIN</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">REB</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">AST</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">BLK</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">STL</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TO</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGM</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PM</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PA</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTM</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FOUL</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+            @if (context.Start)
+            {
+                <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
+            }
+            else
+            {
+                <MudTd DataLabel="S"></MudTd>
+            }
+            <MudTd DataLabel="MIN">@context.Minutes</MudTd>
+            <MudTd DataLabel="PTS">@context.Points</MudTd>
+            <MudTd DataLabel="REB">@context.Rebounds</MudTd>
+            <MudTd DataLabel="AST">@context.Assists</MudTd>
+            <MudTd DataLabel="BLK">@context.Blocks</MudTd>
+            <MudTd DataLabel="STL">@context.Steals</MudTd>
+            <MudTd DataLabel="TO">@context.Turnovers</MudTd>
+            <MudTd DataLabel="FGM">@context.FieldGoalsMade</MudTd>
+            <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
+            <MudTd DataLabel="3PM">@context.ThreePointersMade</MudTd>
+            <MudTd DataLabel="3PA">@context.ThreePointersAttempted</MudTd>
+            <MudTd DataLabel="FTM">@context.FreeThrowsMade</MudTd>
+            <MudTd DataLabel="FTA">@context.FreeThrowsAttempted</MudTd>
+            <MudTd DataLabel="FoUL">@context.Fouls</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudItem>
+
+@code {
+    [Parameter] public IEnumerable<BasketballGameStatsModel> Stats { get; set; }
+}

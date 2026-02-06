@@ -1,0 +1,104 @@
+﻿@using static League.Builder.Web.Server.Components.Pages.Games.CreateBaseballGameLineup
+<MudItem Style="padding-top: 25px;">
+    <MudGrid>
+        <MudItem xs="12" md="12">
+            <MudDropContainer T="DropItem" 
+                              Items="Lineup" 
+                              ItemsSelector="@((item, dropzone) => item.Selector == dropzone)" 
+                              ItemDropped="HandleDrop" 
+                              Class="d-flex flex-wrap flex-grow-1">
+                <ChildContent>
+                    <MudPaper Class="ma-4 flex-grow-1">
+                        <MudList T="string" Class="d-flex flex-column mud-height-full">
+                            <MudDropZone T="DropItem" 
+                                         Identifier="1" 
+                                         Class="flex-grow-1 border border-solid" 
+                                         Style="border-color: #000000" 
+                                         DraggingClass="mud-theme-tertiary" 
+                                         AllowReorder="true">
+                                <MudItem Class="mud-theme-primary">
+                                    <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Lineup</MudText>
+                                </MudItem>
+                            </MudDropZone>
+                        </MudList>
+                    </MudPaper>
+                    <MudPaper Class="ma-4 flex-grow-1">
+                        <MudList T="string" Class="d-flex flex-column mud-height-full">
+                            <MudDropZone T="DropItem" 
+                                         Identifier="2" 
+                                         Class="flex-grow-1 border border-solid" 
+                                         Style="border-color: #000000" 
+                                         DraggingClass="mud-theme-tertiary" 
+                                         AllowReorder="false">
+                                <MudItem Class="mud-theme-primary">
+                                    <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Bench</MudText>
+                                </MudItem>
+                            </MudDropZone>
+                        </MudList>
+                    </MudPaper>
+                </ChildContent>
+                <ItemRenderer>
+                    <MudListItem T="string" 
+                                 Text="@(context.Selector == "1" ? $"{context.BattingOrderPosition}. {context.PlayerName}, {context.Position}" : $"{context.PlayerName}, {context.Position}")" 
+                                 Disabled="@(context.IsLocked ? true : false)" />
+                </ItemRenderer>
+            </MudDropContainer>
+            <MudPaper Class="ma-4 flex-grow-1 border border-solid" Style="border-color: #000000">
+                <MudList T="Guid" 
+                         @bind-SelectedValue="SelectedPitcher" 
+                         SelectionMode="SelectionMode.SingleSelection" 
+                         Color="Color.Secondary" 
+                         Disabled="IsLocked">
+                    <MudItem Class="mud-theme-primary">
+                        <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Starting Pitcher</MudText>
+                    </MudItem>
+                    @foreach (var p in Pitchers)
+                    {
+                        <MudListItem Text="@GetPitcherDisplay(p)" Value="@p.Id" />
+                    }
+                </MudList>
+            </MudPaper>
+            <MudText Typo="Typo.body1"
+                     Align="Align.Center" 
+                     Color="Color.Error" 
+                     Style="font-weight: bold;">
+                     Once lineup is submitted, it will no longer allowed to be edited.
+            </MudText>
+        </MudItem>
+        <MudItem xs="12" md="12" Class="d-flex">
+            <MudSpacer />
+            <MudButton Class="ml-auto" 
+                       Style="width: 200px;" 
+                       OnClick="OnSave" 
+                       Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       Disabled="IsLocked">
+                       Save
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudItem>
+
+
+@code {
+    [Parameter] public string TeamName { get; set; }
+    [Parameter] public List<DropItem> Lineup { get; set; }
+    [Parameter] public EventCallback<MudItemDropInfo<DropItem>> OnItemDropped { get; set; }
+    [Parameter] public List<PlayerModel> Pitchers { get; set; }
+    [Parameter] public Guid SelectedPitcher { get; set; }
+    [Parameter] public EventCallback<Guid> SelectedPitcherChanged { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public bool IsLocked { get; set; }
+
+    private async Task HandleDrop(MudItemDropInfo<DropItem> dropInfo)
+    {
+        await OnItemDropped.InvokeAsync(dropInfo);
+    }
+
+    private string GetPitcherDisplay(PlayerModel p)
+    {
+        return p.Id == SelectedPitcher
+            ? $"{p.FirstName} {p.LastName}, Starter"
+            : $"{p.FirstName} {p.LastName}";
+    }
+}

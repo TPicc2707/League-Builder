@@ -16,107 +16,29 @@
         {
             <MudItem Style="padding-top: 50px;">
                 <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@AwayTeam.Team.TeamName vs @HomeTeam.Team.TeamName Lineups</MudText>
+                    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@Away.Team.TeamName vs @Home.Team.TeamName Lineups</MudText>
                 </MudPaper>
                 <MudItem Style="padding-top: 25px;">
                     <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                        <MudTabPanel Text="@AwayTeam.Team.TeamName">
-                            <MudItem Style="padding-top: 25px;">
-                                <MudGrid>
-                                    <MudItem xs="12" md="12">
-                                        <MudDropContainer T="DropItem" Items="AwayLineup" ItemsSelector="@((item, dropzone) => item.Selector == dropzone)" ItemDropped="AwayLineupItemUpdated" Class="d-flex flex-wrap flex-grow-1">
-                                          <ChildContent>
-                                            <MudPaper Class="ma-4 flex-grow-1">
-                                                <MudList T="string" Class="d-flex flex-column mud-height-full">
-                                                        <MudDropZone T="DropItem" Identifier="1" Class="flex-grow-1 border border-solid" Style="border-color: #000000" DraggingClass="mud-theme-tertiary" AllowReorder="true">
-                                                        <MudItem Class="mud-theme-primary">
-                                                                <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Lineup</MudText>
-                                                        </MudItem>
-                                                    </MudDropZone>
-                                                </MudList>
-                                            </MudPaper>
-                                                <MudPaper Class="ma-4 flex-grow-1">
-                                                    <MudList T="string" Class="d-flex flex-column mud-height-full">
-                                                        <MudDropZone T="DropItem" Identifier="2" Class="flex-grow-1 border border-solid" Style="border-color: #000000" DraggingClass="mud-theme-tertiary" AllowReorder="false">
-                                                            <MudItem Class="mud-theme-primary">
-                                                                <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Bench</MudText>
-                                                            </MudItem>
-                                                        </MudDropZone>
-                                                    </MudList>
-                                                </MudPaper>
-                                          </ChildContent>
-                                          <ItemRenderer>
-                                                <MudListItem T="string" Text="@(context.Selector == "1" ? $"{context.BattingOrderPosition}. {context.PlayerName}, {context.Position}" : $"{context.PlayerName}, {context.Position}")" Disabled="@(context.IsLocked ? true : false)" />
-                                          </ItemRenderer>
-                                      </MudDropContainer>
-                                        <MudPaper Class="ma-4 flex-grow-1 border border-solid" Style="border-color: #000000">
-                                            <MudList T="Guid" @bind-SelectedValue="AwaySelectedValue" SelectionMode="SelectionMode.SingleSelection" Color="Color.Secondary" Disabled="IsAwayLocked">
-                                                <MudItem Class="mud-theme-primary">
-                                                    <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Starting Pitcher</MudText>
-                                                </MudItem>
-                                                @foreach (var player in AwayPitchers)
-                                                {
-                                                    <MudListItem Text="@(IsAwayLineupCreated.IsLineupCreated && AwayLineupResponse.GameLineup.BaseballLineup.StartingPitcher == player.Id ? String.Concat(player.FirstName, " ", player.LastName, ", Starter") : String.Concat(player.FirstName, " ", player.LastName))" Value="@player.Id" />
-                                                }
-                                            </MudList>
-                                        </MudPaper>
-                                        <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Error" Style="font-weight: bold;">Once lineup is submitted, it will no longer allowed to be edited.</MudText>
-                                    </MudItem>
-                                    <MudItem xs="12" md="12" Class="d-flex">
-                                        <MudSpacer />
-                                        <MudButton Class="ml-auto" Style="width: 200px;" OnClick="SaveAwayLineup" Variant="Variant.Filled" Color="Color.Primary" Disabled="IsAwayLocked">Save</MudButton>
-                                    </MudItem>
-                                </MudGrid>
-                            </MudItem>
+                        <MudTabPanel Text="@Away.Team.TeamName">
+                            <BaseballLineupEditor TeamName="@Away.Team.TeamName"
+                                                  Lineup="Away.Lineup"
+                                                  OnItemDropped="AwayLineupItemUpdated"
+                                                  Pitchers="Away.Pitchers"
+                                                  SelectedPitcher="Away.SelectedPitcher"
+                                                  SelectedPitcherChanged="@((Guid v) => Away.SelectedPitcher = v)"
+                                                  OnSave="SaveAwayLineup"
+                                                  IsLocked="Away.IsLocked" />
                         </MudTabPanel>
-                        <MudTabPanel Text="@HomeTeam.Team.TeamName">
-                            <MudItem Style="padding-top: 25px;">
-                                <MudGrid>
-                                    <MudItem xs="12" md="12">
-                                        <MudDropContainer T="DropItem" Items="HomeLineup" ItemsSelector="@((item, dropzone) => item.Selector == dropzone)" ItemDropped="HomeLineupItemUpdated" Class="d-flex flex-wrap flex-grow-1">
-                                            <ChildContent>
-                                                <MudPaper Class="ma-4 flex-grow-1">
-                                                    <MudList T="string" Class="d-flex flex-column mud-height-full">
-                                                        <MudDropZone T="DropItem" Identifier="1" Class="flex-grow-1 border border-solid" Style="border-color: #000000" DraggingClass="mud-theme-tertiary" AllowReorder="true">
-                                                            <MudItem Class="mud-theme-primary">
-                                                                <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Lineup</MudText>
-                                                            </MudItem>
-                                                        </MudDropZone>
-                                                    </MudList>
-                                                </MudPaper>
-                                                <MudPaper Class="ma-4 flex-grow-1">
-                                                    <MudList T="string" Class="d-flex flex-column mud-height-full">
-                                                        <MudDropZone T="DropItem" Identifier="2" Class="flex-grow-1 border border-solid" Style="border-color: #000000" ItemDraggingClass="mud-theme-tertiary" DraggingClass="mud-theme-tertiary" AllowReorder="false">
-                                                            <MudItem Class="mud-theme-primary">
-                                                                <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Bench</MudText>
-                                                            </MudItem>
-                                                        </MudDropZone>
-                                                    </MudList>
-                                                </MudPaper>
-                                            </ChildContent>
-                                            <ItemRenderer>
-                                                <MudListItem T="string" Text="@(context.Selector == "1" ? $"{context.BattingOrderPosition}. {context.PlayerName}, {context.Position}" : $"{context.PlayerName}, {context.Position}")" Disabled="@(context.IsLocked ? true : false)" />
-                                            </ItemRenderer>
-                                        </MudDropContainer>
-                                        <MudPaper Class="ma-4 flex-grow-1 border border-solid" Style="border-color: #000000">
-                                            <MudList T="Guid" @bind-SelectedValue="HomeSelectedValue" SelectionMode="SelectionMode.SingleSelection" Color="Color.Secondary" Disabled="IsHomeLocked">
-                                                <MudItem Class="mud-theme-primary">
-                                                    <MudText Typo="Typo.h6" Align="Align.Center" Class="pa-2">Starting Pitcher</MudText>
-                                                </MudItem>
-                                                @foreach (var player in HomePitchers)
-                                                {
-                                                    <MudListItem Text="@(IsHomeLineupCreated.IsLineupCreated && HomeLineupResponse.GameLineup.BaseballLineup.StartingPitcher == player.Id ? String.Concat(player.FirstName, " ", player.LastName, ", Starter") : String.Concat(player.FirstName, " ", player.LastName))" Value="@player.Id" />
-                                                }
-                                            </MudList>
-                                        </MudPaper>
-                                        <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Error" Style="font-weight: bold;">Once lineup is submitted, it will no longer allowed to be edited.</MudText>
-                                    </MudItem>
-                                    <MudItem xs="12" md="12" Class="d-flex">
-                                        <MudSpacer />
-                                        <MudButton Class="ml-auto" Style="width: 200px;" OnClick="SaveHomeLineup" Variant="Variant.Filled" Color="Color.Primary" Disabled="IsHomeLocked">Save</MudButton>
-                                    </MudItem>
-                                </MudGrid>
-                            </MudItem>
+                        <MudTabPanel Text="@Home.Team.TeamName">
+                            <BaseballLineupEditor TeamName="@Home.Team.TeamName"
+                                                  Lineup="Home.Lineup"
+                                                  OnItemDropped="HomeLineupItemUpdated"
+                                                  Pitchers="Home.Pitchers"
+                                                  SelectedPitcher="Home.SelectedPitcher"
+                                                  SelectedPitcherChanged="@((Guid v) => Home.SelectedPitcher = v)"
+                                                  OnSave="SaveHomeLineup"
+                                                  IsLocked="Home.IsLocked" />
                         </MudTabPanel>
                     </MudTabs>
                 </MudItem>
@@ -137,26 +59,12 @@
     public string Id { get; set; }
     private bool PageLoad = false;
     private GetGameByIdResponse GameByIdResponse { get; set; }
-    private AnyBaseballGameLineupByGameIdResponse IsAwayLineupCreated { get; set; }
-    private AnyBaseballGameLineupByGameIdResponse IsHomeLineupCreated { get; set; }
-    private GetBaseballGameLineupByGameIdResponse AwayLineupResponse { get; set; }
-    private GetBaseballGameLineupByGameIdResponse HomeLineupResponse { get; set; }
-    private GetTeamByIdResponse AwayTeam { get; set; }
-    private GetTeamByIdResponse HomeTeam { get; set; }
-    private GetPlayersByTeamResponse AwayTeamPlayers { get; set; }
-    private GetPlayersByTeamResponse HomeTeamPlayers { get; set; }
-    private List<PlayerModel> AwayPitchers = new();
-    private List<PlayerModel> HomePitchers = new();
-    private List<DropItem> AwayLineup { get; set; } = new();
-    private List<DropItem> HomeLineup { get; set; } = new();
+    private LineupContext Away = new();
+    private LineupContext Home = new();
     private int positionSelector = 1;
     private int benchSelector = 9; //number of players allowed in the lineup this will increment starting at 10
     private string lineupDropzone = "1";
     private string benchDropzone = "2";
-    private Guid AwaySelectedValue;
-    private Guid HomeSelectedValue;
-    private bool IsAwayLocked = false;
-    private bool IsHomeLocked = false;
     private Dictionary<string, string> BaseballPositions = new();
     private IJSObjectReference? _module;
 
@@ -168,134 +76,84 @@
             BaseballPositions = Constants.BaseballPositions();
 
             GameByIdResponse = await GameService.GetGameById(gameId);
-            await SetupAwayTeam(gameId);  //Away Team Lineup Creation
-
-            positionSelector = 1;
-            benchSelector = 9;
-
-            await SetupHomeTeam(gameId); //Home Team Lineup Creation
+            await SetupTeam(Away, gameId, GameByIdResponse.Game.AwayTeam.Id);  //Away Team Lineup Creation
+            await SetupTeam(Home, gameId, GameByIdResponse.Game.HomeTeam.Id);  //Home Team Lineup Creation
 
             positionSelector = 1;
             PageLoad = true;
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
     }
 
-    private async Task SetupAwayTeam(Guid gameId)
+    private async Task SetupTeam(LineupContext ctx, Guid gameId, Guid teamId)
     {
-        AwayTeam = await TeamService.GetTeamById(GameByIdResponse.Game.AwayTeam.Id);
-        IsAwayLineupCreated = await GameService.AnyBaseballGameLineupByGameId(gameId, AwayTeam.Team.Id);
-        AwayTeamPlayers = await PlayerService.GetPlayersByTeam(AwayTeam.Team.Id);
-        AwayPitchers = AwayTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
-        if (IsAwayLineupCreated.IsLineupCreated)
-            AwayLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, AwayTeam.Team.Id);
+        var teamResponse = await TeamService.GetTeamById(teamId);
+        ctx.Team = teamResponse.Team;
+        ctx.ExistingCheck = await GameService.AnyBaseballGameLineupByGameId(gameId, teamId);
+        ctx.Players = await PlayerService.GetPlayersByTeam(teamId);
+        ctx.Pitchers = ctx.Players.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
 
-        foreach (var player in AwayTeamPlayers.Players.Where(x => x.PlayerDetail.Position != PositionFilter.BASEBALL))
+        if (ctx.ExistingCheck.IsLineupCreated)
+            ctx.ExistingLineup = await GameService.GetBaseballGameLineupByGameId(gameId, teamId);
+
+        int pos = 1;
+        int bench = 9;
+
+        foreach(var player in ctx.Players.Players.Where(x => x.PlayerDetail.Position != PositionFilter.BASEBALL))
         {
-            var lineupPosition = new DropItem
+            var item = new DropItem
             {
                 PlayerId = player.Id,
-                TeamId = AwayTeam.Team.Id,
+                TeamId = teamId,
                 PlayerName = $"{player.FirstName} {player.LastName}",
-                Position = BaseballPositions.FirstOrDefault(x => x.Key == player.PlayerDetail.Position).Value,
-                Selector = positionSelector <= 9 ? lineupDropzone : benchDropzone,
-                IsLocked = IsAwayLineupCreated.IsLineupCreated ? true : false
+                Position = BaseballPositions[player.PlayerDetail.Position],
+                Selector = pos <= 9 ? lineupDropzone : benchDropzone,
+                IsLocked = ctx.ExistingCheck.IsLineupCreated
             };
-            lineupPosition.BattingOrderPosition = IsAwayLineupCreated.IsLineupCreated ? SetupLineup(AwayLineupResponse.GameLineup.BaseballLineup, lineupPosition) : positionSelector;
 
-            AwayLineup.Add(lineupPosition);
-            positionSelector++;
+            item.BattingOrderPosition = ctx.ExistingCheck.IsLineupCreated
+                ? SetupLineup(ctx.ExistingLineup.GameLineup.BaseballLineup, item)
+                : pos;
+
+            ctx.Lineup.Add(item);
+            pos++;
         }
-        AwayLineup = AwayLineup.OrderBy(x => x.BattingOrderPosition).ToList();
-        IsAwayLocked = IsAwayLineupCreated.IsLineupCreated ? true : false;
 
+        ctx.Lineup = ctx.Lineup.OrderBy(x => x.BattingOrderPosition).ToList();
+        ctx.IsLocked = ctx.ExistingCheck.IsLineupCreated;
     }
 
-    private async Task SetupHomeTeam(Guid gameId)
+    private void AwayLineupItemUpdated(MudItemDropInfo<DropItem> drop) =>
+        HandleLineupDrop(drop, Away);
+
+    private void HomeLineupItemUpdated(MudItemDropInfo<DropItem> drop) =>
+        HandleLineupDrop(drop, Home);
+
+
+    private void HandleLineupDrop(MudItemDropInfo<DropItem> drop, LineupContext ctx)
     {
-        HomeTeam = await TeamService.GetTeamById(GameByIdResponse.Game.HomeTeam.Id);
-        IsHomeLineupCreated = await GameService.AnyBaseballGameLineupByGameId(gameId, HomeTeam.Team.Id);
-        HomeTeamPlayers = await PlayerService.GetPlayersByTeam(HomeTeam.Team.Id);
-        HomePitchers = HomeTeamPlayers.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
-        if (IsHomeLineupCreated.IsLineupCreated)
-            HomeLineupResponse = await GameService.GetBaseballGameLineupByGameId(gameId, HomeTeam.Team.Id);
-        foreach (var player in HomeTeamPlayers.Players.Where(x => x.PlayerDetail.Position != PositionFilter.BASEBALL))
+        if (drop.Item.Selector == drop.DropzoneIdentifier)
         {
-
-            var lineupPosition = new DropItem
-            {
-                PlayerId = player.Id,
-                TeamId = HomeTeam.Team.Id,
-                PlayerName = $"{player.FirstName} {player.LastName}",
-                Position = BaseballPositions.FirstOrDefault(x => x.Key == player.PlayerDetail.Position).Value,
-                Selector = positionSelector <= 9 ? lineupDropzone : benchDropzone,
-                IsLocked = IsHomeLineupCreated.IsLineupCreated ? true : false
-            };
-            lineupPosition.BattingOrderPosition = IsHomeLineupCreated.IsLineupCreated ? SetupLineup(HomeLineupResponse.GameLineup.BaseballLineup, lineupPosition) : positionSelector;
-            HomeLineup.Add(lineupPosition);
-            positionSelector++;
+            if (drop.DropzoneIdentifier == lineupDropzone)
+                UpdateLineup(drop, ctx.Lineup);
+            return;
         }
-        HomeLineup = HomeLineup.OrderBy(x => x.BattingOrderPosition).ToList();
-        IsHomeLocked = IsHomeLineupCreated.IsLineupCreated ? true : false;
-    }
 
-    private void AwayLineupItemUpdated(MudItemDropInfo<DropItem> dropItem)
-    {
-        if (dropItem.Item.Selector == dropItem.DropzoneIdentifier)
+        if(drop.DropzoneIdentifier == benchDropzone)
+            drop.Item.Selector = benchDropzone;
+
+        if(drop.DropzoneIdentifier == lineupDropzone &&
+           ctx.Lineup.Count(x => x.Selector == lineupDropzone) == 9)
         {
-            if (dropItem.DropzoneIdentifier == lineupDropzone)
-                UpdateLineup(dropItem, AwayLineup);
+            Snackbar.Add($"{ctx.Team.TeamName} lineup is full.", MudBlazor.Severity.Error);
+            return;
         }
-        else
-        {
-            if (dropItem.DropzoneIdentifier == benchDropzone)
-                dropItem.Item.Selector = dropItem.DropzoneIdentifier;
 
-            if (AwayLineup.Count(x => x.Selector == "1") == 9 && dropItem.DropzoneIdentifier == lineupDropzone)
-                Snackbar.Add("Away Lineup has a full lineup.", MudBlazor.Severity.Error);
-            else
-            {
-                if (dropItem.DropzoneIdentifier == lineupDropzone)
-                    dropItem.Item.Selector = dropItem.DropzoneIdentifier;
-
-                UpdateLineup(dropItem, AwayLineup);
-            }
-
-        }
-    }
-
-    private void HomeLineupItemUpdated(MudItemDropInfo<DropItem> dropItem)
-    {
-        if (dropItem.Item.Selector == dropItem.DropzoneIdentifier)
-        {
-            if(dropItem.DropzoneIdentifier == lineupDropzone)
-                UpdateLineup(dropItem, HomeLineup);
-        }
-        else
-        {
-            if (dropItem.DropzoneIdentifier == benchDropzone)
-                dropItem.Item.Selector = dropItem.DropzoneIdentifier;
-
-            if (HomeLineup.Count(x => x.Selector == "1") == 9 && dropItem.DropzoneIdentifier == lineupDropzone)
-                Snackbar.Add("Home Lineup has a full lineup.", MudBlazor.Severity.Error);
-            else
-            {
-                if (dropItem.DropzoneIdentifier == lineupDropzone)
-                    dropItem.Item.Selector = dropItem.DropzoneIdentifier;
-
-                UpdateLineup(dropItem, HomeLineup);
-            }
-
-        }
+        drop.Item.Selector = drop.DropzoneIdentifier;
+        UpdateLineup(drop, ctx.Lineup);
     }
 
     private void UpdateLineup(MudItemDropInfo<DropItem> dropItem, List<DropItem> lineup)
@@ -308,87 +166,51 @@
         lineup.UpdateOrder(dropItem, item => item.BattingOrderPosition, indexOffset);
     }
 
-    private async Task SaveAwayLineup()
+    private Task SaveAwayLineup() => SaveLineup(Away, Away.Team.Id);
+    private Task SaveHomeLineup() => SaveLineup(Home, Home.Team.Id);
+
+    private async Task SaveLineup(LineupContext ctx, Guid teamId)
     {
         try
         {
-            if (AwaySelectedValue == Guid.Empty)
+            if(ctx.SelectedPitcher == Guid.Empty)
             {
                 Snackbar.Add("Please select a Starting Pitcher.", MudBlazor.Severity.Error);
+                return;
             }
-            else if (AwayLineup.Where(x => x.Selector == lineupDropzone).Count() < 9)
+
+            if(ctx.Lineup.Count(x => x.Selector == lineupDropzone) < 9)
             {
                 Snackbar.Add("Please have 9 hitters in the Lineup", MudBlazor.Severity.Error);
+                return;
             }
-            else
-            {
-                var players = AwayLineup.OrderBy(x => x.BattingOrderPosition);
-                var gameId = Guid.Parse(Id);
-                var pitcher = AwayPitchers.FirstOrDefault(x => x.Id == AwaySelectedValue);
-                var lineupDetails = new BaseballGameLineup(players.First().PlayerId, players.Skip(1).First().PlayerId, players.Skip(2).First().PlayerId, players.Skip(3).First().PlayerId,
-                                                            players.Skip(4).First().PlayerId, players.Skip(5).First().PlayerId, players.Skip(6).First().PlayerId,
-                                                            players.Skip(7).First().PlayerId, players.Skip(8).First().PlayerId, pitcher.Id);
 
-                var request = new CreateBaseballGameLineupRequest(new CreateBaseballGameLineupRecord(gameId, AwayTeam.Team.Id, lineupDetails));
-                var response = await GameService.CreateBaseballGameLineup(request);
-                foreach (var player in players)
-                    player.IsLocked = true;
+            var players = ctx.Lineup.OrderBy(x => x.BattingOrderPosition).ToList();
+            var pitcher = ctx.Pitchers.First(x => x.Id == ctx.SelectedPitcher);
 
-                IsAwayLocked = true;
-                Snackbar.Add("Away Lineup has been created.", MudBlazor.Severity.Success);
-                StateHasChanged();
-            }
+            var lineupDetails = new BaseballGameLineup(
+                players[0].PlayerId, players[1].PlayerId, players[2].PlayerId, 
+                players[3].PlayerId, players[4].PlayerId, players[5].PlayerId,
+                players[6].PlayerId, players[7].PlayerId, players[8].PlayerId,
+                pitcher.Id);
+
+            var request = new CreateBaseballGameLineupRequest(
+                new CreateBaseballGameLineupRecord(Guid.Parse(Id), teamId, lineupDetails)
+            );
+
+            await GameService.CreateBaseballGameLineup(request);
+
+            foreach(var p in players)
+                p.IsLocked = true;
+
+            ctx.IsLocked = true;
+            Snackbar.Add($"{ctx.Team.TeamName} Lineup has been created.", MudBlazor.Severity.Success);
+            StateHasChanged();
 
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
-        }
-    }   
-
-    private async Task SaveHomeLineup()
-    {
-        try
-        {
-            if (HomeSelectedValue == Guid.Empty)
-            {
-                Snackbar.Add("Please select a Starting Pitcher.", MudBlazor.Severity.Error);
-            }
-            else if (HomeLineup.Where(x => x.Selector == lineupDropzone).Count() < 9)
-            {
-                Snackbar.Add("Please have 9 hitters in the Lineup", MudBlazor.Severity.Error);
-            }
-            else
-            {
-                var players = HomeLineup.OrderBy(x => x.BattingOrderPosition);
-                var gameId = Guid.Parse(Id);
-                var pitcher = HomePitchers.FirstOrDefault(x => x.Id == HomeSelectedValue);
-                var lineupDetails = new BaseballGameLineup(players.First().PlayerId, players.Skip(1).First().PlayerId, players.Skip(2).First().PlayerId, players.Skip(3).First().PlayerId,
-                                                            players.Skip(4).First().PlayerId, players.Skip(5).First().PlayerId, players.Skip(6).First().PlayerId,
-                                                            players.Skip(7).First().PlayerId, players.Skip(8).First().PlayerId, pitcher.Id);
-
-
-                var request = new CreateBaseballGameLineupRequest(new CreateBaseballGameLineupRecord(gameId, HomeTeam.Team.Id, lineupDetails));
-                var response = await GameService.CreateBaseballGameLineup(request);
-                foreach (var player in players)
-                    player.IsLocked = true;
-
-                IsHomeLocked = true;
-                Snackbar.Add("Home Lineup has been created.", MudBlazor.Severity.Success);
-                StateHasChanged();
-            }
-
-        }
-        catch (Exception ex)
-        {
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
     }
 
@@ -419,6 +241,17 @@
         }
     }
 
+    private async Task HandleError(Exception ex)
+    {
+        if (KeycloakTokenService.ShouldForceLogout())
+        {
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+            await _module.InvokeVoidAsync("logout");
+        }
+        ErrorState.Message = ex.Message;
+        NavManager.NavigateTo("/error");
+    }
+
     public class DropItem
     {
         public Guid PlayerId { get; set; }
@@ -428,5 +261,17 @@
         public int BattingOrderPosition { get; set; }
         public string Selector { get; set; }
         public bool IsLocked { get; set; } = false;
+    }
+
+    public class LineupContext
+    {
+        public TeamModel Team { get; set; }
+        public GetPlayersByTeamResponse Players { get; set; }
+        public List<PlayerModel> Pitchers { get; set; } = new();
+        public List<DropItem> Lineup { get; set; } = new();
+        public bool IsLocked { get; set; }
+        public Guid SelectedPitcher {get; set;}
+        public GetBaseballGameLineupByGameIdResponse ExistingLineup { get; set; }
+        public AnyBaseballGameLineupByGameIdResponse ExistingCheck {get; set;}
     }
 }
