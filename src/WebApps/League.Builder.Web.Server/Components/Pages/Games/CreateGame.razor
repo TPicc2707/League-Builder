@@ -1,4 +1,5 @@
 ﻿@page "/creategame/{id}"
+@using FluentValidation.Results
 @using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
@@ -22,86 +23,58 @@
         @if (PageLoad)
         {
             <MudItem Style="padding-top: 50px;">
-                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                <MudPaper Class="border border-solid game-card">
                     <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">Create Game</MudText>
                 </MudPaper>
             </MudItem>
             <MudItem style="margin-top: 50px; margin-bottom: 50px;">
                 <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
                     <FluentValidationValidator @ref="fluentValidationValidator" />
-                    <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px; width: 100%;">
+                    <MudPaper Class="border border-solid game-card" Style="width: 100%;">
                         <MudStepper @bind-ActiveIndex="_index" OnPreviewInteraction="@OnStepInteraction" CurrentStepColor="Color.Secondary" CompletedStepColor="Color.Success">
                             <ChildContent>
                                 <MudStep Title="Create Game Information">
                                     <MudGrid Justify="Justify.Center">
                                         <MudItem xs="12" sm="10">
-                                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                                <MudCardContent>
-                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
-                                                        <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
-                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Game Information</MudText>
-                                                    </MudStack>
-                                                    <MudSelect Required="true" Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
-                                                        @foreach (var team in Teams)
-                                                        {
-                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                    <MudSelect Required="true" Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
-                                                        @foreach (var team in Teams)
-                                                        {
-                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                </MudCardContent>
-                                            </MudCard>
+                                            @Card(@<div>                                                 
+                                                @StepHeader(Icons.Material.Filled.SportsEsports, "Game Information")
+                                                <MudSelect Required Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
+                                                    @TeamOptions
+                                                </MudSelect>
+                                                <MudSelect Required Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
+                                                    @TeamOptions
+                                                </MudSelect>
+                                                </div>)
                                         </MudItem>
                                     </MudGrid>
                                 </MudStep>
                                 <MudStep Title="Create Game Time">
                                     <MudGrid Justify="Justify.Center">
                                         <MudItem xs="12" sm="10">
-                                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                                <MudCardContent>
-                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
-                                                        <MudIcon Icon="@Icons.Material.Filled.AccessTime" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
-                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Game Time</MudText>
-                                                    </MudStack>
-                                                    <MudDatePicker Required="true" Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.StartDate" />
-                                                    <MudTimePicker Required="true" Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="model.StartTime" />
-                                                </MudCardContent>
-                                            </MudCard>
+                                            @Card(@<div>
+                                                @StepHeader(Icons.Material.Filled.AccessTime, "Game Time")
+                                                <MudDatePicker Required Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.StartDate" />
+                                                <MudTimePicker Required Class="mt-3" Label="Start Time" AmPm Editable @bind-Time="model.StartTime" />
+                                            </div>)
                                         </MudItem>
                                     </MudGrid>
                                 </MudStep>
                                 <MudStep Title="Review">
                                     <MudGrid Justify="Justify.Center">
                                         <MudItem xs="12" sm="10">
-                                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                                <MudCardContent>
-                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
-                                                        <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
-                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Review</MudText>
-                                                    </MudStack>
-                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
-                                                        @foreach (var team in Teams)
-                                                        {
-                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
-                                                        @foreach (var team in Teams)
-                                                        {
-                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                    <MudDatePicker Required="true" ReadOnly="true" Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.StartDate" />
-                                                    <MudTimePicker Required="true" ReadOnly="true" Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="model.StartTime" />
-                                                </MudCardContent>
-                                                <MudCardActions>
-                                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Create</MudButton>
-                                                </MudCardActions>
-                                            </MudCard>
+                                            @Card(@<div>
+                                                @StepHeader(Icons.Material.Filled.RemoveRedEye, "Review")
+                                                <MudSelect Required ReadOnly Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
+                                                    @TeamOptions
+                                                </MudSelect>
+                                                <MudSelect Required ReadOnly Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
+                                                    @TeamOptions
+                                                </MudSelect>
+                                                <MudDatePicker Required ReadOnly Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.StartDate" />
+                                                <MudTimePicker Required ReadOnly Class="mt-3" Label="Start Time" AmPm Editable @bind-Time="model.StartTime" />
+                                            </div>,
+                                            @<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth>Create</MudButton>
+                                            )
                                         </MudItem>
                                     </MudGrid>
                                 </MudStep>
@@ -110,13 +83,13 @@
                                 <MudIconButton OnClick="@(() => stepper.PreviousStepAsync())"
                                                Icon="@Icons.Material.Filled.ArrowBack"
                                                Color="Color.Primary"
-                                               Disabled="_index == 0 ? true : false">
+                                               Disabled="_index == 0">
                                 </MudIconButton>
                                 <MudSpacer />
                                 <MudIconButton OnClick="@(() => stepper.NextStepAsync())"
                                                Icon="@Icons.Material.Filled.ArrowForward"
                                                Color="Color.Primary"
-                                               Disabled="_index != 2 ? false : true">
+                                               Disabled="_index == 2">
                                 </MudIconButton>
                             </ActionContent>
                         </MudStepper>
@@ -141,14 +114,12 @@
     public string Id { get; set; }
     private bool PageLoad = false;
     CreateGameModel model = new CreateGameModel();
-    bool success;
     private int _index;
     private bool canProceed = false;
     private List<string> errors = new();
     private GetTeamsByLeagueResponse TeamsResponse { get; set; }
     private List<TeamModel> Teams { get; set; } = new();
     private GetLeagueByIdResponse LeagueResponse { get; set; }
-    private GetGamesByTeamResponse TeamGamesResponse { get; set; }
     private GetSeasonByYearResponse SeasonResponse { get; set; }
     private GetTeamByIdResponse Team { get; set; }
     private FluentValidationValidator fluentValidationValidator;
@@ -159,27 +130,54 @@
         try
         {
             var leagueId = Guid.Parse(Id);
-            TeamsResponse = await TeamLocalCache.GetTeamsByLeagueCache(Id);
-            if (TeamsResponse == null)
-            {
-                TeamsResponse = await TeamService.GetTeamsByLeague(leagueId);
-                await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsResponse);
-            }
+            TeamsResponse = await GetOrLoad(
+                () => TeamLocalCache.GetTeamsByLeagueCache(Id),
+                () => TeamService.GetTeamsByLeague(leagueId),
+                (t) => TeamLocalCache.SetTeamsByLeagueCache(Id, t)
+            );
             Teams = TeamsResponse.Teams.ToList();
-            model.AwayTeamId = Teams.First().Id;
-            model.HomeTeamId = Teams.Skip(1).First().Id;
+            if(Teams.Count >= 2)
+            {
+                model.AwayTeamId = Teams[0].Id;
+                model.HomeTeamId = Teams[1].Id;
+            }
             PageLoad = true;
-
+            StateHasChanged();
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
+        }
+    }
+
+    private async Task ValidateTeamGameLimit(
+        Guid teamId,
+        int year,
+        int maxGames,
+        FluentValidation.Results.ValidationResult result,
+        string propertyName
+    )
+    {
+        var games = await GetOrLoad(
+            () => GameLocalCache.GetGamesByTeamCache(teamId.ToString()),
+            () => GameService.GetGamesByTeam(teamId),
+            (g) => GameLocalCache.SetGamesByTeamCache(teamId.ToString(), g)
+        );
+
+        var count = games.Games.Count(x => x.GameDetail.StartTime.Year == year);
+
+        if(count >= maxGames)
+        {
+            var team = await GetOrLoad(
+                () => TeamLocalCache.GetTeamByIdCache(teamId.ToString()),
+                () => TeamService.GetTeamById(teamId),
+                (t) => TeamLocalCache.SetTeamByIdCache(teamId.ToString(), t)
+            );
+
+            result.Errors.Add(new ValidationFailure(
+            propertyName,
+            $"The team '{team.Team.TeamName}' has reached the maximum number of games ({maxGames}) for the {year} season."
+            ));
         }
     }
 
@@ -188,58 +186,22 @@
         try
         {
             var leagueId = Guid.Parse(Id);
-            var teamsToRemove = new List<Guid>();
-            LeagueResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
-            if (LeagueResponse == null)
-            {
-                LeagueResponse = await LeagueService.GetLeague(leagueId);
-                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueResponse);
-            }
+            LeagueResponse = await GetOrLoad(
+                () => LeagueLocalCache.GetLeagueByIdCache(Id),
+                () => LeagueService.GetLeague(leagueId),
+                (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
+            );
 
-            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(model.AwayTeamId.ToString());
-            if (TeamGamesResponse == null)
-            {
-                TeamGamesResponse = await GameService.GetGamesByTeam(model.AwayTeamId);
-                await GameLocalCache.SetGamesByTeamCache(model.AwayTeamId.ToString(), TeamGamesResponse);
-            }
-            if (LeagueResponse.League.TotalGamesPerSeason <= TeamGamesResponse.Games.Where(x => x.GameDetail.StartTime.Year == model.StartDate.Value.Year).Count())
-            {
-                Team = await TeamLocalCache.GetTeamByIdCache(model.AwayTeamId.ToString());
-                if (Team == null)
-                {
-                    Team = await TeamService.GetTeamById(model.AwayTeamId);
-                    await TeamLocalCache.SetTeamByIdCache(model.AwayTeamId.ToString(), Team);
-                }
-                result.Errors.Add(new FluentValidation.Results.ValidationFailure(nameof(CreateGameModel.AwayTeamId), $"The away team '{Team.Team.TeamName}' has reached the maximum number of games ({LeagueResponse.League.TotalGamesPerSeason}) for the {model.StartDate.Value.Year} season."));
-            }
+            int maxGames = LeagueResponse.League.TotalGamesPerSeason;
+            int year = model.StartDate.Value.Year;
 
-            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(model.HomeTeamId.ToString());
-            if (TeamGamesResponse == null)
-            {
-                TeamGamesResponse = await GameService.GetGamesByTeam(model.HomeTeamId);
-                await GameLocalCache.SetGamesByTeamCache(model.AwayTeamId.ToString(), TeamGamesResponse);
-            }
-            if (LeagueResponse.League.TotalGamesPerSeason <= TeamGamesResponse.Games.Where(x => x.GameDetail.StartTime.Year == model.StartDate.Value.Year).Count())
-            {
-                Team = await TeamLocalCache.GetTeamByIdCache(model.HomeTeamId.ToString());
-                if (Team == null)
-                {
-                    Team = await TeamService.GetTeamById(model.HomeTeamId);
-                    await TeamLocalCache.SetTeamByIdCache(model.HomeTeamId.ToString(), Team);
-                }
-                result.Errors.Add(new FluentValidation.Results.ValidationFailure(nameof(CreateGameModel.HomeTeamId), $"The home team '{Team.Team.TeamName}' has reached the maximum number of games ({LeagueResponse.League.TotalGamesPerSeason}) for the {model.StartDate.Value.Year} season."));
-            }
+            await ValidateTeamGameLimit(model.AwayTeamId, year, maxGames, result, nameof(CreateGameModel.AwayTeamId));
+            await ValidateTeamGameLimit(model.HomeTeamId, year, maxGames, result, nameof(CreateGameModel.HomeTeamId));
 
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
     }
 
@@ -248,7 +210,6 @@
         try
         {
             await SubmitGame();
-            success = true;
             Snackbar.Add("Game has been created.", MudBlazor.Severity.Success);
             NavManager.NavigateTo($"/leaguegames/{Id}");
             StateHasChanged();
@@ -256,13 +217,7 @@
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
     }
 
@@ -283,33 +238,33 @@
 
     private async Task ValidModel()
     {
-        errors.RemoveRange(0, errors.Count);
+        errors.Clear();
+
+        FluentValidation.Results.ValidationResult result = null;
 
         if (_index == 0)
         {
-            var result = await CreateGameValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreateGameModel.HomeTeamId)));
-            if (result.IsValid)
-                canProceed = true;
-
-            foreach (var error in result.Errors)
-                errors.Add($"{error.ErrorMessage}");
+            result = await CreateGameValidator.ValidateAsync(
+                model,
+                opts => opts.IncludeProperties(nameof(CreateGameModel.HomeTeamId))
+            );
         }
 
         if (_index == 1)
         {
-            var result = await CreateGameValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreateGameModel.StartDate), nameof(CreateGameModel.StartTime)));
+            result = await CreateGameValidator.ValidateAsync(
+                model,
+                opts => opts.IncludeProperties(nameof(CreateGameModel.StartDate), nameof(CreateGameModel.StartTime))
+            );
 
             if(model.StartDate.HasValue)
                 await CheckMaxGamesForTeam(result);
-
-            if (result.IsValid)
-                canProceed = true;
-
-            foreach (var error in result.Errors)
-                errors.Add($"{error.ErrorMessage}");
-
         }
 
+        canProceed = result?.IsValid == true;
+
+        foreach (var error in result.Errors)
+            errors.Add($"{error.ErrorMessage}");
     }
 
     private Task OpenErrorDialogAsync()
@@ -322,7 +277,7 @@
 
     private async Task SubmitGame()
     {
-        var gameTime = new DateTime(model.StartDate.Value.Year, model.StartDate.Value.Month, model.StartDate.Value.Day, model.StartTime.Value.Hours, model.StartTime.Value.Minutes, model.StartTime.Value.Seconds);
+        var gameTime = model.StartDate.Value.Date.Add(model.StartTime.Value);
         var leagueId = Guid.Parse(Id);
         SeasonResponse = await SeasonService.GetSeasonByYear(gameTime.Year);
         Models.Game.GameDetailModel gameDetail = new GameDetailModel(0, 0, gameTime, null);
@@ -336,5 +291,69 @@
         await GameLocalCache.DeleteGamesByTeamCache(model.HomeTeamId.ToString());
     }
 
-}
+    private async Task<T> GetOrLoad<T>(
+        Func<Task<T>> cacheGetter,
+        Func<Task<T>> serviceGetter,
+        Func<T, Task> cacheSetter)
+    {
+        if(await cacheGetter() is T cached)
+            return cached;
 
+        var fresh = await serviceGetter();
+        try
+        {
+            await cacheSetter(fresh);
+        }
+        catch (Exception)
+        {
+            // Cache failures should never block the app
+        }
+
+        return fresh;
+    }
+
+    private async Task HandleError(Exception ex)
+    {
+        if (KeycloakTokenService.ShouldForceLogout())
+        {
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+            await _module.InvokeVoidAsync("logout");
+        }
+        ErrorState.Message = ex.Message;
+        NavManager.NavigateTo("/error");
+    }
+
+    private RenderFragment TeamOptions => __builder =>
+    {
+        foreach(var team in Teams)
+        {
+            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+            ;
+        }
+    };
+
+    private Func<string, string, RenderFragment> StepHeader = (string icon, string title) => __builder =>
+    {
+        <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
+            <MudIcon Icon="@icon" Color="Color.Secondary" Size="Size.Medium" />
+            <MudText Typo="Typo.h6" Style="font-weight: bold;">@title</MudText>
+        </MudStack>
+        ;
+    };
+
+    private RenderFragment Card(RenderFragment content, RenderFragment actions = null) => __builder =>
+    {
+        <MudCard Class="border border-solid" Style="border-color: #000000">
+            <MudCardContent>
+                @content
+            </MudCardContent>
+            @if(actions is not null)
+            {
+                <MudCardActions>
+                    @actions
+                </MudCardActions>
+            }
+        </MudCard>;     
+    };
+
+}
