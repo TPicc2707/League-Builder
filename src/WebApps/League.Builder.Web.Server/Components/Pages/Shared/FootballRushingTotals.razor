@@ -1,0 +1,28 @@
+﻿<MudItem Style="padding-top: 25px;">
+    <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
+        <thead>
+            <tr class="mud-theme-primary">
+                <th></th>
+                <th>CAR</th>
+                <th>YDS</th>
+                <th>TD</th>
+                <th>FUM</th>
+                <th>FUM LST</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Totals:</td>
+                <td>@Totals.RushingAttempts</td>
+                <td>@Totals.RushingYards</td>
+                <td>@Totals.RushingTouchdowns</td>
+                <td>@Totals.RushingFumbles</td>
+                <td>@Totals.RushingFumblesLost</td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+</MudItem>
+
+@code {
+    [Parameter] public FootballRushingTotalsModel Totals { get; set; }
+}

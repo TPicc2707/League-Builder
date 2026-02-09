@@ -1,0 +1,30 @@
+﻿<MudItem Style="padding-top: 25px;">
+    <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
+        <thead>
+            <tr class="mud-theme-primary">
+                <th></th>
+                <th>CMP</th>
+                <th>ATT</th>
+                <th>YDS</th>
+                <th>TD</th>
+                <th>INT</th>
+                <th>S</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Totals:</td>
+                <td>@Totals.PassingCompletions</td>
+                <td>@Totals.PassingAttempts</td>
+                <td>@Totals.PassingYards</td>
+                <td>@Totals.PassingTouchdowns</td>
+                <td>@Totals.PassingInterceptions</td>
+                <td>@Totals.Sacks</td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+</MudItem>
+
+@code {
+    [Parameter] public FootballPassingTotalsModel Totals { get; set; }
+}

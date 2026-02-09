@@ -1,0 +1,34 @@
+﻿<MudItem Style="padding-top: 25px;">
+    <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
+        <thead>
+            <tr class="mud-theme-primary">
+                <th></th>
+                <th>REC</th>
+                <th>TGTS</th>
+                <th>YDS</th>
+                <th>TD</th>
+                <th>YAC</th>
+                <th>FUM</th>
+                <th>FUM LST</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Totals:</td>
+                <td>@Totals.Receptions</td>
+                <td>@Totals.Targets</td>
+                <td>@Totals.ReceivingYards</td>
+                <td>@Totals.ReceivingTouchdowns</td>
+                <td>@Totals.YardsAfterCatch</td>
+                <td>@Totals.ReceivingFumbles</td>
+                <td>@Totals.ReceivingFumblesLost</td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+</MudItem>
+
+
+@code {
+    [Parameter] public FootballReceivingTotalsModel Totals { get; set; }
+
+}

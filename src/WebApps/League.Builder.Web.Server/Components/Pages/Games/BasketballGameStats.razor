@@ -111,93 +111,41 @@
         {
             var gameId = Guid.Parse(Id);
 
-            GameModel = await GameLocalCache.GetGameByIdCache(Id)
-                        ?? await GameService.GetGameById(gameId);
+            GameModel = await DataLoader.GetOrLoad(
+                () => GameLocalCache.GetGameByIdCache(Id),
+                () => GameService.GetGameById(gameId),
+                (g) => GameLocalCache.SetGameByIdCache(Id, g)
+            );
 
-            if (GameModel is not null)
-                await GameLocalCache.SetGameByIdCache(Id, GameModel);
+            AwayPlayersModel = await DataLoader.GetOrLoad(
+                () => PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString()),
+                () => PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id),
+                (p) => PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), p)
+            );
 
-            AwayPlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString())
-                               ?? await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
+            HomePlayersModel = await DataLoader.GetOrLoad(
+                () => PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString()),
+                () => PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id),
+                (p) => PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), p)
+            );
 
-            if (AwayPlayersModel is not null)
-                await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayersModel);
+            AwayPlayerStatsModel = await DataLoader.GetOrLoad(
+                () => StatsLocalCache.GetBasketballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString()),
+                () => StatsService.GetBasketballStatsByTeam(GameModel.Game.AwayTeam.Id),
+                (p) => StatsLocalCache.SetBasketballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), p)
+            );
 
-            HomePlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString())
-                               ?? await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
-            if (HomePlayersModel is not null)
-                await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayersModel);
-
-            AwayPlayerStatsModel = await StatsLocalCache.GetBasketballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString())
-                                   ?? await StatsService.GetBasketballStatsByTeam(GameModel.Game.HomeTeam.Id);
-
-            if (AwayPlayerStatsModel is not null)
-                await StatsLocalCache.SetBasketballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayerStatsModel);
-
-            HomePlayerStatsModel = await StatsLocalCache.GetBasketballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString())
-                                   ?? await StatsService.GetBasketballStatsByTeam(GameModel.Game.HomeTeam.Id);
-
-            if (HomePlayerStatsModel is not null)
-                await StatsLocalCache.SetBasketballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayerStatsModel);
+            AwayPlayerStatsModel = await DataLoader.GetOrLoad(
+                () => StatsLocalCache.GetBasketballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString()),
+                () => StatsService.GetBasketballStatsByTeam(GameModel.Game.HomeTeam.Id),
+                (p) => StatsLocalCache.SetBasketballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), p)
+            );
 
             await GetImageAsync();
 
-            foreach (var player in AwayPlayersModel.Players)
-            {
-                var playerStat = AwayPlayerStatsModel.BasketballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
-                if (playerStat is not null)
-                {
-                    Model.Add(new BasketballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
-                                                        playerStat.Stats.Start, playerStat.Stats.Minutes, playerStat.Stats.Points, playerStat.Stats.FieldGoalsMade, playerStat.Stats.FieldGoalsAttempted, playerStat.Stats.ThreePointersMade, playerStat.Stats.ThreePointersAttempted,
-                                                        playerStat.Stats.FreeThrowsMade, playerStat.Stats.FreeThrowsAttempted, playerStat.Stats.Rebounds, playerStat.Stats.Assists, playerStat.Stats.Steals,
-                                                        playerStat.Stats.Blocks, playerStat.Stats.Turnovers, playerStat.Stats.Fouls));
+            ProcessTeamStats(AwayPlayersModel.Players, AwayPlayerStatsModel, true);
+            ProcessTeamStats(HomePlayersModel.Players, HomePlayerStatsModel, false);
 
-                    AwayTotals.Points += playerStat.Stats.Points;
-                    AwayTotals.FieldGoalsMade += playerStat.Stats.FieldGoalsMade;
-                    AwayTotals.FieldGoalsAttempted += playerStat.Stats.FieldGoalsAttempted;
-                    AwayTotals.ThreePointersMade += playerStat.Stats.ThreePointersMade;
-                    AwayTotals.ThreePointersAttempted += playerStat.Stats.ThreePointersAttempted;
-                    AwayTotals.FreeThrowsMade += playerStat.Stats.FreeThrowsMade;
-                    AwayTotals.FreeThrowsAttempted += playerStat.Stats.FreeThrowsAttempted;
-                    AwayTotals.Rebounds += playerStat.Stats.Rebounds;
-                    AwayTotals.Assists += playerStat.Stats.Assists;
-                    AwayTotals.Steals += playerStat.Stats.Steals;
-                    AwayTotals.Blocks += playerStat.Stats.Blocks;
-                    AwayTotals.Turnovers += playerStat.Stats.Turnovers;
-                    AwayTotals.Fouls += playerStat.Stats.Fouls;
-                }
-                else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                    Model.Add(new BasketballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
-            }
-            foreach (var player in HomePlayersModel.Players)
-            {
-                var playerStat = HomePlayerStatsModel.BasketballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
-                if (playerStat is not null)
-                {
-                    Model.Add(new BasketballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
-                                                        playerStat.Stats.Start, playerStat.Stats.Minutes, playerStat.Stats.Points, playerStat.Stats.FieldGoalsMade, playerStat.Stats.FieldGoalsAttempted, playerStat.Stats.ThreePointersMade, playerStat.Stats.ThreePointersAttempted,
-                                                        playerStat.Stats.FreeThrowsMade, playerStat.Stats.FreeThrowsAttempted, playerStat.Stats.Rebounds, playerStat.Stats.Assists, playerStat.Stats.Steals,
-                                                        playerStat.Stats.Blocks, playerStat.Stats.Turnovers, playerStat.Stats.Fouls));
-
-                    HomeTotals.Points += playerStat.Stats.Points;
-                    HomeTotals.FieldGoalsMade += playerStat.Stats.FieldGoalsMade;
-                    HomeTotals.FieldGoalsAttempted += playerStat.Stats.FieldGoalsAttempted;
-                    HomeTotals.ThreePointersMade += playerStat.Stats.ThreePointersMade;
-                    HomeTotals.ThreePointersAttempted += playerStat.Stats.ThreePointersAttempted;
-                    HomeTotals.FreeThrowsMade += playerStat.Stats.FreeThrowsMade;
-                    HomeTotals.FreeThrowsAttempted += playerStat.Stats.FreeThrowsAttempted;
-                    HomeTotals.Rebounds += playerStat.Stats.Rebounds;
-                    HomeTotals.Assists += playerStat.Stats.Assists;
-                    HomeTotals.Steals += playerStat.Stats.Steals;
-                    HomeTotals.Blocks += playerStat.Stats.Blocks;
-                    HomeTotals.Turnovers += playerStat.Stats.Turnovers;
-                    HomeTotals.Fouls += playerStat.Stats.Fouls;
-
-
-                }
-                else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                    Model.Add(new BasketballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
-            }
             PageLoad = true;
         }
         catch (Exception ex)
@@ -212,26 +160,89 @@
         }
     }
 
+    private void ProcessTeamStats(IEnumerable<PlayerModel> players,
+    GetBasketballStatsByTeamResponse stats,
+    bool isAway)
+    {
+        foreach (var player in players)
+        {
+            var playerStat = stats.BasketballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
+            if (playerStat is not null)
+            {
+                AddPlayerStats(player, playerStat);
+                AccumulateTotals(playerStat, isAway);
+            }
+            else if (GameModel.Game.GameStatus == GameStatus.Completed)
+                Model.Add(new BasketballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName));
+        }
+    }
+
+    private void AddPlayerStats(
+        PlayerModel player,
+        Models.Stats.Basketball.BasketballStatsModel playerStat
+       )
+    {
+        Model.Add(new BasketballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName,
+                                                        playerStat.Stats.Start, playerStat.Stats.Minutes, playerStat.Stats.Points, playerStat.Stats.FieldGoalsMade, playerStat.Stats.FieldGoalsAttempted, playerStat.Stats.ThreePointersMade, playerStat.Stats.ThreePointersAttempted,
+                                                        playerStat.Stats.FreeThrowsMade, playerStat.Stats.FreeThrowsAttempted, playerStat.Stats.Rebounds, playerStat.Stats.Assists, playerStat.Stats.Steals,
+                                                        playerStat.Stats.Blocks, playerStat.Stats.Turnovers, playerStat.Stats.Fouls));
+    }
+
+    private void AccumulateTotals(Models.Stats.Basketball.BasketballStatsModel playerStat, bool isAway)
+    {
+        if (isAway)
+        {
+            AwayTotals.Points += playerStat.Stats.Points;
+            AwayTotals.FieldGoalsMade += playerStat.Stats.FieldGoalsMade;
+            AwayTotals.FieldGoalsAttempted += playerStat.Stats.FieldGoalsAttempted;
+            AwayTotals.ThreePointersMade += playerStat.Stats.ThreePointersMade;
+            AwayTotals.ThreePointersAttempted += playerStat.Stats.ThreePointersAttempted;
+            AwayTotals.FreeThrowsMade += playerStat.Stats.FreeThrowsMade;
+            AwayTotals.FreeThrowsAttempted += playerStat.Stats.FreeThrowsAttempted;
+            AwayTotals.Rebounds += playerStat.Stats.Rebounds;
+            AwayTotals.Assists += playerStat.Stats.Assists;
+            AwayTotals.Steals += playerStat.Stats.Steals;
+            AwayTotals.Blocks += playerStat.Stats.Blocks;
+            AwayTotals.Turnovers += playerStat.Stats.Turnovers;
+            AwayTotals.Fouls += playerStat.Stats.Fouls;
+        }
+        else
+        {
+            HomeTotals.Points += playerStat.Stats.Points;
+            HomeTotals.FieldGoalsMade += playerStat.Stats.FieldGoalsMade;
+            HomeTotals.FieldGoalsAttempted += playerStat.Stats.FieldGoalsAttempted;
+            HomeTotals.ThreePointersMade += playerStat.Stats.ThreePointersMade;
+            HomeTotals.ThreePointersAttempted += playerStat.Stats.ThreePointersAttempted;
+            HomeTotals.FreeThrowsMade += playerStat.Stats.FreeThrowsMade;
+            HomeTotals.FreeThrowsAttempted += playerStat.Stats.FreeThrowsAttempted;
+            HomeTotals.Rebounds += playerStat.Stats.Rebounds;
+            HomeTotals.Assists += playerStat.Stats.Assists;
+            HomeTotals.Steals += playerStat.Stats.Steals;
+            HomeTotals.Blocks += playerStat.Stats.Blocks;
+            HomeTotals.Turnovers += playerStat.Stats.Turnovers;
+            HomeTotals.Fouls += playerStat.Stats.Fouls;
+        }
+    }
+
     private async Task GetImageAsync()
     {
-        LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(GameModel.Game.LeagueId.ToString());
-        if(LeagueByIdResponse == null)
-        {
-            LeagueByIdResponse = await LeagueService.GetLeague(GameModel.Game.LeagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(GameModel.Game.LeagueId.ToString(), LeagueByIdResponse);
-        }
-        AwayTeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString());
-        if (AwayTeamByIdResponse == null)
-        {
-            AwayTeamByIdResponse = await TeamService.GetTeamById(GameModel.Game.AwayTeam.Id);
-            await TeamLocalCache.SetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString(), AwayTeamByIdResponse);
-        }
-        HomeTeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString());
-        if (HomeTeamByIdResponse == null)
-        {
-            HomeTeamByIdResponse = await TeamService.GetTeamById(GameModel.Game.HomeTeam.Id);
-            await TeamLocalCache.SetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString(), HomeTeamByIdResponse);
-        }        
+        LeagueByIdResponse = await DataLoader.GetOrLoad(
+            () => LeagueLocalCache.GetLeagueByIdCache(GameModel.Game.LeagueId.ToString()),
+            () => LeagueService.GetLeague(GameModel.Game.LeagueId),
+            (l) => LeagueLocalCache.SetLeagueByIdCache(GameModel.Game.LeagueId.ToString(), l)
+        );
+
+        AwayTeamByIdResponse = await DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString()),
+            () => TeamService.GetTeamById(GameModel.Game.AwayTeam.Id),
+            (t) => TeamLocalCache.SetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString(), t)
+        );
+
+        HomeTeamByIdResponse = await DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString()),
+            () => TeamService.GetTeamById(GameModel.Game.HomeTeam.Id),
+            (t) => TeamLocalCache.SetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString(), t)
+        );
         var awayTeamKeyPath = $"/{LeagueByIdResponse.League.Sport}/{LeagueByIdResponse.League.Name}/teams/{AwayTeamByIdResponse.Team.TeamName}/{AwayTeamByIdResponse.Team.ImageFile}";
         GameModel.Game.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
 

@@ -130,7 +130,7 @@
         try
         {
             var leagueId = Guid.Parse(Id);
-            TeamsResponse = await GetOrLoad(
+            TeamsResponse = await DataLoader.GetOrLoad(
                 () => TeamLocalCache.GetTeamsByLeagueCache(Id),
                 () => TeamService.GetTeamsByLeague(leagueId),
                 (t) => TeamLocalCache.SetTeamsByLeagueCache(Id, t)
@@ -158,7 +158,7 @@
         string propertyName
     )
     {
-        var games = await GetOrLoad(
+        var games = await DataLoader.GetOrLoad(
             () => GameLocalCache.GetGamesByTeamCache(teamId.ToString()),
             () => GameService.GetGamesByTeam(teamId),
             (g) => GameLocalCache.SetGamesByTeamCache(teamId.ToString(), g)
@@ -168,7 +168,7 @@
 
         if(count >= maxGames)
         {
-            var team = await GetOrLoad(
+            var team = await DataLoader.GetOrLoad(
                 () => TeamLocalCache.GetTeamByIdCache(teamId.ToString()),
                 () => TeamService.GetTeamById(teamId),
                 (t) => TeamLocalCache.SetTeamByIdCache(teamId.ToString(), t)
@@ -186,7 +186,7 @@
         try
         {
             var leagueId = Guid.Parse(Id);
-            LeagueResponse = await GetOrLoad(
+            LeagueResponse = await DataLoader.GetOrLoad(
                 () => LeagueLocalCache.GetLeagueByIdCache(Id),
                 () => LeagueService.GetLeague(leagueId),
                 (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
@@ -289,27 +289,6 @@
         await GameLocalCache.DeleteGamesByLeagueCache(Id);
         await GameLocalCache.DeleteGamesByTeamCache(model.AwayTeamId.ToString());
         await GameLocalCache.DeleteGamesByTeamCache(model.HomeTeamId.ToString());
-    }
-
-    private async Task<T> GetOrLoad<T>(
-        Func<Task<T>> cacheGetter,
-        Func<Task<T>> serviceGetter,
-        Func<T, Task> cacheSetter)
-    {
-        if(await cacheGetter() is T cached)
-            return cached;
-
-        var fresh = await serviceGetter();
-        try
-        {
-            await cacheSetter(fresh);
-        }
-        catch (Exception)
-        {
-            // Cache failures should never block the app
-        }
-
-        return fresh;
     }
 
     private async Task HandleError(Exception ex)

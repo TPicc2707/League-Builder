@@ -1,0 +1,91 @@
+﻿<MudItem Style="padding-top: 25px;">
+    <MudTable Items="@Stats" Hover="true" CanCancelEdit="true"
+              SelectedItem="SelectedItem" SelectedItemChanged="SelectedItemChanged" CommitEditTooltip="Commit Edit" OnCommitEditClick="OnCommit"
+              RowEditPreview="OnBackup" RowEditCancel="OnReset" IsEditRowSwitchingBlocked="true" EditButtonPosition="@EditButtonPosition" EditTrigger="@EditTrigger"
+              Class="border border-solid" Style="border-color: #000000">
+        <ColGroup>
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col style="width:20px;" />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">W</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">L</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">IP</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">BB</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">K</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+            @if (context.Start)
+            {
+                <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
+            }
+            else
+            {
+                <MudTd DataLabel="S"></MudTd>
+            }
+            <MudTd DataLabel="W">@context.Wins</MudTd>
+            <MudTd DataLabel="L">@context.Losses</MudTd>
+            <MudTd DataLabel="IP"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Innings</MudText></MudTd>
+            <MudTd DataLabel="H">@context.HitsAllowed</MudTd>
+            <MudTd DataLabel="R">@context.PitchingRuns</MudTd>
+            <MudTd DataLabel="BB"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.WalksAllowed</MudText></MudTd>
+            <MudTd DataLabel="K">@context.PitchingStrikeouts</MudTd>
+        </RowTemplate>
+        <RowEditingTemplate>
+            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+            <MudTd DataLabel="S">
+                <MudCheckBox @bind-Value="context.Start" Color="Color.Primary"></MudCheckBox>
+            </MudTd>
+            <MudTd DataLabel="W">
+                <MudTextField @bind-Value="context.Wins" Style="font-size: .875rem;" Required />
+            </MudTd>
+            <MudTd DataLabel="L">
+                <MudTextField @bind-Value="context.Losses" Style="font-size: .875rem;" Required />
+            </MudTd>
+            <MudTd DataLabel="IP">
+                <MudTextField @bind-Value="context.Innings" Style="margin-left: 5px; font-size: .875rem;" Required />
+            </MudTd>
+            <MudTd DataLabel="H">
+                <MudTextField @bind-Value="context.HitsAllowed" Style="font-size: .875rem;" Required />
+            </MudTd>
+            <MudTd DataLabel="R">
+                <MudTextField @bind-Value="context.PitchingRuns" Style="font-size: .875rem;" Required />
+            </MudTd>
+            <MudTd DataLabel="BB">
+                <MudTextField @bind-Value="context.WalksAllowed" Style="margin-left: 5px; font-size: .875rem;" Required />
+            </MudTd>
+            <MudTd DataLabel="K">
+                <MudTextField @bind-Value="context.PitchingStrikeouts" Style="font-size: .875rem;" Required />
+            </MudTd>
+        </RowEditingTemplate>
+        <EditButtonContent Context="button">
+            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
+        </EditButtonContent>
+    </MudTable>
+</MudItem>
+
+
+@code {
+    [Parameter] public IEnumerable<BaseballGameStatsModel> Stats { get; set; }
+    [Parameter] public BaseballGameStatsModel SelectedItem { get; set; }
+    [Parameter] public EventCallback<BaseballGameStatsModel> SelectedItemChanged { get; set; }
+    [Parameter] public EventCallback OnCommit { get; set; }
+    [Parameter] public Action<object> OnBackup { get; set; }
+    [Parameter] public Action<object> OnReset { get; set; }
+    [Parameter] public TableEditButtonPosition EditButtonPosition { get; set; }
+    [Parameter] public TableEditTrigger EditTrigger { get; set; }
+
+}

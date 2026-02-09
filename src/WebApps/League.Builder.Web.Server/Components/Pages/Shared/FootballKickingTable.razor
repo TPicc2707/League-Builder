@@ -1,0 +1,45 @@
+﻿<MudItem Style="padding-top: 25px;">
+    <MudTable Items="@Stats" Hover="true" Class="border border-solid" Style="border-color: #000000">
+        <ColGroup>
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FG</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNGK</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPM</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPA</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">PUNTS</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+            <MudTd DataLabel="FG">@context.FieldGoalsMade</MudTd>
+            <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
+            <MudTd DataLabel="LNGK">@context.LongestKick</MudTd>
+            <MudTd DataLabel="XPM">@context.ExtraPointsMade</MudTd>
+            <MudTd DataLabel="XPA">@context.ExtraPointsAttempted</MudTd>
+            <MudTd DataLabel="PTS">@context.Points</MudTd>
+            <MudTd DataLabel="PUNTS">@context.Punts</MudTd>
+            <MudTd DataLabel="YDS">@context.PuntingYards</MudTd>
+            <MudTd DataLabel="LNG">@context.LongestPunt</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudItem>
+
+
+@code {
+    [Parameter] public IEnumerable<FootballGameStatsModel> Stats { get; set; }
+
+}

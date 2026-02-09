@@ -137,114 +137,41 @@
         {
             var gameId = Guid.Parse(Id);
 
-            GameModel = await GameLocalCache.GetGameByIdCache(Id) 
-                        ?? await GameService.GetGameById(gameId);
+            GameModel = await DataLoader.GetOrLoad(
+                () => GameLocalCache.GetGameByIdCache(Id),
+                () => GameService.GetGameById(gameId),
+                (g) => GameLocalCache.SetGameByIdCache(Id, g)
+            );
 
-            if (GameModel is not null)
-                await GameLocalCache.SetGameByIdCache(Id, GameModel);
+            AwayPlayersModel = await DataLoader.GetOrLoad(
+                () => PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString()),
+                () => PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id),
+                (p) => PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), p)
+            );
 
-            AwayPlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString())
-                               ?? await PlayerService.GetPlayersByTeam(GameModel.Game.AwayTeam.Id);
+            HomePlayersModel = await DataLoader.GetOrLoad(
+                () => PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString()),
+                () => PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id),
+                (p) => PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), p)
+            );
 
-            if (AwayPlayersModel is not null)
-                await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), AwayPlayersModel);
+            AwayPlayerStatsModel = await DataLoader.GetOrLoad(
+                () => StatsLocalCache.GetBaseballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString()),
+                () => StatsService.GetBaseballStatsByTeam(GameModel.Game.AwayTeam.Id),
+                (p) => StatsLocalCache.SetBaseballStatsByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), p)
+            );
 
-            HomePlayersModel = await PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString())
-                               ?? await PlayerService.GetPlayersByTeam(GameModel.Game.HomeTeam.Id);
-            if (HomePlayersModel is not null)
-                await PlayerLocalCache.SetPlayersByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayersModel);
-
-            AwayPlayerStatsModel = await StatsService.GetBaseballStatsByTeam(GameModel.Game.AwayTeam.Id)
-                                   ?? await StatsService.GetBaseballStatsByTeam(GameModel.Game.AwayTeam.Id);
-            if (AwayPlayerStatsModel is not null)
-                await StatsLocalCache.SetBaseballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), AwayPlayerStatsModel);
-
-            HomePlayerStatsModel = await StatsLocalCache.GetBaseballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString())
-                                    ?? await StatsService.GetBaseballStatsByTeam(GameModel.Game.HomeTeam.Id);
-            if (HomePlayerStatsModel is not null)
-                await StatsLocalCache.SetBaseballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), HomePlayerStatsModel);
+            AwayPlayerStatsModel = await DataLoader.GetOrLoad(
+                () => StatsLocalCache.GetBaseballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString()),
+                () => StatsService.GetBaseballStatsByTeam(GameModel.Game.HomeTeam.Id),
+                (p) => StatsLocalCache.SetBaseballStatsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), p)
+            );
 
             await GetImageAsync();
 
-            foreach (var player in AwayPlayersModel.Players)
-            {
-                var playerStat = AwayPlayerStatsModel.BaseballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
-                if (playerStat is not null)
-                {
-                    Model.Add(new BaseballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName, player.PlayerDetail.Position,
-                                                        playerStat.HittingStats.AtBats, playerStat.HittingStats.Hits, playerStat.HittingStats.TotalBases, playerStat.HittingStats.Runs, playerStat.HittingStats.Doubles,
-                                                        playerStat.HittingStats.Triples, playerStat.HittingStats.HomeRuns, playerStat.HittingStats.RunsBattedIn, playerStat.HittingStats.StolenBases,
-                                                        playerStat.HittingStats.Strikeouts, playerStat.HittingStats.Walks, playerStat.HittingStats.HitByPitch, playerStat.HittingStats.SacrificeFly, playerStat.PitchingStats.Wins, playerStat.PitchingStats.Losses, playerStat.PitchingStats.Runs,
-                                                        playerStat.PitchingStats.Start, playerStat.PitchingStats.Saves, playerStat.PitchingStats.Innings, playerStat.PitchingStats.HitsAllowed, playerStat.PitchingStats.WalksAllowed,
-                                                        playerStat.PitchingStats.PitchingStrikeouts));
+            ProcessTeamStats(AwayPlayersModel.Players, AwayPlayerStatsModel, true);
+            ProcessTeamStats(HomePlayersModel.Players, HomePlayerStatsModel, false);
 
-                    AwayHit.AtBats += playerStat.HittingStats.AtBats;
-                    AwayHit.Hits += playerStat.HittingStats.Hits;
-                    AwayHit.TotalBases += playerStat.HittingStats.TotalBases;
-                    AwayHit.Runs += playerStat.HittingStats.Runs;
-                    AwayHit.Doubles += playerStat.HittingStats.Doubles;
-                    AwayHit.Triples += playerStat.HittingStats.Triples;
-                    AwayHit.HomeRuns += playerStat.HittingStats.HomeRuns;
-                    AwayHit.RBIs += playerStat.HittingStats.RunsBattedIn;
-                    AwayHit.SBs += playerStat.HittingStats.StolenBases;
-                    AwayHit.Walks += playerStat.HittingStats.Walks;
-                    AwayHit.HBPs += playerStat.HittingStats.HitByPitch;
-                    AwayHit.SFs += playerStat.HittingStats.SacrificeFly;
-                    AwayHit.Strikeouts += playerStat.HittingStats.Strikeouts;
-
-                    AwayPitch.Wins += playerStat.PitchingStats.Wins;
-                    AwayPitch.Losses += playerStat.PitchingStats.Losses;
-                    AwayPitch.Runs += playerStat.PitchingStats.Runs;
-                    AwayPitch.Saves += playerStat.PitchingStats.Saves;
-                    AwayPitch.Innings += playerStat.PitchingStats.Innings;
-                    AwayPitch.HitsAllowed += playerStat.PitchingStats.HitsAllowed;
-                    AwayPitch.WalksAllowed += playerStat.PitchingStats.WalksAllowed;
-                    AwayPitch.Strikeouts += playerStat.PitchingStats.PitchingStrikeouts;
-
-                }
-                else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                    Model.Add(new BaseballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName, player.PlayerDetail.Position));
-            }
-            foreach (var player in HomePlayersModel.Players)
-            {
-                var playerStat = HomePlayerStatsModel.BaseballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
-                if (playerStat is not null)
-                {
-                    Model.Add(new BaseballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName, player.PlayerDetail.Position,
-                                            playerStat.HittingStats.AtBats, playerStat.HittingStats.Hits, playerStat.HittingStats.TotalBases, playerStat.HittingStats.Runs, playerStat.HittingStats.Doubles,
-                                            playerStat.HittingStats.Triples, playerStat.HittingStats.HomeRuns, playerStat.HittingStats.RunsBattedIn, playerStat.HittingStats.StolenBases,
-                                            playerStat.HittingStats.Strikeouts, playerStat.HittingStats.Walks, playerStat.HittingStats.HitByPitch, playerStat.HittingStats.SacrificeFly, playerStat.PitchingStats.Wins, playerStat.PitchingStats.Losses, playerStat.PitchingStats.Runs,
-                                            playerStat.PitchingStats.Start, playerStat.PitchingStats.Saves, playerStat.PitchingStats.Innings, playerStat.PitchingStats.HitsAllowed, playerStat.PitchingStats.WalksAllowed,
-                                            playerStat.PitchingStats.PitchingStrikeouts));
-
-                    HomeHit.AtBats += playerStat.HittingStats.AtBats;
-                    HomeHit.Hits += playerStat.HittingStats.Hits;
-                    HomeHit.TotalBases += playerStat.HittingStats.TotalBases;
-                    HomeHit.Runs += playerStat.HittingStats.Runs;
-                    HomeHit.Doubles += playerStat.HittingStats.Doubles;
-                    HomeHit.Triples += playerStat.HittingStats.Triples;
-                    HomeHit.HomeRuns += playerStat.HittingStats.HomeRuns;
-                    HomeHit.RBIs += playerStat.HittingStats.RunsBattedIn;
-                    HomeHit.SBs += playerStat.HittingStats.StolenBases;
-                    HomeHit.Walks += playerStat.HittingStats.Walks;
-                    HomeHit.HBPs += playerStat.HittingStats.HitByPitch;
-                    HomeHit.SFs += playerStat.HittingStats.SacrificeFly;
-                    HomeHit.Strikeouts += playerStat.HittingStats.Strikeouts;
-
-                    HomePitch.Wins += playerStat.PitchingStats.Wins;
-                    HomePitch.Losses += playerStat.PitchingStats.Losses;
-                    HomePitch.Runs += playerStat.PitchingStats.Runs;
-                    HomePitch.Saves += playerStat.PitchingStats.Saves;
-                    HomePitch.Innings += playerStat.PitchingStats.Innings;
-                    HomePitch.HitsAllowed += playerStat.PitchingStats.HitsAllowed;
-                    HomePitch.WalksAllowed += playerStat.PitchingStats.WalksAllowed;
-                    HomePitch.Strikeouts += playerStat.PitchingStats.PitchingStrikeouts;
-
-
-                }
-                else if (GameModel.Game.GameStatus == GameStatus.Completed)
-                    Model.Add(new BaseballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName, player.PlayerDetail.Position));
-            }
             PageLoad = true;
         }
         catch (Exception ex)
@@ -259,26 +186,109 @@
         }
     }
 
+    private void ProcessTeamStats(IEnumerable<PlayerModel> players,
+        GetBaseballStatsByTeamResponse stats,
+        bool isAway)
+    {
+        foreach (var player in players)
+        {
+            var playerStat = stats.BaseballStats.FirstOrDefault(x => x.PlayerId == player.Id && x.GameId == GameModel.Game.Id);
+            if (playerStat is not null)
+            {
+                AddPlayerStats(player, playerStat);
+                AccumulateTotals(playerStat, isAway);
+            }
+            else if (GameModel.Game.GameStatus == GameStatus.Completed)
+                Model.Add(new BaseballGameStatsModel(GameModel.Game.LeagueId, player.TeamId, player.Id, GameModel.Game.SeasonId, GameModel.Game.Id, player.FirstName, player.LastName, player.PlayerDetail.Position));
+        }
+    }
+
+    private void AddPlayerStats(
+    PlayerModel player,
+    Models.Stats.Baseball.BaseballStatsModel playerStat
+   )
+    {
+        Model.Add(new BaseballGameStatsModel(
+            GameModel.Game.LeagueId,
+            player.TeamId,
+            player.Id,
+            GameModel.Game.SeasonId,
+            GameModel.Game.Id,
+            player.FirstName,
+            player.LastName,
+            player.PlayerDetail.Position,
+            playerStat.HittingStats.AtBats,
+            playerStat.HittingStats.Hits,
+            playerStat.HittingStats.TotalBases,
+            playerStat.HittingStats.Runs,
+            playerStat.HittingStats.Doubles,
+            playerStat.HittingStats.Triples,
+            playerStat.HittingStats.HomeRuns,
+            playerStat.HittingStats.RunsBattedIn,
+            playerStat.HittingStats.StolenBases,
+            playerStat.HittingStats.Strikeouts,
+            playerStat.HittingStats.Walks,
+            playerStat.HittingStats.HitByPitch,
+            playerStat.HittingStats.SacrificeFly,
+            playerStat.PitchingStats.Wins,
+            playerStat.PitchingStats.Losses,
+            playerStat.PitchingStats.Runs,
+            playerStat.PitchingStats.Start,
+            playerStat.PitchingStats.Saves,
+            playerStat.PitchingStats.Innings,
+            playerStat.PitchingStats.HitsAllowed,
+            playerStat.PitchingStats.WalksAllowed,
+            playerStat.PitchingStats.PitchingStrikeouts));
+    }
+
+    private void AccumulateTotals(Models.Stats.Baseball.BaseballStatsModel playerStat, bool isAway)
+    {
+        var hit = isAway ? AwayHit : HomeHit;
+        var pitch = isAway ? AwayPitch : HomePitch;
+
+        hit.AtBats += playerStat.HittingStats.AtBats;
+        hit.Hits += playerStat.HittingStats.Hits;
+        hit.TotalBases += playerStat.HittingStats.TotalBases;
+        hit.Runs += playerStat.HittingStats.Runs;
+        hit.Doubles += playerStat.HittingStats.Doubles;
+        hit.Triples += playerStat.HittingStats.Triples;
+        hit.HomeRuns += playerStat.HittingStats.HomeRuns;
+        hit.RBIs += playerStat.HittingStats.RunsBattedIn;
+        hit.SBs += playerStat.HittingStats.StolenBases;
+        hit.Walks += playerStat.HittingStats.Walks;
+        hit.HBPs += playerStat.HittingStats.HitByPitch;
+        hit.SFs += playerStat.HittingStats.SacrificeFly;
+        hit.Strikeouts += playerStat.HittingStats.Strikeouts;
+
+        pitch.Wins += playerStat.PitchingStats.Wins;
+        pitch.Losses += playerStat.PitchingStats.Losses;
+        pitch.Runs += playerStat.PitchingStats.Runs;
+        pitch.Saves += playerStat.PitchingStats.Saves;
+        pitch.Innings = DataLoader.AddInnings(pitch.Innings, playerStat.PitchingStats.Innings);
+        pitch.HitsAllowed += playerStat.PitchingStats.HitsAllowed;
+        pitch.WalksAllowed += playerStat.PitchingStats.WalksAllowed;
+        pitch.Strikeouts += playerStat.PitchingStats.PitchingStrikeouts;
+    }
+
     private async Task GetImageAsync()
     {
-        LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(GameModel.Game.LeagueId.ToString());
-        if(LeagueByIdResponse == null)
-        {
-            LeagueByIdResponse = await LeagueService.GetLeague(GameModel.Game.LeagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(GameModel.Game.LeagueId.ToString(), LeagueByIdResponse);
-        }
-        AwayTeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString());
-        if (AwayTeamByIdResponse == null)
-        {
-            AwayTeamByIdResponse = await TeamService.GetTeamById(GameModel.Game.AwayTeam.Id);
-            await TeamLocalCache.SetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString(), AwayTeamByIdResponse);
-        }
-        HomeTeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString());
-        if (HomeTeamByIdResponse == null)
-        {
-            HomeTeamByIdResponse = await TeamService.GetTeamById(GameModel.Game.HomeTeam.Id);
-            await TeamLocalCache.SetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString(), HomeTeamByIdResponse);
-        }
+        LeagueByIdResponse = await DataLoader.GetOrLoad(
+            () => LeagueLocalCache.GetLeagueByIdCache(GameModel.Game.LeagueId.ToString()),
+            () => LeagueService.GetLeague(GameModel.Game.LeagueId),
+            (l) => LeagueLocalCache.SetLeagueByIdCache(GameModel.Game.LeagueId.ToString(), l)
+        );
+
+        AwayTeamByIdResponse = await DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString()),
+            () => TeamService.GetTeamById(GameModel.Game.AwayTeam.Id),
+            (t) => TeamLocalCache.SetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString(), t)
+        );
+        
+        HomeTeamByIdResponse = await DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString()),
+            () => TeamService.GetTeamById(GameModel.Game.HomeTeam.Id),
+            (t) => TeamLocalCache.SetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString(), t)
+        );
         var awayTeamKeyPath = $"/{LeagueByIdResponse.League.Sport}/{LeagueByIdResponse.League.Name}/teams/{AwayTeamByIdResponse.Team.TeamName}/{AwayTeamByIdResponse.Team.ImageFile}";
         GameModel.Game.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
 
