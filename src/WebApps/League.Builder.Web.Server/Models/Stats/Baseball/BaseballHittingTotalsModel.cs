@@ -16,5 +16,4 @@ public class BaseballHittingTotalsModel
     public int HomeRuns { get; set; }
     public int SFs { get; set; }
 
-
 }

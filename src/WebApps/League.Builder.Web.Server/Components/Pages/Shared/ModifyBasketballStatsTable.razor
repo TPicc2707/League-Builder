@@ -1,0 +1,131 @@
+﻿<MudItem Style="padding-top: 25px;">
+    <MudTable Items="@Stats" Hover="true" CanCancelEdit="true"
+              SelectedItem="SelectedItem" SelectedItemChanged="SelectedItemChanged" CommitEditTooltip="Commit Edit" OnCommitEditClick="OnCommit"
+              RowEditPreview="OnBackup" RowEditCancel="OnReset" IsEditRowSwitchingBlocked="true" EditButtonPosition="@EditButtonPosition" EditTrigger="@EditTrigger"
+              Class="border border-solid" Style="border-color: #000000">
+        <ColGroup>
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">MIN</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">REB</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">AST</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">BLK</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">STL</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TO</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGM</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PM</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">3PA</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTM</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FTA</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FOUL</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+            @if (context.Start)
+            {
+                <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
+            }
+            else
+            {
+                <MudTd DataLabel="S"></MudTd>
+            }
+            <MudTd DataLabel="MIN">@context.Minutes</MudTd>
+            <MudTd DataLabel="PTS">@context.Points</MudTd>
+            <MudTd DataLabel="REB">@context.Rebounds</MudTd>
+            <MudTd DataLabel="AST">@context.Assists</MudTd>
+            <MudTd DataLabel="BLK">@context.Blocks</MudTd>
+            <MudTd DataLabel="STL">@context.Steals</MudTd>
+            <MudTd DataLabel="TO">@context.Turnovers</MudTd>
+            <MudTd DataLabel="FGM">@context.FieldGoalsMade</MudTd>
+            <MudTd DataLabel="FGA">@context.FieldGoalsAttempted</MudTd>
+            <MudTd DataLabel="3PM">@context.ThreePointersMade</MudTd>
+            <MudTd DataLabel="3PA">@context.ThreePointersAttempted</MudTd>
+            <MudTd DataLabel="FTM">@context.FreeThrowsMade</MudTd>
+            <MudTd DataLabel="FTA">@context.FreeThrowsAttempted</MudTd>
+            <MudTd DataLabel="FOUL">@context.Fouls</MudTd>
+        </RowTemplate>
+        <RowEditingTemplate>
+            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+            <MudTd DataLabel="S">
+                <MudCheckBox @bind-Value="context.Start" Color="Color.Primary"></MudCheckBox>
+            </MudTd>
+            <MudTd DataLabel="MIN">
+                <MudTextField @bind-Value="context.Minutes" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="PTS">
+                <MudTextField @bind-Value="context.Points" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="REB">
+                <MudTextField @bind-Value="context.Rebounds" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="AST">
+                <MudTextField @bind-Value="context.Assists" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="BLK">
+                <MudTextField @bind-Value="context.Blocks" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="STL">
+                <MudTextField @bind-Value="context.Steals" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="TO">
+                <MudTextField @bind-Value="context.Turnovers" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="FGM">
+                <MudTextField @bind-Value="context.FieldGoalsMade" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="FGA">
+                <MudTextField @bind-Value="context.FieldGoalsAttempted" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="3PM">
+                <MudTextField @bind-Value="context.ThreePointersMade" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="3PA">
+                <MudTextField @bind-Value="context.ThreePointersAttempted" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="FTM">
+                <MudTextField @bind-Value="context.FreeThrowsMade" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="FTA">
+                <MudTextField @bind-Value="context.FreeThrowsAttempted" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="FOUL">
+                <MudTextField @bind-Value="context.Fouls" Style="font-size: 12px;" Required />
+            </MudTd>
+        </RowEditingTemplate>
+        <EditButtonContent Context="button">
+            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
+        </EditButtonContent>
+    </MudTable>
+</MudItem>
+
+
+@code {
+    [Parameter] public IEnumerable<BasketballGameStatsModel> Stats { get; set; }
+    [Parameter] public BasketballGameStatsModel SelectedItem { get; set; }
+    [Parameter] public EventCallback<BasketballGameStatsModel> SelectedItemChanged { get; set; }
+    [Parameter] public EventCallback OnCommit { get; set; }
+    [Parameter] public Action<object> OnBackup { get; set; }
+    [Parameter] public Action<object> OnReset { get; set; }
+    [Parameter] public TableEditButtonPosition EditButtonPosition { get; set; }
+    [Parameter] public TableEditTrigger EditTrigger { get; set; }
+}

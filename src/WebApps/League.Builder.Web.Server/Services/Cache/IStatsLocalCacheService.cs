@@ -8,6 +8,7 @@ public interface IStatsLocalCacheService
     Task<GetBaseballStatsByPlayerResponse> GetBaseballStatsByPlayerCache(string playerId);
     Task<GetBaseballStatsByTeamResponse> GetBaseballStatsByTeamCache(string teamId);
     Task<GetBasketballStatsByPlayerResponse> GetBasketballStatsByPlayerCache(string playerId);
+    Task<GetFootballStatsByPlayerResponse> GetFootballStatsByPlayerCache(string playerId);
     Task<GetBasketballStatsByTeamResponse> GetBasketballStatsByTeamCache(string teamId);
     Task<GetFootballStatsByTeamResponse> GetFootballStatsByTeamCache(string teamId);
     Task<GetPlayerBaseballStatsBySeasonResponse> GetPlayerBaseballStatsBySeasonCache(string playerId, string seasonId);
@@ -19,6 +20,7 @@ public interface IStatsLocalCacheService
     Task SetBaseballStatsByPlayerCache(string playerId, GetBaseballStatsByPlayerResponse baseballStatsByPlayerResponse);
     Task SetBaseballStatsByTeamCache(string teamId, GetBaseballStatsByTeamResponse baseballStatsByTeamResponse);
     Task SetBasketballStatsByPlayerCache(string playerId, GetBasketballStatsByPlayerResponse basketballStatsByPlayerResponse);
+    Task SetFootballStatsByPlayerCache(string playerId, GetFootballStatsByPlayerResponse footballStatsByPlayerResponse);
     Task SetBasketballStatsByTeamCache(string teamId, GetBasketballStatsByTeamResponse basketballStatsByTeamResponse);
     Task SetFootballStatsByTeamCache(string teamId, GetFootballStatsByTeamResponse footballStatsByTeamResponse);
     Task SetPlayerBaseballStatsBySeasonCache(string playerId, string seasonId, GetPlayerBaseballStatsBySeasonResponse playerBaseballStatsBySeasonResponse);

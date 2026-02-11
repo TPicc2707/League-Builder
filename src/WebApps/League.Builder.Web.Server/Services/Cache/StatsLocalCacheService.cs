@@ -82,6 +82,16 @@ public class StatsLocalCacheService : IStatsLocalCacheService
         return null;
     }
 
+    public async Task<GetFootballStatsByPlayerResponse> GetFootballStatsByPlayerCache(string playerId)
+    {
+        string? statsCache = await _cache.GetStringAsync($"GetFootballStatsByPlayer: {playerId}");
+
+        if (statsCache is not null)
+            return JsonSerializer.Deserialize<GetFootballStatsByPlayerResponse>(statsCache);
+
+        return null;
+    }
+
     public async Task<GetFootballStatsByTeamResponse> GetFootballStatsByTeamCache(string teamId)
     {
         string? statsCache = await _cache.GetStringAsync($"FootballStatsByTeam: {teamId}");
@@ -162,6 +172,12 @@ public class StatsLocalCacheService : IStatsLocalCacheService
     {
         string serializedStats = JsonSerializer.Serialize(basketballStatsByTeamResponse);
         await _cache.SetStringAsync($"BasketballStatsByTeam: {teamId}", serializedStats, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+    }
+
+    public async Task SetFootballStatsByPlayerCache(string playerId, GetFootballStatsByPlayerResponse footballStatsByPlayerResponse)
+    {
+        string serializedStats = JsonSerializer.Serialize(footballStatsByPlayerResponse);
+        await _cache.SetStringAsync($"GetFootballStatsByPlayer: {playerId}", serializedStats, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
     public async Task SetFootballStatsByTeamCache(string teamId, GetFootballStatsByTeamResponse footballStatsByTeamResponse)

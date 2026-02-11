@@ -1,0 +1,75 @@
+﻿<MudItem Style="padding-top: 25px;">
+    <MudTable Items="@Stats" Hover="true" CanCancelEdit="true"
+              SelectedItem="SelectedItem" SelectedItemChanged="SelectedItemChanged" CommitEditTooltip="Commit Edit" OnCommitEditClick="OnCommit"
+              RowEditPreview="OnBackup" RowEditCancel="OnReset" IsEditRowSwitchingBlocked="true" EditButtonPosition="@EditButtonPosition" EditTrigger="@EditTrigger"
+              Class="border border-solid" Style="border-color: #000000">
+        <ColGroup>
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">REC</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TGTS</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YAC</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">FUM</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LST</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+            <MudTd DataLabel="Receptions">@context.Receptions</MudTd>
+            <MudTd DataLabel="Targets">@context.Targets</MudTd>
+            <MudTd DataLabel="Yards">@context.ReceivingYards</MudTd>
+            <MudTd DataLabel="Touchdowns">@context.ReceivingTouchdowns</MudTd>
+            <MudTd DataLabel="Yards After Catch">@context.YardsAfterCatch</MudTd>
+            <MudTd DataLabel="Fumbles">@context.ReceivingFumbles</MudTd>
+            <MudTd DataLabel="Fumbles Lost">@context.ReceivingFumblesLost</MudTd>
+        </RowTemplate>
+        <RowEditingTemplate>
+            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+            <MudTd DataLabel="Receptions">
+                <MudTextField @bind-Value="context.Receptions" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Targets">
+                <MudTextField @bind-Value="context.Targets" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Yards">
+                <MudTextField @bind-Value="context.ReceivingYards" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Touchdowns">
+                <MudTextField @bind-Value="context.ReceivingTouchdowns" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Yards After Catch">
+                <MudTextField @bind-Value="context.YardsAfterCatch" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Fumbles">
+                <MudTextField @bind-Value="context.ReceivingFumbles" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Fumbles Lost">
+                <MudTextField @bind-Value="context.ReceivingFumblesLost" Style="font-size: 12px;" Required />
+            </MudTd>
+        </RowEditingTemplate>
+        <EditButtonContent Context="button">
+            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
+        </EditButtonContent>
+    </MudTable>
+</MudItem>
+
+@code {
+    [Parameter] public IEnumerable<FootballGameStatsModel> Stats { get; set; }
+    [Parameter] public FootballGameStatsModel SelectedItem { get; set; }
+    [Parameter] public EventCallback<FootballGameStatsModel> SelectedItemChanged { get; set; }
+    [Parameter] public EventCallback OnCommit { get; set; }
+    [Parameter] public Action<object> OnBackup { get; set; }
+    [Parameter] public Action<object> OnReset { get; set; }
+    [Parameter] public TableEditButtonPosition EditButtonPosition { get; set; }
+    [Parameter] public TableEditTrigger EditTrigger { get; set; }
+}

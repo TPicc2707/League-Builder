@@ -9,6 +9,7 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
+@inject ImageService ImageService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IGameLocalCacheService GameLocalCache
 @inject IPlayerLocalCacheService PlayerLocalCache
@@ -277,11 +278,8 @@
             () => TeamService.GetTeamById(GameModel.Game.HomeTeam.Id),
             (t) => TeamLocalCache.SetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString(), t)
         );
-        var awayTeamKeyPath = $"/{LeagueByIdResponse.League.Sport}/{LeagueByIdResponse.League.Name}/teams/{AwayTeamByIdResponse.Team.TeamName}/{AwayTeamByIdResponse.Team.ImageFile}";
-        GameModel.Game.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
-
-        var homeTeamKeyPath = $"/{LeagueByIdResponse.League.Sport}/{LeagueByIdResponse.League.Name}/teams/{HomeTeamByIdResponse.Team.TeamName}/{HomeTeamByIdResponse.Team.ImageFile}";
-        GameModel.Game.HomeTeamImage = await AWSService.GetImage(homeTeamKeyPath);
+        GameModel.Game.AwayTeamImage = await ImageService.GetTeamImageAsync(LeagueByIdResponse.League, AwayTeamByIdResponse.Team);
+        GameModel.Game.HomeTeamImage = await ImageService.GetTeamImageAsync(LeagueByIdResponse.League, HomeTeamByIdResponse.Team);
     }
 
     private void ProcessTeamStats(

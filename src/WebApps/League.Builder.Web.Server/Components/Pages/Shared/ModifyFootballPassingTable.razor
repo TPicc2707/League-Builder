@@ -1,0 +1,77 @@
+﻿<MudItem Style="padding-top: 25px;">
+    <MudTable Items="@Stats" Hover="true" CanCancelEdit="true"
+              SelectedItem="SelectedItem" SelectedItemChanged="SelectedItemChanged" CommitEditTooltip="Commit Edit" OnCommitEditClick="OnCommit"
+              RowEditPreview="OnBackup" RowEditCancel="OnReset" IsEditRowSwitchingBlocked="true" EditButtonPosition="@EditButtonPosition" EditTrigger="@EditTrigger"
+              Class="border border-solid" Style="border-color: #000000">
+        <ColGroup>
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+        </ColGroup>
+        <HeaderContent>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+            <MudTd DataLabel="Completions">@context.PassingCompletions</MudTd>
+            <MudTd DataLabel="Attempts">@context.PassingAttempts</MudTd>
+            <MudTd DataLabel="Yards">@context.PassingYards</MudTd>
+            <MudTd DataLabel="Touchdowns">@context.PassingTouchdowns</MudTd>
+            <MudTd DataLabel="Interceptions">@context.PassingInterceptions</MudTd>
+            <MudTd DataLabel="Longest">@context.LongestPassingPlay</MudTd>
+            <MudTd DataLabel="Sacks">@context.Sacks</MudTd>
+        </RowTemplate>
+        <RowEditingTemplate>
+            <MudTd DataLabel="Name" Style="font-size: 12px;">@context.PlayerName</MudTd>
+            <MudTd DataLabel="Completions">
+                <MudTextField @bind-Value="context.PassingCompletions" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Attempts">
+                <MudTextField @bind-Value="context.PassingAttempts" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Yards">
+                <MudTextField @bind-Value="context.PassingYards" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Touchdowns">
+                <MudTextField @bind-Value="context.PassingTouchdowns" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Interceptions">
+                <MudTextField @bind-Value="context.PassingInterceptions" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Longest">
+                <MudTextField @bind-Value="context.LongestPassingPlay" Style="font-size: 12px;" Required />
+            </MudTd>
+            <MudTd DataLabel="Sacks">
+                <MudTextField @bind-Value="context.Sacks" Style="font-size: 12px;" Required />
+            </MudTd>
+        </RowEditingTemplate>
+        <EditButtonContent Context="button">
+            <MudIconButton Size="@Size.Small" Color="@Color.Dark" Icon="@Icons.Material.Outlined.Edit" Class="pa-0" OnClick="@button.ButtonAction" />
+        </EditButtonContent>
+    </MudTable>
+</MudItem>
+
+
+@code {
+    [Parameter] public IEnumerable<FootballGameStatsModel> Stats { get; set; }
+    [Parameter] public FootballGameStatsModel SelectedItem { get; set; }
+    [Parameter] public EventCallback<FootballGameStatsModel> SelectedItemChanged { get; set; }
+    [Parameter] public EventCallback OnCommit { get; set; }
+    [Parameter] public Action<object> OnBackup { get; set; }
+    [Parameter] public Action<object> OnReset { get; set; }
+    [Parameter] public TableEditButtonPosition EditButtonPosition { get; set; }
+    [Parameter] public TableEditTrigger EditTrigger { get; set; }
+
+}

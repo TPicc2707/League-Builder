@@ -1,4 +1,5 @@
 using League.Builder.Web.Server.Common;
+using League.Builder.Web.Server.Services.Submissions;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 
@@ -54,6 +55,8 @@ builder.AddRedisDistributedCache("cache");
 
 builder.Services.AddScoped<KeycloakTokenService>();
 builder.Services.AddScoped<ErrorState>();
+builder.Services.AddScoped<ImageService>();
+builder.Services.AddScoped<StatsSubmissionService>();
 builder.Services.AddScoped<IAWSService, AWSService>();
 builder.Services.AddScoped<ISupportService, SupportService>();
 builder.Services.AddScoped<ILeagueLocalCacheService, LeagueLocalCacheService>();

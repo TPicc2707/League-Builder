@@ -5,6 +5,8 @@
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject IPlayerService PlayerService
+@inject StatsSubmissionService StatsSubmissionService
+@inject ImageService ImageService
 @inject IAWSService AWSService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
@@ -301,76 +303,31 @@
 
     private void BackupHittingItem(object stats)
     {
-        hittingStatBeforeEdit = Clone((BaseballGameStatsModel)stats);
+        hittingStatBeforeEdit = DataLoader.Clone((BaseballGameStatsModel)stats);
     }
 
     private void BackupPitchingItem(object stats)
     {
-        pitchingStatBeforeEdit = Clone((BaseballGameStatsModel)stats);
+        pitchingStatBeforeEdit = DataLoader.Clone((BaseballGameStatsModel)stats);
     }
 
     private void ResetHittingItemToOriginalValues(object stats)
     {
-        Reset((BaseballGameStatsModel)stats, hittingStatBeforeEdit);
+        DataLoader.Reset((BaseballGameStatsModel)stats, hittingStatBeforeEdit);
     }
 
     private void ResetPitchingItemToOriginalValues(object stats)
     {
-        Reset((BaseballGameStatsModel)stats, pitchingStatBeforeEdit);
+        DataLoader.Reset((BaseballGameStatsModel)stats, pitchingStatBeforeEdit);
     }
 
-    private T Clone<T>(T source)
-    {
-        return System.Text.Json.JsonSerializer.Deserialize<T>(System.Text.Json.JsonSerializer.Serialize(source));
-    }
-
-    private void Reset<T>(T target, T backup)
-    {
-        var restored = Clone(backup);
-        foreach (var prop in typeof(T).GetProperties())
-            prop.SetValue(target, prop.GetValue(restored));
-    }
 
     private async Task SubmitHittingStats()
     {
         try
         {
-            if (hittingStatSelectedItem is null)
-                return;
-
-            var form = Model.FirstOrDefault(x => x.PlayerId == hittingStatSelectedItem.PlayerId);
-
-            PlayerStatsModel = await DataLoader.GetOrLoad(
-                () => StatsLocalCache.GetBaseballStatsByPlayerCache(hittingStatSelectedItem.PlayerId.ToString()),
-                () => StatsService.GetBaseballStatsByPlayer(hittingStatSelectedItem.PlayerId),
-                (p) => StatsLocalCache.SetBaseballStatsByPlayerCache(hittingStatSelectedItem.PlayerId.ToString(), p)
-            );
-
-            var existing = PlayerStatsModel.BaseballStats.FirstOrDefault(x => x.GameId == hittingStatSelectedItem.GameId);
-
-            if (existing is not null)
-            {
-                var update = new UpdateBaseballStatsModel(existing.Id, hittingStatSelectedItem.LeagueId, hittingStatSelectedItem.TeamId,
-                                                                                            hittingStatSelectedItem.PlayerId, hittingStatSelectedItem.SeasonId,
-                                                                                            hittingStatSelectedItem.GameId, BuildHittingUpdate(hittingStatSelectedItem), BuildPitchingUpdate(form));
-
-                await StatsService.UpdateBaseballStats(new(update));
-                await InvalidateBaseballCaches(form);
-
-                ApplyHittingTotalsDelta(hittingStatSelectedItem, existing);
-            }
-            else
-            {                                                                                                       
-                var create = new CreateBaseballStatsModel(hittingStatSelectedItem.LeagueId, hittingStatSelectedItem.TeamId,
-                                                                                            hittingStatSelectedItem.PlayerId, hittingStatSelectedItem.SeasonId,
-                                                                                            hittingStatSelectedItem.GameId, BuildHittingCreate(hittingStatSelectedItem), BuildPitchingCreate(form));
-
-                await StatsService.CreateBaseballStats(new(create));
-                ApplyHittingTotalsDelta(hittingStatSelectedItem, DataLoader.CreateZeroBaseballStats());
-
-            }
-
-            await InvalidateBaseballCaches(form);
+            await StatsSubmissionService.BaseballHittingSubmitAsync(hittingStatSelectedItem,
+            Model, GameModel.Game, ApplyHittingTotalsDelta);
             Snackbar.Add("Players Hitting Stats have been saved.", MudBlazor.Severity.Success);
             StateHasChanged();
 
@@ -385,41 +342,8 @@
     {
         try
         {
-
-            if (pitchingStatSelectedItem is null)
-                return;
-
-            var form = Model.FirstOrDefault(x => x.PlayerId == pitchingStatSelectedItem.PlayerId);
-
-            PlayerStatsModel = await DataLoader.GetOrLoad(
-                () => StatsLocalCache.GetBaseballStatsByPlayerCache(pitchingStatSelectedItem.PlayerId.ToString()),
-                () => StatsService.GetBaseballStatsByPlayer(pitchingStatSelectedItem.PlayerId),
-                (p) => StatsLocalCache.SetBaseballStatsByPlayerCache(pitchingStatSelectedItem.PlayerId.ToString(), p)
-            );
-
-            var existing = PlayerStatsModel.BaseballStats.FirstOrDefault(x => x.GameId == pitchingStatSelectedItem.GameId);
-
-            if (existing is not null)
-            {
-
-                var update = new UpdateBaseballStatsModel(existing.Id, pitchingStatSelectedItem.LeagueId, pitchingStatSelectedItem.TeamId,
-                                                                                            pitchingStatSelectedItem.PlayerId, pitchingStatSelectedItem.SeasonId,
-                                                                                            pitchingStatSelectedItem.GameId, BuildHittingUpdate(form), BuildPitchingUpdate(pitchingStatSelectedItem));
-
-                await StatsService.UpdateBaseballStats(new(update));
-                ApplyPitchingTotalsDelta(pitchingStatSelectedItem, existing);
-            }
-            else
-            {
-                var create = new CreateBaseballStatsModel(pitchingStatSelectedItem.LeagueId, pitchingStatSelectedItem.TeamId,
-                                                                                            pitchingStatSelectedItem.PlayerId, pitchingStatSelectedItem.SeasonId,
-                                                                                            pitchingStatSelectedItem.GameId, BuildHittingCreate(form), BuildPitchingCreate(pitchingStatSelectedItem));
-
-                await StatsService.CreateBaseballStats(new(create));
-                ApplyPitchingTotalsDelta(pitchingStatSelectedItem, DataLoader.CreateZeroBaseballStats());
-            }
-
-            await InvalidateBaseballCaches(form);
+            await StatsSubmissionService.BaseballPitchingSubmitAsync(pitchingStatSelectedItem,
+            Model, GameModel.Game, ApplyPitchingTotalsDelta);
             Snackbar.Add("Players Pitching Stats have been saved.", MudBlazor.Severity.Success);
             StateHasChanged();
         }
@@ -429,75 +353,16 @@
         }
     }
 
-    private async Task InvalidateBaseballCaches(BaseballGameStatsModel form)
-    {
-        await StatsLocalCache.DeleteLeagueBaseballStatsBySeasonCache(form.LeagueId.ToString(), form.SeasonId.ToString());
-        await StatsLocalCache.DeleteBaseballStatsByTeamCache(form.TeamId.ToString());
-        await StatsLocalCache.DeleteBaseballStatsByPlayerCache(form.PlayerId.ToString());
-        await StatsLocalCache.DeletePlayerBaseballStatsBySeasonCache(form.PlayerId.ToString(), form.SeasonId.ToString());
-    }
-
     private void ApplyHittingTotalsDelta(BaseballGameStatsModel updated, BaseballStatsModel original)
     {
-        var delta = new
-        {
-            AtBats = updated.AtBats - original.HittingStats.AtBats,
-            Hits = updated.Hits - original.HittingStats.Hits,
-            TotalBases = updated.TotalBases - original.HittingStats.TotalBases,
-            Runs = updated.Runs - original.HittingStats.Runs,
-            Doubles = updated.Doubles - original.HittingStats.Doubles,
-            Triples = updated.Triples - original.HittingStats.Triples,
-            HomeRuns = updated.HomeRuns - original.HittingStats.HomeRuns,
-            RBIs = updated.RunsBattedIn - original.HittingStats.RunsBattedIn,
-            SBs = updated.StolenBases - original.HittingStats.StolenBases,
-            Walks = updated.Walks - original.HittingStats.Walks,
-            HBPs = updated.HitByPitch - original.HittingStats.HitByPitch,
-            SFs = updated.SacrificeFly - original.HittingStats.SacrificeFly,
-            Strikeouts = updated.Strikeouts - original.HittingStats.Strikeouts,
-        };
-
         var totals = updated.TeamId == GameModel.Game.AwayTeam.Id ? AwayHit : HomeHit;
-
-        totals.AtBats += delta.AtBats;
-        totals.Hits += delta.Hits;
-        totals.TotalBases += delta.TotalBases;
-        totals.Runs += delta.Runs;
-        totals.Doubles += delta.Doubles;
-        totals.Triples += delta.Triples;
-        totals.HomeRuns += delta.HomeRuns;
-        totals.RBIs += delta.RBIs;
-        totals.SBs += delta.SBs;
-        totals.Walks += delta.Walks;
-        totals.HBPs += delta.HBPs;
-        totals.SFs += delta.SFs;
-        totals.Strikeouts += delta.Strikeouts;
+        totals.ApplyDeltas(updated, original);
     }
 
     private void ApplyPitchingTotalsDelta(BaseballGameStatsModel updated, BaseballStatsModel original)
     {
-        var delta = new
-        {
-            Wins = updated.Wins - original.PitchingStats.Wins,
-            Losses = updated.Losses - original.PitchingStats.Losses,
-            Runs = updated.PitchingRuns - original.PitchingStats.Runs,
-            Saves = updated.Saves - original.PitchingStats.Saves,
-            InningsDelta = updated.Innings - original.PitchingStats.Innings,
-            HitsAllowed = updated.HitsAllowed - original.PitchingStats.HitsAllowed,
-            WalksAllowed = updated.WalksAllowed - original.PitchingStats.WalksAllowed,
-            Strikeouts = updated.PitchingStrikeouts - original.PitchingStats.PitchingStrikeouts
-        };
-
         var totals = updated.TeamId == GameModel.Game.AwayTeam.Id ? AwayPitch : HomePitch;
-
-        totals.Wins += delta.Wins;
-        totals.Losses += delta.Losses;
-        totals.Runs += delta.Runs;
-        totals.Saves += delta.Saves;
-        totals.Innings = DataLoader.AddInnings(totals.Innings, delta.InningsDelta);
-
-        totals.HitsAllowed += delta.HitsAllowed;
-        totals.WalksAllowed += delta.WalksAllowed;
-        totals.Strikeouts += delta.Strikeouts;
+        totals.ApplyDeltas(updated, original);
     }
 
     private UpdateBaseballHittingStatsModel BuildHittingUpdate(BaseballGameStatsModel form)
@@ -554,11 +419,9 @@
             () => TeamService.GetTeamById(GameModel.Game.HomeTeam.Id),
             (t) => TeamLocalCache.SetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString(), t)
         );
-        var awayTeamKeyPath = $"/{LeagueByIdResponse.League.Sport}/{LeagueByIdResponse.League.Name}/teams/{AwayTeamByIdResponse.Team.TeamName}/{AwayTeamByIdResponse.Team.ImageFile}";
-        GameModel.Game.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
 
-        var homeTeamKeyPath = $"/{LeagueByIdResponse.League.Sport}/{LeagueByIdResponse.League.Name}/teams/{HomeTeamByIdResponse.Team.TeamName}/{HomeTeamByIdResponse.Team.ImageFile}";
-        GameModel.Game.HomeTeamImage = await AWSService.GetImage(homeTeamKeyPath);
+        GameModel.Game.AwayTeamImage = await ImageService.GetTeamImageAsync(LeagueByIdResponse.League, AwayTeamByIdResponse.Team);
+        GameModel.Game.HomeTeamImage = await ImageService.GetTeamImageAsync(LeagueByIdResponse.League, HomeTeamByIdResponse.Team);
     }
 
     private async Task HandleError(Exception ex)
