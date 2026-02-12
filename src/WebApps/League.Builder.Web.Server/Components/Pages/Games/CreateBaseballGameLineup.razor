@@ -8,6 +8,9 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
+@inject IGameLocalCacheService GameLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
+@inject IPlayerLocalCacheService PlayerLocalCache
 
 <AuthorizeView Roles="@String.Concat(Roles.CreateGames)" Context="auth">
     <Authorized>
@@ -74,7 +77,11 @@
             var gameId = Guid.Parse(Id);
             BaseballPositions = Constants.BaseballPositions();
 
-            GameByIdResponse = await GameService.GetGameById(gameId);
+            GameByIdResponse = await DataLoader.GetOrLoad(
+                () => GameLocalCache.GetGameByIdCache(Id),
+                () => GameService.GetGameById(gameId),
+                (g) => GameLocalCache.SetGameByIdCache(Id, g)
+            );
             await SetupTeam(Away, gameId, GameByIdResponse.Game.AwayTeam.Id);  //Away Team Lineup Creation
             await SetupTeam(Home, gameId, GameByIdResponse.Game.HomeTeam.Id);  //Home Team Lineup Creation
 
@@ -89,14 +96,35 @@
 
     private async Task SetupTeam(LineupContext ctx, Guid gameId, Guid teamId)
     {
-        var teamResponse = await TeamService.GetTeamById(teamId);
+        var teamResponse = await DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamByIdCache(teamId.ToString()),
+            () => TeamService.GetTeamById(teamId),
+            (t) => TeamLocalCache.SetTeamByIdCache(teamId.ToString(), t)
+        );
+
         ctx.Team = teamResponse.Team;
-        ctx.ExistingCheck = await GameService.AnyBaseballGameLineupByGameId(gameId, teamId);
-        ctx.Players = await PlayerService.GetPlayersByTeam(teamId);
+
+        ctx.ExistingCheck = await DataLoader.GetOrLoad(
+            () => GameLocalCache.AnyBaseballGameLineupByGameIdCache(gameId.ToString(), teamId.ToString()),
+            () => GameService.AnyBaseballGameLineupByGameId(gameId, teamId),
+            (g) => GameLocalCache.SetAnyBaseballGameLineupByGameIdCache(gameId.ToString(), teamId.ToString(), g)
+        ); 
+
+        ctx.Players = await DataLoader.GetOrLoad(
+            () => PlayerLocalCache.GetPlayersByTeamCache(teamId.ToString()),
+            () => PlayerService.GetPlayersByTeam(teamId),
+            (p) => PlayerLocalCache.SetPlayersByTeamCache(teamId.ToString(), p)
+        );
         ctx.Pitchers = ctx.Players.Players.Where(x => x.PlayerDetail.Position == PositionFilter.BASEBALL).ToList();
 
         if (ctx.ExistingCheck.IsLineupCreated)
-            ctx.ExistingLineup = await GameService.GetBaseballGameLineupByGameId(gameId, teamId);
+        {
+            ctx.ExistingLineup = await DataLoader.GetOrLoad(
+                () => GameLocalCache.GetBaseballGameLineupByGameIdCache(gameId.ToString(), teamId.ToString()),
+                () => GameService.GetBaseballGameLineupByGameId(gameId, teamId),
+                (g) => GameLocalCache.SetBaseballGameLineupByGameIdCache(gameId.ToString(), teamId.ToString(), g)
+            );
+        }
 
         int pos = 1;
         int bench = 9;

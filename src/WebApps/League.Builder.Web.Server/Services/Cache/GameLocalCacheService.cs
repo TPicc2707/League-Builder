@@ -44,6 +44,28 @@ public class GameLocalCacheService : IGameLocalCacheService
 
     }
 
+    public async Task<GetBaseballGameLineupByGameIdResponse> GetBaseballGameLineupByGameIdCache(string id, string teamId)
+    {
+        string? baseballGameLineupByGameCache = await _cache.GetStringAsync($"GetBaseballGameLineupByGame: {id} Team: {teamId}");
+
+        if (baseballGameLineupByGameCache is not null)
+            return JsonSerializer.Deserialize<GetBaseballGameLineupByGameIdResponse>(baseballGameLineupByGameCache);
+
+        return null;
+
+    }
+
+    public async Task<AnyBaseballGameLineupByGameIdResponse> AnyBaseballGameLineupByGameIdCache(string id, string teamId)
+    {
+        string? anyGameByGameCache = await _cache.GetStringAsync($"AnyBaseballGameLineupByGame: {id} Team: {teamId}");
+
+        if (anyGameByGameCache is not null)
+            return JsonSerializer.Deserialize<AnyBaseballGameLineupByGameIdResponse>(anyGameByGameCache);
+
+        return null;
+
+    }
+
     public async Task SetGameByIdCache(string id, GetGameByIdResponse gameByIdResponse)
     {
         string serializedGame = JsonSerializer.Serialize(gameByIdResponse);
@@ -62,6 +84,18 @@ public class GameLocalCacheService : IGameLocalCacheService
         await _cache.SetStringAsync($"GamesByTeam: {teamId}", serializedGame, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
+    public async Task SetBaseballGameLineupByGameIdCache(string id, string teamId, GetBaseballGameLineupByGameIdResponse baseballGameLineupResponse)
+    {
+        string serializedGame = JsonSerializer.Serialize(baseballGameLineupResponse);
+        await _cache.SetStringAsync($"GetBaseballGameLineupByGame: {id} Team: {teamId}", serializedGame, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+    }
+
+    public async Task SetAnyBaseballGameLineupByGameIdCache(string id, string teamId, AnyBaseballGameLineupByGameIdResponse anyGameByGameResponse)
+    {
+        string serializedGame = JsonSerializer.Serialize(anyGameByGameResponse);
+        await _cache.SetStringAsync($"AnyBaseballGameLineupByGame: {id} Team: {teamId}", serializedGame, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+    }
+
     public async Task DeleteGameByIdCache(string id)
     {
         await _cache.RemoveAsync($"Game: {id}");
@@ -75,5 +109,15 @@ public class GameLocalCacheService : IGameLocalCacheService
     public async Task DeleteGamesByTeamCache(string teamId)
     {
         await _cache.RemoveAsync($"GamesByTeam: {teamId}");
+    }
+
+    public async Task DeleteAnyBaseballGameLineupByGameIdCache(string id, string teamId)
+    {
+        await _cache.RemoveAsync($"AnyBaseballGameLineupByGame: {id} Team: {teamId}");
+    }
+
+    public async Task DeleteBaseballGameLineupByGameIdCache(string id, string teamId)
+    {
+        await _cache.RemoveAsync($"GetBaseballGameLineupByGame: {id} Team: {teamId}");
     }
 }

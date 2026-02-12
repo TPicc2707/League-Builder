@@ -1,6 +1,7 @@
 ﻿@page "/updategame/{id}"
 @using League.Builder.Web.Server.Components.Pages.Shared
 @using League.Builder.Web.Server.Services.Cache
+@using FluentValidation.Results
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject ISeasonService SeasonService
@@ -8,6 +9,7 @@
 @inject IStandingsService StandingsService
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
+@inject ImageService ImageService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject ISnackbar Snackbar
 @inject IValidator<UpdateGameModel> UpdateGameValidator
@@ -25,50 +27,25 @@
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="padding-top: 50px;">
-                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">
-                        <MudStack Row="true" Justify="Justify.Center">
-                            <MudAvatar Size="Size.Medium">
-                                <MudImage Src="@GameModel.Game.AwayTeamImage" Alt="Team Image"></MudImage>
-                            </MudAvatar>
-                            @AwayTeam.TeamName vs @HomeTeam.TeamName
-                            <MudAvatar Size="Size.Medium">
-                                <MudImage Src="@GameModel.Game.HomeTeamImage" Alt="Team Image"></MudImage>
-                            </MudAvatar>
-                        </MudStack>
-                    </MudText>
-                </MudPaper>
-            </MudItem>
+            <TeamHeader Game="GameModel.Game" />
             <MudItem style="margin-top: 50px; margin-bottom: 50px;">
                 <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
                     <FluentValidationValidator @ref="fluentValidationValidator" />
-                    <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px; width: 100%;">
+                    <MudPaper Class="border border-solid game-card" Style="width: 100%;">
                         <MudStepper @bind-ActiveIndex="_index" OnPreviewInteraction="@OnStepInteraction" CurrentStepColor="Color.Secondary" CompletedStepColor="Color.Success">
                             <ChildContent>
                                 <MudStep Title="Update Game Information">
                                     <MudGrid Justify="Justify.Center">
                                         <MudItem xs="12" sm="10">
-                                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                                <MudCardContent>
-                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
-                                                        <MudIcon Icon="@Icons.Material.Filled.SportsEsports" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
-                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Game Information</MudText>
-                                                    </MudStack>
-                                                    <MudSelect Required="true" Disabled="isGameCompleted" Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
-                                                        @foreach (var team in Teams)
-                                                        {
-                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                        }
+                                            @Card(@<div>
+                                                    @StepHeader(Icons.Material.Filled.SportsEsports, "Game Information")
+                                                    <MudSelect Required Disabled="isGameCompleted" Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
+                                                        @TeamOptions
                                                     </MudSelect>
-                                                    <MudSelect Required="true" Disabled="isGameCompleted" Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
-                                                        @foreach (var team in Teams)
-                                                        {
-                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                        }
+                                                    <MudSelect Required Disabled="isGameCompleted" Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
+                                                        @TeamOptions
                                                     </MudSelect>
-                                                </MudCardContent>
-                                            </MudCard>
+                                                </div>)
                                         </MudItem>
                                         @if (isGameCompleted)
                                         {
@@ -83,29 +60,21 @@
                                 <MudStep Title="Game Outcome">
                                     <MudGrid Justify="Justify.Center">
                                         <MudItem xs="12" sm="10">
-                                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                                <MudCardContent>
-                                                    @if (model.GameStatus == GameStatus.Completed)
-                                                    {
-                                                        <MudSelect Required="true" Disabled="isGameCompleted" Class="mt-3" Label="Winning Team" @bind-Value="model.WinningTeamId">
-                                                            @foreach (var team in TeamsInGame)
-                                                            {
-                                                                <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                            }
-                                                        </MudSelect>
-                                                    }
-                                                    <MudTextField Required="true" Disabled="isGameCompleted" Label="@($"{AwayTeam.TeamName} Team Score")" Class="mt-3"
-                                                                  @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
-                                                    <MudTextField Required="true" Disabled="isGameCompleted" Label="@($"{HomeTeam.TeamName} Team Score")" Class="mt-3"
-                                                                  @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
-                                                    <MudSelect Required="true" Disabled="isGameCompleted" Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
-                                                        @foreach (var status in Enum.GetValues<GameStatus>())
-                                                        {
-                                                            <MudSelectItem Value="status">@status</MudSelectItem>
-                                                        }
+                                            @Card(@<div>
+                                                @if(model.GameStatus == GameStatus.Completed)
+                                                {
+                                                    <MudSelect Required Disabled="isGameCompleted" Class="mt-3" Label="Winning Team" @bind-Value="model.WinningTeamId">
+                                                        @WinningTeamOptions
                                                     </MudSelect>
-                                                </MudCardContent>
-                                            </MudCard>                                           
+                                                }
+                                                <MudTextField Required Disabled="isGameCompleted" Label="@($"{AwayTeam.TeamName} Team Score")" Class="mt-3"
+                                                    @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
+                                                <MudTextField Required Disabled="isGameCompleted" Label="@($"{HomeTeam.TeamName} Team Score")" Class="mt-3"
+                                                    @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
+                                                <MudSelect Required Disabled="isGameCompleted" Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
+                                                    @GameStatusOptions
+                                                </MudSelect>
+                                                </div>)                                         
                                         </MudItem>
                                         @if (isGameCompleted)
                                         {
@@ -118,64 +87,44 @@
                                     </MudGrid>
                                 </MudStep>
                                 <MudStep Title="Update Game Time">
-                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
-                                        <MudIcon Icon="@Icons.Material.Filled.AccessTime" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
-                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Game Time</MudText>
-                                    </MudStack>
-                                    <MudDatePicker Required="true" Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.StartDate" />
-                                    <MudTimePicker Required="true" Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="model.StartTime" />
-                                    <MudDatePicker Required="@(model.GameStatus == GameStatus.Completed ? true : false)" Disabled="isGameCompleted" Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.EndDate" />
-                                    <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed ? true : false)" Disabled="isGameCompleted" Class="mt-3" Label="End Time" AmPm="true" Editable="true" @bind-Time="model.EndTime" />
+                                    @Card(@<div>
+                                        @StepHeader(Icons.Material.Filled.AccessTime, "Game Time")
+                                        <MudDatePicker Required Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.StartDate" />
+                                        <MudTimePicker Required Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Time" AmPm Editable @bind-Time="model.StartTime" />
+                                        <MudDatePicker Required="@(model.GameStatus == GameStatus.Completed)" Disabled="isGameCompleted" Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.EndDate" />
+                                        <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed)" Disabled="isGameCompleted" Class="mt-3" Label="End Time" AmPm Editable @bind-Time="model.EndTime" />
+                                        </div>)
                                 </MudStep>
                                 <MudStep Title="Review">
                                     <MudGrid Justify="Justify.Center">
                                         <MudItem xs="12" sm="10">
-                                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                                <MudCardContent>
-                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
-                                                        <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
-                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Review</MudText>
-                                                    </MudStack>
-                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
-                                                        @foreach (var team in Teams)
-                                                        {
-                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                        }
+                                            @Card(@<div>
+                                                @StepHeader(Icons.Material.Filled.RemoveRedEye, "Review")
+                                                <MudSelect Required ReadOnly Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
+                                                    @TeamOptions
+                                                </MudSelect>
+                                                <MudSelect Required ReadOnly Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
+                                                    @TeamOptions
+                                                </MudSelect>
+                                                @if (model.GameStatus == GameStatus.Completed)
+                                                {
+                                                    <MudSelect Required ReadOnly Class="mt-3" Label="Winning Team" @bind-Value="model.WinningTeamId">
+                                                        @WinningTeamOptions
                                                     </MudSelect>
-                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
-                                                        @foreach (var team in Teams)
-                                                        {
-                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                    @if (model.GameStatus == GameStatus.Completed)
-                                                    {
-                                                        <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Winning Team" @bind-Value="model.WinningTeamId">
-                                                            @foreach (var team in TeamsInGame)
-                                                            {
-                                                                <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                            }
-                                                        </MudSelect>
-                                                    }
-                                                    <MudTextField Required="true" ReadOnly="true" Label="@($"{AwayTeam.TeamName} Team Score")" Class="mt-3"
-                                                                  @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
-                                                    <MudTextField Required="true" ReadOnly="true" Label="@($"{HomeTeam.TeamName} Team Score")" Class="mt-3"
-                                                                  @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
-                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
-                                                        @foreach (var status in Enum.GetValues<GameStatus>())
-                                                        {
-                                                            <MudSelectItem Value="status">@status</MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                    <MudDatePicker Required="true" ReadOnly="true" Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.StartDate" />
-                                                    <MudTimePicker Required="true" ReadOnly="true" Class="mt-3" Label="Start Time" AmPm="true" Editable="true" @bind-Time="model.StartTime" />
-                                                    <MudDatePicker Required="@(model.GameStatus == GameStatus.Completed ? true : false)" ReadOnly="true" Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.EndDate" />
-                                                    <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed ? true : false)" ReadOnly="true" Class="mt-3" Label="End Time" AmPm="true" Editable="true" @bind-Time="model.EndTime" />
-                                                </MudCardContent>
-                                                <MudCardActions>
-                                                    <MudButton Disabled="isGameCompleted" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
-                                                </MudCardActions>
-                                            </MudCard>
+                                                }
+                                                <MudTextField Required ReadOnly Label="@($"{AwayTeam.TeamName} Team Score")" Class="mt-3"
+                                                              @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
+                                                <MudTextField Required ReadOnly Label="@($"{HomeTeam.TeamName} Team Score")" Class="mt-3"
+                                                              @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
+                                                <MudSelect Required ReadOnly Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
+                                                    @GameStatusOptions
+                                                </MudSelect>
+                                                <MudDatePicker Required ReadOnly Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.StartDate" />
+                                                <MudTimePicker Required ReadOnly Class="mt-3" Label="Start Time" AmPm Editable @bind-Time="model.StartTime" />
+                                                <MudDatePicker Required="@(model.GameStatus == GameStatus.Completed)" ReadOnly Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.EndDate" />
+                                                <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed)" ReadOnly Class="mt-3" Label="End Time" AmPm Editable @bind-Time="model.EndTime" />,
+                                                <MudButton Disabled="isGameCompleted" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
+                                                </div>)
                                         </MudItem>
                                         @if (isGameCompleted)
                                         {
@@ -192,13 +141,13 @@
                                 <MudIconButton OnClick="@(() => stepper.PreviousStepAsync())"
                                                Icon="@Icons.Material.Filled.ArrowBack"
                                                Color="Color.Primary"
-                                               Disabled="_index == 0 ? true : false">
+                                               Disabled="_index == 0">
                                 </MudIconButton>
                                 <MudSpacer />
                                 <MudIconButton OnClick="@(() => stepper.NextStepAsync())"
                                                Icon="@Icons.Material.Filled.ArrowForward"
                                                Color="Color.Primary"
-                                               Disabled="_index != 3 ? false : true">
+                                               Disabled="_index != 3">
                                 </MudIconButton>
                             </ActionContent>
                         </MudStepper>
@@ -245,110 +194,114 @@
     {
         try
         {
-            var gameId = Guid.Parse(Id);
-            GameModel = await GameLocalCache.GetGameByIdCache(Id);
-            if (GameModel == null)
-            {
-                GameModel = await GameService.GetGameById(gameId);
-                await GameLocalCache.SetGameByIdCache(Id, GameModel);
-            }
-            model.LeagueId = GameModel.Game.LeagueId;
-            TeamsResponse = await TeamLocalCache.GetTeamsByLeagueCache(model.LeagueId.ToString());
-            if (TeamsResponse == null)
-            {
-                TeamsResponse = await TeamService.GetTeamsByLeague(model.LeagueId);
-                await TeamLocalCache.SetTeamsByLeagueCache(Id, TeamsResponse);
-            }
-            Teams = TeamsResponse.Teams.ToList();
-            model.AwayTeamId = GameModel.Game.AwayTeam.Id;
-            model.HomeTeamId = GameModel.Game.HomeTeam.Id;
-            TeamsInGame = TeamsResponse.Teams.Where(t => t.Id == model.AwayTeamId || t.Id == model.HomeTeamId).ToList();
-            HomeTeam = TeamsInGame.FirstOrDefault(t => t.Id == model.HomeTeamId);
-            AwayTeam = TeamsInGame.FirstOrDefault(t => t.Id == model.AwayTeamId);
-            model.AwayTeamScore = GameModel.Game.GameDetail.AwayTeamScore;
-            model.HomeTeamScore = GameModel.Game.GameDetail.HomeTeamScore;
-            model.GameStatus = GameModel.Game.GameStatus;
-            model.WinningTeamId = GameModel.Game.WinningTeamId is not null ? (Guid)GameModel.Game.WinningTeamId : TeamsInGame.First().Id;
-
-            model.StartDate = GameModel.Game.GameDetail.StartTime;
-            model.StartTime = GameModel.Game.GameDetail.StartTime.TimeOfDay;
-
-            if (GameModel.Game.GameDetail.EndTime is not null)
-            {
-                model.EndDate = GameModel.Game.GameDetail.EndTime.Value;
-                model.EndTime = GameModel.Game.GameDetail.EndTime.Value.TimeOfDay;
-            }
-            isGameCompleted = model.GameStatus == GameStatus.Completed ? true : false;
-            LeagueResponse = await LeagueLocalCache.GetLeagueByIdCache(model.LeagueId.ToString());
-            if (LeagueResponse == null)
-            {
-                LeagueResponse = await LeagueService.GetLeague(model.LeagueId);
-                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueResponse);
-            }
-            await GetImageAsync();
+            await LoadGameContext();
+            InitializeModelFromGame();
             PageLoad = true;
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
     }
 
-    private async Task CheckMaxGamesForTeam(FluentValidation.Results.ValidationResult result)
+    private async Task LoadGameContext()
     {
-        try
+        var gameId = Guid.Parse(Id);
+        GameModel = await DataLoader.GetOrLoad(
+           () => GameLocalCache.GetGameByIdCache(Id),
+           () => GameService.GetGameById(gameId),
+           (g) => GameLocalCache.SetGameByIdCache(Id, g)
+       );
+
+        LeagueResponse = await DataLoader.GetOrLoad(
+             () => LeagueLocalCache.GetLeagueByIdCache(model.LeagueId.ToString()),
+             () => LeagueService.GetLeague(model.LeagueId),
+             (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
+         );
+
+        TeamsResponse = await DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamsByLeagueCache(model.LeagueId.ToString()),
+            () => TeamService.GetTeamsByLeague(model.LeagueId),
+            (t) => TeamLocalCache.SetTeamsByLeagueCache(model.LeagueId.ToString(), t)
+        );
+
+        var awayTeam = await DataLoader.GetOrLoad(
+           () => TeamLocalCache.GetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString()),
+           () => TeamService.GetTeamById(GameModel.Game.AwayTeam.Id),
+           (t) => TeamLocalCache.SetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString(), t)
+        );
+
+        AwayTeam = awayTeam.Team;
+
+        var homeTeam = await DataLoader.GetOrLoad(
+           () => TeamLocalCache.GetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString()),
+           () => TeamService.GetTeamById(GameModel.Game.HomeTeam.Id),
+           (t) => TeamLocalCache.SetTeamByIdCache(GameModel.Game.HomeTeam.Id.ToString(), t)
+        );
+
+        HomeTeam = homeTeam.Team;
+
+        SeasonResponse = await DataLoader.GetOrLoad(
+            () => SeasonLocalCache.GetSeasonByYearCache(GameModel.Game.GameDetail.StartTime.Year),
+            () => SeasonService.GetSeasonByYear(GameModel.Game.GameDetail.StartTime.Year),
+            (s) => SeasonLocalCache.SetSeasonByYearCache(GameModel.Game.GameDetail.StartTime.Year, s)
+        );
+
+        TeamsInGame = TeamsResponse.Teams.Where(x => x.Id == HomeTeam.Id || x.Id == AwayTeam.Id);
+
+        await GetImageAsync();
+    }
+
+    private void InitializeModelFromGame()
+    {
+        var g = GameModel.Game;
+
+        model.LeagueId = g.LeagueId;
+        model.AwayTeamId = g.AwayTeam.Id;
+        model.HomeTeamId = g.HomeTeam.Id;
+        model.AwayTeamScore = g.GameDetail.AwayTeamScore;
+        model.HomeTeamScore = g.GameDetail.HomeTeamScore;
+        model.GameStatus = g.GameStatus;
+        model.WinningTeamId = g.WinningTeamId ?? g.HomeTeam.Id;
+
+        model.StartDate = g.GameDetail.StartTime;
+        model.StartTime = g.GameDetail.StartTime.TimeOfDay;
+
+        if(g.GameDetail.EndTime is not null)
         {
-            var teamsToRemove = new List<Guid>();
-
-            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(model.AwayTeamId.ToString());
-            if (TeamGamesResponse == null)
-            {
-                TeamGamesResponse = await GameService.GetGamesByTeam(model.AwayTeamId);
-                await GameLocalCache.SetGamesByTeamCache(model.AwayTeamId.ToString(), TeamGamesResponse);
-            }
-            if (LeagueResponse.League.TotalGamesPerSeason < TeamGamesResponse.Games.Where(x => x.GameDetail.StartTime.Year == model.StartDate.Value.Year).Count())
-            {
-                Team = await TeamLocalCache.GetTeamByIdCache(model.AwayTeamId.ToString());
-                if (Team == null)
-                {
-                    Team = await TeamService.GetTeamById(model.AwayTeamId);
-                    await TeamLocalCache.SetTeamByIdCache(model.AwayTeamId.ToString(), Team);
-                }
-                result.Errors.Add(new FluentValidation.Results.ValidationFailure(nameof(CreateGameModel.AwayTeamId), $"The away team '{Team.Team.TeamName}' has reached the maximum number of games ({LeagueResponse.League.TotalGamesPerSeason}) for the {model.StartDate.Value.Year} season."));
-            }
-
-            TeamGamesResponse = await GameLocalCache.GetGamesByTeamCache(model.HomeTeamId.ToString());
-            if (TeamGamesResponse == null)
-            {
-                TeamGamesResponse = await GameService.GetGamesByTeam(model.HomeTeamId);
-                await GameLocalCache.SetGamesByTeamCache(model.AwayTeamId.ToString(), TeamGamesResponse);
-            }
-            if (LeagueResponse.League.TotalGamesPerSeason < TeamGamesResponse.Games.Where(x => x.GameDetail.StartTime.Year == model.StartDate.Value.Year).Count())
-            {
-                Team = await TeamLocalCache.GetTeamByIdCache(model.HomeTeamId.ToString());
-                if (Team == null)
-                {
-                    Team = await TeamService.GetTeamById(model.HomeTeamId);
-                    await TeamLocalCache.SetTeamByIdCache(model.HomeTeamId.ToString(), Team);
-                }
-                result.Errors.Add(new FluentValidation.Results.ValidationFailure(nameof(CreateGameModel.HomeTeamId), $"The home team '{Team.Team.TeamName}' has reached the maximum number of games ({LeagueResponse.League.TotalGamesPerSeason}) for the {model.StartDate.Value.Year} season."));
-            }
+            model.EndDate = g.GameDetail.EndTime.Value;
+            model.EndTime = g.GameDetail.EndTime.Value.TimeOfDay;
         }
-        catch (Exception ex)
+    }
+
+    private async Task ValidateTeamGameLimit(
+        Guid teamId,
+        int year,
+        int maxGames,
+        FluentValidation.Results.ValidationResult result,
+        string propertyName
+    )
+    {
+        var games = await DataLoader.GetOrLoad(
+            () => GameLocalCache.GetGamesByTeamCache(teamId.ToString()),
+            () => GameService.GetGamesByTeam(teamId),
+            (g) => GameLocalCache.SetGamesByTeamCache(teamId.ToString(), g)
+        );
+
+        var count = games.Games.Count(x => x.GameDetail.StartTime.Year == year);
+
+        if (count >= maxGames)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            var team = await DataLoader.GetOrLoad(
+                () => TeamLocalCache.GetTeamByIdCache(teamId.ToString()),
+                () => TeamService.GetTeamById(teamId),
+                (t) => TeamLocalCache.SetTeamByIdCache(teamId.ToString(), t)
+            );
+
+            result.Errors.Add(new ValidationFailure(
+            propertyName,
+            $"The team '{team.Team.TeamName}' has reached the maximum number of games ({maxGames}) for the {year} season."
+            ));
         }
     }
 
@@ -365,8 +318,7 @@
         }
         catch (Exception ex)
         {
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
     }
 
@@ -414,7 +366,23 @@
             var result = await UpdateGameValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(UpdateGameModel.StartDate), nameof(UpdateGameModel.StartTime), nameof(UpdateGameModel.EndDate), nameof(UpdateGameModel.EndTime)));
 
             if (model.StartDate.HasValue)
-                await CheckMaxGamesForTeam(result);
+            {
+                await ValidateTeamGameLimit(
+                    model.AwayTeamId,
+                    model.StartDate.Value.Year,
+                    LeagueResponse.League.TotalGamesPerSeason,
+                    result,
+                    nameof(UpdateGameModel.AwayTeamId)
+                );
+
+                await ValidateTeamGameLimit(
+                   model.HomeTeamId,
+                   model.StartDate.Value.Year,
+                   LeagueResponse.League.TotalGamesPerSeason,
+                   result,
+                   nameof(UpdateGameModel.HomeTeamId)
+               );
+            }
 
 
             if (result.IsValid)
@@ -436,63 +404,135 @@
 
     private async Task SubmitGame()
     {
-        var startGameTime = new DateTime(model.StartDate.Value.Year, model.StartDate.Value.Month, model.StartDate.Value.Day, model.StartTime.Value.Hours, model.StartTime.Value.Minutes, model.StartTime.Value.Seconds);
-        DateTime? endGameTime = null;
-        if(model.EndDate is not null || model.EndTime is not null)
-        {
-            endGameTime = new DateTime(model.EndDate.Value.Year, model.EndDate.Value.Month, model.EndDate.Value.Day, model.EndTime.Value.Hours, model.EndTime.Value.Minutes, model.EndTime.Value.Seconds);
-        }
+        var start = model.StartDate.Value.Date + model.StartTime.Value;
+        DateTime? end = model.EndDate.HasValue && model.EndTime.HasValue
+            ? model.EndDate.Value.Date + model.EndTime.Value
+            : null;
 
-        var gameId = Guid.Parse(Id);
-        SeasonResponse = await SeasonLocalCache.GetSeasonByYearCache(startGameTime.Year);
-        if(SeasonResponse == null)
-        {
-            SeasonResponse = await SeasonService.GetSeasonByYear(startGameTime.Year);
-            await SeasonLocalCache.SetSeasonByYearCache(startGameTime.Year, SeasonResponse);
-        }
-        Models.Game.GameDetailModel gameDetail = new GameDetailModel(model.AwayTeamScore, model.HomeTeamScore, startGameTime, endGameTime != null ? endGameTime.Value : null);
-        Models.Game.AwayTeamDetailModel awayTeamDetail = new AwayTeamDetailModel(model.AwayTeamId, string.Empty);
-        Models.Game.HomeTeamDetailModel homeTeamDetail = new HomeTeamDetailModel(model.HomeTeamId, string.Empty);
-        UpdateGameRecord updateGameModel = new UpdateGameRecord(gameId, model.LeagueId, model.WinningTeamId, SeasonResponse.Season.Id, gameDetail, awayTeamDetail, homeTeamDetail, (int)model.GameStatus);
-        UpdateGameRequest request = new UpdateGameRequest(updateGameModel);
-        await GameService.UpdateGame(request);
+        var update = new UpdateGameRecord(
+            Guid.Parse(Id),
+            model.LeagueId,
+            model.WinningTeamId,
+            SeasonResponse.Season.Id,
+            new GameDetailModel(model.AwayTeamScore, model.HomeTeamScore, start, end),
+            new AwayTeamDetailModel(model.AwayTeamId, ""),
+            new HomeTeamDetailModel(model.HomeTeamId, ""),
+            (int)model.GameStatus
+        );
+
+        await GameService.UpdateGame(new(update));
+
         await GameLocalCache.DeleteGameByIdCache(Id);
         await GameLocalCache.DeleteGamesByLeagueCache(model.LeagueId.ToString());
         await GameLocalCache.DeleteGamesByTeamCache(model.AwayTeamId.ToString());
         await GameLocalCache.DeleteGamesByTeamCache(model.HomeTeamId.ToString());
+
         if(model.GameStatus == GameStatus.Completed)
         {
-            await UpdateTeamStandings(SeasonResponse, model.AwayTeamId);
-            await UpdateTeamStandings(SeasonResponse, model.HomeTeamId);
+            await UpdateTeamStandings(model.AwayTeamId);
+            await UpdateTeamStandings(model.HomeTeamId);
         }
     }
 
-    private async Task UpdateTeamStandings(GetSeasonByYearResponse seasonResponse, Guid teamId)
+    private async Task UpdateTeamStandings(Guid teamId)
     {
-        StandingsResponse = await StandingsLocalCache.GetStandingsByTeamCache(teamId.ToString());
-        if(StandingsResponse == null)
-        {
-            StandingsResponse = await StandingsService.GetStandingsByTeam(teamId);
-            await StandingsLocalCache.SetStandingsByTeamCache(teamId.ToString(), StandingsResponse);
-        }
-        var currentStandings = StandingsResponse.Standings.FirstOrDefault(s => s.SeasonId == seasonResponse.Season.Id);
-        StandingsDetailModel standingsDetail = new StandingsDetailModel(currentStandings.StandingsDetail.GamesPlayed + 1,
+        StandingsResponse = await DataLoader.GetOrLoad(
+            () => StandingsLocalCache.GetStandingsByTeamCache(teamId.ToString()),
+            () => StandingsService.GetStandingsByTeam(teamId),
+            (s) => StandingsLocalCache.SetStandingsByTeamCache(teamId.ToString(), s)
+        );
+
+        var currentStandings = StandingsResponse.Standings.FirstOrDefault(s => s.SeasonId == SeasonResponse.Season.Id);
+
+        var detail = new StandingsDetailModel(
+            currentStandings.StandingsDetail.GamesPlayed + 1,
             model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Wins + 1 : currentStandings.StandingsDetail.Wins,
-            model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Losses : currentStandings.StandingsDetail.Losses + 1, currentStandings.StandingsDetail.Ties, currentStandings.StandingsDetail.PlayoffTeam, currentStandings.StandingsDetail.Champion);
-        TeamDetailModel teamDetail = new TeamDetailModel(teamId, string.Empty);
-        UpdateStandingsModel standingsModel = new UpdateStandingsModel(currentStandings.Id, model.LeagueId, seasonResponse.Season.Id, standingsDetail, (int)currentStandings.StandingsStatus, teamDetail);
-        UpdateStandingsRequest request = new UpdateStandingsRequest(standingsModel);
-        await StandingsService.UpdateStandings(request);
+            model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Losses : currentStandings.StandingsDetail.Losses + 1,
+            currentStandings.StandingsDetail.Ties,
+            currentStandings.StandingsDetail.PlayoffTeam,
+            currentStandings.StandingsDetail.Champion
+        );
+
+        var update = new UpdateStandingsModel(
+            currentStandings.Id,
+            model.LeagueId,
+            SeasonResponse.Season.Id,
+            detail,
+            (int)currentStandings.StandingsStatus,
+            new TeamDetailModel(teamId, "")
+        );
+        await StandingsService.UpdateStandings(new(update));
         await StandingsLocalCache.DeleteStandingsByLeagueCache(model.LeagueId.ToString());
         await StandingsLocalCache.DeleteStandingsByTeamCache(teamId.ToString());
     }
 
     private async Task GetImageAsync()
     {
-        var awayTeamKeyPath = $"/{LeagueResponse.League.Sport}/{LeagueResponse.League.Name}/teams/{AwayTeam.TeamName}/{AwayTeam.ImageFile}";
-        GameModel.Game.AwayTeamImage = await AWSService.GetImage(awayTeamKeyPath);
-
-        var homeTeamKeyPath = $"/{LeagueResponse.League.Sport}/{LeagueResponse.League.Name}/teams/{HomeTeam.TeamName}/{HomeTeam.ImageFile}";
-        GameModel.Game.HomeTeamImage = await AWSService.GetImage(homeTeamKeyPath);
+        GameModel.Game.AwayTeamImage = await ImageService.GetTeamImageAsync(LeagueResponse.League, AwayTeam);
+        GameModel.Game.HomeTeamImage = await ImageService.GetTeamImageAsync(LeagueResponse.League, HomeTeam);
     }
+
+    private async Task HandleError(Exception ex)
+    {
+        if (KeycloakTokenService.ShouldForceLogout())
+        {
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+            await _module.InvokeVoidAsync("logout");
+        }
+        ErrorState.Message = ex.Message;
+        NavManager.NavigateTo("/error");
+    }
+
+    private RenderFragment TeamOptions => __builder =>
+    {
+        foreach (var team in TeamsResponse.Teams)
+        {
+            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+            ;
+        }
+    };
+
+    private RenderFragment WinningTeamOptions => __builder =>
+    {
+        foreach (var team in TeamsInGame)
+        {
+            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+            ;
+        }
+    };
+
+    private RenderFragment GameStatusOptions => __builder =>
+    {
+        foreach (var status in Enum.GetValues<GameStatus>())
+        {
+            <MudSelectItem Value="status">@status</MudSelectItem>
+            ;
+        }
+    };
+
+    private Func<string, string, RenderFragment> StepHeader = (string icon, string title) => __builder =>
+    {
+        <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
+            <MudIcon Icon="@icon" Color="Color.Secondary" Size="Size.Medium" />
+            <MudText Typo="Typo.h6" Style="font-weight: bold;">@title</MudText>
+        </MudStack>
+        ;
+    };
+
+    private RenderFragment Card(RenderFragment content, RenderFragment actions = null) => __builder =>
+    {
+        <MudCard Class="border border-solid" Style="border-color: #000000">
+            <MudCardContent>
+                @content
+            </MudCardContent>
+            @if (actions is not null)
+            {
+                <MudCardActions>
+                    @actions
+                </MudCardActions>
+            }
+        </MudCard>
+;
+    };
+
 }
