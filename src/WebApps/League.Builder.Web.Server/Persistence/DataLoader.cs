@@ -43,6 +43,22 @@ public static class DataLoader
 
         return ConvertOutsToInnings(totalOuts);
     }
+
+    private static decimal ConvertOutsToInnings(int outs)
+    {
+        int innings = outs / 3;
+        int remainder = outs % 3;
+        return innings + (remainder * 0.1m);
+    }
+
+    private static int ConvertInningsToOuts(decimal innings)
+    {
+        int wholeInnings = (int)innings;
+        int fractionalOuts = (int)((innings - wholeInnings) * 10);
+
+        return wholeInnings * 3 + fractionalOuts;
+    }
+
     public static BaseballStatsModel CreateZeroBaseballStats()
     {
         return new BaseballStatsModel(
@@ -204,20 +220,5 @@ public static class DataLoader
             Punts: 0,
             PuntingYards: 0,
             LongestPunt: 0);
-    }
-
-    private static decimal ConvertOutsToInnings(int outs)
-    {
-        int innings = outs / 3;
-        int remainder = outs % 3;
-        return innings + (remainder * 0.1m);
-    }
-
-    private static int ConvertInningsToOuts(decimal innings)
-    {
-        int wholeInnings = (int)innings;
-        int fractionalOuts = (int)((innings - wholeInnings) * 10);
-
-        return wholeInnings * 3 + fractionalOuts;
     }
 }

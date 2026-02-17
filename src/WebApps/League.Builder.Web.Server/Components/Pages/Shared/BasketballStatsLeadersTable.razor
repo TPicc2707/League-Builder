@@ -1,0 +1,113 @@
+﻿<MudTable Items="@Leaders" Hover="true" Class="border border-solid stat-border" Style="border-color: #000000">
+    <ColGroup>
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary"></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Team</MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.GamesPlayed">S</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Minutes">MIN</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="(BasketballStatLeaderModel x) => x.PointsPerGame">PTS</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ReboundsPerGame">REB</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Assists">AST</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Blocks">BLK</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Steals">STL</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Turnovers">TO</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FieldGoalsMade">FGM</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FieldGoalsAttempted">FGA</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FieldGoalPercentage">FG%</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ThreePointersMade">3PM</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ThreePointersAttempted">3PA</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ThreePointerPercentage">3P%</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FreeThrowsMade">FTM</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FreeThrowsAttempted">FTA</MudTableSortLabel></MudTh>
+        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FreeThrowPercentage">FT%</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>
+            <PlayerAvatar Image="@context.Image" />
+        </MudTd>
+        <StatsLeaderCell Label="Name">
+            <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.PlayerId}")">@context.PlayerName</MudLink>
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Team">
+            @context.Team
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Games Played">
+            @context.Starts
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="MIN">
+            @context.Minutes
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="PTS">
+            @context.PointsPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="REB">
+            @context.ReboundsPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="AST">
+            @context.AssistsPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="BLK">
+            @context.BlocksPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="STL">
+            @context.StealsPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="TO">
+            @context.TurnoversPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="FGM">
+            @context.FieldGoalsMadePerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="FGA">
+            @context.FieldGoalsAttemptedPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="FG%">
+            @context.FieldGoalPercentage.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="3PM">
+            @context.ThreePointersMadePerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="3PA">
+            @context.ThreePointersAttemptedPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="3P%">
+            @context.ThreePointerPercentage.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="FTM">
+            @context.FreeThrowsMadePerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="FTA">
+            @context.FreeThrowsAttemptedPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="FT%">
+            @context.FreeThrowPercentage.ToString("#0.0")\
+        </StatsLeaderCell>
+    </RowTemplate>
+</MudTable>
+
+
+@code {
+    [Parameter] public IEnumerable<BasketballStatLeaderModel> Leaders { get; set; }
+}

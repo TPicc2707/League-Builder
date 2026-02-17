@@ -1,0 +1,8 @@
+﻿<MudTd DataLabel="@Label" Style="font-size: 12px;">
+    @ChildContent
+</MudTd>
+
+@code {
+    [Parameter] public string Label { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}

@@ -1,0 +1,91 @@
+﻿<MudTable Items="@Leaders" Hover="true" Class="stat-padding" Dense="true">
+    <ColGroup>
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary"></MudTh>
+        <MudTh Class="mud-theme-primary stat-header">Name</MudTh>
+        <MudTh Class="mud-theme-primary stat-header">Team</MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BaseballStatLeaderModel x) => x.GamesPlayed">GP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BaseballStatLeaderModel x) => x.PitchingStarts">GS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="(BaseballStatLeaderModel x) => x.EarnedRunAverage">ERA</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BaseballStatLeaderModel x) => x.PitchingWins">W</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BaseballStatLeaderModel x) => x.PitchingLosses">L</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BaseballStatLeaderModel x) => x.Saves">SV</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BaseballStatLeaderModel x) => x.InningsPitched">IP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BaseballStatLeaderModel x) => x.HitsAllowed">H</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BaseballStatLeaderModel x) => x.RunsAllowed">ER</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BaseballStatLeaderModel x) => x.WalksAllowed">BB</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BaseballStatLeaderModel x) => x.PitchingStrikeouts">K</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BaseballStatLeaderModel x) => x.WalksHitsPerInning">WHIP</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>
+            <PlayerAvatar Image="@context.Image" />
+        </MudTd>
+        <StatsLeaderCell Label="Name">
+            <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.PlayerId}")">@context.PlayerName</MudLink>
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Team">
+            @context.Team
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Games Played">
+            @context.GamesPlayed
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Starts">
+            @context.PitchingStarts
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Earned Run Average">
+            @context.EarnedRunAverage.ToString("#0.00")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Wins">
+            @context.PitchingWins
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Losses">
+            @context.PitchingLosses
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Saves">
+            @context.Saves
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Innings Pitched">
+            @context.InningsPitched.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Hits">
+            @context.HitsAllowed
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Runs">
+            @context.RunsAllowed
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Walks">
+            @context.WalksAllowed
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Strikeouts">
+            @context.PitchingStrikeouts
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Walks Hits Per Inning">
+            @context.WalksHitsPerInning.ToString("#0.00")
+        </StatsLeaderCell>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+
+@code {
+    [Parameter] public IEnumerable<BaseballStatLeaderModel> Leaders { get; set; }
+}

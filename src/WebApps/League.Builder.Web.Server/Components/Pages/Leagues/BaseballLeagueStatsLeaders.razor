@@ -7,6 +7,7 @@
 @inject ITeamService TeamService
 @inject IPlayerService PlayerService
 @inject ILeagueService LeagueService
+@inject ImageService ImageService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IAWSService AWSService
 @inject ISeasonLocalCacheService SeasonLocalCache
@@ -24,9 +25,9 @@
         {
             <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
                 <MudExpansionPanels>
-                    <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid" Style="border-color: #000000">
+                    <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid stat-border" Style="border-color: #000000">
                         <TitleContent>
-                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@Season.Year Stat Leaders</MudText>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Class="stat-header">@Season.Year Stat Leaders</MudText>
                         </TitleContent>
                         <ChildContent>
                             <MudStack Row="true">
@@ -34,7 +35,7 @@
                                     <MudSelect @bind-Value="seasonValue" Placeholder="@placeholder" Label="@placeholder">
                                         @foreach (var season in SeasonsModel.Seasons)
                                         {
-                                            <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                            <MudSelectItem Value="@season.Year">@season.Year</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
@@ -46,145 +47,13 @@
                     </MudExpansionPanel>
                 </MudExpansionPanels>
             </MudItem>
-            <MudItem Style="padding-top: 25px;">
-                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+            <MudItem Class="stat-padding">
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid stat-border" Style="padding: 25px;">
                     <MudTabPanel Text="Hitting">
-                        <MudTable Items="@StatLeaders.Where(x => x.Position != PositionFilter.BASEBALL)" Hover="true" Style="padding-top: 25px;">
-                            <ColGroup>
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                            </ColGroup>
-                            <HeaderContent>
-                                <MudTh Class="mud-theme-primary"></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Team</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.GamesPlayed)">GP</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.AtBats)">AB</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Runs)">R</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Hits)">H</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<StatLeaderModel, object>(x=>x.Average)">AVG</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Doubles)">2B</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Triples)">3B</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.HomeRuns)">HR</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.RunsBattedIn)">RBI</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.TotalBases)">TB</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Walks)">BB</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Strikeouts)">K</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.StolenBases)">SB</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.OnBasePercentage)">OBP</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Slugging)">SLG</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.OnBasePlusSlugging)">OPS</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.SacrificeFly)">SF</MudTableSortLabel></MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd>
-                                    <MudAvatar Size="Size.Small">
-                                        <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
-                                    </MudAvatar>
-                                </MudTd>
-                                <MudTd DataLabel="Name" Style="font-size: 12px;"><MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.PlayerId}")">@context.PlayerName</MudLink></MudTd>
-                                <MudTd DataLabel="Team" Style="font-size: 12px;">@context.Team</MudTd>
-                                <MudTd DataLabel="Games Played">@context.GamesPlayed</MudTd>
-                                <MudTd DataLabel="At Bats">@context.AtBats</MudTd>
-                                <MudTd DataLabel="Runs">@context.Runs</MudTd>
-                                <MudTd DataLabel="Hits">@context.Hits</MudTd>
-                                <MudTd DataLabel="Average">@context.Average.ToString("#.000")</MudTd>
-                                <MudTd DataLabel="Doubles">@context.Doubles</MudTd>
-                                <MudTd DataLabel="Triples">@context.Triples</MudTd>
-                                <MudTd DataLabel="Home Runs">@context.HomeRuns</MudTd>
-                                <MudTd DataLabel="Runs Batted In">@context.RunsBattedIn</MudTd>
-                                <MudTd DataLabel="Total Bases">@context.TotalBases</MudTd>
-                                <MudTd DataLabel="Walks">@context.Walks</MudTd>
-                                <MudTd DataLabel="Strikeouts">@context.Strikeouts</MudTd>
-                                <MudTd DataLabel="Stolen Bases">@context.StolenBases</MudTd>
-                                <MudTd DataLabel="On Base Percentage">@context.OnBasePercentage.ToString("#.000")</MudTd>
-                                <MudTd DataLabel="Slugging">@context.Slugging.ToString("#.000")</MudTd>
-                                <MudTd DataLabel="On Base Plus Slugging">@context.OnBasePlusSlugging.ToString("#.000")</MudTd>
-                                <MudTd DataLabel="Sacrifice Fly">@context.SacrificeFly</MudTd>
-                            </RowTemplate>
-                            <PagerContent>
-                                <MudTablePager />
-                            </PagerContent>
-                        </MudTable>
+                        <BaseballHittingLeadersTable Leaders="@StatLeaders.Where(x => x.Position != PositionFilter.BASEBALL)" />
                     </MudTabPanel>
                     <MudTabPanel Text="Pitching">
-                        <MudTable Items="@StatLeaders.Where(x => x.Position == PositionFilter.BASEBALL)" Hover="true" Style="padding-top: 25px;">
-                            <ColGroup>
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                                <col />
-                            </ColGroup>
-                            <HeaderContent>
-                                <MudTh Class="mud-theme-primary"></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Team</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.GamesPlayed)">GP</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingStarts)">GS</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<StatLeaderModel, object>(x=>x.EarnedRunAverage)">ERA</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingWins)">W</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingLosses)">L</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.Saves)">SV</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.InningsPitched)">IP</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.HitsAllowed)">H</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.RunsAllowed)">ER</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.WalksAllowed)">BB</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.PitchingStrikeouts)">K</MudTableSortLabel></MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StatLeaderModel, object>(x=>x.WalksHitsPerInning)">WHIP</MudTableSortLabel></MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd>
-                                    <MudAvatar Size="Size.Small">
-                                        <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
-                                    </MudAvatar>
-                                </MudTd>
-                                <MudTd DataLabel="Name" Style="font-size: 12px;"><MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.PlayerId}")">@context.PlayerName</MudLink></MudTd>
-                                <MudTd DataLabel="Team" Style="font-size: 12px;">@context.Team</MudTd>
-                                <MudTd DataLabel="Games Played">@context.GamesPlayed</MudTd>
-                                <MudTd DataLabel="Starts">@context.PitchingStarts</MudTd>
-                                <MudTd DataLabel="Earned Run Average">@context.EarnedRunAverage.ToString("#0.00")</MudTd>
-                                <MudTd DataLabel="Wins">@context.PitchingWins</MudTd>
-                                <MudTd DataLabel="Losses">@context.PitchingLosses</MudTd>
-                                <MudTd DataLabel="Saves">@context.Saves</MudTd>
-                                <MudTd DataLabel="Innings Pitched">@context.InningsPitched.ToString("#0.0")</MudTd>
-                                <MudTd DataLabel="Hits">@context.HitsAllowed</MudTd>
-                                <MudTd DataLabel="Runs">@context.RunsAllowed</MudTd>
-                                <MudTd DataLabel="Walks">@context.WalksAllowed</MudTd>
-                                <MudTd DataLabel="Strikeouts">@context.PitchingStrikeouts</MudTd>
-                                <MudTd DataLabel="Walks Hits Per Inning">@context.WalksHitsPerInning.ToString("#0.00")</MudTd>
-                            </RowTemplate>
-                            <PagerContent>
-                                <MudTablePager />
-                            </PagerContent>
-                        </MudTable>
+                        <BaseballPitchingLeadersTable Leaders="@StatLeaders.Where(x => x.Position == PositionFilter.BASEBALL)" />
                     </MudTabPanel>
                 </MudTabs>
             </MudItem> 
@@ -204,7 +73,7 @@
     private bool PageLoad = false;
     private Justify _justify = Justify.SpaceEvenly;
     private SeasonModel Season;
-    private List<StatLeaderModel> StatLeaders = new List<StatLeaderModel>();
+    private List<BaseballStatLeaderModel> StatLeaders = new List<BaseballStatLeaderModel>();
     private string placeholder = "Season";
     private int seasonValue;
     private bool expandSearchPanel = false;
@@ -219,22 +88,22 @@
     {
         try
         {
-            SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
-            if (SeasonsModel == null)
-            {
-                SeasonsModel = await SeasonService.GetSeasons();
-                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
-            }
+            SeasonsModel = await DataLoader.GetOrLoad(
+                () => SeasonLocalCache.GetSeasonsCache(),
+                () => SeasonService.GetSeasons(),
+                (s) => SeasonLocalCache.SetSeasonsCache(s)
+            );
             Season = SeasonsModel.Seasons.First();
-            var leagueId = Guid.Parse(Id);
-            LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(Id);
-            if (LeagueModel == null)
-            {
-                LeagueModel = await LeagueService.GetLeague(leagueId);
-                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueModel);
-            }
-            await CreateStatsLeadersByLeague(leagueId);
             seasonValue = Season.Year;
+
+            var leagueId = Guid.Parse(Id);
+            LeagueModel = await DataLoader.GetOrLoad(
+                () => LeagueLocalCache.GetLeagueByIdCache(Id),
+                () => LeagueService.GetLeague(leagueId),
+                (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
+            );
+
+            await CreateStatsLeadersByLeague(leagueId);
             PageLoad = true;
         }
         catch (Exception ex)
@@ -251,7 +120,11 @@
 
     private async Task CreateStatsLeadersByLeague(Guid leagueId)
     {
-        StatsModel = await StatsService.GetLeagueBaseballStatsBySeason(leagueId, Season.Id);
+        StatsModel = await DataLoader.GetOrLoad(
+            () => StatsLocalCache.GetLeagueBaseballStatsBySeasonCache(leagueId.ToString(), Season.Id.ToString()),
+            () => StatsService.GetLeagueBaseballStatsBySeason(leagueId, Season.Id),
+            (s) => StatsLocalCache.SetLeagueBaseballStatsBySeasonCache(leagueId.ToString(), Season.Id.ToString(), s)
+        );
         await BuildStatLeaders();
     }
 
@@ -261,156 +134,155 @@
         PageLoad = false;
         Season = SeasonsModel.Seasons.FirstOrDefault(s => s.Year == seasonValue);
 
-        StatsModel = await StatsLocalCache.GetLeagueBaseballStatsBySeasonCache(LeagueModel.League.Id.ToString(), Season.Id.ToString());
-        if (StatsModel == null)
-        {
-            StatsModel = await StatsService.GetLeagueBaseballStatsBySeason(LeagueModel.League.Id, Season.Id);
-            await StatsLocalCache.SetLeagueBaseballStatsBySeasonCache(LeagueModel.League.Id.ToString(), Season.Id.ToString(), StatsModel);
-        }
+        StatsModel = await DataLoader.GetOrLoad(
+            () => StatsLocalCache.GetLeagueBaseballStatsBySeasonCache(LeagueModel.League.Id.ToString(), Season.Id.ToString()),
+            () => StatsService.GetLeagueBaseballStatsBySeason(LeagueModel.League.Id, Season.Id),
+            (s) => StatsLocalCache.SetLeagueBaseballStatsBySeasonCache(LeagueModel.League.Id.ToString(), Season.Id.ToString(), s)
+        );
+
         await BuildStatLeaders();
         PageLoad = true;
     }
 
-    private async Task GetImageAsync(StatLeaderModel stat)
-    {
-        var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamModel.Team.TeamName}/players/{String.Concat(PlayerModel.Player.FirstName, " ", PlayerModel.Player.LastName)}/{PlayerModel.Player.ImageFile}";
-        stat.Image = await AWSService.GetImage(keyPath);
-    }
+    private async Task GetImageAsync(BaseballStatLeaderModel stat)
+        => stat.Image = await ImageService.GetPlayerImageAsync(LeagueModel.League, TeamModel.Team, PlayerModel.Player);
 
     private async Task BuildStatLeaders()
     {
-        if (StatLeaders.Any())
-            StatLeaders.RemoveRange(0, StatLeaders.Count);
+        StatLeaders.Clear();
 
         foreach (var stat in StatsModel.BaseballStats)
         {
-            if (!StatLeaders.Any(s => s.PlayerId == stat.PlayerId))
+            var leader = StatLeaders.FirstOrDefault(s => s.PlayerId == stat.PlayerId);
+            if (leader is null)
             {
-                PlayerModel = await PlayerLocalCache.GetPlayerByIdCache(stat.PlayerId.ToString());
-                if(PlayerModel == null)
-                {
-                    PlayerModel = await PlayerService.GetPlayerById(stat.PlayerId);
-                    await PlayerLocalCache.SetPlayerByIdCache(PlayerModel, stat.PlayerId.ToString());
-                }
-                TeamModel = await TeamLocalCache.GetTeamByIdCache(stat.TeamId.ToString());
-                if(TeamModel == null)
-                {
-                    TeamModel = await TeamService.GetTeamById(stat.TeamId);
-                    await TeamLocalCache.SetTeamByIdCache(stat.TeamId.ToString(), TeamModel);
-                }
-                var statLeader = new StatLeaderModel
-                    {
-                        PlayerId = PlayerModel.Player.Id,
-                        PlayerName = String.Concat(PlayerModel.Player.FirstName, " ", PlayerModel.Player.LastName),
-                        Position = PlayerModel.Player.PlayerDetail.Position,
-                        Team = TeamModel.Team.TeamName,
-                        AtBats = stat.HittingStats.AtBats,
-                        Hits = stat.HittingStats.Hits,
-                        Runs = stat.HittingStats.Runs,
-                        Average = stat.HittingStats.Hits == 0 || stat.HittingStats.AtBats == 0 ? 0 : (decimal)stat.HittingStats.Hits / stat.HittingStats.AtBats,
-                        RunsBattedIn = stat.HittingStats.RunsBattedIn,
-                        Doubles = stat.HittingStats.Doubles,
-                        Triples = stat.HittingStats.Triples,
-                        HomeRuns = stat.HittingStats.HomeRuns,
-                        TotalBases = stat.HittingStats.TotalBases,
-                        Slugging = stat.HittingStats.TotalBases == 0 || stat.HittingStats.AtBats == 0 ? 0 : (decimal)stat.HittingStats.TotalBases / stat.HittingStats.AtBats,
-                        StolenBases = stat.HittingStats.StolenBases,
-                        Strikeouts = stat.HittingStats.Strikeouts,
-                        Walks = stat.HittingStats.Walks,
-                        HitByPitch = stat.HittingStats.HitByPitch,
-                        SacrificeFly = stat.HittingStats.SacrificeFly,
-                        OnBasePercentage = (stat.HittingStats.Hits + stat.HittingStats.Walks + stat.HittingStats.HitByPitch) == 0 || (stat.HittingStats.Hits + stat.HittingStats.Walks + stat.HittingStats.HitByPitch + stat.HittingStats.SacrificeFly) == 0 ? 0 : (decimal)(stat.HittingStats.Hits + stat.HittingStats.Walks + stat.HittingStats.HitByPitch) / (stat.HittingStats.Hits + stat.HittingStats.Walks + stat.HittingStats.HitByPitch + stat.HittingStats.SacrificeFly),
-                        PitchingStarts = stat.PitchingStats.Start ? 1 : 0,
-                        PitchingWins = stat.PitchingStats.Wins,
-                        PitchingLosses = stat.PitchingStats.Losses,
-                        InningsPitched = stat.PitchingStats.Innings,
-                        HitsAllowed = stat.PitchingStats.HitsAllowed,
-                        RunsAllowed = stat.PitchingStats.Runs,
-                        WalksAllowed = stat.PitchingStats.WalksAllowed,
-                        PitchingStrikeouts = stat.PitchingStats.PitchingStrikeouts,
-                        Saves = stat.PitchingStats.Saves,
-                        EarnedRunAverage = stat.PitchingStats.Runs == 0 || stat.PitchingStats.Innings == 0 ? 0 : (decimal)(stat.PitchingStats.Runs / stat.PitchingStats.Innings) * 9,
-                        WalksHitsPerInning = (stat.PitchingStats.WalksAllowed + stat.PitchingStats.HitsAllowed) == 0 || stat.PitchingStats.Innings == 0 ? 0 : (decimal)(stat.PitchingStats.WalksAllowed + stat.PitchingStats.HitsAllowed) / stat.PitchingStats.Innings,
-                        GamesPlayed = stat.HittingStats.AtBats > 0 || stat.PitchingStats.Innings > 0 ? 1 : 0
-                    };                
-                statLeader.OnBasePlusSlugging = statLeader.OnBasePercentage + statLeader.Slugging;
-                await GetImageAsync(statLeader);
-                StatLeaders.Add(statLeader);
+                PlayerModel = await DataLoader.GetOrLoad(
+                    () => PlayerLocalCache.GetPlayerByIdCache(stat.PlayerId.ToString()),
+                    () => PlayerService.GetPlayerById(stat.PlayerId),
+                    (p) => PlayerLocalCache.SetPlayerByIdCache(p, stat.PlayerId.ToString())
+                );
+
+                TeamModel = await DataLoader.GetOrLoad(
+                    () => TeamLocalCache.GetTeamByIdCache(stat.TeamId.ToString()),
+                    () => TeamService.GetTeamById(stat.TeamId),
+                    (t) => TeamLocalCache.SetTeamByIdCache(stat.TeamId.ToString(), t)
+                );
+                leader = CreateLeader(stat);
+                await GetImageAsync(leader);
+                StatLeaders.Add(leader);
             }
             else
             {
-                var statLeader = StatLeaders.FirstOrDefault(s => s.PlayerId == stat.PlayerId);
-                statLeader.AtBats += stat.HittingStats.AtBats;
-                statLeader.Hits += stat.HittingStats.Hits;
-                statLeader.Runs += stat.HittingStats.Runs;
-                statLeader.Average = statLeader.Hits == 0 || statLeader.AtBats == 0 ? 0 : (decimal)statLeader.Hits / statLeader.AtBats;
-                statLeader.RunsBattedIn += stat.HittingStats.RunsBattedIn;
-                statLeader.Doubles += stat.HittingStats.Doubles;
-                statLeader.Triples += stat.HittingStats.Triples;
-                statLeader.HomeRuns += stat.HittingStats.HomeRuns;
-                statLeader.TotalBases += stat.HittingStats.TotalBases;
-                statLeader.Slugging = statLeader.TotalBases == 0 || statLeader.AtBats == 0 ? 0 : (decimal)statLeader.TotalBases / statLeader.AtBats;
-                statLeader.StolenBases += stat.HittingStats.StolenBases;
-                statLeader.Strikeouts += stat.HittingStats.Strikeouts;
-                statLeader.Walks += stat.HittingStats.Walks;
-                statLeader.HitByPitch += stat.HittingStats.HitByPitch;
-                statLeader.SacrificeFly += stat.HittingStats.SacrificeFly;
-                statLeader.OnBasePercentage = (statLeader.Hits + statLeader.Walks + statLeader.HitByPitch) == 0 || (statLeader.Hits + statLeader.Walks + statLeader.HitByPitch + statLeader.SacrificeFly) == 0 ? 0 : (decimal)(statLeader.Hits + statLeader.Walks + statLeader.HitByPitch) / (statLeader.Hits + statLeader.Walks + statLeader.HitByPitch + statLeader.SacrificeFly);
-                statLeader.PitchingStarts += stat.PitchingStats.Start ? 1 : 0;
-                statLeader.PitchingWins += stat.PitchingStats.Wins;
-                statLeader.PitchingLosses += stat.PitchingStats.Losses;
-                statLeader.InningsPitched += stat.PitchingStats.Innings;
-                double wholePart = Math.Floor((double)statLeader.InningsPitched);
-                double fractionalPart = (double)statLeader.InningsPitched - wholePart;
-                if (fractionalPart >= 0.3)
-                    statLeader.InningsPitched = (decimal)Math.Ceiling((double)statLeader.InningsPitched);
-                statLeader.HitsAllowed += stat.PitchingStats.HitsAllowed;
-                statLeader.RunsAllowed += stat.PitchingStats.Runs;
-                statLeader.WalksAllowed += stat.PitchingStats.WalksAllowed;
-                statLeader.PitchingStrikeouts += stat.PitchingStats.PitchingStrikeouts;
-                statLeader.Saves += stat.PitchingStats.Saves;
-                statLeader.EarnedRunAverage = statLeader.RunsAllowed == 0 || statLeader.InningsPitched == 0 ? 0 : (decimal)(statLeader.RunsAllowed / statLeader.InningsPitched) * 9;
-                statLeader.WalksHitsPerInning = (statLeader.WalksAllowed + statLeader.HitsAllowed) == 0 || statLeader.InningsPitched == 0 ? 0 : (decimal)(statLeader.WalksAllowed + statLeader.HitsAllowed) / statLeader.InningsPitched;
-                statLeader.GamesPlayed += stat.HittingStats.AtBats > 0 || stat.PitchingStats.Innings > 0 ? 1 : 0;
+                UpdateLeader(leader, stat);
             }
         }
     }
 
-    public class StatLeaderModel
+    private BaseballStatLeaderModel CreateLeader(BaseballStatsModel stat)
     {
-        public Guid PlayerId { get; set; }
-        public string PlayerName { get; set; }
-        public string Position { get; set; }
-        public string Team { get; set; }
-        public string Image { get; set; }
-        public int GamesPlayed { get; set; }
-        public int AtBats { get; set; }
-        public int Hits { get; set; }
-        public int Runs { get; set; }
-        public decimal Average { get; set; }
-        public int RunsBattedIn { get; set; }
-        public int Doubles { get; set; }
-        public int Triples { get; set; }
-        public int HomeRuns { get; set; }
-        public int TotalBases { get; set; }
-        public decimal Slugging { get; set; }
-        public int StolenBases { get; set; }
-        public int Strikeouts { get; set; }
-        public int Walks { get; set; }
-        public int HitByPitch { get; set; }
-        public int SacrificeFly { get; set; }
-        public decimal OnBasePercentage { get; set; }
-        public decimal OnBasePlusSlugging { get; set; }
-        public int PitchingStarts { get; set; }
-        public int PitchingWins { get; set; }
-        public int PitchingLosses { get; set; }
-        public decimal InningsPitched { get; set; }
-        public int HitsAllowed { get; set; }
-        public int RunsAllowed { get; set; }
-        public int WalksAllowed { get; set; }
-        public int PitchingStrikeouts { get; set; }
-        public int Saves { get; set; }
-        public decimal EarnedRunAverage { get; set; }
-        public decimal WalksHitsPerInning { get; set; }
+        var h = stat.HittingStats;
+        var p = stat.PitchingStats;
+
+        var obp = SafeOBP(h.Hits, h.Walks, h.HitByPitch, h.SacrificeFly);
+        var slg = SafeSlugging(h.TotalBases, h.AtBats);
+
+        return new BaseballStatLeaderModel
+        {
+            PlayerId = PlayerModel.Player.Id,
+            PlayerName = String.Concat(PlayerModel.Player.FirstName, " ", PlayerModel.Player.LastName),
+            Position = PlayerModel.Player.PlayerDetail.Position,
+            Team = TeamModel.Team.TeamName,
+
+            AtBats = h.AtBats,
+            Hits = h.Hits,
+            Runs = h.Runs,
+            Average = SafeAvg(h.Hits, h.AtBats),
+            RunsBattedIn = h.RunsBattedIn,
+            Doubles = h.Doubles,
+            Triples = h.Triples,
+            HomeRuns = h.HomeRuns,
+            TotalBases = h.TotalBases,
+            Slugging = slg,
+            StolenBases = h.StolenBases,
+            Strikeouts = h.Strikeouts,
+            Walks = h.Walks,
+            HitByPitch = h.HitByPitch,
+            SacrificeFly = h.SacrificeFly,
+            OnBasePercentage = obp,
+            OnBasePlusSlugging = SafeOPS(obp, slg),
+
+            PitchingStarts = p.Start ? 1 : 0,
+            PitchingWins = p.Wins,
+            PitchingLosses = p.Losses,
+            InningsPitched = p.Innings,
+            HitsAllowed = p.HitsAllowed,
+            RunsAllowed = p.Runs,
+            WalksAllowed = p.WalksAllowed,
+            PitchingStrikeouts = p.PitchingStrikeouts,
+            Saves = p.Saves,
+            EarnedRunAverage = SafeERA(p.Runs, p.Innings),
+            WalksHitsPerInning = SafeWHIP(p.WalksAllowed, p.HitsAllowed, p.Innings),
+            GamesPlayed = h.AtBats > 0 || p.Innings > 0 ? 1 : 0
+        };
     }
+
+    private void UpdateLeader(BaseballStatLeaderModel leader, BaseballStatsModel stat)
+    {
+        var h = stat.HittingStats;
+        var p = stat.PitchingStats;
+
+        leader.AtBats += h.AtBats;
+        leader.Hits += h.Hits;
+        leader.Runs += h.Runs;
+        leader.Average = SafeAvg(leader.Hits, leader.AtBats);
+        leader.RunsBattedIn += h.RunsBattedIn;
+        leader.Doubles += h.Doubles;
+        leader.Triples += h.Triples;
+        leader.HomeRuns += h.HomeRuns;
+        leader.TotalBases += h.TotalBases;
+        leader.Slugging = SafeSlugging(leader.TotalBases, leader.AtBats);
+        leader.StolenBases += h.StolenBases;
+        leader.Strikeouts += h.Strikeouts;
+        leader.Walks += h.Walks;
+        leader.HitByPitch += h.HitByPitch;
+        leader.SacrificeFly += h.SacrificeFly;
+        leader.OnBasePercentage = SafeOBP(leader.Hits, leader.Walks, leader.HitByPitch, leader.SacrificeFly);
+        leader.OnBasePlusSlugging = SafeOPS(leader.OnBasePercentage, leader.Slugging);
+
+        leader.PitchingStarts += p.Start ? 1 : 0;
+        leader.PitchingWins += p.Wins;
+        leader.PitchingLosses += p.Losses;
+        leader.InningsPitched = DataLoader.AddInnings(leader.InningsPitched, p.Innings);
+        leader.HitsAllowed += p.HitsAllowed;
+        leader.RunsAllowed += p.Runs;
+        leader.WalksAllowed += p.WalksAllowed;
+        leader.PitchingStrikeouts += p.PitchingStrikeouts;
+        leader.Saves += p.Saves;
+        leader.EarnedRunAverage = SafeERA(p.Runs, leader.InningsPitched);
+        leader.WalksHitsPerInning = SafeWHIP(leader.WalksAllowed, leader.HitsAllowed, leader.InningsPitched);
+        leader.GamesPlayed += h.AtBats > 0 || p.Innings > 0 ? 1 : 0;
+
+    }
+
+    private decimal SafeAvg(int numerator, int denominator) =>
+        denominator == 0 ? 0 : (decimal)numerator / denominator;
+
+    private decimal SafeSlugging(int totalBases, int atBats) =>
+        atBats == 0 ? 0 : (decimal)totalBases / atBats;
+
+    private decimal SafeOBP(int hits, int walks, int hbp, int sf)
+    {
+        var num = hits + walks + hbp;
+        var den = num + sf;
+        return den == 0 ? 0 : (decimal)num / den;
+    }
+
+    private decimal SafeOPS(decimal obp, decimal slg) => obp + slg;
+
+    private decimal SafeERA(int runs, decimal innings) =>
+        innings == 0 ? 0 : (decimal)runs / innings * 9;
+
+    private decimal SafeWHIP(int walks, int hits, decimal innings) =>
+        innings == 0 ? 0 : (decimal)(walks + hits) / innings;
+
 }
