@@ -242,7 +242,7 @@
         ComputePerGame(leader);
     }
 
-    private void ComputePerGame(StatLeaderModel l)
+    private void ComputePerGame(BasketballStatLeaderModel l)
     {
         l.PointsPerGame = SafePerGame(l.Points, l.GamesPlayed);
         l.ReboundsPerGame = SafePerGame(l.Rebounds, l.GamesPlayed);
