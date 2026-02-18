@@ -22,4 +22,11 @@ public class ImageService
 
         return await _aws.GetImage(key);
     }
+
+    public async Task UploadLeagueImageAsync(CreateLeagueModel model)
+    {
+        string keyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
+
+        await _aws.UploadImages(keyPath, model.File);
+    }
 }

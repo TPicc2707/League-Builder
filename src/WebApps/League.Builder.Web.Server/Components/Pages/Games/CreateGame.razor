@@ -306,23 +306,17 @@
     {
         foreach(var team in Teams)
         {
-            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+            <MudSelectItem Value="@team.Id">@team.TeamName</MudSelectItem>
             ;
         }
     };
 
-    private Func<string, string, RenderFragment> StepHeader = (string icon, string title) => __builder =>
-    {
-        <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
+    private Func<string, string, RenderFragment> StepHeader = (string icon, string title) => @<MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
             <MudIcon Icon="@icon" Color="Color.Secondary" Size="Size.Medium" />
             <MudText Typo="Typo.h6" Style="font-weight: bold;">@title</MudText>
-        </MudStack>
-        ;
-    };
+        </MudStack>;
 
-    private RenderFragment Card(RenderFragment content, RenderFragment actions = null) => __builder =>
-    {
-        <MudCard Class="border border-solid" Style="border-color: #000000">
+    private RenderFragment Card(RenderFragment content, RenderFragment actions = null) => @<MudCard Class="border border-solid" Style="border-color: #000000">
             <MudCardContent>
                 @content
             </MudCardContent>
@@ -333,6 +327,5 @@
                 </MudCardActions>
             }
         </MudCard>;     
-    };
 
 }
