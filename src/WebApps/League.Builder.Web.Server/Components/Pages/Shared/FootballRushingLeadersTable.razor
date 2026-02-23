@@ -1,0 +1,73 @@
+﻿<MudTable Items="@Leaders" Hover="true" Class="stat-padding" Dense="true">
+    <ColGroup>
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary"></MudTh>
+        <MudTh Class="mud-theme-primary stat-header">Name</MudTh>
+        <MudTh Class="mud-theme-primary stat-header">Team</MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.GamesPlayed">GP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.RushingAttempts">CAR</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="(FootballStatLeaderModel x) => x.RushingYards">YDS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.RushingYardsAverage">AVG</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.RushingTouchdowns">TD</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.LongestRushingPlay">LNG</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.RushingYardsPerGame">YDS/G</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.RushingFumbles">FUM</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.RushingFumblesLost">LST</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>
+            <PlayerAvatar Image="@context.Image" />
+        </MudTd>
+        <StatsLeaderCell Label="Name">
+            <MudLink Color="Color.Tertiary" Href="@($"/footballplayerstats/{context.PlayerId}")">@context.PlayerName</MudLink>
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Team">
+            @context.Team
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Games Played">
+            @context.GamesPlayed
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Rushing Attempts">
+            @context.RushingAttempts
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Rushing Yards">
+            @context.RushingYards
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Rushing Yards Average">
+            @context.RushingYardsAverage.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Rushing Touchdowns">
+            @context.RushingTouchdowns
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Longest Rushing Play">
+            @context.LongestRushingPlay
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Rushing Yards Per Game">
+            @context.RushingYardsPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Rushing Fumbles">
+            @context.RushingFumbles
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Rushing Fumbles Lost">
+            @context.RushingFumblesLost
+        </StatsLeaderCell>
+    </RowTemplate>
+</MudTable>
+
+
+@code {
+        [Parameter] public IEnumerable<FootballStatLeaderModel> Leaders { get; set; }
+}

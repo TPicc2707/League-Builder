@@ -1,0 +1,78 @@
+﻿<MudTable Items="@Leaders" Hover="true" Class="stat-padding" Dense="true">
+    <ColGroup>
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary"></MudTh>
+        <MudTh Class="mud-theme-primary stat-header">Name</MudTh>
+        <MudTh Class="mud-theme-primary stat-header">Team</MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.GamesPlayed">GP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.Receptions">REC</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.Targets">TGTS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="(FootballStatLeaderModel x) => x.ReceivingYards">YDS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.ReceivingYardsPerPlay">AVG</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.ReceivingTouchdowns">TD</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.ReceivingYardsPerGame">YDS/G</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.YardsAfterCatch">YAC</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.ReceivingFumbles">FUM</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.ReceivingFumblesLost">LST</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>
+            <PlayerAvatar Image="@context.Image" />
+        </MudTd>
+        <StatsLeaderCell Label="Name">
+            <MudLink Color="Color.Tertiary" Href="@($"/footballplayerstats/{context.PlayerId}")">@context.PlayerName</MudLink>
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Team">
+            @context.Team
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Games Played">
+            @context.GamesPlayed
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Receptions">
+            @context.Receptions
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Targets">
+            @context.Targets
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Receiving Yards">
+            @context.ReceivingYards
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Receiving Yards Per Play">
+            @context.ReceivingYardsPerPlay.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Receiving Touchdowns">
+            @context.ReceivingTouchdowns
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Receiving Yards Per Game">
+            @context.ReceivingYardsPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Yards After Catch">
+            @context.YardsAfterCatch
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Receiving Fumbles">
+            @context.ReceivingFumbles
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Receiving Fumbles Lost">
+            @context.ReceivingFumblesLost
+        </StatsLeaderCell>
+    </RowTemplate>
+</MudTable>
+
+
+@code {
+    [Parameter] public IEnumerable<FootballStatLeaderModel> Leaders { get; set; }
+}

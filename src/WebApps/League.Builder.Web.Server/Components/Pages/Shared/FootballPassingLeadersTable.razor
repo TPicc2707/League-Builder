@@ -1,0 +1,83 @@
+﻿<MudTable Items="@Leaders" Hover="true" Class="stat-padding" Dense="true">
+    <ColGroup>
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+        <col />
+    </ColGroup>
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary"></MudTh>
+        <MudTh Class="mud-theme-primary stat-header">Name</MudTh>
+        <MudTh Class="mud-theme-primary stat-header">Team</MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.GamesPlayed">GP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.PassingCompletions">CMP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.PassingAttempts">ATT</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.PassingCompletionPercentage">CMP%</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="(FootballStatLeaderModel x) => x.PassingYards">YDS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.PassingYardsPerPlay">AVG</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.LongestPassingPlay">LNG</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.PassingYardsPerGame">YDS/G</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.PassingTouchdowns">TD</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.PassingInterceptions">INT</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(FootballStatLeaderModel x) => x.Sacks">SACK</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>
+            <PlayerAvatar Image="@context.Image" />
+        </MudTd>
+        <StatsLeaderCell Label="Name">
+            <MudLink Color="Color.Tertiary" Href="@($"/footballplayerstats/{context.PlayerId}")">@context.PlayerName</MudLink>
+        </StatsLeaderCell>       
+        <StatsLeaderCell Label="Team">
+            @context.Team
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Games Played">
+            @context.GamesPlayed
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Passing Completions">
+            @context.PassingCompletions
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Passing Attempts">
+            @context.PassingAttempts
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Passing Completion Percentage">
+            @context.PassingCompletionPercentage.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Passing Yards">
+            @context.PassingYards
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Passing Yards Per Play">
+            @context.PassingYardsPerPlay.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Longest Passing Play">
+            @context.LongestPassingPlay
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Passing Yards Per Game">
+            @context.PassingYardsPerGame.ToString("#0.0")
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Passing Touchdowns">
+            @context.PassingTouchdowns
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Passing Interceptions">
+            @context.PassingInterceptions
+        </StatsLeaderCell>
+        <StatsLeaderCell Label="Sacks">
+            @context.Sacks
+        </StatsLeaderCell>
+    </RowTemplate>
+</MudTable>
+
+
+@code {
+    [Parameter] public IEnumerable<FootballStatLeaderModel> Leaders { get; set; }
+}

@@ -1,4 +1,4 @@
-﻿<MudTable Items="@Leaders" Hover="true" Class="border border-solid stat-border" Style="border-color: #000000">
+﻿<MudTable Items="@Leaders" Hover="true" Class="border border-solid stat-border" Dense="true">
     <ColGroup>
         <col />
         <col />
@@ -23,32 +23,32 @@
     </ColGroup>
     <HeaderContent>
         <MudTh Class="mud-theme-primary"></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Name</MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary">Team</MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.GamesPlayed">S</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Minutes">MIN</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="(BasketballStatLeaderModel x) => x.PointsPerGame">PTS</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ReboundsPerGame">REB</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Assists">AST</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Blocks">BLK</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Steals">STL</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Turnovers">TO</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FieldGoalsMade">FGM</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FieldGoalsAttempted">FGA</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FieldGoalPercentage">FG%</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ThreePointersMade">3PM</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ThreePointersAttempted">3PA</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ThreePointerPercentage">3P%</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FreeThrowsMade">FTM</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FreeThrowsAttempted">FTA</MudTableSortLabel></MudTh>
-        <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FreeThrowPercentage">FT%</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header">Name</MudTh>
+        <MudTh Class="mud-theme-primary stat-header">Team</MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.GamesPlayed">S</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Minutes">MIN</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="(BasketballStatLeaderModel x) => x.PointsPerGame">PTS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ReboundsPerGame">REB</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Assists">AST</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Blocks">BLK</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Steals">STL</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.Turnovers">TO</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FieldGoalsMade">FGM</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FieldGoalsAttempted">FGA</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FieldGoalPercentage">FG%</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ThreePointersMade">3PM</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ThreePointersAttempted">3PA</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.ThreePointerPercentage">3P%</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FreeThrowsMade">FTM</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FreeThrowsAttempted">FTA</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary stat-header"><MudTableSortLabel SortBy="(BasketballStatLeaderModel x) => x.FreeThrowPercentage">FT%</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd>
             <PlayerAvatar Image="@context.Image" />
         </MudTd>
         <StatsLeaderCell Label="Name">
-            <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.PlayerId}")">@context.PlayerName</MudLink>
+            <MudLink Color="Color.Tertiary" Href="@($"/basketballplayerstats/{context.PlayerId}")">@context.PlayerName</MudLink>
         </StatsLeaderCell>
         <StatsLeaderCell Label="Team">
             @context.Team

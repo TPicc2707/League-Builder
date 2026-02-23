@@ -26,7 +26,7 @@
                 <MudExpansionPanels>
                     <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid stat-border" Style="border-color: #000000">
                         <TitleContent>
-                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@Season.Year Stat Leaders</MudText>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Class="font-bold">@Season.Year Stat Leaders</MudText>
                         </TitleContent>
                         <ChildContent>
                             <MudStack Row="true">
@@ -34,7 +34,7 @@
                                     <MudSelect @bind-Value="seasonValue" Placeholder="@placeholder" Label="@placeholder">
                                         @foreach (var season in SeasonsModel.Seasons)
                                         {
-                                            <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                            <MudSelectItem Value="@season.Year">@season.Year</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
@@ -97,9 +97,7 @@
                 (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
             );
             await CreateStatsLeadersByLeague(leagueId);
-            seasonValue = Season.Year;
             PageLoad = true;
-
         }
         catch (Exception ex)
         {
