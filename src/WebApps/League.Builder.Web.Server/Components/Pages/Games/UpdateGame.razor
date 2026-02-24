@@ -214,15 +214,15 @@
        );
 
         LeagueResponse = await DataLoader.GetOrLoad(
-             () => LeagueLocalCache.GetLeagueByIdCache(model.LeagueId.ToString()),
-             () => LeagueService.GetLeague(model.LeagueId),
-             (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
+             () => LeagueLocalCache.GetLeagueByIdCache(GameModel.Game.LeagueId.ToString()),
+             () => LeagueService.GetLeague(GameModel.Game.LeagueId),
+             (l) => LeagueLocalCache.SetLeagueByIdCache(GameModel.Game.LeagueId.ToString(), l)
          );
 
         TeamsResponse = await DataLoader.GetOrLoad(
-            () => TeamLocalCache.GetTeamsByLeagueCache(model.LeagueId.ToString()),
-            () => TeamService.GetTeamsByLeague(model.LeagueId),
-            (t) => TeamLocalCache.SetTeamsByLeagueCache(model.LeagueId.ToString(), t)
+            () => TeamLocalCache.GetTeamsByLeagueCache(GameModel.Game.LeagueId.ToString()),
+            () => TeamService.GetTeamsByLeague(GameModel.Game.LeagueId),
+            (t) => TeamLocalCache.SetTeamsByLeagueCache(GameModel.Game.LeagueId.ToString(), t)
         );
 
         var awayTeam = await DataLoader.GetOrLoad(
