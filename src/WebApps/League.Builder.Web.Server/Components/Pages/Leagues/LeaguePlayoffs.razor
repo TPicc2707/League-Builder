@@ -14,36 +14,34 @@
 @inject IStandingsLocalCacheService StandingsLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
+@inject ImageService ImageService
 
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStandings, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="padding-top: 50px;">
-                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">@Season.Year Playoffs</MudText>
-                </MudPaper>
-            </MudItem>
+            <MudPaper Class="border border-solid" Style="border-color: #000000; margin-top: 50px; padding: 25px;">
+                <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">
+                    @Season.Year Playoffs
+                </MudText>
+            </MudPaper>
 
-            @if(LeagueModel.League.TotalPlayoffTeams == PlayoffTeams.TwoTeams)
+            @switch (LeagueModel.League.TotalPlayoffTeams)
             {
-                <TwoTeamPlayoff Standings="Standings" />
+                case PlayoffTeams.TwoTeams:
+                    <TwoTeamPlayoff Standings="Standings" />
+                    break;
+                case PlayoffTeams.FourTeams:
+                    <FourTeamPlayoff Standings="Standings" />
+                    break;
+                case PlayoffTeams.EightTeams:
+                    <EightTeamPlayoff Standings="Standings" />
+                    break;
+                default:
+                    <Loading />
+                    break;
             }
-
-            @if (LeagueModel.League.TotalPlayoffTeams == PlayoffTeams.FourTeams)
-            {
-                <FourTeamPlayoff Standings="Standings" />
-            }
-
-            @if (LeagueModel.League.TotalPlayoffTeams == PlayoffTeams.EightTeams)
-            {
-                <EightTeamPlayoff Standings="Standings" />
-            }
-        }
-        else
-        {
-            <Loading />    
         }
     </Authorized>
     <NotAuthorized>
@@ -70,29 +68,36 @@
         try
         {
             var leagueId = Guid.Parse(Id);
-            SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
-            if (SeasonsModel == null)
-            {
-                SeasonsModel = await SeasonService.GetSeasons();
-                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
-            }
+
+            SeasonsModel = await DataLoader.GetOrLoad(
+                () => SeasonLocalCache.GetSeasonsCache(),
+                () => SeasonService.GetSeasons(),
+                (s) => SeasonLocalCache.SetSeasonsCache(s)
+            );
             Season = SeasonsModel.Seasons.First();
-            Model = await StandingsLocalCache.GetStandingsByLeagueCache(Id);
-            if (Model == null)
+
+            Model = await DataLoader.GetOrLoad(
+                () => StandingsLocalCache.GetStandingsByLeagueCache(Id),
+                () => StandingsService.GetStandingsByLeague(leagueId),
+                (s) => StandingsLocalCache.SetStandingsByLeagueCache(Id, s)
+            );
+            Standings = Model.Standings.Where(x => x.SeasonId == Season.Id).ToList();
+
+            foreach (var s in Standings)
             {
-                Model = await StandingsService.GetStandingsByLeague(leagueId);
-                await StandingsLocalCache.SetStandingsByLeagueCache(Id, Model);
+                var detail = s.StandingsDetail;
+                s.WinPercentage = CalculateWinPercentage(detail.Wins, detail.GamesPlayed);
             }
-            Standings = Model.Standings.Where(x => x.SeasonId == Season.Id);
-            LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(Id);
-            if (LeagueModel == null)
-            {
-                LeagueModel = await LeagueService.GetLeague(leagueId);
-                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueModel);
-            }
-            await GetImageAsync();
+
+            LeagueModel = await DataLoader.GetOrLoad(
+                () => LeagueLocalCache.GetLeagueByIdCache(Id),
+                () => LeagueService.GetLeague(leagueId),
+                (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
+            );
+
             CalculatePlayoffTeams();
-            Standings = Standings.Where(x => x.SeasonId == Season.Id && x.StandingsDetail.PlayoffTeam == true).OrderByDescending(x => x.WinPercentage);
+
+            await GetImageAsync();
             PageLoad = true;
         }
         catch (Exception ex)
@@ -112,23 +117,26 @@
     {
         foreach (var standing in Model.Standings)
         {
-            standing.WinPercentage = standing.StandingsDetail.Wins != 0 | standing.StandingsDetail.GamesPlayed != 0 ? (decimal)standing.StandingsDetail.Wins / standing.StandingsDetail.GamesPlayed : 0;
-            TeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(standing.Team.Id.ToString());
-            if(TeamByIdResponse == null)
-            {
-                TeamByIdResponse = await TeamService.GetTeamById(standing.Team.Id);
-                await TeamLocalCache.SetTeamByIdCache(standing.Team.Id.ToString(), TeamByIdResponse);
-            }
-            var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamByIdResponse.Team.TeamName}/{TeamByIdResponse.Team.ImageFile}";
-            standing.TeamImage = await AWSService.GetImage(keyPath);
+            TeamByIdResponse = await DataLoader.GetOrLoad(
+               () => TeamLocalCache.GetTeamByIdCache(standing.Team.Id.ToString()),
+               () => TeamService.GetTeamById(standing.Team.Id),
+               (t) => TeamLocalCache.SetTeamByIdCache(standing.Team.Id.ToString(), t)
+            );
+
+            standing.TeamImage = await ImageService.GetTeamImageAsync(LeagueModel.League, TeamByIdResponse.Team);
         }
     }
 
     private void CalculatePlayoffTeams()
     {
-        var playoffTeams = Model.Standings.Where(x => x.SeasonId == Season.Id).OrderByDescending(x => x.WinPercentage).Take(LeagueModel.League.TotalPlayoffTeams);
+        var playoffTeams = Standings.OrderByDescending(x => x.WinPercentage).Take(LeagueModel.League.TotalPlayoffTeams);
 
         foreach (var playoffTeam in playoffTeams)
             playoffTeam.ProjectedPlayoffTeam = true;
+    }
+
+    private static decimal CalculateWinPercentage(int wins, int gamesPlayed)
+    {
+        return gamesPlayed == 0 ? 0 : (decimal)wins / gamesPlayed;
     }
 }
