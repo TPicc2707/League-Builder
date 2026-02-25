@@ -9,6 +9,7 @@
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ImageService ImageService
 
 <AuthorizeView Roles="@Roles.ReadLeagues" Context="auth">
     <Authorized>
@@ -283,22 +284,22 @@
 
     private async Task SearchAllInternal()
     {
-        var response = await LeagueLocalCache.GetLeaguesCache()
-                        ?? await LeagueService.GetLeagues(1, 10000);
-
-        if(response is not null)
-            await LeagueLocalCache.SetLeaguesCache(response);
-
+        var response = await DataLoader.GetOrLoad(
+            () => LeagueLocalCache.GetLeaguesCache(),
+            () => LeagueService.GetLeagues(1, 10000),
+            (l) => LeagueLocalCache.SetLeaguesCache(l)
+        );
         Model = response.Leagues.ToList();
         await LoadImages();
     }
 
     private async Task SearchBySportInternal()
     {
-        var response = await LeagueLocalCache.GetLeaguesBySportCache(sport)
-                        ?? await LeagueService.GetLeaguesBySport(sport);
-        if(response is not null)
-            await LeagueLocalCache.SetLeaguesBySportCache(sport, response);
+        var response = await DataLoader.GetOrLoad(
+            () => LeagueLocalCache.GetLeaguesBySportCache(sport),
+            () => LeagueService.GetLeaguesBySport(sport),
+            (l) => LeagueLocalCache.SetLeaguesBySportCache(sport, l)
+        ); 
         Model = response.Leagues.ToList();
         await LoadImages();
     }
@@ -308,12 +309,11 @@
         GetLeaguesByNameResponse response;
         if(lastNameSearched == name)
         {
-            response = await LeagueLocalCache.GetLeaguesByNameCache();
-            if(response is null)
-            {
-                response = await LeagueService.GetLeaguesByName(name);
-                await LeagueLocalCache.SetLeaguesByNameCache(response);
-            }
+            response = await DataLoader.GetOrLoad(
+                () => LeagueLocalCache.GetLeaguesByNameCache(),
+                () => LeagueService.GetLeaguesByName(name),
+                (l) => LeagueLocalCache.SetLeaguesByNameCache(l)
+            );
         }
         else
         {
@@ -332,10 +332,7 @@
             return;
 
         foreach (var league in Model)
-        {
-            string keyPath = $"/{league.Sport}/{league.Name}/{league.ImageFile}";
-            league.Image = await AWSService.GetImage(keyPath);
-        }
+            league.Image = await ImageService.GetLeagueImageAsync(league);
     }
 
     private async Task TriggerLogout()

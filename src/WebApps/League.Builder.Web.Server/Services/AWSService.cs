@@ -3,7 +3,7 @@ using Amazon.S3.Model;
 
 namespace League.Builder.Web.Server.Services;
 
-public class AWSService : IAWSService
+public class _awsAWSService : IAWSService
 {
     private readonly IAmazonS3 _awsS3;
     private const string Image_S3_Bucket_Name = "league-builder-images";

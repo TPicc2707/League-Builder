@@ -9,6 +9,12 @@ public class ImageService
         _aws = aws;    
     }
 
+    public async Task<string> GetLeagueImageAsync(LeagueModel league)
+    {
+        string keyPath = $"/{league.Sport}/{league.Name}/{league.ImageFile}";
+        return await _aws.GetImage(keyPath);
+    }
+
     public async Task<string> GetTeamImageAsync(LeagueModel league, TeamModel team)
     {
         var key = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/{team.ImageFile}";
