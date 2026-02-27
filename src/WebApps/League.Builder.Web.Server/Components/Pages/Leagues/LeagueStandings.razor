@@ -14,12 +14,13 @@
 @inject IStandingsLocalCacheService StandingsLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
+@inject ImageService ImageService
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStandings, ", ", Roles.ReadSeasons)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
+            <MudItem Style="padding: 25px 0;">
                 <MudExpansionPanels>
                     <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid" Style="border-color: #000000">
                         <TitleContent>
@@ -28,15 +29,15 @@
                         <ChildContent>
                             <MudStack Justify="Justify.FlexStart" Row="true" Style="padding-top: 25px;">
                                 <MudItem xs="6" md="6" lg="6">
-                                    <MudSelect @bind-Value="seasonValue" Placeholder="@placeholder" Label="@placeholder">
+                                    <MudSelect @bind-Value="seasonValue" Label="Season">
                                         @foreach (var season in SeasonsModel.Seasons)
                                         {
-                                            <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                            <MudSelectItem Value="@season.Year">@season.Year</MudSelectItem>
                                         }
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="3" md="3" lg="3" Style="align-content: center; padding: 10px;">
-                                    <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStandings" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                    <MudButton Disabled="@(seasonValue <= 0)" OnClick="GetSeasonStandings" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
                                 </MudItem>
                                 <MudItem xs="3" md="3" lg="3" Style="align-content: center; padding: 10px;">
                                     <MudButton OnClick="NavigateToPlayoffs" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Playoffs</MudButton>
@@ -46,53 +47,35 @@
                     </MudExpansionPanel>
                 </MudExpansionPanels>
             </MudItem>
-            <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px 25px 25px 25px;">
+            <MudPaper Class="border border-solid pa-6" Style="border-color: #000000;">
                 <MudItem>
                     <MudTable Items="@Standings" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                         <HeaderContent>
                             <MudTh Class="mud-theme-primary"></MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.Team.TeamName)">Team Name</MudTableSortLabel></MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.GamesPlayed)">GP</MudTableSortLabel></MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.Wins)">W</MudTableSortLabel></MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.Losses)">L</MudTableSortLabel></MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.WinPercentage)">PCT</MudTableSortLabel></MudTh>
-                            <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<StandingsModel, object>(x => x.GamesBack)">GB</MudTableSortLabel></MudTh>
+                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.Team.TeamName)">Team Name</MudTableSortLabel></MudTh>
+                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.GamesPlayed)">GP</MudTableSortLabel></MudTh>
+                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.Wins)">W</MudTableSortLabel></MudTh>
+                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.StandingsDetail.Losses)">L</MudTableSortLabel></MudTh>
+                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.WinPercentage)">PCT</MudTableSortLabel></MudTh>
+                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<StandingsModel, object>(x => x.GamesBack)">GB</MudTableSortLabel></MudTh>
                         </HeaderContent>
                         <RowTemplate>
                             <MudTd>
                                 <MudAvatar Size="Size.Small">
-                                    <MudImage Src="@context.TeamImage" Alt="Player Image"></MudImage>
+                                    <MudImage Src="@context.TeamImage" Alt="Team Image"></MudImage>
                                 </MudAvatar>
                             </MudTd>
-                            @if (context.ProjectedPlayoffTeam)
-                            {
-                                <MudTd DataLabel="Team Name">
-                                    <MudStack Row="true">
-                                        x - @context.Team.TeamName
-                                    </MudStack>
-                                </MudTd>
-                            }
-                            else
-                            {
-                                <MudTd DataLabel="Team Name">
-                                    <MudStack Row="true">
-                                        @context.Team.TeamName
-                                    </MudStack>
-                                </MudTd>
-                            }
+                            <MudTd DataLabel="Team Name">
+                                @(context.ProjectedPlayoffTeam ? $"x - {context.Team.TeamName}" : context.Team.TeamName)
+                            </MudTd>
                             <MudTd DataLabel="Games Played">@context.StandingsDetail.GamesPlayed</MudTd>
                             <MudTd DataLabel="Wins">@context.StandingsDetail.Wins</MudTd>
                             <MudTd DataLabel="Losses">@context.StandingsDetail.Losses</MudTd>
                             <MudTd DataLabel="Win Percentage">@context.WinPercentage.ToString("#0.000")</MudTd>
                             <MudTd DataLabel="Games Back">
-                                @if(context.GamesBack != 0)
-                                {
-                                    @context.GamesBack.ToString("#0.0")
-                                }
-                                else
-                                {
-                                    @firstPlacePlaceholder
-                                }
+                                @(context.GamesBack == 0
+                                    ? firstPlacePlaceholder
+                                    : context.GamesBack.ToString("#0.0"))
                                 </MudTd>
                         </RowTemplate>
                     </MudTable>
@@ -111,7 +94,7 @@
         }
     </Authorized>
     <NotAuthorized>
-        <MudText>You are not authorized to view this page...</MudText>
+        <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
 @code {
@@ -137,43 +120,44 @@
         try
         {
             var leagueId = Guid.Parse(Id);
-            SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
-            if (SeasonsModel == null)
-            {
-                SeasonsModel = await SeasonService.GetSeasons();
-                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
-            }
+            SeasonsModel = await DataLoader.GetOrLoad(
+                () => SeasonLocalCache.GetSeasonsCache(),
+                () => SeasonService.GetSeasons(),
+                (s) => SeasonLocalCache.SetSeasonsCache(s)
+            );
             Season = SeasonsModel.Seasons.First();
-            await StandingsLocalCache.DeleteStandingsByLeagueCache(Id);
-            Model = await StandingsLocalCache.GetStandingsByLeagueCache(Id);
-            if (Model == null)
-            {
-                Model = await StandingsService.GetStandingsByLeague(leagueId);
-                await StandingsLocalCache.SetStandingsByLeagueCache(Id, Model);
-            }
+            seasonValue = Season.Year;
+
+            Model = await DataLoader.GetOrLoad(
+                () => StandingsLocalCache.GetStandingsByLeagueCache(Id),
+                () => StandingsService.GetStandingsByLeague(leagueId),
+                (s) => StandingsLocalCache.SetStandingsByLeagueCache(Id, s)
+            );
             Standings = Model.Standings.Where(x => x.SeasonId == Season.Id);
-            LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(Id);
-            if (LeagueModel == null)
+
+            foreach(var s in Standings)
             {
-                LeagueModel = await LeagueService.GetLeague(leagueId);
-                await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueModel);
+                var d = s.StandingsDetail;
+                s.WinPercentage = CalculateWinPercentage(d.Wins, d.GamesPlayed);
             }
-            await GetImageAsync();
+
+            LeagueModel = await DataLoader.GetOrLoad(
+                () => LeagueLocalCache.GetLeagueByIdCache(Id),
+                () => LeagueService.GetLeague(leagueId),
+                (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
+            );
+
             CalculateGamesBack();
             CalculatePlayoffTeams();
-            seasonValue = Season.Year;
+
+            await GetImageAsync();
+
             PageLoad = true;
 
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
     }
 
@@ -182,27 +166,33 @@
         try
         {
             PageLoad = false;
-            SeasonModel = await SeasonLocalCache.GetSeasonByYearCache(seasonValue);
-            if (SeasonModel == null)
-            {
-                SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
-                await SeasonLocalCache.SetSeasonByYearCache(seasonValue, SeasonModel);
-            }
+
+            SeasonModel = await DataLoader.GetOrLoad(
+                () => SeasonLocalCache.GetSeasonByYearCache(seasonValue),
+                () => SeasonService.GetSeasonByYear(seasonValue),
+                (s) => SeasonLocalCache.SetSeasonByYearCache(seasonValue, s)
+            );
             Season = SeasonModel.Season;
+            Standings = Model.Standings.Where(x => x.SeasonId == Season.Id);
+
+            foreach (var s in Standings)
+            {
+                var d = s.StandingsDetail;
+                s.WinPercentage = CalculateWinPercentage(d.Wins, d.GamesPlayed);
+            }
+
             CalculateGamesBack();
+            CalculatePlayoffTeams();
+
+            await GetImageAsync();
+
             StateHasChanged();
             PageLoad = true;
 
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
     }
 
@@ -213,38 +203,52 @@
 
     private async Task GetImageAsync()
     {
-        foreach (var standing in Model.Standings)
+        foreach (var standing in Standings)
         {
-            standing.WinPercentage = standing.StandingsDetail.Wins != 0 | standing.StandingsDetail.GamesPlayed != 0 ? (decimal)standing.StandingsDetail.Wins / standing.StandingsDetail.GamesPlayed : 0;
-            TeamByIdResponse = await TeamLocalCache.GetTeamByIdCache(standing.Team.Id.ToString());
-            if (TeamByIdResponse == null)
-            {
-                TeamByIdResponse = await TeamService.GetTeamById(standing.Team.Id);
-                await TeamLocalCache.SetTeamByIdCache(standing.Team.Id.ToString(), TeamByIdResponse);
-            }
-            var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamByIdResponse.Team.TeamName}/{TeamByIdResponse.Team.ImageFile}";
-            standing.TeamImage = await AWSService.GetImage(keyPath);
+            TeamByIdResponse = await DataLoader.GetOrLoad(
+                () => TeamLocalCache.GetTeamByIdCache(standing.Team.Id.ToString()),
+                () => TeamService.GetTeamById(standing.Team.Id),
+                (t) => TeamLocalCache.SetTeamByIdCache(standing.Team.Id.ToString(), t)
+            );
+            standing.TeamImage = await ImageService.GetTeamImageAsync(LeagueModel.League, TeamByIdResponse.Team);
         }
     }
 
     private void CalculateGamesBack()
     {
-        var firstPlaceTeam = Model.Standings.Where(x => x.SeasonId == Season.Id).OrderByDescending(x => x.WinPercentage).FirstOrDefault();
+        var first = Standings.OrderByDescending(x => x.WinPercentage).FirstOrDefault();
 
-        foreach (var standing in Model.Standings.Where(x => x.SeasonId == Season.Id))
+        if(first is null)
+            return;
+
+        foreach (var s in Standings)
         {
-            var differenceWins = firstPlaceTeam.StandingsDetail.Wins - standing.StandingsDetail.Wins;
-            var differenceLosses = standing.StandingsDetail.Losses - firstPlaceTeam.StandingsDetail.Losses;
-            var difference = differenceWins + differenceLosses;
-            standing.GamesBack = difference != 0 ? (decimal)difference / 2 : 0;
+            var diffWins = first.StandingsDetail.Wins - s.StandingsDetail.Wins;
+            var diffLosses = s.StandingsDetail.Losses - first.StandingsDetail.Losses;
+            var diff = diffWins + diffLosses;
+            s.GamesBack = diff == 0 ? 0 : (decimal)diff / 2;
         }
     }
 
     private void CalculatePlayoffTeams()
     {
-        var playoffTeams = Model.Standings.Where(x => x.SeasonId == Season.Id).OrderByDescending(x => x.WinPercentage).Take(LeagueModel.League.TotalPlayoffTeams);
+        var playoffTeams = Standings.OrderByDescending(x => x.WinPercentage).Take(LeagueModel.League.TotalPlayoffTeams);
 
         foreach(var playoffTeam in playoffTeams)
             playoffTeam.ProjectedPlayoffTeam = true;
     }
+
+    private async Task HandleError(Exception ex)
+    {
+        if (KeycloakTokenService.ShouldForceLogout())
+        {
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+            await _module.InvokeVoidAsync("logout");
+        }
+        ErrorState.Message = ex.Message;
+        NavManager.NavigateTo("/error");
+    }
+
+    private static decimal CalculateWinPercentage(int wins, int gamesPlayed)
+        => gamesPlayed == 0 ? 0 : (decimal)wins / gamesPlayed;
 }
