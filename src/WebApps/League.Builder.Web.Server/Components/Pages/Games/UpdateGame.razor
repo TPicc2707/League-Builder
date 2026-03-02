@@ -122,9 +122,9 @@
                                                 <MudDatePicker Required ReadOnly Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.StartDate" />
                                                 <MudTimePicker Required ReadOnly Class="mt-3" Label="Start Time" AmPm Editable @bind-Time="model.StartTime" />
                                                 <MudDatePicker Required="@(model.GameStatus == GameStatus.Completed)" ReadOnly Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.EndDate" />
-                                                <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed)" ReadOnly Class="mt-3" Label="End Time" AmPm Editable @bind-Time="model.EndTime" />,
-                                                <MudButton Disabled="isGameCompleted" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
-                                                </div>)
+                                                <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed)" ReadOnly Class="mt-3" Label="End Time" AmPm Editable @bind-Time="model.EndTime" />,                                               
+                                                </div>,
+                                                @<MudButton Disabled="isGameCompleted" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>)
                                         </MudItem>
                                         @if (isGameCompleted)
                                         {
@@ -147,7 +147,7 @@
                                 <MudIconButton OnClick="@(() => stepper.NextStepAsync())"
                                                Icon="@Icons.Material.Filled.ArrowForward"
                                                Color="Color.Primary"
-                                               Disabled="_index != 3">
+                                               Disabled="_index == 3">
                                 </MudIconButton>
                             </ActionContent>
                         </MudStepper>
