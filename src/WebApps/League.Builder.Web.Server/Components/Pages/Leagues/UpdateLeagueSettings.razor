@@ -14,14 +14,14 @@
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="margin-top: 50px;">
-                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudText Typo="Typo.h6" Align="Align.Center" Style="font-weight:bold">@LeagueByIdResponse.League.Name League Settings</MudText>
+            <MudItem Class="mt-50">
+                <MudPaper Class="border border-solid pa-6" Style="border-color: #000000;">
+                    <MudText Typo="Typo.h6" Align="Align.Center" Class="font-bold">@LeagueByIdResponse.League.Name League Settings</MudText>
                 </MudPaper>
             </MudItem>
 
             <MudGrid Justify="Justify.Center">
-                <MudItem Style="margin-top: 25px;" xs="12" sm="9">
+                <MudItem Class="mt-4" xs="12" sm="9">
                     <MudCard Class="border border-solid pa-8" Style="border-color: #000000">
                         <EditForm Model="@model" OnValidSubmit="OnSubmit">
                             <MudCardContent Class="pa-6">
@@ -29,21 +29,15 @@
                                 <MudTextField @bind-Value="model.TotalGamesPerSeason"
                                               For="@(() => model.TotalGamesPerSeason)"
                                                 Label="Total Games" />
-                            </MudCardContent>
-                            <MudCardContent Class="pa-6">
                                 <MudTextField @bind-Value="model.TotalPlayoffTeams"
                                               For="@(() => model.TotalPlayoffTeams)"
-                                                Label="Total Playoff Teams" />
-                            </MudCardContent>  
-                            <MudCardContent Class="pa-6">
+                                              Label="Total Playoff Teams" Class="mt-4" />
                                 <MudTextField @bind-Value="model.MinimumTotalTeamPlayers"
                                               For="@(() => model.MinimumTotalTeamPlayers)"
-                                              Label="Minimum Number of Players On Team" />
-                            </MudCardContent>
-                            <MudCardContent Class="pa-6">
+                                              Label="Minimum Number of Players On Team" Class="mt-4"/>
                                 <MudTextField @bind-Value="model.MaximumTotalTeamPlayers"
                                               For="@(() => model.MaximumTotalTeamPlayers)"
-                                              Label="Max Number of Players On Team" />
+                                              Label="Max Number of Players On Team" class="mt-4"/>
                             </MudCardContent>
                             <MudCardActions>
                                 <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>
@@ -73,35 +67,31 @@
     {
         try
         {
-            if (LeagueByIdResponse is null)
-            {
-                var leagueId = Guid.Parse(Id);
-                LeagueByIdResponse = await LeagueLocalCache.GetLeagueByIdCache(Id);
-                if (LeagueByIdResponse == null)
-                {
-                    LeagueByIdResponse = await LeagueService.GetLeague(leagueId);
-                    await LeagueLocalCache.SetLeagueByIdCache(Id, LeagueByIdResponse);
-                }
-                model.Id = LeagueByIdResponse.League.Id;
-                model.TotalGamesPerSeason = LeagueByIdResponse.League.TotalGamesPerSeason == 0 ? null : LeagueByIdResponse.League.TotalGamesPerSeason;
-                model.TotalPlayoffTeams = LeagueByIdResponse.League.TotalPlayoffTeams == 0 ? null : LeagueByIdResponse.League.TotalPlayoffTeams;
-                model.MinimumTotalTeamPlayers = LeagueByIdResponse.League.MinimumTotalTeamPlayers == 0 ? null : LeagueByIdResponse.League.MinimumTotalTeamPlayers;
-                model.MaximumTotalTeamPlayers = LeagueByIdResponse.League.MaximumTotalTeamPlayers == 0 ? null : LeagueByIdResponse.League.MaximumTotalTeamPlayers;
+            var leagueId = Guid.Parse(Id);
+            LeagueByIdResponse = await DataLoader.GetOrLoad(
+                () => LeagueLocalCache.GetLeagueByIdCache(Id), 
+                () => LeagueService.GetLeague(leagueId),
+                (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
+            );
 
-            }
+            MapLeagueToModel(LeagueByIdResponse.League);
+
             PageLoad = true;
 
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
+    }
+
+    private void MapLeagueToModel(LeagueModel league)
+    {
+        model.Id = league.Id;
+        model.TotalGamesPerSeason = league.TotalGamesPerSeason == 0 ? null : league.TotalGamesPerSeason;
+        model.TotalPlayoffTeams = league.TotalPlayoffTeams == 0 ? null : league.TotalPlayoffTeams;
+        model.MinimumTotalTeamPlayers = league.MinimumTotalTeamPlayers == 0 ? null : league.MinimumTotalTeamPlayers;
+        model.MaximumTotalTeamPlayers = league.MaximumTotalTeamPlayers == 0 ? null : league.MaximumTotalTeamPlayers;
     }
 
     private async Task OnSubmit()
@@ -110,29 +100,45 @@
         {
             PageLoad = false;
 
-            UpdateLeagueSettingsRequest request = new UpdateLeagueSettingsRequest(model.Id, (int)model.TotalGamesPerSeason, (int)model.TotalPlayoffTeams, (int)model.MinimumTotalTeamPlayers, (int)model.MaximumTotalTeamPlayers);
+            UpdateLeagueSettingsRequest request = new UpdateLeagueSettingsRequest(
+                model.Id, 
+                model.TotalGamesPerSeason ?? 0, 
+                model.TotalPlayoffTeams ?? 0, 
+                model.MinimumTotalTeamPlayers ?? 0, 
+                model.MaximumTotalTeamPlayers ?? 0
+            );
+
             await LeagueService.UpdateLeagueSettings(request);
-            success = true;
+
             Snackbar.Add("League Settings has been updated.", MudBlazor.Severity.Success);
-            NavManager.NavigateTo("/leagues");
-            StateHasChanged();
+
             await LeagueLocalCache.DeleteLeaguesCache();
             await LeagueLocalCache.DeleteLeagueByIdCache(Id);
             await LeagueLocalCache.DeleteLeagueBySportCache(LeagueByIdResponse.League.Sport);
             await LeagueLocalCache.DeleteLeagueByNameCache();
-            PageLoad = true;
+
+            NavManager.NavigateTo("/leagues");
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
-        
+        finally
+        {
+            PageLoad = true;
+        }
+
+    }
+
+    private async Task HandleError(Exception ex)
+    {
+        if (KeycloakTokenService.ShouldForceLogout())
+        {
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+            await _module.InvokeVoidAsync("logout");
+        }
+        ErrorState.Message = ex.Message;
+        NavManager.NavigateTo("/error");
     }
 
 }
