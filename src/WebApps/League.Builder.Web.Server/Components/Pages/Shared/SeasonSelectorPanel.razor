@@ -1,0 +1,36 @@
+﻿<MudExpansionPanels>
+    <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000">
+        <TitleContent>
+            <MudText Typo="Typo.h5" Align="Align.Center" class="font-bold">@Title</MudText>
+        </TitleContent>
+        <ChildContent>
+            <MudStack Row="true">
+                <MudItem xs="8">
+                    <MudSelect T="int" Value="SelectedSeason" Label="Season" ValueChanged="SelectedSeasonChanged">
+                        @foreach (var s in Seasons)
+                        {
+                            <MudSelectItem Value="@s.Year">@s.Year</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="4" Style="align-content: center; padding: 10px;">
+                    <MudButton Disabled="@(SelectedSeason <= 0)" 
+                               OnClick="OnSearch" 
+                               Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Class="ml-auto" 
+                               Style="width: 150px;">
+                               Search
+                           </MudButton>
+                </MudItem>
+            </MudStack>
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+@code {
+    [Parameter] public IEnumerable<SeasonModel> Seasons {get; set;}
+    [Parameter] public int SelectedSeason { get; set; }
+    [Parameter] public EventCallback<int> SelectedSeasonChanged { get; set; }
+    [Parameter] public EventCallback OnSearch { get; set; }
+    [Parameter] public string Title { get; set; }
+}

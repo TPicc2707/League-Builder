@@ -21,18 +21,20 @@
                     </TitleContent>
                     <ChildContent>
                         <MudItem>
-                            <MudTabs Elevation="2" Centered="true" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000">
+                            <MudTabs Elevation="2" Centered="true" Rounded="true" ApplyEffectsToContainer="true" Color="Color.Primary" Class="pa-6 border border-solid" Style="border-color: #000000">
                                 <MudTabPanel Text="Search All">
-                                    <MudButton OnClick="@(() => ExecuteSearch(SearchAllInternal))" 
-                                            Variant="Variant.Filled" 
-                                            Color="Color.Primary" 
-                                            Class="ml-auto" 
-                                            FullWidth="true">
+                                    <MudItem Class="padtop-20">
+                                        <MudButton OnClick="@(() => ExecuteSearch(SearchAllInternal))"
+                                                   Variant="Variant.Filled"
+                                                   Color="Color.Primary"
+                                                   Class="ml-auto"
+                                                   FullWidth="true">
                                             Search All
-                                    </MudButton>
+                                        </MudButton>
+                                    </MudItem>
                                 </MudTabPanel>
                                 <MudTabPanel Text="Sport">
-                                    <MudStack Row="true">
+                                    <MudStack Row="true" Class="padtop-20">
                                         <MudItem xs="8">
                                             <MudSelect @bind-Value="sport" Label="Sport">
                                                 @foreach (var sport in Constants.Sports())
@@ -41,7 +43,7 @@
                                                 }
                                             </MudSelect>
                                         </MudItem>
-                                        <MudItem xs="4" Style="align-content: center">
+                                        <MudItem xs="4" Style="align-content: center;">
                                             <MudButton Disabled="@(string.IsNullOrEmpty(sport))" 
                                                        OnClick="@(() => ExecuteSearch(SearchBySportInternal))" 
                                                        Variant="Variant.Filled" Color="Color.Primary" 
@@ -53,11 +55,11 @@
                                     </MudStack>
                                 </MudTabPanel>
                                 <MudTabPanel Text="Name">
-                                    <MudStack Row="true">
-                                        <MudItem xs="9">
+                                    <MudStack Row="true" Class="padtop-20">
+                                        <MudItem xs="8">
                                             <MudTextField @bind-Value="name" Placeholder="Name" />
                                         </MudItem>
-                                        <MudItem xs="3">
+                                        <MudItem xs="4">
                                             <MudButton Disabled="@(string.IsNullOrEmpty(name))"
                                                        OnClick="@(() => ExecuteSearch(SearchByNameInternal))" 
                                                        Variant="Variant.Filled" 

@@ -1,0 +1,38 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary font-bold">VS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">AB</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">R</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">H</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">RBI</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">BB</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">HBP</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">K</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">SB</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">TB</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">2B</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">3B</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">HR</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">SF</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Opposing Team" Style="font-size: 12px;">@context.OpposingTeam</MudTd>
+        <MudTd DataLabel="At Bats" Style="margin-left: 5px; font-size: .875rem;">@context.StatsModel.HittingStats.AtBats</MudTd>
+        <MudTd DataLabel="Runs">@context.StatsModel.HittingStats.Runs</MudTd>
+        <MudTd DataLabel="Hits">@context.StatsModel.HittingStats.Hits</MudTd>
+        <MudTd DataLabel="RBI" Style="margin-left: 7px; font-size: .875rem;">@context.StatsModel.HittingStats.RunsBattedIn</MudTd>
+        <MudTd DataLabel="BB" Style="margin-left: 5px; font-size: .875rem;">@context.StatsModel.HittingStats.Walks</MudTd>
+        <MudTd DataLabel="HBP" Style="margin-left: 7px; font-size: .875rem;">@context.StatsModel.HittingStats.HitByPitch</MudTd>
+        <MudTd DataLabel="K" Style="margin-left: 5px; font-size: .875rem;">@context.StatsModel.HittingStats.Strikeouts</MudTd>
+        <MudTd DataLabel="SB" Style="margin-left: 5px; font-size: .875rem;">@context.StatsModel.HittingStats.StolenBases</MudTd>
+        <MudTd DataLabel="TB" Style="margin-left: 5px; font-size: .875rem;">@context.StatsModel.HittingStats.TotalBases</MudTd>
+        <MudTd DataLabel="2B" Style="margin-left: 5px; font-size: .875rem;">@context.StatsModel.HittingStats.Doubles</MudTd>
+        <MudTd DataLabel="3B" Style="margin-left: 5px; font-size: .875rem;">@context.StatsModel.HittingStats.Triples</MudTd>
+        <MudTd DataLabel="HR" Style="margin-left: 5px; font-size: .875rem;">@context.StatsModel.HittingStats.HomeRuns</MudTd>
+        <MudTd DataLabel="SF" Style="margin-left: 5px; font-size: .875rem;">@context.StatsModel.HittingStats.SacrificeFly</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public IEnumerable<PlayerStatRecord> Rows { get; set; }
+}

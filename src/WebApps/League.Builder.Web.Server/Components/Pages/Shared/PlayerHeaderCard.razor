@@ -1,0 +1,40 @@
+﻿<MudCard Class="border border-solid" Style="border-color: #000000">
+    <MudCardContent>
+        <MudStack Row="true">
+            <MudItem xs="4">
+                <MudImage Src="@Image" 
+                    Width="225" 
+                    Height="225" 
+                    Alt="Player Image" 
+                    Elevation="25" 
+                    Class="rounded-lg ma-4" />
+            </MudItem>
+            <MudItem xs="4" md="4" lg="4" Class="ma-4">
+                <MudText Typo="Typo.h4" Class="font-bold">@Player.Player.FirstName @Player.Player.LastName</MudText>
+                <MudText Typo="Typo.body1">@Team.Team.TeamName</MudText>
+                <MudText Typo="Typo.body1">#@Player.Player.PlayerDetail.Number</MudText>
+                <MudText Typo="Typo.body1">@Address</MudText>
+                <MudText Typo="Typo.body1">Birthday: @Player.Player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
+                <MudText Typo="Typo.body1">Height: @Player.Player.PlayerDetail.Height in</MudText>
+                <MudText Typo="Typo.body1">Weight: @Player.Player.PlayerDetail.Weight lbs</MudText>
+                <MudText Typo="Typo.body1">Positions: @Player.Player.PlayerDetail.Position</MudText>
+            </MudItem>
+        </MudStack>
+    </MudCardContent>
+    <MudCardActions Class="ma-4">
+        <MudButton Variant="Variant.Text" 
+        Color="Color.Tertiary" 
+        OnClick="OnContactClick">
+        Contact Info
+    </MudButton>
+    </MudCardActions>
+</MudCard>
+
+
+@code {
+    [Parameter] public GetPlayerByIdResponse Player { get; set; }
+    [Parameter] public GetTeamByIdResponse Team { get; set; }
+    [Parameter] public string Image {get; set; }
+    [Parameter] public string Address { get; set; }
+    [Parameter] public EventCallback OnContactClick { get; set; }
+}

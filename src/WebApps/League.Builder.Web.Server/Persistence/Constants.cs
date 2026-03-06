@@ -311,4 +311,14 @@
         public const int Ninth = 9;
     }
 
+    public static class BaseballStatDescriptions
+    {
+        public const string Average = "To calculate batting average in baseball, divide the total number of hits by the total number of at-bats. Formula: Batting Average = Total Hits / Total At-Bats";
+        public const string Slugging = "To calculate slugging percentage (SLG) in baseball, you divide the total bases a player gets by their total at-bats. Formula: (1B + 2Bx2 + 3Bx3 + HRx4) / AB";
+        public const string OBP = "To calculate On-Base Percentage (OBP), divide the sum of hits, walks, and hit-by-pitches by the sum of at-bats, walks, hit-by-pitches, and sacrifice flies. Formula: (Hits + BBs + HBPs) / (ABs + BBs + HBPs + Sacrifice Flies)";
+        public const string OPS = "On-base plus slugging (OPS) is calculated by adding a batter's on-base percentage (OBP) and slugging percentage (SLG). Formula: OBP (See Stat for More Info) + SLG (See Stat for More Info)";
+        public const string ERA = "To calculate a pitcher's Earned Run Average (ERA), divide the number of earned runs allowed by the number of innings pitched, and then multiply that result by 9. Formula: (Earned Runs / Innings Pitched) * 9";
+        public const string WHIP = "To calculate Walks and Hits per Inning Pitched (WHIP) in baseball, you add the total number of walks and hits a pitcher has allowed, then divide that sum by the total number of innings they have pitched.  Formula: (Total Hits + Total Walks) / Innings Pitched";
+    }
+
 }

@@ -1,0 +1,35 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary font-bold">VS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">S</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">W</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">L</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">IP</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">H</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">R</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">BB</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">K</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Opposing Team" Style="font-size: 12px;">@context.OpposingTeam</MudTd>
+        @if (context.StatsModel.PitchingStats.Start)
+        {
+            <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
+        }
+        else
+        {
+            <MudTd DataLabel="S"></MudTd>
+        }
+        <MudTd DataLabel="W">@context.StatsModel.PitchingStats.Wins</MudTd>
+        <MudTd DataLabel="L">@context.StatsModel.PitchingStats.Losses</MudTd>
+        <MudTd DataLabel="IP" Style="margin-left: 5px; font-size: .875rem;">@context.StatsModel.PitchingStats.Innings</MudTd>
+        <MudTd DataLabel="H">@context.StatsModel.PitchingStats.HitsAllowed</MudTd>
+        <MudTd DataLabel="R">@context.StatsModel.PitchingStats.Runs</MudTd>
+        <MudTd DataLabel="BB" Style="margin-left: 5px; font-size: .875rem;">@context.StatsModel.PitchingStats.WalksAllowed</MudTd>
+        <MudTd DataLabel="K">@context.StatsModel.PitchingStats.PitchingStrikeouts</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public IEnumerable<PlayerStatRecord> Rows { get; set; }
+}

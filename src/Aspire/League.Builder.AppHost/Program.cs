@@ -50,6 +50,7 @@ var keycloak = builder
         service.Name = "keycloak";
     });
 
+
 var ollama = builder
       .AddOllama("ollama", 11434)
       .WithDataVolume()

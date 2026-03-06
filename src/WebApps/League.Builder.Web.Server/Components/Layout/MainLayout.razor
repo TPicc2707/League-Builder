@@ -8,7 +8,7 @@
 @inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
 
-<MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="MyCustomTheme" />
+<MudThemeProvider @ref="_mudThemeProvider" @bind-IsDarkMode="_isDarkMode" Theme="MyCustomTheme" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -70,19 +70,23 @@
     private bool _isDarkMode;
     private MudThemeProvider _mudThemeProvider;
     private IJSObjectReference? _module;
+    private MudTheme _currentTheme;
 
     protected override async Task OnInitializedAsync()
     {
         var assembly = Assembly.GetExecutingAssembly();
         version = assembly.GetName().Version.ToString();
+        var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/theme.js");
+        _isDarkMode = await module.InvokeAsync<bool>("getSystemDarkMode");
+
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
-            await _mudThemeProvider.WatchSystemPreference(OnSystemDarkModeChanged);
+            await _mudThemeProvider.WatchSystemDarkModeAsync(OnSystemDarkModeChanged);
+
             _initialized = true;
             _module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
             _ = CheckRefreshOnLoad();

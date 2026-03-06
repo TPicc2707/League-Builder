@@ -11,4 +11,9 @@ public class BaseballPitchingTotalsModel
     public int WalksAllowed { get; set; }
     public int Strikeouts { get; set; }
 
+
+    // Derived stats used for Player Totals
+    public decimal ERA { get; set; }
+    public decimal WHIP { get; set; }
+
 }
