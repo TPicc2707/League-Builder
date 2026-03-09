@@ -18,210 +18,139 @@
 @inject IStatsLocalCacheService StatsLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
+@inject ImageService ImageService
 
 <AuthorizeView Roles="@String.Concat(Roles.CreatePlayers)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
             <MudItem Style="padding-top: 50px;">
-                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">Create Player</MudText>
+                <MudPaper Class="border border-solid border-black p-25">
+                    <MudText Typo="Typo.h4" Align="Align.Center" Class="font-bold">Create Player</MudText>
                 </MudPaper>
             </MudItem>
-            // Add select option when more leagues are created
-            // Add image selection when next version is worked
-            <MudItem style="margin-top: 50px; margin-bottom: 50px;">
+            <MudItem Class="mt-50 mb-50">
                 <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
                     <FluentValidationValidator @ref="fluentValidationValidator" />
-                    <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px; width: 100%;">
+                    <MudPaper Class="border border-solid border-black p-25" Style="width: 100%;">
                         <MudStepper @bind-ActiveIndex="_index" OnPreviewInteraction="@OnStepInteraction" CurrentStepColor="Color.Secondary" CompletedStepColor="Color.Success">
                             <ChildContent>
                                  <MudStep Title="Create Player Contact Information">
                                      <MudGrid Justify="Justify.Center">
                                          <MudItem xs="12" sm="10">
-                                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                                <MudCardContent>
-                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
-                                                        <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
-                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Player Contact Information</MudText>
-                                                    </MudStack>                                                    
-                                                    <MudTextField Required="true" Label="First Name" HelperText="Max. 50 characters"
-                                                                  @bind-Value="model.FirstName" For="@(() => model.FirstName)" Clearable />
-                                                    <MudTextField Required="true" Label="Last Name" HelperText="Max. 50 characters"
-                                                                  @bind-Value="model.LastName" For="@(() => model.LastName)" Clearable />
-                                                    <MudSelect Required="true" Class="mt-3" Label="Team" @bind-Value="teamId">
-                                                        @foreach (var team in TeamsResponse.Teams.Data.Where(l => l.Id == teamId))
-                                                        {
-                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                </MudCardContent>
-                                            </MudCard>
+                                             @Card(@<div>
+                                                    @StepHeader(Icons.Material.Filled.Person, "Player Contact Information")
+                                                <MudTextField Required Label="First Name" HelperText="Max. 50 characters"
+                                                              @bind-Value="model.FirstName" For="@(() => model.FirstName)" Clearable />
+                                                <MudTextField Required Label="Last Name" HelperText="Max. 50 characters"
+                                                              @bind-Value="model.LastName" For="@(() => model.LastName)" Clearable />
+                                                <MudSelect Required Class="mt-3" Label="Team" @bind-Value="teamId">
+                                                    @TeamOptions
+                                                </MudSelect>
+                                                 </div>)
                                          </MudItem>
                                      </MudGrid>
                                  </MudStep>
                                 <MudStep Title="Create Player Details">
                                     <MudGrid Justify="Justify.Center">
                                         <MudItem xs="12" sm="10">
-                                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                                <MudCardContent>
-                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
-                                                        <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
-                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Player Details</MudText>
-                                                    </MudStack>
-                                                    <MudTextField Required="true" Label="Email Address" Class="mt-3"
+                                            @Card(@<div>
+                                                    @StepHeader(Icons.Material.Filled.Info, "Player Details")
+                                                    <MudTextField Required Label="Email Address" Class="mt-3"
                                                                   @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" Clearable />
-                                                    <MudTextField Mask="@phoneNumberMask" Required="true" Label="Phone Number" Class="mt-3"
-                                                                  @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" Clearable/>
-                                                    <MudDatePicker Required="true" Class="mt-3" Label="Birth Date" Editable="true" @bind-Date="model.BirthDate" />
-                                                    <MudSelect Required="true" @bind-Value="model.Height" Class="mt-3" Placeholder="@heightPlaceholder" Label="@heightPlaceholder">
-                                                        @foreach (var months in Constants.Height())
-                                                        {
-                                                            <MudSelectItem Value="months.Key">@months.Value</MudSelectItem>
-                                                        }
+                                                    <MudTextField Mask="@phoneNumberMask" Required Label="Phone Number" Class="mt-3"
+                                                                  @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" Clearable />
+                                                    <MudDatePicker Required Class="mt-3" Label="Birth Date" Editable @bind-Date="model.BirthDate" />
+                                                    <MudSelect Required @bind-Value="model.Height" Class="mt-3" Placeholder="@heightPlaceholder" Label="@heightPlaceholder">
+                                                        @HeightOptions
                                                     </MudSelect>
-                                                    <MudTextField Required="true" Label="Weight" Class="mt-3"
+                                                    <MudTextField Required Label="Weight" Class="mt-3"
                                                                   @bind-Value="model.Weight" For="@(() => model.Weight)" Clearable />
-                                                    <MudSelect Required="true" Class="mt-3" Label="Number" @bind-Value="model.Number">
-                                                        @foreach (var jerseyNumber in jerseyNumbers)
-                                                        {
-                                                            <MudSelectItem Value="jerseyNumber">@jerseyNumber</MudSelectItem>
-                                                        }
-                                                    </MudSelect>                                                    
-                                                    <MudSelect Required="true" Class="mt-3" Label="Position" @bind-Value="model.Position">
-                                                        @foreach (var position in Constants.PositionsBySport(sport))
-                                                        {
-                                                            <MudSelectItem Value="position">@position</MudSelectItem>
-                                                        }
+                                                    <MudSelect Required Class="mt-3" Label="Number" @bind-Value="model.Number">
+                                                        @JerseyOptions
+                                                    </MudSelect>
+                                                    <MudSelect Required Class="mt-3" Label="Position" @bind-Value="model.Position">
+                                                        @PositionOptions
                                                     </MudSelect>
                                                     <MudTextField Label="Description" Class="mt-3"
                                                                   @bind-Value="model.Description" For="@(() => model.Description)" Clearable />
-                                                </MudCardContent>
-                                            </MudCard>
+                                                </div>)
                                         </MudItem>
                                     </MudGrid>
                                 </MudStep>
                                 <MudStep Title="Create Player Address">
                                     <MudGrid Justify="Justify.Center">
                                         <MudItem xs="12" sm="10">
-                                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                                <MudCardContent>
-                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
-                                                        <MudIcon Icon="@Icons.Material.Filled.House" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
-                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Player Address</MudText>
-                                                    </MudStack>
-                                                    <MudTextField Required="true" Label="Address Line" Class="mt-3"
+                                            @Card(@<div>
+                                                    @StepHeader(Icons.Material.Filled.House, "Player Address")
+                                                    <MudTextField Required Label="Address Line" Class="mt-3"
                                                                   @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" Clearable />
-                                                    <MudTextField Required="true" Label="City" Class="mt-3"
+                                                    <MudTextField Required Label="City" Class="mt-3"
                                                                   @bind-Value="model.City" For="@(() => model.City)" Clearable />
-                                                    <MudSelect Required="true" Class="mt-3" Label="State" @bind-Value="model.State">
-                                                        @foreach (var state in states)
-                                                        {
-                                                            <MudSelectItem Value="state">@state</MudSelectItem>
-                                                        }
+                                                    <MudSelect Required Class="mt-3" Label="State" @bind-Value="model.State">
+                                                        @StateOptions
                                                     </MudSelect>
-                                                    <MudSelect Required="true" Class="mt-3" Label="Country" @bind-Value="model.Country">
-                                                        @foreach(var country in countries)
-                                                        {
-                                                            <MudSelectItem Value="country">@country</MudSelectItem>
-                                                        }
+                                                    <MudSelect Required Class="mt-3" Label="Country" @bind-Value="model.Country">
+                                                        @CountryOptions
                                                     </MudSelect>
                                                     <MudTextField Required="true" Label="Zip Code" Class="mt-3"
                                                                   @bind-Value="model.ZipCode" For="@(() => model.ZipCode)" Clearable />
-                                                </MudCardContent>
-                                            </MudCard>
+                                                </div>)
                                         </MudItem>
                                     </MudGrid>
                                 </MudStep>
                                 <MudStep Title="Review">
                                     <MudGrid Justify="Justify.Center">
                                         <MudItem xs="12" sm="10">
-                                            <MudCard Class="border border-solid" Style="border-color: #000000">
-                                                <MudCardContent>
-                                                    <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
-                                                        <MudIcon Icon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Secondary" Size="Size.Medium"></MudIcon>
-                                                        <MudText Typo="Typo.h6" Style="font-weight: bold;">Review</MudText>
-                                                    </MudStack>
-                                                    <MudTextField Required="true" ReadOnly="true" Label="First Name" HelperText="Max. 50 characters"
-                                                                  @bind-Value="model.FirstName" For="@(() => model.FirstName)" />
-                                                    <MudTextField Required="true" ReadOnly="true" Label="Last Name" HelperText="Max. 50 characters"
-                                                                  @bind-Value="model.LastName" For="@(() => model.LastName)" />
-                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Team" @bind-Value="teamId">
-                                                        @foreach (var team in TeamsResponse.Teams.Data.Where(l => l.Id == teamId))
-                                                        {
-                                                            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                    <MudTextField Required="true" ReadOnly="true" Label="Email Address" Class="mt-3"
-                                                                  @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
-                                                    <MudTextField Mask="@phoneNumberMask" Required="true" ReadOnly="true" Label="Phone Number" Class="mt-3"
-                                                                  @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" />
-                                                    <MudDatePicker Required="true" ReadOnly="true" Class="mt-3" Label="Birth Date" Editable="true" @bind-Date="model.BirthDate" />
-                                                    <MudSelect Required="true" @bind-Value="model.Height" Class="mt-3" Placeholder="@heightPlaceholder" Label="@heightPlaceholder" ReadOnly="true">
-                                                        @foreach (var months in Constants.Height())
-                                                        {
-                                                            <MudSelectItem Value="months.Key">@months.Value</MudSelectItem>
-                                                        }
-                                                    </MudSelect>                                                    
-                                                    <MudTextField Required="true" ReadOnly="true" Label="Weight" Class="mt-3"
-                                                                  @bind-Value="model.Weight" For="@(() => model.Weight)" />
-                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Number" @bind-Value="model.Number">
-                                                        @foreach (var jerseyNumber in jerseyNumbers)
-                                                        {
-                                                            <MudSelectItem Value="jerseyNumber">@jerseyNumber</MudSelectItem>
-                                                        }
-                                                    </MudSelect>                                                     
-                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Position" @bind-Value="model.Position">
-                                                        @foreach (var position in Constants.PositionsBySport(sport))
-                                                        {
-                                                            <MudSelectItem Value="position">@position</MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                    <MudTextField ReadOnly="true" Label="Description" Class="mt-3"
-                                                                  @bind-Value="model.Description" For="@(() => model.Description)" />
-                                                    <MudTextField Required="true" ReadOnly="true" Label="Address Line" Class="mt-3"
-                                                                  @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" />
-                                                    <MudTextField Required="true" ReadOnly="true" Label="City" Class="mt-3"
-                                                                  @bind-Value="model.City" For="@(() => model.City)" />
-                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="State" @bind-Value="model.State">
-                                                        @foreach (var state in states)
-                                                        {
-                                                            <MudSelectItem Value="state">@state</MudSelectItem>
-                                                        }
-                                                    </MudSelect>
-                                                    <MudSelect Required="true" ReadOnly="true" Class="mt-3" Label="Country" @bind-Value="model.Country">
-                                                        @foreach (var country in countries)
-                                                        {
-                                                            <MudSelectItem Value="country">@country</MudSelectItem>
-                                                        }
-                                                    </MudSelect>                                                    
-                                                    <MudTextField Required="true" ReadOnly="true" Label="Zip Code" Class="mt-3"
-                                                                  @bind-Value="model.ZipCode" For="@(() => model.ZipCode)" />
-                                                    <MudItem Style="padding-top: 20px;">
+                                            @Card(@<div>
+                                                <MudTextField Required ReadOnly Label="First Name" HelperText="Max. 50 characters"
+                                                              @bind-Value="model.FirstName" For="@(() => model.FirstName)" />
+                                                <MudTextField Required ReadOnly Label="Last Name" HelperText="Max. 50 characters"
+                                                              @bind-Value="model.LastName" For="@(() => model.LastName)" />
+                                                <MudSelect Required Class="mt-3" Label="Team" @bind-Value="teamId">
+                                                    @TeamOptions
+                                                </MudSelect>
+                                                <MudTextField Required ReadOnly Label="Email Address" Class="mt-3"
+                                                              @bind-Value="model.EmailAddress" For="@(() => model.EmailAddress)" />
+                                                <MudTextField Mask="@phoneNumberMask" Required ReadOnly Label="Phone Number" Class="mt-3"
+                                                              @bind-Value="model.PhoneNumber" For="@(() => model.PhoneNumber)" />
+                                                <MudDatePicker Required ReadOnly Class="mt-3" Label="Birth Date" Editable @bind-Date="model.BirthDate" />
+                                                <MudSelect Required @bind-Value="model.Height" Class="mt-3" Placeholder="@heightPlaceholder" Label="@heightPlaceholder" ReadOnly>
+                                                    @HeightOptions
+                                                </MudSelect>
+                                                <MudTextField Required ReadOnly Label="Weight" Class="mt-3"
+                                                              @bind-Value="model.Weight" For="@(() => model.Weight)" />
+                                                <MudSelect Required ReadOnly Class="mt-3" Label="Number" @bind-Value="model.Number">
+                                                    @JerseyOptions
+                                                </MudSelect>
+                                                <MudSelect Required ReadOnly Class="mt-3" Label="Position" @bind-Value="model.Position">
+                                                    @PositionOptions
+                                                </MudSelect>
+                                                <MudTextField ReadOnly Label="Description" Class="mt-3"
+                                                              @bind-Value="model.Description" For="@(() => model.Description)" />
+                                                <MudTextField Required ReadOnly Label="Address Line" Class="mt-3"
+                                                              @bind-Value="model.AddressLine" For="@(() => model.AddressLine)" />
+                                                <MudTextField Required ReadOnly Label="City" Class="mt-3"
+                                                              @bind-Value="model.City" For="@(() => model.City)" />
+                                                <MudSelect Required ReadOnly Class="mt-3" Label="State" @bind-Value="model.State">
+                                                    @StateOptions
+                                                </MudSelect>
+                                                <MudSelect Required ReadOnly Class="mt-3" Label="Country" @bind-Value="model.Country">
+                                                    @CountryOptions
+                                                </MudSelect>
+                                                <MudTextField Required ReadOnly Label="Zip Code" Class="mt-3"
+                                                              @bind-Value="model.ZipCode" For="@(() => model.ZipCode)" />
+                                                <MudItem Class="padtop-20">
                                                         <MudStack Row="true">
                                                             <MudFileUpload @ref="@_fileUpload"
                                                                            T="IBrowserFile"
                                                                            For="@(() => model.File)"
-                                                                           @bind-Files="model.File">
-                                                                <ActivatorContent>
-                                                                    <MudButton Variant="Variant.Filled"
-                                                                               Color="Color.Primary"
-                                                                               StartIcon="@Icons.Material.Filled.CloudUpload">
-                                                                        Player Image
-                                                                    </MudButton>
-                                                                </ActivatorContent>
+                                                                           @bind-Files="model.File" CustomContent="UploadButton">                                                               
                                                             </MudFileUpload>
-                                                            @if (model.File != null)
-                                                            {
-                                                                <MudText Typo="@Typo.h6">@model.File.Name</MudText>
-                                                            }
                                                         </MudStack>
-                                                    </MudItem>
-                                                </MudCardContent>
-                                                <MudCardActions>
-                                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Create</MudButton>
-                                                </MudCardActions>
-                                            </MudCard>
+                                                </MudItem>
+                                            </div>, 
+                                             @<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Create</MudButton>)
                                         </MudItem>
                                     </MudGrid>
                                 </MudStep>
@@ -230,13 +159,13 @@
                                 <MudIconButton OnClick="@(() => stepper.PreviousStepAsync())"
                                                Icon="@Icons.Material.Filled.ArrowBack"
                                                Color="Color.Primary"
-                                               Disabled="_index == 0 ? true : false">
+                                               Disabled="_index == 0">
                                 </MudIconButton>
                                 <MudSpacer />
                                 <MudIconButton OnClick="@(() => stepper.NextStepAsync())"
                                                Icon="@Icons.Material.Filled.ArrowForward"
                                                Color="Color.Primary"
-                                               Disabled="_index != 3 ? false : true">
+                                               Disabled="_index == 3">
                                 </MudIconButton>
                             </ActionContent>
                         </MudStepper>
@@ -271,7 +200,6 @@
     private List<string> countries;
     private List<int> jerseyNumbers;
     private Guid teamId;
-    bool success;
     bool _placeholder = true;
     bool PageLoad = false;
     private int _index;
@@ -289,154 +217,187 @@
         {
             year = DateTime.Now.Year;
             teamId = Guid.Parse(Id);
-            TeamsResponse = await TeamLocalCache.GetTeamsCache();  //If a team is added need to delete local storage
-            if (TeamsResponse == null)
-            {
-                TeamsResponse = await TeamService.GetTeams();
-                await TeamLocalCache.SetTeamsCache(TeamsResponse);
-            }
-            TeamById = await TeamLocalCache.GetTeamByIdCache(Id);
-            if (TeamById == null)
-            {
-                TeamById = await TeamService.GetTeamById(teamId);
-                await TeamLocalCache.SetTeamByIdCache(Id, TeamById);
-            }
-            PlayersByTeamResponse = await PlayerLocalCache.GetPlayersByTeamCache(Id);
-            if (PlayersByTeamResponse == null)
-            {
-                PlayersByTeamResponse = await PlayerService.GetPlayersByTeam(teamId);
-                await PlayerLocalCache.SetPlayersByTeamCache(Id, PlayersByTeamResponse);
-            }
-            LeagueById = await LeagueLocalCache.GetLeagueByIdCache(TeamById.Team.LeagueId.ToString());
-            if (LeagueById == null)
-            {
-                LeagueById = await LeagueService.GetLeague(TeamById.Team.LeagueId);
-                await LeagueLocalCache.SetLeagueByIdCache(TeamById.Team.LeagueId.ToString(), LeagueById);
-            }
-            SeasonByYearResponse = await SeasonLocalCache.GetSeasonByYearCache(year);
-            if (SeasonByYearResponse == null)
-            {
-                SeasonByYearResponse = await SeasonService.GetSeasonByYear(year);
-                await SeasonLocalCache.SetSeasonByYearCache(year, SeasonByYearResponse);
-            }
-            sport = LeagueById.League.Sport;
-            states = Constants.States();
-            countries = Constants.Countries();
-            jerseyNumbers = Constants.JerseyNumbers();
-            model.Height = Constants.Height().First().Key;
-            model.Number = jerseyNumbers.First();
-            RemoveTakenJerseyNumbers();
+            await LoadAllAsync();
             PageLoad = true;
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
 
+    }
+
+    private async Task LoadAllAsync()
+    {
+        TeamsResponse = await DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamsCache(),
+            () => TeamService.GetTeams(),
+            (t) => TeamLocalCache.SetTeamsCache(t)
+        );
+
+        TeamById = await DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamByIdCache(Id),
+            () => TeamService.GetTeamById(teamId),
+            (t) => TeamLocalCache.SetTeamByIdCache(Id, t)
+        );
+
+        PlayersByTeamResponse = await DataLoader.GetOrLoad(
+            () => PlayerLocalCache.GetPlayersByTeamCache(Id),
+            () => PlayerService.GetPlayersByTeam(teamId),
+            (p) => PlayerLocalCache.SetPlayersByTeamCache(Id, p)
+        );
+
+        LeagueById = await DataLoader.GetOrLoad(
+            () => LeagueLocalCache.GetLeagueByIdCache(TeamById.Team.LeagueId.ToString()),
+            () => LeagueService.GetLeague(TeamById.Team.LeagueId),
+            (l) => LeagueLocalCache.SetLeagueByIdCache(TeamById.Team.LeagueId.ToString(), l)
+        );
+
+        SeasonByYearResponse = await DataLoader.GetOrLoad(
+            () => SeasonLocalCache.GetSeasonByYearCache(year),
+            () => SeasonService.GetSeasonByYear(year),
+            (s) => SeasonLocalCache.SetSeasonByYearCache(year, s)
+        );
+
+        sport = LeagueById.League.Sport;
+        states = Constants.States();
+        countries = Constants.Countries();
+        jerseyNumbers = GetAvailableNumbers(PlayersByTeamResponse.Players);
+
+        model.Height = Constants.Height().First().Key;
+        model.Number = jerseyNumbers.First();
     }
 
     private async Task OnValidSubmit(EditContext context)
     {
         try
         {
-            model.ImageFile = model.File.Name;
-            var keyPath = $"/{LeagueById.League.Sport}/{LeagueById.League.Name}/teams/{TeamById.Team.TeamName}/players/{String.Concat(model.FirstName, " ", model.LastName)}/{model.ImageFile}";
-            var s3Success = await AWSService.UploadImages(keyPath, model.File);
-            Models.Player.AddressModel address = new Models.Player.AddressModel(model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
-            Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(model.EmailAddress, model.PhoneNumber, model.BirthDate.Value, model.Height, (int)model.Weight, model.Position, model.Number);
-            CreatePlayerRequest request = new CreatePlayerRequest(new CreatePlayerRecord(teamId, model.FirstName, model.LastName, address, playerDetail, model.Description, model.ImageFile));
-            await PlayerService.CreatePlayer(request);
-            success = true;
-            await PlayerLocalCache.DeletePlayersCache();
-            await PlayerLocalCache.DeletePlayersByFirstNameCache();
-            await PlayerLocalCache.DeletePlayersByLastNameCache();
-            await PlayerLocalCache.DeletePlayersByPositionCache();
-            await PlayerLocalCache.DeletePlayersByBirthDateCache();
-            await PlayerLocalCache.DeletePlayersBeforeBirthDateCache();
-            await PlayerLocalCache.DeletePlayersAfterBirthDateCache();
-            await PlayerLocalCache.DeletePlayersByTeamCache(Id);
-            if (LeagueById.League.Sport == SportName.BASEBALL)
-            {
-                await StatsLocalCache.DeleteLeagueBaseballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
-                await StatsLocalCache.DeleteBaseballStatsByTeamCache(Id);
-            }
-            if (LeagueById.League.Sport == SportName.BASKETBALL)
-            {
-                await StatsLocalCache.DeleteLeagueBasketballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
-                await StatsLocalCache.DeleteBasketballStatsByTeamCache(Id);
-            }
-            if (LeagueById.League.Sport == SportName.FOOTBALL)
-            {
-                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
-                await StatsLocalCache.DeleteFootballStatsByTeamCache(Id);
-            }
+            await UploadPlayerImageAsync();
+            await CreatePlayerAsync();
+            await ClearPlayerCachesAsync();
             Snackbar.Add("Player has been created.", MudBlazor.Severity.Success);
             NavManager.NavigateTo($"/playersbyteam/{teamId.ToString()}");
             StateHasChanged();
         }
         catch (Exception ex)
         {
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
+    }
+
+    private async Task UploadPlayerImageAsync()
+    {
+        model.ImageFile = model.File?.Name;
+
+        await ImageService.UploadPlayerImageAsync(LeagueById.League, TeamById.Team, model);
+    }
+
+    private async Task CreatePlayerAsync()
+    {
+        Models.Player.AddressModel address = new Models.Player.AddressModel(
+            model.AddressLine, 
+            model.City, 
+            model.Country, 
+            model.State, 
+            model.ZipCode
+        );
+
+        Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(
+            model.EmailAddress, 
+            model.PhoneNumber, 
+            model.BirthDate.Value, 
+            model.Height, 
+            (int)model.Weight, 
+            model.Position, 
+            model.Number
+         );
+
+        CreatePlayerRequest request = new CreatePlayerRequest(new CreatePlayerRecord(teamId, model.FirstName, model.LastName, address, playerDetail, model.Description, model.ImageFile));
+        await PlayerService.CreatePlayer(request);
+    }
+
+    private async Task ClearPlayerCachesAsync()
+    {
+        await PlayerLocalCache.DeletePlayersCache();
+        await PlayerLocalCache.DeletePlayersByFirstNameCache();
+        await PlayerLocalCache.DeletePlayersByLastNameCache();
+        await PlayerLocalCache.DeletePlayersByPositionCache();
+        await PlayerLocalCache.DeletePlayersByBirthDateCache();
+        await PlayerLocalCache.DeletePlayersBeforeBirthDateCache();
+        await PlayerLocalCache.DeletePlayersAfterBirthDateCache();
+        await PlayerLocalCache.DeletePlayersByTeamCache(Id);
+
+        switch(LeagueById.League.Sport)
+        {
+             case SportName.BASEBALL:
+                await StatsLocalCache.DeleteLeagueBaseballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
+                await StatsLocalCache.DeleteBaseballStatsByTeamCache(Id);
+                break;
+             case SportName.BASKETBALL:
+                await StatsLocalCache.DeleteLeagueBasketballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
+                await StatsLocalCache.DeleteBasketballStatsByTeamCache(Id);
+                break;
+             case SportName.FOOTBALL:
+                await StatsLocalCache.DeleteLeagueFootballStatsBySeasonCache(LeagueById.League.Id.ToString(), SeasonByYearResponse.Season.Id.ToString());
+                await StatsLocalCache.DeleteFootballStatsByTeamCache(Id);
+                break;
+        }
+    }
+
+    private static List<int> GetAvailableNumbers(IEnumerable<PlayerModel> players)
+    {
+        if(players is null)
+            return Constants.JerseyNumbers(); //fallback to full list
+
+        // Start with full list of 0-99 (or whatever Constants has)
+        var available = Constants.JerseyNumbers().ToList();
+
+        foreach(var player in players)
+        {
+            var number = player.PlayerDetail.Number;
+
+            if (available.Contains(number))
+                available.Remove(number);
+        }
+
+        return available;
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)
     {
         canProceed = false;
-        await ValidModel();
-        if (args.Action == StepAction.Complete)
+        await ValidateCurrentStep();
+        if (args.Action == StepAction.Complete && !canProceed)
         {
-            if (!canProceed)
-            {
-                await OpenErrorDialogAsync();
-                args.Cancel = true;
-            }
-
+            await OpenErrorDialogAsync();
+            args.Cancel = true;
         }
     }
 
-    private async Task ValidModel()
+    private async Task ValidateCurrentStep()
     {
-        errors.RemoveRange(0, errors.Count);
+        errors.Clear();
 
-        if (_index == 0)
+        var properties = _index switch
         {
-            var result = await CreatePlayerValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreatePlayerModel.FirstName), nameof(CreatePlayerModel.LastName)));
-            if (result.IsValid)
-                canProceed = true;
+            0 => new[] { nameof(CreatePlayerModel.FirstName), nameof(CreatePlayerModel.LastName) },
+            1 => new[] { nameof(CreatePlayerModel.EmailAddress), nameof(CreatePlayerModel.PhoneNumber), nameof(CreatePlayerModel.BirthDate), nameof(CreatePlayerModel.Height), nameof(CreatePlayerModel.Weight), nameof(CreatePlayerModel.Number), nameof(CreatePlayerModel.Position) },
+            2 => new[] { nameof(CreatePlayerModel.AddressLine), nameof(CreatePlayerModel.State), nameof(CreatePlayerModel.Country), nameof(CreatePlayerModel.ZipCode) },
+            _ => Array.Empty<string>()
+        };
 
-            foreach (var error in result.Errors)
-                errors.Add($"{error.ErrorMessage}");
+        if(properties.Length == 0)
+        {
+            canProceed = true;
+            return;
         }
 
-        if (_index == 1)
-        {
-            var result = await CreatePlayerValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreatePlayerModel.EmailAddress), nameof(CreatePlayerModel.PhoneNumber), nameof(CreatePlayerModel.BirthDate), nameof(CreatePlayerModel.Height), nameof(CreatePlayerModel.Weight), nameof(CreatePlayerModel.Number), nameof(CreatePlayerModel.Position)));
+        var result = await CreatePlayerValidator.ValidateAsync(model, options => options.IncludeProperties(properties));
 
-            if (result.IsValid)
-                canProceed = true;
+        canProceed = result.IsValid;
 
-            foreach (var error in result.Errors)
-                errors.Add($"{error.ErrorMessage}");
-        }
-
-        if (_index == 2)
-        {
-            var result = await CreatePlayerValidator.ValidateAsync(model, options => options.IncludeProperties(nameof(CreatePlayerModel.AddressLine), nameof(CreatePlayerModel.State), nameof(CreatePlayerModel.Country), nameof(CreatePlayerModel.ZipCode)));
-
-            if (result.IsValid)
-                canProceed = true;
-
-            foreach (var error in result.Errors)
-                errors.Add($"{error.ErrorMessage}");
-        }
+        foreach (var error in result.Errors)
+            errors.Add($"{error.ErrorMessage}");
     }
 
     private Task OpenErrorDialogAsync()
@@ -447,11 +408,95 @@
         return DialogService.ShowAsync<ErrorMessageBox>("Errors", parameters, options);
     }
 
-    private void RemoveTakenJerseyNumbers()
+    private async Task HandleError(Exception ex)
     {
-        foreach(var player in PlayersByTeamResponse.Players)
+        if (KeycloakTokenService.ShouldForceLogout())
         {
-            jerseyNumbers.Remove(player.PlayerDetail.Number);
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+            await _module.InvokeVoidAsync("logout");
         }
+        ErrorState.Message = ex.Message;
+        NavManager.NavigateTo("/error");
     }
+
+    private RenderFragment Card(RenderFragment content, RenderFragment actions = null) => @<MudCard Class="border border-solid border-black">
+            <MudCardContent>
+                @content
+            </MudCardContent>
+        @if (actions is not null)
+        {
+                <MudCardActions>
+                    @actions
+                </MudCardActions>
+        }
+        </MudCard>;
+
+    private Func<string, string, RenderFragment> StepHeader = (string icon, string title) => @<MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
+            <MudIcon Icon="@icon" Color="Color.Secondary" Size="Size.Medium" />
+            <MudText Typo="Typo.h6" Class="font-bold">@title</MudText>
+        </MudStack>;
+    
+    private RenderFragment TeamOptions => __builder =>
+    {
+        foreach (var teams in TeamsResponse.Teams.Data.Where(l => l.Id == teamId))
+        {
+            <MudSelectItem Value="@teams.Id">@teams.TeamName</MudSelectItem>
+            ;
+        }
+    };
+
+    private RenderFragment HeightOptions => __builder =>
+    {
+        foreach (var height in Constants.Height())
+        {
+        <MudSelectItem Value="@height.Key">@height.Value</MudSelectItem>
+            ;
+        }
+    };
+
+    private RenderFragment JerseyOptions => __builder =>
+    {
+        foreach (var jerseyNumber in jerseyNumbers)
+        {
+            <MudSelectItem Value="@jerseyNumber">@jerseyNumber</MudSelectItem>
+            ;
+        }
+    };
+
+    private RenderFragment PositionOptions => __builder =>
+    {
+        foreach (var position in Constants.PositionsBySport(sport))
+        {
+            <MudSelectItem Value="@position">@position</MudSelectItem>
+            ;
+        }
+    };
+
+    private RenderFragment StateOptions => __builder =>
+    {
+        foreach (var state in states)
+        {
+            <MudSelectItem Value="@state">@state</MudSelectItem>
+            ;
+        }
+    };
+   
+    private RenderFragment CountryOptions => __builder =>
+    {
+        foreach (var country in countries)
+        {
+            <MudSelectItem Value="@country">@country</MudSelectItem>
+            ;
+        }
+    };
+
+    private RenderFragment<MudFileUpload<IBrowserFile>> UploadButton =>
+    (fileUpload) =>@<MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                               OnClick="@(() => fileUpload.OpenFilePickerAsync())">
+                        Player Image
+                    </MudButton>;
+
+
 }

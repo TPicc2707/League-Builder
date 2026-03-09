@@ -1,4 +1,7 @@
-﻿namespace League.Builder.Web.Server.Services;
+﻿using OllamaSharp.Models;
+using System.Reflection;
+
+namespace League.Builder.Web.Server.Services;
 
 public class ImageService
 {
@@ -34,5 +37,12 @@ public class ImageService
         string keyPath = $"/{model.Sport}/{model.Name}/{model.ImageFile}";
 
         await _aws.UploadImages(keyPath, model.File);
+    }
+
+    public async Task UploadPlayerImageAsync(LeagueModel league, TeamModel team, CreatePlayerModel player) 
+    {
+        var key = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
+
+        await _aws.UploadImages(key, player.File);
     }
 }

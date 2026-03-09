@@ -80,19 +80,8 @@
                                                         <MudFileUpload @ref="@_fileUpload"
                                                                         T="IBrowserFile"
                                                                         For="@(() => model.File)"
-                                                                        @bind-Files="model.File">
-                                                            <ActivatorContent>
-                                                                <MudButton Variant="Variant.Filled"
-                                                                            Color="Color.Primary"
-                                                                            StartIcon="@Icons.Material.Filled.CloudUpload">
-                                                                    League Image
-                                                                </MudButton>
-                                                            </ActivatorContent>
+                                                                @bind-Files="model.File" CustomContent="UploadButton">
                                                         </MudFileUpload>
-                                                        @if (model.File != null)
-                                                        {
-                                                            <MudText Typo="@Typo.h6">@model.File.Name</MudText>
-                                                        }
                                                     </MudStack>
                                                 </div>,
                                                 @<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth>Create</MudButton>
@@ -266,5 +255,14 @@
                     @actions
                 </MudCardActions>
         }
-        </MudCard>;
+        </MudCard>
+    ;
+
+    private RenderFragment<MudFileUpload<IBrowserFile>> UploadButton =>
+        (fileUpload) => @<MudButton Variant="Variant.Filled"
+                                                   Color="Color.Primary"
+                                                   StartIcon="@Icons.Material.Filled.CloudUpload"
+                                    OnClick="@(() => fileUpload.OpenFilePickerAsync())">
+                                        League Image
+                                    </MudButton>;
 }
