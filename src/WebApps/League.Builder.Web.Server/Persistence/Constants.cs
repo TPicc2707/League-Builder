@@ -321,4 +321,16 @@
         public const string WHIP = "To calculate Walks and Hits per Inning Pitched (WHIP) in baseball, you add the total number of walks and hits a pitcher has allowed, then divide that sum by the total number of innings they have pitched.  Formula: (Total Hits + Total Walks) / Innings Pitched";
     }
 
+    public static class BasketballStatDescriptions
+    {
+        public const string PointsAverage = "To calculate points average in basketball, divide the total number of points scored by the total number of games played. Formula: Points Average = Total Points Scored / Total Games Played";
+        public const string ReboundsAverage = "To calculate rebounds average in basketball, divide the total number of rebounds by the total number of games played. Formula: Rebounds Average = Total Rebounds / Total Games Played";
+        public const string AssistsAverage = "To calculate assists average in basketball, divide the total number of assists by the total number of games played. Formula: Assists Average = Total Assists / Total Games Played";
+        public const string StealsAverage = "To calculate steals average in basketball, divide the total number of steals by the total number of games played. Formula: Steals Average = Total Steals / Total Games Played";
+        public const string BlocksAverage = "To calculate blocks average in basketball, divide the total number of blocks by the total number of games played. Formula: Blocks Average = Total Blocks / Total Games Played";
+        public const string FieldGoalPercentage = "To calculate field goal percentage in basketball, divide the total number of field goals made by the total number of field goals attempted, and then multiply that result by 100 to get a percentage. Formula: (Field Goals Made / Field Goals Attempted) * 100";
+        public const string ThreePointPercentage = "To calculate three-point percentage in basketball, divide the total number of three-point field goals made by the total number of three-point field goals attempted, and then multiply that result by 100 to get a percentage. Formula: (Three-Point Field Goals Made / Three-Point Field Goals Attempted) * 100";
+        public const string FreeThrowPercentage = "To calculate free throw percentage in basketball, divide the total number of free throws made by the total number of free throws attempted, and then multiply that result by 100 to get a percentage. Formula: (Free Throws Made / Free Throws Attempted) * 100";
+    }
+
 }

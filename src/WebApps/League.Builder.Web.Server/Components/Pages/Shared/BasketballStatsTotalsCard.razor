@@ -1,0 +1,50 @@
+﻿<MudStack Row="true" Class="pb-6">
+@foreach (var card in Cards)
+{
+            <MudItem sm="3">
+                <MudCard Class="border border-solid" Style="border-color: #000000">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@card.Label</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@card.Value</MudText>
+                    </MudCardContent>
+                    <MudCardActions Style="justify-content: end;">
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Tertiary"
+                                   OnClick="@(() => OnInfoClick.InvokeAsync(card.Description))">
+                            <MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" />
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+}
+</MudStack>
+
+    @code {
+    [Parameter] public BasketballTotalsModel Totals { get; set; }
+    [Parameter] public EventCallback<string> OnInfoClick { get; set; }
+    [Parameter] public int Index { get; set; }
+
+    private IEnumerable<(string Label, string Value, string Description)> Cards => Index == 1 ? FirstCards : SecondCards;
+
+    private IEnumerable<(string Label, string Value, string Description)> FirstCards =>
+        new[]
+        {
+                ("Points Average", Totals.PointsAverage.ToString("#0.0"), BasketballStatDescriptions.PointsAverage),
+                ("Rebounds Average", Totals.ReboundsAverage.ToString("#0.0"), BasketballStatDescriptions.ReboundsAverage),
+                ("Assists Average", Totals.ReboundsAverage.ToString("#0.0"), BasketballStatDescriptions.AssistsAverage),
+                ("Field Goal Percentage", Totals.FieldGoalPercentage.ToString("#0.0"), BasketballStatDescriptions.FieldGoalPercentage),
+        };
+
+    private IEnumerable<(string Label, string Value, string Description)> SecondCards =>
+    new[]
+    {
+                ("Three Point Percentage", Totals.ThreePointerPercentage.ToString("#0.0"), BasketballStatDescriptions.ThreePointPercentage),
+                ("Free Throw Percentage", Totals.FreeThrowPercentage.ToString("#0.0"), BasketballStatDescriptions.FreeThrowPercentage),
+                ("Steals Average", Totals.StealsAverage.ToString("#0.0"), BasketballStatDescriptions.StealsAverage),
+                ("Blocks Average", Totals.BlocksAverage.ToString("#0.0"), BasketballStatDescriptions.BlocksAverage),
+    };
+}

@@ -1,0 +1,49 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary font-bold">Name</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">S</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">MIN</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">PTS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">REB</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">AST</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">BLK</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">STL</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">TO</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">FGM</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">FGA</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">3PM</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">3PA</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">FTM</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">FTA</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">FTA</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">FOUL</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Opposing Team">@context.OpposingTeam</MudTd>
+        @if (context.BasketballStatsModel.Stats.Start)
+        {
+            <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
+        }
+        else
+        {
+            <MudTd DataLabel="S"></MudTd>
+        }
+        <MudTd DataLabel="MIN">@context.BasketballStatsModel.Stats.Minutes</MudTd>
+        <MudTd DataLabel="PTS">@context.BasketballStatsModel.Stats.Points</MudTd>
+        <MudTd DataLabel="REB">@context.BasketballStatsModel.Stats.Rebounds</MudTd>
+        <MudTd DataLabel="AST">@context.BasketballStatsModel.Stats.Assists</MudTd>
+        <MudTd DataLabel="BLK">@context.BasketballStatsModel.Stats.Blocks</MudTd>
+        <MudTd DataLabel="STL">@context.BasketballStatsModel.Stats.Steals</MudTd>
+        <MudTd DataLabel="TO">@context.BasketballStatsModel.Stats.Turnovers</MudTd>
+        <MudTd DataLabel="FGM">@context.BasketballStatsModel.Stats.FieldGoalsMade</MudTd>
+        <MudTd DataLabel="FGA">@context.BasketballStatsModel.Stats.FieldGoalsAttempted</MudTd>
+        <MudTd DataLabel="3PM">@context.BasketballStatsModel.Stats.ThreePointersMade</MudTd>
+        <MudTd DataLabel="3PA">@context.BasketballStatsModel.Stats.ThreePointersAttempted</MudTd>
+        <MudTd DataLabel="FTM">@context.BasketballStatsModel.Stats.FreeThrowsMade</MudTd>
+        <MudTd DataLabel="FTA">@context.BasketballStatsModel.Stats.FreeThrowsAttempted</MudTd>
+        <MudTd DataLabel="FoUL">@context.BasketballStatsModel.Stats.Fouls</MudTd>
+    </RowTemplate>
+</MudTable>
+@code {
+    [Parameter] public IEnumerable<PlayerStatRecord> Rows { get; set; }
+}

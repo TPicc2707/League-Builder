@@ -16,4 +16,14 @@ public class BasketballTotalsModel
     public int Turnovers { get; set; }
     public int Fouls { get; set; }
 
+    // Derived stats for Player Stats
+    public decimal PointsAverage { get; set; }
+    public decimal ReboundsAverage { get; set; }
+    public decimal AssistsAverage { get; set; }
+    public decimal StealsAverage { get; set; }
+    public decimal BlocksAverage { get; set; }
+    public decimal FieldGoalPercentage { get; set; }
+    public decimal ThreePointerPercentage { get; set; }
+    public decimal FreeThrowPercentage { get; set; }
+
 }
