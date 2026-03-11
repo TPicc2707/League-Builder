@@ -1,0 +1,26 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary font-bold">VS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">REC</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">TGTS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">YDS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">TD</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">YAC</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">FUM</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">LST</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Opposing Team" Style="font-size: 12px;">@context.OpposingTeam</MudTd>
+        <MudTd DataLabel="Receptions">@context.FootballStatsModel.OffensiveStats.Receptions</MudTd>
+        <MudTd DataLabel="Targets">@context.FootballStatsModel.OffensiveStats.Targets</MudTd>
+        <MudTd DataLabel="Yards">@context.FootballStatsModel.OffensiveStats.ReceivingYards</MudTd>
+        <MudTd DataLabel="Touchdowns">@context.FootballStatsModel.OffensiveStats.ReceivingTouchdowns</MudTd>
+        <MudTd DataLabel="Yards After Catch">@context.FootballStatsModel.OffensiveStats.YardsAfterCatch</MudTd>
+        <MudTd DataLabel="Fumbles">@context.FootballStatsModel.OffensiveStats.ReceivingFumbles</MudTd>
+        <MudTd DataLabel="Fumbles Lost">@context.FootballStatsModel.OffensiveStats.ReceivingFumblesLost</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public IEnumerable<PlayerStatRecord> Rows { get; set; }
+}

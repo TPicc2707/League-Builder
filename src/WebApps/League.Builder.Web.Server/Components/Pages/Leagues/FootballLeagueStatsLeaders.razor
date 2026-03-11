@@ -269,14 +269,14 @@
         leader.PassingCompletionPercentage = SafePct(leader.PassingCompletions, leader.PassingAttempts);
         leader.PassingYards += of.PassingYards;
         leader.LongestPassingPlay = of.LongestPassingPlay > leader.LongestPassingPlay ? of.LongestPassingPlay : leader.LongestPassingPlay;
-        leader.PassingYardsPerPlay = SafePerGame(leader.PassingYards, leader.PassingAttempts);
+        leader.PassingYardsPerPlay = SafePerPlay(leader.PassingYards, leader.PassingAttempts);
         leader.PassingTouchdowns += stat.OffensiveStats.PassingTouchdowns;
         leader.PassingInterceptions += stat.OffensiveStats.PassingInterceptions;
         leader.Sacks += stat.OffensiveStats.Sacks;
 
         leader.RushingAttempts += stat.OffensiveStats.RushingAttempts;
         leader.RushingYards += stat.OffensiveStats.RushingYards;
-        leader.RushingYardsAverage = SafePerGame(leader.RushingYards, leader.RushingAttempts);
+        leader.RushingYardsAverage = SafePerPlay(leader.RushingYards, leader.RushingAttempts);
         leader.LongestRushingPlay = of.LongestRushingPlay > leader.LongestRushingPlay ? of.LongestRushingPlay : leader.LongestRushingPlay;
         leader.RushingTouchdowns += stat.OffensiveStats.RushingTouchdowns;
         leader.RushingFumbles += stat.OffensiveStats.RushingFumbles;
@@ -285,7 +285,7 @@
         leader.Receptions += of.Receptions;
         leader.Targets += of.Targets;
         leader.ReceivingYards += of.ReceivingYards;
-        leader.ReceivingYardsPerPlay = SafePerGame(leader.ReceivingYards, leader.Receptions);
+        leader.ReceivingYardsPerPlay = SafePerPlay(leader.ReceivingYards, leader.Receptions);
         leader.ReceivingTouchdowns += of.ReceivingTouchdowns;
         leader.ReceivingFumbles += of.ReceivingFumbles;
         leader.ReceivingFumblesLost += of.ReceivingFumblesLost;
@@ -326,7 +326,10 @@
     private decimal SafePct(int comp, int attempted) =>
         attempted == 0 ? 0 : (decimal)comp / attempted * 100;
 
-    private decimal SafePerGame(int yards, int attempted) =>
+    private decimal SafePerPlay(int yards, int attempted) =>
         attempted == 0 ? 0 : (decimal)yards / attempted;
+
+    private decimal SafePerGame(int yards, int games) =>
+        games == 0 ? 0 : (decimal)yards / games;
 }
 

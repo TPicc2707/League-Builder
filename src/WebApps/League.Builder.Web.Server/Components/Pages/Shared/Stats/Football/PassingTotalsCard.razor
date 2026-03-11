@@ -1,0 +1,39 @@
+﻿<MudStack Row="true" Class="pb-6">
+    @foreach (var card in Cards)
+    {
+        <MudItem sm="3">
+            <MudCard Class="border border-solid" Style="border-color: #000000">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@card.Label</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@card.Value</MudText>
+                </MudCardContent>
+                <MudCardActions Style="justify-content: end;">
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Tertiary"
+                               OnClick="@(() => OnInfoClick.InvokeAsync(card.Description))">
+                        <MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" />
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    }
+</MudStack>
+
+@code {
+    [Parameter] public FootballPassingTotalsModel Totals { get; set; }
+    [Parameter] public EventCallback<string> OnInfoClick { get; set; }
+
+    private IEnumerable<(string Label, string Value, string Description)> Cards =>
+        new[]
+        {
+                ("Yards", Totals.PassingYards.ToString(), FootballStatDescriptions.PassingYards),
+                ("TDs", Totals.PassingTouchdowns.ToString(), FootballStatDescriptions.PassingTouchdowns),
+                ("INTs", Totals.PassingInterceptions.ToString(), FootballStatDescriptions.PassingInterceptions),
+                ("YPG", Totals.PassingYardsPerGame.ToString("#.0"), FootballStatDescriptions.PassingYardsPerGame)
+        };
+
+}

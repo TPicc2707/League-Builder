@@ -333,4 +333,28 @@
         public const string FreeThrowPercentage = "To calculate free throw percentage in basketball, divide the total number of free throws made by the total number of free throws attempted, and then multiply that result by 100 to get a percentage. Formula: (Free Throws Made / Free Throws Attempted) * 100";
     }
 
+    public static class FootballStatDescriptions
+    {
+        public const string PassingYards = "This is the amount of passing yards accumulated throughout this season";
+        public const string PassingTouchdowns = "This is the amount of passing touchdowns accumulated throughout this season";
+        public const string PassingInterceptions = "This is the amount of passing interceptions accumulated throughout this season";
+        public const string PassingYardsPerGame = "To calculate passing yards per game in football, divide the total number of passing yards accumulated throughout the season by the total number of games played. Formula: Passing Yards Per Game = Total Passing Yards / Total Games Played";
+        public const string RushingAttempts = "This is the amount of rushing carries throughout this season";
+        public const string RushingYards = "This is the amount of rushing yards accumulated throughout this season";
+        public const string RushingTouchdowns = "This is the amount of rushing touchdowns accumulated throughout this season";
+        public const string RushingYardsPerGame = "To calculate rushing yards per game in football, divide the total number of rushing yards accumulated throughout the season by the total number of games played. Formula: Rushing Yards Per Game = Total Rushing Yards / Total Games Played";
+        public const string Receptions = "This is the amount of receptions throughout this season";
+        public const string ReceivingYards = "This is the amount of receiving yards throughout this season";
+        public const string ReceivingTouchdowns = "This is the amount of receiving touchdowns throughout this season";
+        public const string ReceivingYardsPerGame = "To calculate receiving yards per game in football, divide the total number of receiving yards accumulated throughout the season by the total number of games played. Formula: Receiving Yards Per Game = Total Receiving Yards / Total Games Played";
+        public const string DefensiveTackles = "This is the amount of defensive tackles throughout this season";
+        public const string DefensiveSacks = "This is the amount of defensive sacks throughout this season";
+        public const string ForcedFumbles = "This is the amount of forced fumbles throughout this season";
+        public const string DefensiveInterceptions = "This is the amount of defensive interceptions throughout this season";
+        public const string FieldGoalPercentage = "To calculate field goal percentage in football, divide the total number of field goals made by the total number of field goals attempted, and then multiply that result by 100 to get a percentage. Formula: (Field Goals Made / Field Goals Attempted) * 100";
+        public const string ExtraPointPercentage = "To calculate extra point percentage in football, divide the total number of extra points made by the total number of extra points attempted, and then multiply that result by 100 to get a percentage. Formula: (Extra Points Made / Extra Points Attempted) * 100";
+        public const string Punts = "This is the amount of punts throughout this season";
+        public const string LongestPunt = "This is the longest punt in yards throughout this season";
+    }
+
 }

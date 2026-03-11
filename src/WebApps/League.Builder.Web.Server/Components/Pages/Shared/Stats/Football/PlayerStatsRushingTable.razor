@@ -1,0 +1,24 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary font-bold">VS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">CAR</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">YDS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">TD</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">LNG</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">FUM</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">LST</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Opposing Team" Style="font-size: 12px;">@context.OpposingTeam</MudTd>
+        <MudTd DataLabel="Carries">@context.FootballStatsModel.OffensiveStats.RushingAttempts</MudTd>
+        <MudTd DataLabel="Yards">@context.FootballStatsModel.OffensiveStats.RushingYards</MudTd>
+        <MudTd DataLabel="Touchdowns">@context.FootballStatsModel.OffensiveStats.RushingTouchdowns</MudTd>
+        <MudTd DataLabel="Longest">@context.FootballStatsModel.OffensiveStats.LongestRushingPlay</MudTd>
+        <MudTd DataLabel="Fumbles">@context.FootballStatsModel.OffensiveStats.RushingFumbles</MudTd>
+        <MudTd DataLabel="Fumbles Lost">@context.FootballStatsModel.OffensiveStats.RushingFumblesLost</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public IEnumerable<PlayerStatRecord> Rows { get; set; }
+}

@@ -7,4 +7,7 @@ public class FootballRushingTotalsModel
     public int RushingTouchdowns { get; set; } 
     public int RushingFumbles { get; set; }
     public int RushingFumblesLost { get; set; }
+
+    // Derived for Player Stats
+    public decimal RushingYardsPerGame { get; set; }
 }

@@ -45,4 +45,13 @@ public class ImageService
 
         await _aws.UploadImages(key, player.File);
     }
+
+    public async Task CopyPlayerImageAsync(LeagueModel league, TeamModel oldTeam, TeamModel newTeam, PlayerModel player)
+    {
+        var oldPath = $"/{league.Sport}/{league.Name}/teams/{oldTeam.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
+        var newPath = $"/{league.Sport}/{league.Name}/teams/{newTeam.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
+
+        await _aws.CopyObjectToNewFolder(oldPath, newPath);
+
+    }
 }

@@ -1,0 +1,30 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary font-bold">VS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">FG</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">FGA</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">LNGK</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">XPM</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">XPA</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">PTS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">PUNTS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">YDS</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">LNG</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Opposing Team" Style="font-size: 12px;">@context.OpposingTeam</MudTd>
+        <MudTd DataLabel="FG">@context.FootballStatsModel.KickingStats.FieldGoalsMade</MudTd>
+        <MudTd DataLabel="FGA">@context.FootballStatsModel.KickingStats.FieldGoalsAttempted</MudTd>
+        <MudTd DataLabel="LNGK">@context.FootballStatsModel.KickingStats.LongestKick</MudTd>
+        <MudTd DataLabel="XPM">@context.FootballStatsModel.KickingStats.ExtraPointsMade</MudTd>
+        <MudTd DataLabel="XPA">@context.FootballStatsModel.KickingStats.ExtraPointsAttempted</MudTd>
+        <MudTd DataLabel="PTS">@context.FootballStatsModel.KickingStats.Points</MudTd>
+        <MudTd DataLabel="PUNTS">@context.FootballStatsModel.KickingStats.Punts</MudTd>
+        <MudTd DataLabel="YDS">@context.FootballStatsModel.KickingStats.PuntingYards</MudTd>
+        <MudTd DataLabel="LNG">@context.FootballStatsModel.KickingStats.LongestPunt</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public IEnumerable<PlayerStatRecord> Rows { get; set; }
+}

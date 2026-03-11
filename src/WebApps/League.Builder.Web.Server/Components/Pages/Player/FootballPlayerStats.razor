@@ -19,577 +19,65 @@
 @inject IGameLocalCacheService GameLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
+@inject ImageService ImageService
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadSeasons, ", ", Roles.ReadGames, ", ", Roles.ReadTeams)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="padding-top: 100px;">
-                <MudItem xs="12" md="12" lg="12" Style="padding-bottom: 25px;">
-                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                        <MudCardContent>
-                            <MudStack Row="true">
-                                <MudItem xs="4" md="4" lg="4">
-                                    <MudImage Src="@imageFile" Width="225" Height="225" Alt="Swedish Farm House" Elevation="25" Class="rounded-lg ma-4" />
-                                </MudItem>
-                                <MudItem xs="4" md="4" lg="4" Class="ma-4">
-                                    <MudText Typo="Typo.h4" Align="Align.Start" Style="font-weight:bold;" >@PlayerModel.Player.FirstName @PlayerModel.Player.LastName</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start">@TeamModel.Team.TeamName</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start">#@PlayerModel.Player.PlayerDetail.Number</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start">@address</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start">Birthday: @PlayerModel.Player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start">Height: @PlayerModel.Player.PlayerDetail.Height in</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start">Weight: @PlayerModel.Player.PlayerDetail.Weight lbs</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start">Positions: @PlayerModel.Player.PlayerDetail.Position</MudText>
-                                </MudItem>
-                            </MudStack>
-                        </MudCardContent>
-                        <MudCardActions Class="ma-4">
-                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="OpenContactDialogAsync">Contact Info</MudButton>
-                        </MudCardActions>
-                    </MudCard>
+            <MudContainer Class="pt-12">
+                <PlayerHeaderCard Player="PlayerModel"
+                                  Team="TeamModel"
+                                  Image="@imageFile"
+                                  Address="address"
+                                  OnContactClick="OpenContactDialogAsync" />
+                <MudItem Class="padtop-20">
+                    <SeasonSelectorPanel Seasons="SeasonsModel.Seasons"
+                                         SelectedSeason="seasonValue"
+                                         SelectedSeasonChanged="@((int v) => seasonValue = v)"
+                                         OnSearch="GetPlayerStatsBySeason"
+                                         Title="@($"{SeasonModel.Season.Year} Stats")" />
                 </MudItem>
-                <MudItem Style="padding-bottom: 25px;">
-                    <MudExpansionPanels>
-                        <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid" Style="border-color: #000000">
-                            <TitleContent>
-                                <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@SeasonModel.Season.Year Stats</MudText>
-                            </TitleContent>
-                            <ChildContent>
-                                <MudStack Row="true">
-                                    <MudItem xs="8" md="8" lg="8">
-                                        <MudSelect @bind-Value="seasonValue" Placeholder="@seasonPlaceholder" Label="@seasonPlaceholder">
-                                            @foreach (var season in SeasonsModel.Seasons)
-                                            {
-                                                <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
-                                            }
-                                        </MudSelect>
-                                    </MudItem>
-                                    <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
-                                        <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetPlayerStatsBySeason" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 150px;">Search</MudButton>
-                                    </MudItem>
-                                </MudStack>
-                            </ChildContent>
-                        </MudExpansionPanel>
-                    </MudExpansionPanels>
+                <MudItem Class="padtop-20 mb-50">
+                    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                        <MudTabPanel Text="Passing Stats">
+                            <MudItem Class="padtop-20">
+                                <PassingTotalsCard Totals="PassingTotalsModel"
+                                                   OnInfoClick="OpenStatDialogAsync" />
+                                <PlayerStatPassingTable Rows="PlayerStats" />
+                            </MudItem>
+                        </MudTabPanel>
+                        <MudTabPanel Text="Rushing Stats">
+                            <MudItem Class="padtop-20">
+                                <RushingTotalsCard Totals="RushingTotalsModel"
+                                                   OnInfoClick="OpenStatDialogAsync" />
+                                <PlayerStatsRushingTable Rows="PlayerStats" />
+                            </MudItem>                           
+                        </MudTabPanel>
+                        <MudTabPanel Text="Receiving Stats">
+                            <MudItem Class="padtop-20">
+                                <ReceivingTotalsCard Totals="ReceivingTotalsModel"
+                                                     OnInfoClick="OpenStatDialogAsync" />
+                                <PlayerStatsReceivingTable Rows="PlayerStats" />
+                            </MudItem>
+                        </MudTabPanel>
+                        <MudTabPanel Text="Defensive Stats">
+                            <MudItem Class="padtop-20">
+                                <DefensiveTotalsCard Totals="DefensiveTotalsModel"
+                                                     OnInfoClick="OpenStatDialogAsync" />
+                                <PlayerStatsDefensiveTable Rows="PlayerStats" />
+                            </MudItem>
+                        </MudTabPanel>
+                        <MudTabPanel Text="Kicking Stats">
+                            <MudItem Class="padtop-20">
+                                <KickingTotalsCard Totals="KickingTotalsModel"
+                                                   OnInfoClick="OpenStatDialogAsync" />
+                                <PlayerStatsKickingTable Rows="PlayerStats" />
+                            </MudItem>
+                        </MudTabPanel>
+                    </MudTabs>
                 </MudItem>
-                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudTabPanel Text="Passing Stats">
-                        <MudItem Style="padding-top: 25px; padding-bottom: 50px;">
-                            <MudStack Row="true">
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">Yards</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonPassingYards</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of passing yards throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">TDs</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonPassingTouchdowns</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of passing touchdowns throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">INTs</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonPassingInterceptions</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of passing interceptions throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">YPG</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonPassingYardsPerGame.ToString("#.0")</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of passing yards per game this season. Formula: Passing Yards / Games Played"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                            </MudStack>
-                        </MudItem>
-                        <MudItem>
-                            <MudTable Items="@PlayerStats" Hover="true" Class="border border-solid" Style="border-color: #000000">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">VS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">CMP</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">ATT</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Away Team">@context.OpposingTeam</MudTd>
-                                    <MudTd DataLabel="CMP">@context.StatsModel.OffensiveStats.PassingCompletions</MudTd>
-                                    <MudTd DataLabel="ATT">@context.StatsModel.OffensiveStats.PassingAttempts</MudTd>
-                                    <MudTd DataLabel="YDS">@context.StatsModel.OffensiveStats.PassingYards</MudTd>
-                                    <MudTd DataLabel="TD">@context.StatsModel.OffensiveStats.PassingTouchdowns</MudTd>
-                                    <MudTd DataLabel="INT">@context.StatsModel.OffensiveStats.PassingInterceptions</MudTd>
-                                    <MudTd DataLabel="S">@context.StatsModel.OffensiveStats.Sacks</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudItem>
-                    </MudTabPanel>
-                    <MudTabPanel Text="Rushing Stats">
-                        <MudItem Style="padding-top: 25px; padding-bottom: 50px;">
-                            <MudStack Row="true">
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">CAR</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonCarries</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of rushing carries throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">YDS</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonRushingYards</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of rushing yards throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">TDS</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonRushingTouchdowns</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of rushing touchdowns throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">AVG</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonRushingYardsPerGame.ToString("#.0")</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of rushing yards per game this season. Formula: Rushing Yards / Games Played"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                            </MudStack>
-                        </MudItem>
-                        <MudItem>
-                            <MudTable Items="@PlayerStats" Hover="true" Class="border border-solid" Style="border-color: #000000">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">VS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">CAR</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FUM</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LST</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Away Team">@context.OpposingTeam</MudTd>
-                                    <MudTd DataLabel="CMP">@context.StatsModel.OffensiveStats.RushingAttempts</MudTd>
-                                    <MudTd DataLabel="ATT">@context.StatsModel.OffensiveStats.RushingYards</MudTd>
-                                    <MudTd DataLabel="YDS">@context.StatsModel.OffensiveStats.RushingTouchdowns</MudTd>
-                                    <MudTd DataLabel="TD">@context.StatsModel.OffensiveStats.LongestRushingPlay</MudTd>
-                                    <MudTd DataLabel="INT">@context.StatsModel.OffensiveStats.RushingFumbles</MudTd>
-                                    <MudTd DataLabel="S">@context.StatsModel.OffensiveStats.RushingFumblesLost</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </MudItem>
-                    </MudTabPanel>
-                    <MudTabPanel Text="Receiving Stats">
-                        <MudItem Style="padding-top: 25px; padding-bottom: 50px;">
-                            <MudStack Row="true">
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">REC</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonReceptions</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of receptions throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">YDS</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonReceivingYards</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of receiving yards throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">TDS</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonReceivingTouchdowns</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of receiving touchdowns throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">AVG</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@(seasonReceivingYardsPerGame == 0 ? 0 : seasonReceivingYardsPerGame.ToString("#.0"))</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of receiving yards per game this season. Formula: Receiving Yards / Games Played"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                            </MudStack>
-                        </MudItem>
-                        <MudItem>
-                            <MudTable Items="@PlayerStats" Hover="true">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">VS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">REC</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TGTS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YAC</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FUM</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LST</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Away Team">@context.OpposingTeam</MudTd>
-                                    <MudTd DataLabel="CMP">@context.StatsModel.OffensiveStats.Receptions</MudTd>
-                                    <MudTd DataLabel="ATT">@context.StatsModel.OffensiveStats.Targets</MudTd>
-                                    <MudTd DataLabel="YDS">@context.StatsModel.OffensiveStats.ReceivingYards</MudTd>
-                                    <MudTd DataLabel="TD">@context.StatsModel.OffensiveStats.ReceivingTouchdowns</MudTd>
-                                    <MudTd DataLabel="INT">@context.StatsModel.OffensiveStats.YardsAfterCatch</MudTd>
-                                    <MudTd DataLabel="S">@context.StatsModel.OffensiveStats.ReceivingFumbles</MudTd>
-                                    <MudTd DataLabel="S">@context.StatsModel.OffensiveStats.ReceivingFumblesLost</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-
-                        </MudItem>
-                    </MudTabPanel>
-                    <MudTabPanel Text="Defensive Stats">
-                        <MudItem Style="padding-top: 25px; padding-bottom: 50px;">
-                            <MudStack Row="true">
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">TOT</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonDefensiveTackles</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of tackles made throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">SACK</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonDefensiveSacks</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of defensive sacks made throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">FF</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonForcedFumbles</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of forced fumbles made throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">INT</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonDefensiveInterceptions</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of defensive interceptions made throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                            </MudStack>
-                        </MudItem>
-                        <MudItem>
-                            <MudTable Items="@PlayerStats" Hover="true" Class="border border-solid" Style="border-color: #000000">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">VS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TOT</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">SACK</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TFL</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FF</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FR</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">INT</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">TD</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">PD</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Away Team">@context.OpposingTeam</MudTd>
-                                    <MudTd DataLabel="CMP">@context.StatsModel.DefensiveStats.Tackles</MudTd>
-                                    <MudTd DataLabel="ATT">@context.StatsModel.DefensiveStats.Sacks</MudTd>
-                                    <MudTd DataLabel="YDS">@context.StatsModel.DefensiveStats.TacklesForLoss</MudTd>
-                                    <MudTd DataLabel="TD">@context.StatsModel.DefensiveStats.ForcedFumbles</MudTd>
-                                    <MudTd DataLabel="INT">@context.StatsModel.DefensiveStats.RecoveredFumbles</MudTd>
-                                    <MudTd DataLabel="S">@context.StatsModel.DefensiveStats.DefensiveInterceptions</MudTd>
-                                    <MudTd DataLabel="S">@context.StatsModel.DefensiveStats.DefensiveInterceptionYards</MudTd>
-                                    <MudTd DataLabel="S">@context.StatsModel.DefensiveStats.DefensiveTouchdowns</MudTd>
-                                    <MudTd DataLabel="S">@context.StatsModel.DefensiveStats.LongestDefensiveInterceptionPlay</MudTd>
-                                    <MudTd DataLabel="S">@context.StatsModel.DefensiveStats.PassesDefended</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-
-                        </MudItem>
-                    </MudTabPanel>
-                    <MudTabPanel Text="Kicking Stats">
-                        <MudItem Style="padding-top: 25px; padding-bottom: 50px;">
-                            <MudStack Row="true">
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">FG%</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonFieldGoalPercentage.ToString("#.000")</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the field goals percentage throughout this season. Formula: Field Goals Made / Field Goals Attempted"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">XP%</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonExtraPointPercentage.ToString("#.000")</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the extra points percentage throughout this season. Formula: Extra Points Made / Extra Points Attempted"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">PUNT</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonPunts</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the amount of punts throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem sm="3" md="3" lg="3">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardHeader>
-                                            <CardHeaderContent>
-                                                <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">LNG</MudText>
-                                            </CardHeaderContent>
-                                        </MudCardHeader>
-                                        <MudCardContent>
-                                            <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@seasonLongestPunt</MudText>
-                                        </MudCardContent>
-                                        <MudCardActions Style="justify-content: end;">
-                                            <MudButton Variant="Variant.Text" Color="Color.Tertiary" OnClick="@(() => OpenStatDialogAsync("This is the longest punt made throughout this season"))"><MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" /></MudButton>
-                                        </MudCardActions>
-                                    </MudCard>
-                                </MudItem>
-                            </MudStack>
-                        </MudItem>
-                        <MudItem>
-                            <MudTable Items="@PlayerStats" Hover="true" Class="border border-solid" Style="border-color: #000000">
-                                <ColGroup>
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                    <col />
-                                </ColGroup>
-                                <HeaderContent>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">VS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FG</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">FGA</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPM</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">XPA</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">PTS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">PUNTS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">YDS</MudTh>
-                                    <MudTh Style="font-weight:bold" Class="mud-theme-primary">LNG</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Away Team">@context.OpposingTeam</MudTd>
-                                    <MudTd DataLabel="CMP">@context.StatsModel.KickingStats.FieldGoalsMade</MudTd>
-                                    <MudTd DataLabel="ATT">@context.StatsModel.KickingStats.FieldGoalsAttempted</MudTd>
-                                    <MudTd DataLabel="YDS">@context.StatsModel.KickingStats.ExtraPointsMade</MudTd>
-                                    <MudTd DataLabel="TD">@context.StatsModel.KickingStats.ExtraPointsAttempted</MudTd>
-                                    <MudTd DataLabel="TD">@context.StatsModel.KickingStats.Points</MudTd>
-                                    <MudTd DataLabel="INT">@context.StatsModel.KickingStats.Punts</MudTd>
-                                    <MudTd DataLabel="S">@context.StatsModel.KickingStats.PuntingYards</MudTd>
-                                    <MudTd DataLabel="S">@context.StatsModel.KickingStats.LongestPunt</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-
-                        </MudItem>
-                    </MudTabPanel>
-                </MudTabs>
-
-            </MudItem>
+            </MudContainer>
         }
         else
         {
@@ -612,39 +100,6 @@
     private bool expandSearchPanel = false;
     private IJSObjectReference? _module;
     private List<PlayerStatRecord> PlayerStats = new List<PlayerStatRecord>();
-    private int seasonPassingCompletions = 0;
-    private int seasonPassingAttempts = 0;
-    private int seasonPassingYards = 0;
-    private decimal seasonPassingYardsPerGame = 0;
-    private int seasonPassingTouchdowns = 0;
-    private int seasonPassingInterceptions = 0;
-    private int seasonSacks = 0;
-
-    private int seasonCarries = 0;
-    private int seasonRushingYards = 0;
-    private int seasonRushingTouchdowns = 0;
-    private decimal seasonRushingYardsPerGame = 0;
-
-    private int seasonReceptions = 0;
-    private int seasonReceivingYards = 0;
-    private int seasonReceivingTouchdowns = 0;
-    private decimal seasonReceivingYardsPerGame = 0;
-
-    private int seasonDefensiveTackles = 0;
-    private int seasonDefensiveSacks = 0;
-    private int seasonForcedFumbles = 0;
-    private int seasonDefensiveInterceptions = 0;
-
-    private int seasonFieldGoalsMade = 0;
-    private int seasonFieldGoalsAttempted = 0;
-    private int seasonExtraPointsMade = 0;
-    private int seasonExtraPointsAttempted = 0;
-    private decimal seasonFieldGoalPercentage = 0;
-    private decimal seasonExtraPointPercentage = 0;
-    private decimal seasonPoints = 0;
-    private int seasonPunts = 0;
-    private int seasonLongestPunt = 0;
-
 
     GetPlayerByIdResponse PlayerModel { get; set; }
     GetPlayerFootballStatsBySeasonResponse StatsModel { get; set; }
@@ -654,17 +109,22 @@
     GetTeamByIdResponse TeamModel { get; set; }
     GetLeagueByIdResponse LeagueModel { get; set; }
 
+    FootballPassingTotalsModel PassingTotalsModel = new();
+    FootballRushingTotalsModel RushingTotalsModel = new();
+    FootballReceivingTotalsModel ReceivingTotalsModel = new();
+    FootballDefensiveTotalsModel DefensiveTotalsModel = new();
+    FootballKickingTotalsModel KickingTotalsModel = new();
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
             int year = DateTime.Now.Year;
-            SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
-            if (SeasonsModel == null)
-            {
-                SeasonsModel = await SeasonService.GetSeasons();
-                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
-            }
+            SeasonsModel = await DataLoader.GetOrLoad(
+                () => SeasonLocalCache.GetSeasonsCache(),
+                () => SeasonService.GetSeasons(),
+                (s) => SeasonLocalCache.SetSeasonsCache(s)
+            );
             seasonValue = SeasonsModel.Seasons.FirstOrDefault(x => x.Year == year).Year;
             await CreatePlayerStats(year);
             PageLoad = true;
@@ -685,39 +145,11 @@
     private async Task GetPlayerStatsBySeason()
     {
         PageLoad = false;
-        seasonPassingCompletions = 0;
-        seasonPassingAttempts = 0;
-        seasonPassingYards = 0;
-        seasonPassingYardsPerGame = 0;
-        seasonPassingTouchdowns = 0;
-        seasonPassingInterceptions = 0;
-        seasonSacks = 0;
-
-        seasonCarries = 0;
-        seasonRushingYards = 0;
-        seasonRushingTouchdowns = 0;
-        seasonRushingYardsPerGame = 0;
-
-        seasonReceptions = 0;
-        seasonReceivingYards = 0;
-        seasonReceivingTouchdowns = 0;
-        seasonReceivingYardsPerGame = 0;
-
-        seasonDefensiveTackles = 0;
-        seasonDefensiveSacks = 0;
-        seasonForcedFumbles = 0;
-        seasonDefensiveInterceptions = 0;
-
-        seasonFieldGoalsMade = 0;
-        seasonFieldGoalsAttempted = 0;
-        seasonExtraPointsMade = 0;
-        seasonExtraPointsAttempted = 0;
-        seasonFieldGoalPercentage = 0;
-        seasonExtraPointPercentage = 0;
-        seasonPoints = 0;
-        seasonPunts = 0;
-        seasonLongestPunt = 0;
-        PlayerStats.RemoveRange(0, PlayerStats.Count);
+        PassingTotalsModel = new();
+        RushingTotalsModel = new();
+        ReceivingTotalsModel = new();
+        DefensiveTotalsModel = new();
+        KickingTotalsModel = new();
         await CreatePlayerStats(seasonValue);
         PageLoad = true;
     }
@@ -725,92 +157,116 @@
     private async Task CreatePlayerStats(int year)
     {
         var playerId = Guid.Parse(Id);
-        PlayerModel = await PlayerLocalCache.GetPlayerByIdCache(Id);
-        if (PlayerModel == null)
-        {
-            PlayerModel = await PlayerService.GetPlayerById(playerId);
-            await PlayerLocalCache.SetPlayerByIdCache(PlayerModel, Id);
-        }
-        TeamModel = await TeamLocalCache.GetTeamByIdCache(PlayerModel.Player.TeamId.ToString());
-        if (TeamModel == null)
-        {
-            TeamModel = await TeamService.GetTeamById(PlayerModel.Player.TeamId);
-            await TeamLocalCache.SetTeamByIdCache(PlayerModel.Player.TeamId.ToString(), TeamModel);
-        }
-        LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(TeamModel.Team.LeagueId.ToString());
-        if (LeagueModel == null)
-        {
-            LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
-            await LeagueLocalCache.SetLeagueByIdCache(TeamModel.Team.LeagueId.ToString(), LeagueModel);
-        }
-        await GetImageAsync();
+        PlayerModel = await DataLoader.GetOrLoad(
+            () => PlayerLocalCache.GetPlayerByIdCache(Id),
+            () => PlayerService.GetPlayerById(playerId),
+            (p) => PlayerLocalCache.SetPlayerByIdCache(p, Id)
+        );
+
+        TeamModel = await DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamByIdCache(PlayerModel.Player.TeamId.ToString()),
+            () => TeamService.GetTeamById(PlayerModel.Player.TeamId),
+            (t) => TeamLocalCache.SetTeamByIdCache(PlayerModel.Player.TeamId.ToString(), t)
+        );
+
+        LeagueModel = await DataLoader.GetOrLoad(
+            () => LeagueLocalCache.GetLeagueByIdCache(TeamModel.Team.LeagueId.ToString()),
+            () => LeagueService.GetLeague(TeamModel.Team.LeagueId),
+            (l) => LeagueLocalCache.SetLeagueByIdCache(TeamModel.Team.LeagueId.ToString(), l)
+        );
+
+        SeasonModel = await DataLoader.GetOrLoad(
+            () => SeasonLocalCache.GetSeasonByYearCache(year),
+            () => SeasonService.GetSeasonByYear(year),
+            (s) => SeasonLocalCache.SetSeasonByYearCache(year, s)
+        );
+
+        StatsModel = await DataLoader.GetOrLoad(
+            () => StatLocalCache.GetPlayerFootballStatsBySeasonCache(Id, SeasonModel.Season.Id.ToString()),
+            () => StatService.GetPlayerFootballStatsBySeason(playerId, SeasonModel.Season.Id),
+            (s) => StatLocalCache.SetPlayerFootballStatsBySeasonCache(Id, SeasonModel.Season.Id.ToString(), s)
+        );
+
+        GameModel = await DataLoader.GetOrLoad(
+            () => GameLocalCache.GetGamesByTeamCache(PlayerModel.Player.TeamId.ToString()),
+            () => GameService.GetGamesByTeam(PlayerModel.Player.TeamId),
+            (g) => GameLocalCache.SetGamesByTeamCache(PlayerModel.Player.TeamId.ToString(), g)
+        );
+
+        imageFile = await ImageService.GetPlayerImageAsync(LeagueModel.League, TeamModel.Team, PlayerModel.Player);
         address = String.Concat(PlayerModel.Player.PlayerAddress.AddressLine, ", ", PlayerModel.Player.PlayerAddress.State, ", ", PlayerModel.Player.PlayerAddress.ZipCode);
-        SeasonModel = await SeasonLocalCache.GetSeasonByYearCache(year);
-        if (SeasonModel == null)
-        {
-            SeasonModel = await SeasonService.GetSeasonByYear(year);
-            await SeasonLocalCache.SetSeasonByYearCache(year, SeasonModel);
-        }
-        StatsModel = await StatLocalCache.GetPlayerFootballStatsBySeasonCache(Id, SeasonModel.Season.Id.ToString());
-        if (StatsModel == null)
-        {
-            StatsModel = await StatService.GetPlayerFootballStatsBySeason(playerId, SeasonModel.Season.Id);
-            await StatLocalCache.SetPlayerFootballStatsBySeasonCache(Id, SeasonModel.Season.Id.ToString(), StatsModel);
-        }
-        GameModel = await GameLocalCache.GetGamesByTeamCache(PlayerModel.Player.TeamId.ToString());
-        if (GameModel == null)
-        {
-            GameModel = await GameService.GetGamesByTeam(PlayerModel.Player.TeamId);
-            await GameLocalCache.SetGamesByTeamCache(PlayerModel.Player.TeamId.ToString(), GameModel);
-        }
+
+        BuildRows();
+        Calculate(StatsModel.FootballStats);
+    }
+
+    private void BuildRows()
+    {
+        PlayerStats.Clear();
         foreach (var stat in StatsModel.FootballStats)
         {
+            var game = GameModel.Games.FirstOrDefault(g => g.Id == stat.GameId);
+            var opposingTeam = game.AwayTeam.Id != PlayerModel.Player.TeamId
+            ? game.AwayTeam.TeamName
+            : game.HomeTeam.TeamName;
+
+            PlayerStats.Add(new PlayerStatRecord(opposingTeam, stat));
+        }
+    }
+
+    private void Calculate(IEnumerable<FootballStatsModel> stats)
+    {
+        foreach(var s in stats)
+        {
             //Passing
-            seasonPassingCompletions += stat.OffensiveStats.PassingCompletions;
-            seasonPassingAttempts += stat.OffensiveStats.PassingAttempts;
-            seasonPassingYards += stat.OffensiveStats.PassingYards;
-            seasonPassingTouchdowns += stat.OffensiveStats.PassingTouchdowns;
-            seasonPassingInterceptions += stat.OffensiveStats.PassingInterceptions;
-            seasonSacks += stat.OffensiveStats.Sacks;
+            PassingTotalsModel.PassingCompletions += s.OffensiveStats.PassingCompletions;
+            PassingTotalsModel.PassingAttempts += s.OffensiveStats.PassingAttempts;
+            PassingTotalsModel.PassingYards += s.OffensiveStats.PassingYards;
+            PassingTotalsModel.PassingTouchdowns += s.OffensiveStats.PassingTouchdowns;
+            PassingTotalsModel.PassingInterceptions += s.OffensiveStats.PassingInterceptions;
+            PassingTotalsModel.Sacks += s.OffensiveStats.Sacks;
 
             //Rushing
-            seasonRushingYards += stat.OffensiveStats.RushingYards;
-            seasonCarries += stat.OffensiveStats.RushingAttempts;
-            seasonRushingTouchdowns += stat.OffensiveStats.RushingTouchdowns;
+            RushingTotalsModel.RushingYards += s.OffensiveStats.RushingYards;
+            RushingTotalsModel.RushingAttempts += s.OffensiveStats.RushingAttempts;
+            RushingTotalsModel.RushingTouchdowns += s.OffensiveStats.RushingTouchdowns;
 
             //Receiving
-            seasonReceptions += stat.OffensiveStats.Receptions;
-            seasonReceivingYards += stat.OffensiveStats.ReceivingYards;
-            seasonReceivingTouchdowns += stat.OffensiveStats.ReceivingTouchdowns;
+            ReceivingTotalsModel.Receptions += s.OffensiveStats.Receptions;
+            ReceivingTotalsModel.ReceivingYards += s.OffensiveStats.ReceivingYards;
+            ReceivingTotalsModel.ReceivingTouchdowns += s.OffensiveStats.ReceivingTouchdowns;
 
             //Defense
-            seasonDefensiveTackles += stat.DefensiveStats.Tackles;
-            seasonDefensiveSacks += stat.DefensiveStats.Sacks;
-            seasonForcedFumbles += stat.DefensiveStats.ForcedFumbles;
-            seasonDefensiveInterceptions += stat.DefensiveStats.DefensiveInterceptions;
+            DefensiveTotalsModel.Tackles += s.DefensiveStats.Tackles;
+            DefensiveTotalsModel.DefensiveSacks += s.DefensiveStats.Sacks;
+            DefensiveTotalsModel.ForcedFumbles += s.DefensiveStats.ForcedFumbles;
+            DefensiveTotalsModel.DefensiveInterceptions += s.DefensiveStats.DefensiveInterceptions;
 
             //Kicking
-            seasonFieldGoalsMade += stat.KickingStats.FieldGoalsMade;
-            seasonFieldGoalsAttempted += stat.KickingStats.FieldGoalsAttempted;
-            seasonExtraPointsMade += stat.KickingStats.ExtraPointsMade;
-            seasonExtraPointsAttempted += stat.KickingStats.ExtraPointsAttempted;
-            seasonPoints += stat.KickingStats.Points;
-            seasonPunts += stat.KickingStats.Punts;
+            KickingTotalsModel.FieldGoalsMade += s.KickingStats.FieldGoalsMade;
+            KickingTotalsModel.FieldGoalsAttempted += s.KickingStats.FieldGoalsAttempted;
+            KickingTotalsModel.ExtraPointsMade += s.KickingStats.ExtraPointsMade;
+            KickingTotalsModel.ExtraPointsAttempted += s.KickingStats.ExtraPointsAttempted;
+            KickingTotalsModel.Points += s.KickingStats.Points;
+            KickingTotalsModel.Punts += s.KickingStats.Punts;
 
-            if (seasonLongestPunt <= stat.KickingStats.LongestPunt)
-                seasonLongestPunt = stat.KickingStats.LongestPunt;
-
-            var game = GameModel.Games.FirstOrDefault(g => g.Id == stat.GameId);
-            var opposingTeam = game.AwayTeam.Id != PlayerModel.Player.TeamId ? game.AwayTeam.TeamName : game.HomeTeam.TeamName;
-            var playerStat = new PlayerStatRecord(opposingTeam, stat);
-            PlayerStats.Add(playerStat);
+            if (KickingTotalsModel.LongestPunt <= s.KickingStats.LongestPunt)
+                KickingTotalsModel.LongestPunt = s.KickingStats.LongestPunt;
         }
-        seasonPassingYardsPerGame = seasonPassingYards == 0 || StatsModel.FootballStats.Count() == 0 ? 0 : (decimal)seasonPassingYards / StatsModel.FootballStats.Count();
-        seasonRushingYardsPerGame = seasonRushingYards == 0 || StatsModel.FootballStats.Count() == 0 ? 0 : (decimal)seasonRushingYards / StatsModel.FootballStats.Count();
-        seasonReceivingYardsPerGame = seasonReceivingYards == 0 || StatsModel.FootballStats.Count() == 0 ? 0 : (decimal)seasonReceivingYards / StatsModel.FootballStats.Count();
-        seasonFieldGoalPercentage = seasonFieldGoalsMade == 0 || seasonFieldGoalsAttempted == 0 ? 0 : (decimal)seasonFieldGoalsMade / seasonFieldGoalsAttempted;
-        seasonExtraPointPercentage = seasonExtraPointsMade == 0 || seasonExtraPointsAttempted == 0 ? 0 : (decimal)seasonExtraPointsMade / seasonExtraPointsAttempted;
+
+        PassingTotalsModel.PassingYardsPerGame = SafePerGame(PassingTotalsModel.PassingYards, StatsModel.FootballStats.Count());
+        RushingTotalsModel.RushingYardsPerGame = SafePerGame(RushingTotalsModel.RushingYards, StatsModel.FootballStats.Count());
+        ReceivingTotalsModel.ReceivingYardsPerGame = SafePerGame(ReceivingTotalsModel.ReceivingYards, StatsModel.FootballStats.Count());
+        KickingTotalsModel.FieldGoalPercentage = SafePct(KickingTotalsModel.FieldGoalsMade, KickingTotalsModel.FieldGoalsAttempted);
+        KickingTotalsModel.ExtraPointPercentage = SafePct(KickingTotalsModel.ExtraPointsMade, KickingTotalsModel.ExtraPointsAttempted);
     }
+
+    private decimal SafePerGame(int yards, int attempted) =>
+    attempted == 0 ? 0 : (decimal)yards / attempted;
+
+    private decimal SafePct(int comp, int attempted) =>
+    attempted == 0 ? 0 : (decimal)comp / attempted * 100;
+
 
     private Task OpenContactDialogAsync()
     {
@@ -826,25 +282,6 @@
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
 
         return DialogService.ShowAsync<StatInfoMessageBox>("Stat Info", parameters, options);
-    }
-
-    private async Task GetImageAsync()
-    {
-        var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamModel.Team.TeamName}/players/{String.Concat(PlayerModel.Player.FirstName, " ", PlayerModel.Player.LastName)}/{PlayerModel.Player.ImageFile}";
-        imageFile = await AWSService.GetImage(keyPath);
-    }
-
-
-    public class PlayerStatRecord
-    {
-        public PlayerStatRecord(string team, FootballStatsModel stats)
-        {
-            OpposingTeam = team;
-            StatsModel = stats;
-        }
-
-        public string OpposingTeam { get; set; }
-        public FootballStatsModel StatsModel { get; set; }
     }
 }
 

@@ -14,8 +14,15 @@ public class PlayerStatRecord
         BasketballStatsModel = stats;
     }
 
+    public PlayerStatRecord(string team, FootballStatsModel stats)
+    {
+        OpposingTeam = team;
+        FootballStatsModel = stats;
+    }
+
     public string OpposingTeam { get; set; }
     public BaseballStatsModel BaseballStatsModel { get; set; }
     public BasketballStatsModel BasketballStatsModel { get; set; }
+    public FootballStatsModel FootballStatsModel { get; set; }
 
 }

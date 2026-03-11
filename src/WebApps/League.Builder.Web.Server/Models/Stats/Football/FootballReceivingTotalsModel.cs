@@ -9,4 +9,7 @@ public class FootballReceivingTotalsModel
     public int ReceivingFumbles { get; set; }
     public int ReceivingFumblesLost { get; set; }
     public int YardsAfterCatch { get; set; }
+
+    //Derived for Player Stats
+    public decimal ReceivingYardsPerGame { get; set; }
 }

@@ -9,4 +9,9 @@ public class FootballKickingTotalsModel
     public int Points { get; set; }
     public int Punts { get; set; }
     public int PuntingYards { get; set; }
+
+    // Derived For Player stats
+    public int LongestPunt { get; set; }
+    public decimal FieldGoalPercentage { get; set; }
+    public decimal ExtraPointPercentage { get; set; }
 }
