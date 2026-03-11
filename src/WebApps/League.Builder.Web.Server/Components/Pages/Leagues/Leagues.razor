@@ -13,7 +13,7 @@
 
 <AuthorizeView Roles="@Roles.ReadLeagues" Context="auth">
     <Authorized>
-        <MudItem Style="padding-top: 50px;">
+        <MudItem Class="pt-12">
             <MudExpansionPanels>
                 <MudExpansionPanel Class="border border-solid" style="border-color: #000000" Expanded="expandSearchPanel">
                     <TitleContent>
@@ -79,11 +79,11 @@
         </MudItem>
         @if (Model != null)
         {
-            <MudItem Style="padding-top: 25px;">
+            <MudItem Class="pt-6">
                 <MudExpansionPanels>
-                    <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000; padding-left: 25px; padding-right: 25px;">
+                    <MudExpansionPanel Expanded="true" Class="border border-solid px-6" Style="border-color: #000000;">
                         <TitleContent>
-                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Results</MudText>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Class="font-bold">Results</MudText>
                         </TitleContent>
                         <ChildContent>
                             <AuthorizeView Roles="@Roles.CreateLeagues" Context="createAuth">
@@ -96,11 +96,11 @@
                                                 </MudStack>
                                             </ToolBarContent>
                                             <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<LeagueModel, object>(x => x.Name)">Name</MudTableSortLabel></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Owner</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Sport</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<LeagueModel, object>(x => x.Name)">Name</MudTableSortLabel></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Owner</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Sport</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 <MudTd DataLabel="">
@@ -157,10 +157,10 @@
                                     <MudItem>
                                         <MudTable Items="@Model" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<LeagueModel, object>(x => x.Name)">Name</MudTableSortLabel></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Description</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<LeagueModel, object>(x => x.Name)">Name</MudTableSortLabel></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Description</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 <MudTd DataLabel="">
@@ -234,7 +234,7 @@
 @code {
     private string sport = string.Empty;
     private string name = string.Empty;
-    private string lastNameSearched = string.Empty;
+    private string nameSearched = string.Empty;
     private GetLeaguesResponse LeaguesResponse { get; set; }
     private GetLeaguesBySportResponse LeaguesBySportResponse { get; set; }
     private GetLeaguesByNameResponse LeaguesByNameResponse { get; set; }
@@ -309,7 +309,7 @@
     private async Task SearchByNameInternal()
     {
         GetLeaguesByNameResponse response;
-        if(lastNameSearched == name)
+        if(nameSearched == name)
         {
             response = await DataLoader.GetOrLoad(
                 () => LeagueLocalCache.GetLeaguesByNameCache(),
@@ -321,7 +321,7 @@
         {
             response = await LeagueService.GetLeaguesByName(name);
             await LeagueLocalCache.SetLeaguesByNameCache(response);
-            lastNameSearched = name;
+            nameSearched = name;
         }
 
         Model = response.Leagues.OrderBy(x => x.Name).ToList();
