@@ -15,246 +15,21 @@
 @inject IStandingsLocalCacheService StandingsLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
+@inject ImageService ImageService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="padding-top: 100px;">
-                <MudItem xs="12" md="12" lg="12" Style="padding-bottom: 25px;">
-                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                        <MudCardContent>
-                            <MudStack Row="true">
-                                <MudItem xs="4" md="4" lg="4">
-                                    <MudImage Src="@Team.Team.Image" Width="225" Height="225" Alt="Swedish Farm House" Elevation="25" Class="rounded-lg ma-4" />
-                                </MudItem>
-                                <MudItem xs="6" md="6" lg="6" Class="ma-4">
-                                    <MudText Typo="Typo.h4" Align="Align.Start" Style="font-weight:bold;">@Team.Team.TeamName</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;">@Team.Team.LeagueName</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;">@Team.Team.TeamAddress.AddressLine</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;"> @Team.Team.TeamAddress.City, @Team.Team.TeamAddress.State @Team.Team.TeamAddress.ZipCode</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;">@Team.Team.Description</MudText>
-                                    @if(record is not null)
-                                    {
-                                        <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 5px;"> @year Season Record: @record.StandingsDetail.Wins - @record.StandingsDetail.Losses </MudText>
-                                    }
-                                </MudItem>
-                            </MudStack>
-                        </MudCardContent>
-                    </MudCard>
-
-                </MudItem>
+            <MudItem Class="pt-12">
+                @TeamHeaderCard
             </MudItem>
-            <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
-                <MudExpansionPanels>
-                    <MudExpansionPanel Expanded ="true" Class="border border-solid" Style="border-color:#000000">
-                        <TitleContent>
-                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Management</MudText>
-                        </TitleContent>
-                        <ChildContent>
-                            <MudStack Row="true">
-                                <MudItem xs="6" md="6" lg="6">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardContent>
-                                            <MudStack Row="true" AlignItems="AlignItems.Center">
-                                                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Size="Size.Medium" />
-                                                <MudText Typo="Typo.body1" Style="font-weight:bold">Team Admin: </MudText>
-                                                <MudText Typo="Typo.body1" Style="font-weight:bold">@Team.Team.TeamAddress.FirstName @Team.Team.TeamAddress.LastName</MudText>
-                                                <MudIconButton Href="@AdminMailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
-                                            </MudStack>
-                                        </MudCardContent>
-                                    </MudCard>
-                                </MudItem>
-                                <MudItem xs="6" md="6" lg="6">
-                                    <MudCard Class="border border-solid" Style="border-color: #000000">
-                                        <MudCardContent>
-                                            <MudStack Row="true" AlignItems="AlignItems.Center">
-                                                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Medium" />
-                                                <MudText Typo="Typo.body1" Style="font-weight:bold">Team Manager: </MudText>
-                                                <MudText Typo="Typo.body1" Style="font-weight:bold">@Team.Team.TeamManager.FirstName @Team.Team.TeamManager.LastName</MudText>
-                                                <MudIconButton Href="@ManagerMailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
-                                            </MudStack>
-                                        </MudCardContent>
-                                    </MudCard>
-                                </MudItem>
-                            </MudStack>
-                        </ChildContent>
-                    </MudExpansionPanel>
-                </MudExpansionPanels>
+            <MudItem Class="py-6">
+                @ManagementPanel
             </MudItem>
-            <MudItem Style="padding-top: 25px;">
-                <MudExpansionPanels>
-                    <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000">
-                        <TitleContent>
-                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Players</MudText>
-                        </TitleContent>
-                        <ChildContent>
-                            <AuthorizeView Roles="@Roles.CreatePlayers" Context="createPlayerAuth">
-                                <Authorized>
-                                    <MudItem>
-                                        <MudTable Items="@Players.Players" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
-                                            <ToolBarContent>
-                                                <MudStack Justify="Justify.FlexStart">
-                                                    <MudButton OnClick="NavigateToCreatePlayer" Disabled="IsTeamMaxOnPlayers" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
-                                                </MudStack>
-                                            </ToolBarContent>
-                                            <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.FirstName)">First Name</MudTableSortLabel></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.LastName)">Last Name</MudTableSortLabel></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Position</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Location</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
-                                            </HeaderContent>
-                                            <RowTemplate>
-                                                <MudTd DataLabel="">
-                                                    <MudAvatar Size="Size.Small">
-                                                        <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
-                                                    </MudAvatar>
-                                                </MudTd>
-                                                <MudTd DataLabel="First Name">
-                                                    <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
-                                                        <Authorized>
-                                                            <MudTooltip Text="Player Details" Color="Color.Secondary">
-                                                                @if (context.Sport == SportName.BASEBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.FirstName</MudLink>
-                                                                }
-                                                                @if (context.Sport == SportName.BASKETBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/basketballplayerstats/{context.Id}")">@context.FirstName</MudLink>
-                                                                }
-                                                                @if (context.Sport == SportName.FOOTBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/footballplayerstats/{context.Id}")">@context.FirstName</MudLink>
-                                                                }
-                                                            </MudTooltip>
-                                                        </Authorized>
-                                                        <NotAuthorized>
-                                                            @context.FirstName
-                                                        </NotAuthorized>
-                                                    </AuthorizeView>
-                                                </MudTd>
-                                                <MudTd DataLabel="Last Name">
-                                                    <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
-                                                        <Authorized>
-                                                            <MudTooltip Text="Player Details" Color="Color.Secondary">
-                                                                @if (context.Sport == SportName.BASEBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.LastName</MudLink>
-                                                                }
-                                                                @if (context.Sport == SportName.BASKETBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.LastName</MudLink>
-                                                                }
-                                                                @if (context.Sport == SportName.FOOTBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.LastName</MudLink>
-                                                                }
-                                                            </MudTooltip>
-                                                        </Authorized>
-                                                        <NotAuthorized>
-                                                            @context.LastName
-                                                        </NotAuthorized>
-                                                    </AuthorizeView>
-                                                </MudTd>
-                                                <MudTd DataLabel="Position">@context.PlayerDetail.Position</MudTd>
-                                                <MudTd DataLabel="Location">@context.PlayerAddress.City, @context.PlayerAddress.State</MudTd>
-                                                <MudTd DataLabel="Links">
-                                                    <AuthorizeView Roles="@Roles.UpdatePlayers" Context="updateAuth">
-                                                        <MudTooltip Text="Update" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateplayer/", context.Id)" />
-                                                        </MudTooltip>
-                                                    </AuthorizeView>
-                                                </MudTd>
-                                            </RowTemplate>
-                                            <PagerContent>
-                                                <MudTablePager />
-                                            </PagerContent>
-                                        </MudTable>
-                                    </MudItem>
-                                </Authorized>
-                                <NotAuthorized>
-                                    <MudItem>
-                                        <MudTable Items="@Players.Players" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
-                                            <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.FirstName)">First Name</MudTableSortLabel></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.LastName)">Last Name</MudTableSortLabel></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Position</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Location</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
-                                            </HeaderContent>
-                                            <RowTemplate>
-                                                <MudTd DataLabel="">
-                                                    <MudAvatar Size="Size.Small">
-                                                        <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
-                                                    </MudAvatar>
-                                                </MudTd>
-                                                <MudTd DataLabel="First Name">
-                                                    <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
-                                                        <Authorized>
-                                                            <MudTooltip Text="Player Details" Color="Color.Secondary">
-                                                                @if (context.Sport == SportName.BASEBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.FirstName</MudLink>
-                                                                }
-                                                                @if (context.Sport == SportName.BASKETBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/basketballplayerstats/{context.Id}")">@context.FirstName</MudLink>
-                                                                }
-                                                                @if (context.Sport == SportName.FOOTBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/footballplayerstats/{context.Id}")">@context.FirstName</MudLink>
-                                                                }
-                                                            </MudTooltip>
-                                                        </Authorized>
-                                                        <NotAuthorized>
-                                                            @context.FirstName
-                                                        </NotAuthorized>
-                                                    </AuthorizeView>
-                                                </MudTd>
-                                                <MudTd DataLabel="Last Name">
-                                                    <AuthorizeView Roles="@Roles.ReadStats" Context="readStatsAuth">
-                                                        <Authorized>
-                                                            <MudTooltip Text="Player Details" Color="Color.Secondary">
-                                                                @if (context.Sport == SportName.BASEBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.LastName</MudLink>
-                                                                }
-                                                                @if (context.Sport == SportName.BASKETBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.LastName</MudLink>
-                                                                }
-                                                                @if (context.Sport == SportName.FOOTBALL)
-                                                                {
-                                                                    <MudLink Color="Color.Tertiary" Href="@($"/baseballplayerstats/{context.Id}")">@context.LastName</MudLink>
-                                                                }
-                                                            </MudTooltip>
-                                                        </Authorized>
-                                                        <NotAuthorized>
-                                                            @context.LastName
-                                                        </NotAuthorized>
-                                                    </AuthorizeView>
-                                                </MudTd>
-                                                <MudTd DataLabel="Position">@context.PlayerDetail.Position</MudTd>
-                                                <MudTd DataLabel="Location">@context.PlayerAddress.City, @context.PlayerAddress.State</MudTd>
-                                                <MudTd DataLabel="Links">
-                                                    <MudTooltip Text="Update" Color="Color.Secondary">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateplayer/", context.Id)" />
-                                                    </MudTooltip>
-                                                </MudTd>
-                                            </RowTemplate>
-                                            <PagerContent>
-                                                <MudTablePager />
-                                            </PagerContent>
-                                        </MudTable>
-                                    </MudItem>
-                                </NotAuthorized>
-                            </AuthorizeView>
-                        </ChildContent>
-                    </MudExpansionPanel>
-                </MudExpansionPanels>
+            <MudItem Class="pt-6">
+                @PlayersPanel
             </MudItem>
         }
         else
@@ -267,75 +42,39 @@
     </NotAuthorized>
 </AuthorizeView>
 @code {
-    [Parameter]
-    public string Id { get; set; }
+    [Parameter] public string Id { get; set; }
     [Inject] private IDialogService DialogService { get; set; }
 
     private bool PageLoad = false;
-    private int PlayerCount = 0;
-    private int PageSize = 0;
-    private int Counter = 0;
-    private Justify _justify = Justify.SpaceEvenly;
-    private int PlayerCounter = 0;
-    private int NumberPlayersToShow = 100;
     private bool IsTeamMaxOnPlayers = false;
     private int year;
+
     private IJSObjectReference? _module;
+
     private GetTeamByIdResponse Team { get; set; }
     private GetPlayersByTeamResponse Players { get; set; }
     private GetLeaguesResponse LeaguesResponse { get; set; }
     private GetStandingsByTeamResponse StandingsByTeamResponse { get; set; }
     private GetSeasonByYearResponse SeasonByYearResponse { get; set; }
+
     private StandingsModel record = new();
     private string AdminMailUrl = string.Empty;
     private string ManagerMailUrl = string.Empty;
+    private bool CanReadStats;
+    private bool CanUpdatePlayers;
 
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var teamId = Guid.Parse(Id);
-            year = DateTime.Now.Year;
-            Team = await TeamLocalCache.GetTeamByIdCache(Id);
-            if (Team == null)
-            {
-                Team = await TeamService.GetTeamById(teamId);
-                await TeamLocalCache.SetTeamByIdCache(Id, Team);
-            }
-            Players = await PlayerLocalCache.GetPlayersByTeamCache(Id);
-            if (Players == null)
-            {
-                Players = await PlayerService.GetPlayersByTeam(teamId);
-                await PlayerLocalCache.SetPlayersByTeamCache(Id, Players);
-            }
-            LeaguesResponse = await LeagueLocalCache.GetLeaguesCache();
-            if (LeaguesResponse == null)
-            {
-                LeaguesResponse = await LeagueService.GetLeagues();
-                await LeagueLocalCache.SetLeaguesCache(LeaguesResponse);
-            }
-            SeasonByYearResponse = await SeasonLocalCache.GetSeasonByYearCache(year);
-            if (SeasonByYearResponse == null)
-            {
-                SeasonByYearResponse = await SeasonService.GetSeasonByYear(year);
-                await SeasonLocalCache.SetSeasonByYearCache(year, SeasonByYearResponse);
-            }
-            await StandingsLocalCache.DeleteStandingsByTeamCache(Id);
-            StandingsByTeamResponse = await StandingsLocalCache.GetStandingsByTeamCache(Id);
-            if (StandingsByTeamResponse == null)
-            {
-                StandingsByTeamResponse = await StandingsService.GetStandingsByTeam(teamId);
-                await StandingsLocalCache.SetStandingsByTeamCache(Id, StandingsByTeamResponse);
-            }
-            record = StandingsByTeamResponse.Standings.FirstOrDefault(x => x.SeasonId == SeasonByYearResponse.Season.Id);
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
 
-            var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == Team.Team.LeagueId);
-            IsTeamMaxOnPlayers = Players.Players.Count() == league.MaximumTotalTeamPlayers ? true : false;
-            await GetTeamImageAsync(league);
-            await GetImageAsync();
-            AdminMailUrl = $"mailto:{Team.Team.TeamAddress.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
-            ManagerMailUrl = $"mailto:{Team.Team.TeamManager.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
+            CanReadStats = user.IsInRole(Roles.ReadStats);
+            CanUpdatePlayers = user.IsInRole(Roles.UpdatePlayers);
+
+            await LoadAllAsync();
             PageLoad = true;
         }
         catch (Exception ex)
@@ -350,19 +89,85 @@
         }
     }
 
+    private async Task LoadAllAsync()
+    {
+        var teamId = Guid.Parse(Id);
+        year = DateTime.Now.Year;
+
+        Team = await LoadTeamAsync(teamId);
+        Players = await LoadPlayersAsync(teamId);
+        LeaguesResponse = await LoadLeaguesAsync();
+        SeasonByYearResponse = await LoadSeasonAsync(year);
+        StandingsByTeamResponse = await LoadStandingsAsync(teamId);
+
+        record = StandingsByTeamResponse.Standings
+        .FirstOrDefault(x => x.SeasonId == SeasonByYearResponse.Season.Id);
+
+        var league = GetLeague(Team.Team.LeagueId);
+
+        IsTeamMaxOnPlayers = Players.Players.Count() == league.MaximumTotalTeamPlayers;
+
+        await GetTeamImageAsync(league);
+        await GetImageAsync();
+
+        BuildMailUrls();
+    }
+
+    private Task<GetTeamByIdResponse> LoadTeamAsync(Guid id) =>
+        DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamByIdCache(Id),
+            () => TeamService.GetTeamById(id),
+            (t) => TeamLocalCache.SetTeamByIdCache(Id, t)
+        );
+
+    private Task<GetPlayersByTeamResponse> LoadPlayersAsync(Guid id) =>
+        DataLoader.GetOrLoad(
+            () => PlayerLocalCache.GetPlayersByTeamCache(Id),
+            () => PlayerService.GetPlayersByTeam(id),
+            (p) => PlayerLocalCache.SetPlayersByTeamCache(Id, p)
+        );
+
+    private Task<GetLeaguesResponse> LoadLeaguesAsync() =>
+        DataLoader.GetOrLoad(
+            () => LeagueLocalCache.GetLeaguesCache(),
+            () => LeagueService.GetLeagues(),
+            (l) => LeagueLocalCache.SetLeaguesCache(l)
+        );
+
+    private Task<GetSeasonByYearResponse> LoadSeasonAsync(int year) =>
+        DataLoader.GetOrLoad(
+            () => SeasonLocalCache.GetSeasonByYearCache(year),
+            () => SeasonService.GetSeasonByYear(year),
+            (s) => SeasonLocalCache.SetSeasonByYearCache(year, s)
+        );
+
+    private Task<GetStandingsByTeamResponse> LoadStandingsAsync(Guid id) =>
+        DataLoader.GetOrLoad(
+            () => StandingsLocalCache.GetStandingsByTeamCache(Id),
+            () => StandingsService.GetStandingsByTeam(id),
+            (s) => StandingsLocalCache.SetStandingsByTeamCache(Id, s)
+        );
+
+    private LeagueModel GetLeague(Guid leagueId) =>
+            LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == leagueId);
+
+    private void BuildMailUrls()
+    {
+        AdminMailUrl = $"mailto:{Team.Team.TeamAddress.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
+        ManagerMailUrl = $"mailto:{Team.Team.TeamManager.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
+    }
+
     private string GetStatLink(PlayerModel player)
     {
-        var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == Team.Team.LeagueId);
+        var league = GetLeague(Team.Team.LeagueId);
 
-        if (league == null)
-            return string.Empty;
-
-        if (league.Sport == SportName.BASEBALL)
-            return String.Concat("/baseballplayerstats/", player.Id);
-        else if (league.Sport == SportName.FOOTBALL)
-            return String.Concat("/footballplayerstats/", player.Id);
-        else
-            return String.Concat("/basketballplayerstats/", player.Id);
+        return league.Sport switch
+        {
+            SportName.BASEBALL => $"/baseballplayerstats/{player.Id}",
+            SportName.BASKETBALL => $"/basketballplayerstats/{player.Id}",
+            SportName.FOOTBALL => $"/footballplayerstats/{player.Id}",
+            _ => string.Empty
+        };
     }
 
     private Task OpenDialogAsync(Guid id)
@@ -373,34 +178,231 @@
         return DialogService.ShowAsync<DeletePlayerMessageBox>("Delete Player", parameters, options);
     }
 
-    private IEnumerable<PlayerModel> GetPlayersForRow(int count)
-    {
-        Console.WriteLine(count);
-        var players = Players.Players.OrderBy(p => p.LastName).ThenBy(p => p.FirstName).Skip(4 * count).Take(4);
-        PlayerCounter++;
-        return players;
-    }
-
     private async Task GetImageAsync()
     {
         foreach (var player in Players.Players)
         {
-            var league = LeaguesResponse.Leagues.FirstOrDefault(t => t.Id == Team.Team.LeagueId);
+            var league = GetLeague(Team.Team.LeagueId);
             player.Sport = league.Sport;
-            var keyPath = $"/{league.Sport}/{league.Name}/teams/{Team.Team.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
-            player.Image = await AWSService.GetImage(keyPath);
+            player.Image = await ImageService.GetPlayerImageAsync(league, Team.Team, player);
         }
     }
 
     private async Task GetTeamImageAsync(LeagueModel league)
     {
         Team.Team.LeagueName = league.Name;
-        var keyPath = $"/{league.Sport}/{league.Name}/teams/{Team.Team.TeamName}/{Team.Team.ImageFile}";
-        Team.Team.Image = await AWSService.GetImage(keyPath);
+        Team.Team.Image = await ImageService.GetTeamImageAsync(league, Team.Team);
     }
 
-    private async Task NavigateToCreatePlayer()
-    {
-        NavManager.NavigateTo($"/createplayer/{Id}");
-    }
+    private RenderFragment TeamHeaderCard => @<MudItem xs="12" Class="pb-6">
+            <MudCard Class="border border-solid" Style="border-color: #000000">
+                <MudCardContent>
+                    <MudStack Row="true">
+                        <MudItem xs="4">
+                            <MudImage Src="@Team.Team.Image" Width="225" Height="225" Alt="Swedish Farm House" Elevation="25" Class="rounded-lg ma-4" />
+                        </MudItem>
+                        <MudItem xs="6" Class="ma-4">
+                            <MudText Typo="Typo.h4" Align="Align.Start" Class="font-bold">@Team.Team.TeamName</MudText>
+                            <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-1">@Team.Team.LeagueName</MudText>
+                            <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-1">@Team.Team.TeamAddress.AddressLine</MudText>
+                            <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-1"> @Team.Team.TeamAddress.City, @Team.Team.TeamAddress.State @Team.Team.TeamAddress.ZipCode</MudText>
+                            <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-1">@Team.Team.Description</MudText>
+                            @if (record is not null)
+                            {
+                                <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-1"> @year Season Record: @record.StandingsDetail.Wins - @record.StandingsDetail.Losses </MudText>
+                            }
+                        </MudItem>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+
+        </MudItem>
+    ;
+
+    private RenderFragment ManagementPanel =>@<MudExpansionPanels>
+        <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000">
+            <TitleContent>
+                <MudText Typo="Typo.h5" Align="Align.Center" Class="font-bold">Management</MudText>
+            </TitleContent>
+            <ChildContent>
+                <MudStack Row="true">
+                    <MudItem xs="6">
+                        <MudCard Class="border border-solid" Style="border-color: #000000">
+                            <MudCardContent>
+                                <MudStack Row="true" AlignItems="AlignItems.Center">
+                                    <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Size="Size.Medium" />
+                                    <MudText Typo="Typo.body1" Class="font-bold">Team Admin: </MudText>
+                                    <MudText Typo="Typo.body1" Class="font-bold">@Team.Team.TeamAddress.FirstName @Team.Team.TeamAddress.LastName</MudText>
+                                    <MudIconButton Href="@AdminMailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudCard Class="border border-solid" Style="border-color: #000000">
+                            <MudCardContent>
+                                <MudStack Row="true" AlignItems="AlignItems.Center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Medium" />
+                                    <MudText Typo="Typo.body1" Class="font-bold">Team Manager: </MudText>
+                                    <MudText Typo="Typo.body1" Class="font-bold">@Team.Team.TeamManager.FirstName @Team.Team.TeamManager.LastName</MudText>
+                                    <MudIconButton Href="@ManagerMailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                </MudStack>
+            </ChildContent>
+        </MudExpansionPanel>
+    </MudExpansionPanels>;
+
+    private RenderFragment ManagementCard(string icon, string label, string name, string mailUrl) =>@<MudItem xs="6">
+            <MudCard Class="border border-solid" Style="border-color: #000000">
+                <MudCardContent>
+                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                        <MudIcon Icon="@icon" Size="Size.Medium" />
+                        <MudText Typo="Typo.body1" Class="font-bold">@label: </MudText>
+                        <MudText Typo="Typo.body1" Class="font-bold">@name</MudText>
+                        <MudIconButton Href="@mailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    ;
+
+
+    private RenderFragment PlayersPanel =>@<MudExpansionPanels>
+        <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000">
+            <TitleContent>
+                <MudText Typo="Typo.h5" Align="Align.Center" Class="font-bold">Players</MudText>
+            </TitleContent>
+            <ChildContent>
+                @PlayersTable
+            </ChildContent>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+    ;
+
+    private RenderFragment PlayersTable =>@<AuthorizeView Roles="@Roles.CreatePlayers" Context="createAuth">
+            <Authorized>
+                @PlayerTable(true)
+            </Authorized>
+            <NotAuthorized>
+                @PlayerTable(false)
+            </NotAuthorized>
+        </AuthorizeView>;
+
+
+    private RenderFragment PlayerTable(bool canCreate) =>@<MudItem>
+            <MudTable Items="@Players.Players"
+                      Hover="true"
+                      SortLabel="Sort By"
+                      Class="border border-solid"
+                      Style="border-color: #000000">
+                      <ToolBarContent>
+                           @if(canCreate)
+                          {
+                            <MudStack Justify="Justify.FlexStart">
+                                <MudButton Href="@($"/createplayer/{Id}")"
+                                                Variant="Variant.Filled"
+                                                Color="Color.Primary"
+                                                Style="width: 200px;">
+                                        Create
+                                </MudButton>
+                            </MudStack>
+                          }
+                      </ToolBarContent>
+                      <HeaderContent>
+                        <MudTh Class="mud-theme-primary font-bold"></MudTh>
+                        <MudTh Class="mud-theme-primary font-bold">
+                            <MudTableSortLabel T="PlayerModel" SortBy="x => x.FirstName">First Name</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh Class="mud-theme-primary font-bold">
+                            <MudTableSortLabel T="PlayerModel" SortBy="x => x.LastName">Last Name</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh Class="mud-theme-primary font-bold">Position</MudTh>
+                        <MudTh Class="mud-theme-primary font-bold">Location</MudTh>
+                        <MudTh Class="mud-theme-primary font-bold"></MudTh>
+                      </HeaderContent>
+                      <RowTemplate>
+                        <MudTd>
+                            <MudAvatar Size="Size.Small">
+                                <MudImage Src="@context.Image" Alt="Player Image" />
+                            </MudAvatar>
+                        </MudTd>
+
+                        <MudTd>
+                            @PlayerNameLink(context, context.FirstName)
+                        </MudTd>
+
+                        <MudTd>
+                            @PlayerNameLink(context, context.LastName)
+                        </MudTd>
+
+                        <MudTd>@context.PlayerDetail.Position</MudTd>
+
+                        <MudTd>@context.PlayerAddress.City, @context.PlayerAddress.State</MudTd>
+
+                        <MudTd>
+                            @if (CanUpdatePlayers)
+                            {
+                                <MudTooltip Text="Update" Color="Color.Secondary">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Update"
+                                                    Color="Color.Tertiary"
+                                                    Href="@($"/updateplayer/{context.Id}")" />
+                                </MudTooltip>
+                            }
+                        </MudTd>
+                      </RowTemplate>
+
+                      <PagerContent>
+                        <MudTablePager />
+                      </PagerContent>
+            </MudTable>
+        </MudItem>;
+
+    private RenderFragment<PlayerModel> PlayerRow => player => @<MudTr>
+        <MudTd>
+            <MudAvatar Size="Size.Small">
+                <MudImage Src="@player.Image" Alt="Player Image" />
+            </MudAvatar>
+        </MudTd>
+
+        <MudTd>
+            @PlayerNameLink(player, player.FirstName)
+        </MudTd>
+
+        <MudTd>
+            @PlayerNameLink(player, player.LastName)
+        </MudTd>
+
+        <MudTd>@player.PlayerDetail.Position</MudTd>
+
+        <MudTd>@player.PlayerAddress.City, @player.PlayerAddress.State</MudTd>
+
+        <MudTd>
+            @if (CanUpdatePlayers)
+            {
+                <MudTooltip Text="Update" Color="Color.Secondary">
+                    <MudIconButton Icon="@Icons.Material.Filled.Update"
+                                   Color="Color.Tertiary"
+                                   Href="@($"/updateplayer/{player.Id}")" />
+                </MudTooltip>
+            }
+        </MudTd>
+    </MudTr>;
+
+    private RenderFragment PlayerNameLink(PlayerModel player, string text) => @<AuthorizeView Roles="@Roles.ReadStats" Context="statsAuth">
+        <Authorized>
+            <MudTooltip Text="Player Details" Color="Color.Secondary">
+                <MudLink Color="Color.Tertiary" Href="@GetStatLink(player)">
+                    @text
+                </MudLink>
+            </MudTooltip>
+        </Authorized>
+
+        <NotAuthorized>
+            @text
+        </NotAuthorized>
+    </AuthorizeView>;
+
 }
