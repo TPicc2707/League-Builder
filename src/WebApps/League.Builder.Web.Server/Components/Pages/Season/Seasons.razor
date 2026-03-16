@@ -8,62 +8,61 @@
 @inject ISeasonLocalCacheService SeasonLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <AuthorizeView Roles="@Roles.CreateSeasons" Context="auth">
     <Authorized>
     @if (PageLoad)
     {
-            <MudItem Style="padding-top: 50px;">
-                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+            <MudItem Class="pt-12">
+                <MudPaper Class="border border-solid p-25" Style="border-color: #000000;">
                         <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Seasons</MudText>
                 </MudPaper>
             </MudItem>
-            <MudItem Style="padding-top: 25px;">
-                <MudPaper Elevation="2" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+            <MudItem Class="pt-6">
+                <MudPaper Elevation="2" Class="border border-solid p-25" Style="border-color: #000000;">
                     <MudItem>
                         <MudTable Items="@Model.Seasons" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000;">
                             <ToolBarContent>
-                                <AuthorizeView Roles="@Roles.CreateSeasons">
-                                    <MudStack Justify="Justify.FlexStart">
-                                        <MudButton OnClick="NavigateToCreateGame" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
-                                    </MudStack>
-                                </AuthorizeView>
+                                <MudStack Justify="Justify.FlexStart">
+                                    <MudButton Href="/createseason/" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
+                                </MudStack>
                             </ToolBarContent>
                             <HeaderContent>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<SeasonModel, object>(x => x.Year)">Year</MudTableSortLabel></MudTh>
+                                <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="new Func<SeasonModel, object>(x => x.Year)">Year</MudTableSortLabel></MudTh>
                                 <MudTh Class="mud-theme-primary"></MudTh>
                                 <MudTh Class="mud-theme-primary"></MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd DataLabel="Team Name">@context.Year</MudTd>
-                                <AuthorizeView Roles="@Roles.UpdateSeasons" Context="updateAuth">
-                                    <Authorized>
-                                        <MudTd DataLabel="Edit">
-                                            <MudTooltip Text="Edit" Color="Color.Secondary">
-                                                <MudLink Color="Color.Tertiary" OnClick="@(() => NavigateToUpdateSeason(context.Id))">
-                                                    <MudIcon Icon="@Icons.Material.Filled.Edit" />
-                                                </MudLink>
-                                            </MudTooltip>
-                                        </MudTd>
-                                    </Authorized>
-                                    <NotAuthorized>
-                                        <MudTd></MudTd>
-                                    </NotAuthorized>
-                                </AuthorizeView>
-                                <AuthorizeView Roles="@Roles.DeleteSeasons" Context="deleteAuth">
-                                    <Authorized>
-                                        <MudTd DataLabel="Delete">
-                                            <MudTooltip Text="Delete" Color="Color.Secondary">
-                                                <MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))">
-                                                    <MudIcon Icon="@Icons.Material.Filled.Delete" />
-                                                </MudLink>
-                                            </MudTooltip>
-                                        </MudTd>
-                                    </Authorized>
-                                    <NotAuthorized>
-                                        <MudTd></MudTd>
-                                    </NotAuthorized>
-                                </AuthorizeView>
+                                @if (CanUpdateSeason)
+                                {
+                                    <MudTd DataLabel="Edit">
+                                        <MudTooltip Text="Edit" Color="Color.Secondary">
+                                            <MudLink Color="Color.Tertiary" Href="@($"/updateseason/{context.Id.ToString()}")">
+                                                <MudIcon Icon="@Icons.Material.Filled.Edit" />
+                                            </MudLink>
+                                        </MudTooltip>
+                                    </MudTd>
+                                }
+                                else
+                                {
+                                    <MudTd></MudTd>
+                                }
+                                @if (CanDeleteSeason)
+                                {
+                                    <MudTd DataLabel="Delete">
+                                        <MudTooltip Text="Delete" Color="Color.Secondary">
+                                            <MudLink Color="Color.Tertiary" OnClick="@(() => OpenDialogAsync(context.Id))">
+                                                <MudIcon Icon="@Icons.Material.Filled.Delete" />
+                                            </MudLink>
+                                        </MudTooltip>
+                                    </MudTd>
+                                }
+                                else
+                                {
+                                    <MudTd></MudTd>
+                                }
                             </RowTemplate>
                         </MudTable>
                     </MudItem>
@@ -82,44 +81,32 @@
     </NotAuthorized>
 </AuthorizeView>
 @code {
+
     private bool PageLoad = false;
     GetSeasonsResponse Model { get; set; }
     private bool expandSearchPanel = false;
     private IJSObjectReference? _module;
+    private bool CanUpdateSeason;
+    private bool CanDeleteSeason;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            Model = await SeasonLocalCache.GetSeasonsCache();
-            if (Model == null)
-            {
-                Model = await SeasonService.GetSeasons();
-                await SeasonLocalCache.SetSeasonsCache(Model);
-            }
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            Model = await LoadSeasonsAsync();
+
+            CanUpdateSeason = user.IsInRole(Roles.UpdateSeasons);
+            CanDeleteSeason = user.IsInRole(Roles.DeleteSeasons);
+
             PageLoad = true;
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
-    }
-
-    private async Task NavigateToCreateGame()
-    {
-        NavManager.NavigateTo($"/createseason/");
-    }
-
-    private async Task NavigateToUpdateSeason(Guid id)
-    {
-        var idString = id.ToString();
-        NavManager.NavigateTo($"/updateseason/{idString}");
     }
 
     private async Task OpenDialogAsync(Guid id)
@@ -133,12 +120,25 @@
 
         if (!result.Canceled)
         {
-            Model = await SeasonLocalCache.GetSeasonsCache();
-            if (Model == null)
-            {
-                Model = await SeasonService.GetSeasons();
-                await SeasonLocalCache.SetSeasonsCache(Model);
-            }
+            Model = await LoadSeasonsAsync();
         }
     }
+
+    private async Task HandleError(Exception ex)
+    {
+        if (KeycloakTokenService.ShouldForceLogout())
+        {
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+            await _module.InvokeVoidAsync("logout");
+        }
+        ErrorState.Message = ex.Message;
+        NavManager.NavigateTo("/error");
+    }
+
+    private async Task<GetSeasonsResponse> LoadSeasonsAsync() =>
+        await DataLoader.GetOrLoad(
+                () => SeasonLocalCache.GetSeasonsCache(),
+                () => SeasonService.GetSeasons(),
+                (s) => SeasonLocalCache.SetSeasonsCache(s)
+            );
 }
