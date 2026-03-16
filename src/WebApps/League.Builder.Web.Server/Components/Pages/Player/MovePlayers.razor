@@ -278,7 +278,7 @@
     }
 
     private async Task CopyPlayerImageAsync(PlayerModel player, TeamModel oldTeam, TeamModel newTeam)
-        => await ImageService.CopyPlayerImageAsync(LeagueModel.League, oldTeam, newTeam, player);
+        => await ImageService.CopyPlayerImageForNewTeamAsync(LeagueModel.League, oldTeam, newTeam, player);
 
     private async Task UpdatePlayerTeamAsync(PlayerModel player, TeamModel newTeam)
     {

@@ -39,17 +39,33 @@ public class ImageService
         await _aws.UploadImages(keyPath, model.File);
     }
 
-    public async Task UploadPlayerImageAsync(LeagueModel league, TeamModel team, CreatePlayerModel player) 
+    public async Task UploadNewPlayerImageAsync(LeagueModel league, TeamModel team, CreatePlayerModel player) 
     {
         var key = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
 
         await _aws.UploadImages(key, player.File);
     }
 
-    public async Task CopyPlayerImageAsync(LeagueModel league, TeamModel oldTeam, TeamModel newTeam, PlayerModel player)
+    public async Task UploadUpdatedPlayerImageAsync(LeagueModel league, TeamModel team, UpdatePlayerModel player)
+    {
+        var key = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
+
+        await _aws.UploadImages(key, player.File);
+    }
+
+    public async Task CopyPlayerImageForNewTeamAsync(LeagueModel league, TeamModel oldTeam, TeamModel newTeam, PlayerModel player)
     {
         var oldPath = $"/{league.Sport}/{league.Name}/teams/{oldTeam.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
         var newPath = $"/{league.Sport}/{league.Name}/teams/{newTeam.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
+
+        await _aws.CopyObjectToNewFolder(oldPath, newPath);
+
+    }
+
+    public async Task CopyPlayerImageForUpdateAsync(LeagueModel league, TeamModel team, PlayerModel oldPlayer, UpdatePlayerModel newPlayer)
+    {
+        var oldPath = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/players/{String.Concat(oldPlayer.FirstName, " ", oldPlayer.LastName)}/{oldPlayer.ImageFile}";
+        var newPath = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/players/{String.Concat(newPlayer.FirstName, " ", newPlayer.LastName)}/{newPlayer.ImageFile}";
 
         await _aws.CopyObjectToNewFolder(oldPath, newPath);
 

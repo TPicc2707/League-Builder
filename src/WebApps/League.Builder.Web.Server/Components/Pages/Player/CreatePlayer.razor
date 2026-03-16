@@ -24,7 +24,7 @@
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="padding-top: 50px;">
+            <MudItem Class="pt-12">
                 <MudPaper Class="border border-solid border-black p-25">
                     <MudText Typo="Typo.h4" Align="Align.Center" Class="font-bold">Create Player</MudText>
                 </MudPaper>
@@ -289,7 +289,7 @@
     {
         model.ImageFile = model.File?.Name;
 
-        await ImageService.UploadPlayerImageAsync(LeagueById.League, TeamById.Team, model);
+        await ImageService.UploadNewPlayerImageAsync(LeagueById.League, TeamById.Team, model);
     }
 
     private async Task CreatePlayerAsync()
