@@ -1,0 +1,50 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary font-bold"></MudTh>
+        <MudTh Class="mud-theme-primary font-bold">Name</MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.TotalGamesPlayed">GP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.AtBats">AB</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.Runs">R</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.Hits">H</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.Doubles">2B</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.Triples">3B</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.HomeRuns">HR</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.RunsBattedIn">RBI</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.Walks">BB</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.HitByPitch">HBP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.Strikeouts">K</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.StolenBases">SB</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.TotalBases">TB</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.Average">AVG</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.OnBasePercentage">OBP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.Slugging">SLG</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.HittingStatsModel.OnBasePlusSlugging">OPS</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="">
+            <PlayerAvatar Image="@context.Image" />
+        </MudTd>
+        <MudTd DataLabel="Name" Style="font-size:smaller">@context.FirstName @context.LastName</MudTd>
+        <MudTd DataLabel="GamesPlayed" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.TotalGamesPlayed</MudTd>
+        <MudTd DataLabel="At Bats" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.AtBats</MudTd>
+        <MudTd DataLabel="Runs">@context.BaseballStatsModel.HittingStatsModel.Runs</MudTd>
+        <MudTd DataLabel="Hits">@context.BaseballStatsModel.HittingStatsModel.Hits</MudTd>
+        <MudTd DataLabel="2B" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.Doubles</MudTd>
+        <MudTd DataLabel="3B" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.Triples</MudTd>
+        <MudTd DataLabel="HR" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.HomeRuns</MudTd>
+        <MudTd DataLabel="RBI" Style="margin-left: 7px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.RunsBattedIn</MudTd>
+        <MudTd DataLabel="BB" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.Walks</MudTd>
+        <MudTd DataLabel="HBP" Style="margin-left: 7px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.HitByPitch</MudTd>
+        <MudTd DataLabel="K" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.Strikeouts</MudTd>
+        <MudTd DataLabel="SB" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.StolenBases</MudTd>
+        <MudTd DataLabel="TB" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.TotalBases</MudTd>
+        <MudTd DataLabel="AVG" Style="margin-left: 7px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.Average.ToString("#.000")</MudTd>
+        <MudTd DataLabel="OBP" Style="margin-left: 7px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.OnBasePercentage.ToString("#.000")</MudTd>
+        <MudTd DataLabel="SLG" Style="margin-left: 7px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.Slugging.ToString("#.000")</MudTd>
+        <MudTd DataLabel="OPS" Style="margin-left: 7px; font-size: .875rem;">@context.BaseballStatsModel.HittingStatsModel.OnBasePlusSlugging.ToString("#.000")</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public IEnumerable<PlayerStatsRecord> Rows { get; set; }
+}

@@ -1,0 +1,50 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary"></MudTh>
+        <MudTh Class="mud-theme-primary font-bold">Name</MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.TotalGamesStarted">S</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.MinutesPerGame">MIN</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel InitialDirection="SortDirection.Descending" SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.PointsPerGame">PTS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.ReboundsPerGame">REB</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.AssistsPerGame">AST</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.BlocksPerGame">BLK</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.StealsPerGame">STL</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.TurnoversPerGame">TO</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.FieldGoalsMadePerGame">FGM</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.FieldGoalsAttemptedPerGame">FGA</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.FieldGoalPercentage">FG%</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.ThreePointersMadePerGame">3PM</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.ThreePointersAttemptedPerGame">3PA</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.ThreePointPercentage">3P%</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.FreeThrowsMadePerGame">FTM</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.FreeThrowsAttemptedPerGame">FTA</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BasketballStatsModel.Stats.FreeThrowPercentage">FT%</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>
+            <PlayerAvatar Image="@context.Image" />
+        </MudTd>
+        <MudTd DataLabel="Name" Style="font-size:smaller">@context.FirstName @context.LastName</MudTd>
+        <MudTd DataLabel="Starts">@context.BasketballStatsModel.TotalGamesStarted</MudTd>
+        <MudTd DataLabel="MIN" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.MinutesPerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="PTS" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.PointsPerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="REB" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.ReboundsPerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="AST" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.AssistsPerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="BLK" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.BlocksPerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="STL" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.StealsPerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="TO" Style="margin-left: 5px; font-size: .875rem;">@context.BasketballStatsModel.Stats.TurnoversPerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="FGM" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.FieldGoalsMadePerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="FGA" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.FieldGoalsAttemptedPerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="FG%" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.FieldGoalPercentage.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="3PM" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.ThreePointersMadePerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="3PA" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.ThreePointersAttemptedPerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="3P%" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.ThreePointPercentage.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="FTM" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.FreeThrowsMadePerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="FTA" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.FreeThrowsAttemptedPerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="FT%" Style="margin-left: 7px; font-size: .875rem;">@context.BasketballStatsModel.Stats.FreeThrowPercentage.ToString("#0.0")</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public IEnumerable<PlayerStatsRecord> Rows {get; set;}
+}

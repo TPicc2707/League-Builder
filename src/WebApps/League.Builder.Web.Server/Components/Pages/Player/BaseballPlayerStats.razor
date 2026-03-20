@@ -234,7 +234,7 @@
         innings == 0 ? 0 : (decimal)runs / innings * 9;
     
     private decimal SafeWHIP(int walks, int hits, decimal innings) =>
-    innings == 0 ? 0 : (decimal)(walks + hits) / innings;
+        innings == 0 ? 0 : (decimal)(walks + hits) / innings;
 
     private Task OpenContactDialogAsync()
     {

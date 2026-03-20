@@ -16,27 +16,27 @@
 {
     <AuthorizeView Roles="@Roles.SupportLeagues" Context="auth">
         <Authorized>
-            <MudItem Style="margin-top: 50px;">
-                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
-                    <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Service Health</MudText>
+            <MudItem Class="mt-50">
+                <MudPaper Class="border border-solid p-25" Style="border-color: #000000;">
+                    <MudText Typo="Typo.h5" Align="Align.Center" Class="font-bold">Service Health</MudText>
                 </MudPaper>
             </MudItem>
-            <MudItem Style="margin-top: 25px;">
+            <MudItem Class="mt-6">
                 <MudExpansionPanels>
                     <MudExpansionPanel Class="border border-solid" style="border-color: #000000" Expanded="false">
                         <TitleContent>
-                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">League Management Services</MudText>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Class="font-bold">League Management Services</MudText>
                         </TitleContent>
                         <ChildContent>
-                            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid p-25" Style="border-color: #000000;">
                                 <MudTabPanel Text="League API">
-                                    <MudItem Style="margin-top: 25px;">
+                                    <MudItem Class="mt-25">
                                         <MudTable Items="@LeagueHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Service</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Duration</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Status</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -91,13 +91,13 @@
                                     </MudItem>
                                 </MudTabPanel>
                                 <MudTabPanel Text="Team API">
-                                    <MudItem Style="margin-top: 25px;">
+                                    <MudItem Class="mt-6">
                                         <MudTable Items="@TeamHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Service</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Duration</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Status</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -146,13 +146,13 @@
                                     </MudItem>
                                 </MudTabPanel>
                                 <MudTabPanel Text="Player API">
-                                    <MudItem Style="margin-top: 25px;">
+                                    <MudItem Class="mt-6">
                                         <MudTable Items="@PlayerHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Service</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Duration</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Status</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -201,13 +201,13 @@
                                     </MudItem>
                                 </MudTabPanel>
                                 <MudTabPanel Text="Season API">
-                                    <MudItem Style="margin-top: 25px;">
+                                    <MudItem Class="mt-6">
                                         <MudTable Items="@SeasonHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Service</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Duration</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Status</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -266,22 +266,22 @@
                     </MudExpansionPanel>
                 </MudExpansionPanels>
             </MudItem>
-            <MudItem Style="margin-top: 25px;">
+            <MudItem Class="mt-6">
                 <MudExpansionPanels>
                     <MudExpansionPanel Class="border border-solid" style="border-color: #000000" Expanded="false">
                         <TitleContent>
-                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Statistical Management Services</MudText>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Class="font-bold">Statistical Management Services</MudText>
                         </TitleContent>
                         <ChildContent>
-                            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid p-25" Style="border-color: #000000;">
                                 <MudTabPanel Text="Standings API">
-                                    <MudItem Style="margin-top: 25px;">
+                                    <MudItem Class="mt-6">
                                         <MudTable Items="@StandingsHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Service</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Duration</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Status</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -330,13 +330,13 @@
                                     </MudItem>
                                 </MudTabPanel>
                                 <MudTabPanel Text="Game API">
-                                    <MudItem Style="margin-top: 25px;">
+                                    <MudItem Class="mt-6">
                                         <MudTable Items="@GameHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Service</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Duration</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Status</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")
@@ -385,13 +385,13 @@
                                     </MudItem>
                                 </MudTabPanel>
                                 <MudTabPanel Text="Stats API">
-                                    <MudItem Style="margin-top: 25px;">
+                                    <MudItem Class="mt-6">
                                         <MudTable Items="@StatsHealth.Entries" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Service</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Duration</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Status</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Console</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Service</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Duration</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Status</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Console</MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 @if (context.Key == "self")

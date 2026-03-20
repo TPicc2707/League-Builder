@@ -17,7 +17,7 @@ public class BaseballHittingTotalsModel
     public int SFs { get; set; }
 
 
-    // Derived stats used for Player Totals
+    // Derived stats used for Player and Team Totals
     public decimal BattingAverage { get; set; }
     public decimal Slugging { get; set; }
     public decimal OBP { get; set; }

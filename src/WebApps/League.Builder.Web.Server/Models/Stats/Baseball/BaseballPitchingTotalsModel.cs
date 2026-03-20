@@ -10,6 +10,7 @@ public class BaseballPitchingTotalsModel
     public int HitsAllowed { get; set; }
     public int WalksAllowed { get; set; }
     public int Strikeouts { get; set; }
+    public int Starts { get; set; }
 
 
     // Derived stats used for Player Totals

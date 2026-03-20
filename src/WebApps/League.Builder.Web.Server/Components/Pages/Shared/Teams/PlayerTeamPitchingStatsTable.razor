@@ -1,0 +1,40 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary font-bold"></MudTh>
+        <MudTh Class="mud-theme-primary font-bold">Name</MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.TotalGamesPlayed">GP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.TotalPitchingStarts">GS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.EarnedRunAverage">ERA</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Wins">W</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Losses">L</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Saves">SV</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Innings">IP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.HitsAllowed">H</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Runs">R</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.WalksAllowed">BB</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.PitchingStrikeouts">K</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.WalksHitsPerInning">WHIP</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="">
+            <PlayerAvatar Image="@context.Image" />
+        </MudTd>
+        <MudTd DataLabel="Name" Style="font-size:smaller">@context.FirstName @context.LastName</MudTd>
+        <MudTd DataLabel="GamesPlayed" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.TotalGamesPlayed</MudTd>
+        <MudTd DataLabel="Starts" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.TotalPitchingStarts</MudTd>
+        <MudTd DataLabel="Earned Run Average" Style="margin-left: 7px; font-size: .875rem;">@context.BaseballStatsModel.PitchingStatsModel.EarnedRunAverage.ToString("#0.00")</MudTd>
+        <MudTd DataLabel="W">@context.BaseballStatsModel.PitchingStatsModel.Wins</MudTd>
+        <MudTd DataLabel="L">@context.BaseballStatsModel.PitchingStatsModel.Losses</MudTd>
+        <MudTd DataLabel="SV" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.PitchingStatsModel.Saves</MudTd>
+        <MudTd DataLabel="IP" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.PitchingStatsModel.Innings</MudTd>
+        <MudTd DataLabel="H">@context.BaseballStatsModel.PitchingStatsModel.HitsAllowed</MudTd>
+        <MudTd DataLabel="R">@context.BaseballStatsModel.PitchingStatsModel.Runs</MudTd>
+        <MudTd DataLabel="BB" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.PitchingStatsModel.WalksAllowed</MudTd>
+        <MudTd DataLabel="K">@context.BaseballStatsModel.PitchingStatsModel.PitchingStrikeouts</MudTd>
+        <MudTd DataLabel="Walks Hits Per Inning" Style="margin-left: 9px; font-size: .875rem;">@context.BaseballStatsModel.PitchingStatsModel.WalksHitsPerInning.ToString("#0.00")</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public IEnumerable<PlayerStatsRecord> Rows { get; set; }
+}
