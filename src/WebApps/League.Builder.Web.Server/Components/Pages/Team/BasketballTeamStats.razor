@@ -171,7 +171,7 @@
             int gamesPlayed = 0;
             StatsModel = await LoadPlayerStatsBySeasonAsync(player.Id, seasonId);
 
-            AccumulatePlayerStats(StatsModel.BasketballStats, playerTotalStats, gamesPlayed);
+            AccumulatePlayerStats(StatsModel.BasketballStats, playerTotalStats, ref gamesPlayed);
             FinalizePlayerStats(playerTotalStats, playerStats, gamesPlayed);
 
             AccumulateTeamStats(StatsModel.BasketballStats);
@@ -190,7 +190,7 @@
         TeamStats.Players.Add(playerStat);
     }
 
-    private void AccumulatePlayerStats(IEnumerable<BasketballStatsModel> stats, BasketballTotalsModel playerStats, int gamesPlayed)
+    private void AccumulatePlayerStats(IEnumerable<BasketballStatsModel> stats, BasketballTotalsModel playerStats, ref int gamesPlayed)
     {
         foreach(var s in stats)
         {

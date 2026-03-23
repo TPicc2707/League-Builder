@@ -162,7 +162,7 @@
 
             StatsModel = await LoadPlayerStatsBySeasonAsync(player.Id, SeasonModel.Season.Id);
 
-            AccumulatePlayerStats(StatsModel.BaseballStats, playerHitting, playerPitching, gamesPlayed);
+            AccumulatePlayerStats(StatsModel.BaseballStats, playerHitting, playerPitching, ref gamesPlayed);
             FinializePlayerStats(playerHitting, playerPitching);
 
             AccumulateTeamStats(StatsModel.BaseballStats);
@@ -225,7 +225,7 @@
         TeamPitchingTotals.WHIP = SafeWHIP(TeamPitchingTotals.WalksAllowed, TeamPitchingTotals.HitsAllowed, TeamPitchingTotals.Innings);
     }
 
-    private void AccumulatePlayerStats(IEnumerable<BaseballStatsModel> stats, BaseballHittingTotalsModel playerHitting, BaseballPitchingTotalsModel playerPitching, int gamesPlayed)
+    private void AccumulatePlayerStats(IEnumerable<BaseballStatsModel> stats, BaseballHittingTotalsModel playerHitting, BaseballPitchingTotalsModel playerPitching, ref int gamesPlayed)
     {
         foreach(var s in stats)
         {
@@ -252,7 +252,8 @@
             playerPitching.Saves += s.PitchingStats.Saves;
             playerPitching.Strikeouts += s.PitchingStats.PitchingStrikeouts;
 
-            gamesPlayed += s.HittingStats.AtBats > 0 || s.PitchingStats.Innings > 0 ? 1 : 0;
+            if (s.HittingStats.AtBats > 0 || s.PitchingStats.Innings > 0)
+                gamesPlayed++;
         }
     }
 

@@ -39,6 +39,13 @@ public class ImageService
         await _aws.UploadImages(keyPath, model.File);
     }
 
+    public async Task UploadTeamImageAsync(LeagueModel league, CreateTeamModel model)
+    {
+        var keyPath = $"/{league.Sport}/{league.Name}/teams/{model.TeamName}/{model.ImageFile}";
+
+        await _aws.UploadImages(keyPath, model.File);
+    }
+
     public async Task UploadNewPlayerImageAsync(LeagueModel league, TeamModel team, CreatePlayerModel player) 
     {
         var key = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/players/{String.Concat(player.FirstName, " ", player.LastName)}/{player.ImageFile}";
