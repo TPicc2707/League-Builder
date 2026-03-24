@@ -6,12 +6,15 @@ public interface ITeamLocalCacheService
     Task<GetTeamByIdResponse> GetTeamByIdCache(string id);
     Task<GetTeamsByLeagueResponse> GetTeamsByLeagueCache(string leagueId);
     Task<GetTeamsByNameResponse> GetTeamsByNameCache();
+    Task<GetTeamsByStateResponse> GetTeamsByStateCache(string state);
     Task SetTeamsCache(GetTeamsResponse teamsResponse);
     Task SetTeamByIdCache(string id, GetTeamByIdResponse teamByIdResponse);
     Task SetTeamsByLeagueCache(string leagueId, GetTeamsByLeagueResponse teamsByLeagueResponse);
     Task SetTeamsByNameCache( GetTeamsByNameResponse teamsByNameResponse);
+    Task SetTeamsByStateCache(string state, GetTeamsByStateResponse teamsByStateResponse);
     Task DeleteTeamsCache();
     Task DeleteTeamByIdCache(string id);
     Task DeleteTeamsByNameCache();
     Task DeleteTeamsByLeagueCache(string leagueId);
+    Task DeleteTeamsByStateCache(string state);
 }

@@ -52,6 +52,16 @@ public class TeamLocalCacheService : ITeamLocalCacheService
         return null;
     }
 
+    public async Task<GetTeamsByStateResponse> GetTeamsByStateCache(string state)
+    {
+        string? teamsCache = await _cache.GetStringAsync($"TeamsByState: {state}");
+
+        if (teamsCache is not null)
+            return JsonSerializer.Deserialize<GetTeamsByStateResponse>(teamsCache);
+
+        return null;
+    }
+
     public async Task SetTeamsCache(GetTeamsResponse teamsResponse)
     {
         string serializedTeams = JsonSerializer.Serialize(teamsResponse);
@@ -76,6 +86,12 @@ public class TeamLocalCacheService : ITeamLocalCacheService
         await _cache.SetStringAsync($"TeamsByName", serializedTeams, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
     }
 
+    public async Task SetTeamsByStateCache(string state, GetTeamsByStateResponse teamsByStateResponse)
+    {
+        string serializedTeams = JsonSerializer.Serialize(teamsByStateResponse);
+        await _cache.SetStringAsync($"TeamsByState: {state}", serializedTeams, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) });
+    }
+
     public async Task DeleteTeamsCache()
     {
         await _cache.RemoveAsync("Teams");
@@ -95,4 +111,8 @@ public class TeamLocalCacheService : ITeamLocalCacheService
         await _cache.RemoveAsync($"TeamsByLeague: {leagueId}");
     }
 
+    public async Task DeleteTeamsByStateCache(string state)
+    {
+        await _cache.RemoveAsync($"TeamsByState: {state}");
+    }
 }

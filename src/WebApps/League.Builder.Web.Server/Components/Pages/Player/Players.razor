@@ -147,18 +147,16 @@
                                     <MudTable Items="@Model" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000" RowsPerPage="25">
                                         <HeaderContent>
                                             <MudTh Class="mud-theme-primary font-bold"></MudTh>
-                                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.FirstName)">First Name</MudTableSortLabel></MudTh>
-                                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.LastName)">Last Name</MudTableSortLabel></MudTh>
-                                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<PlayerModel, object>(x => x.TeamName)">Team</MudTableSortLabel></MudTh>
+                                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerModel x) => x.FirstName">First Name</MudTableSortLabel></MudTh>
+                                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerModel x) => x.LastName">Last Name</MudTableSortLabel></MudTh>
+                                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerModel x) => x.TeamName">Team</MudTableSortLabel></MudTh>
                                             <MudTh Class="mud-theme-primary font-bold">Position</MudTh>
                                             <MudTh Class="mud-theme-primary font-bold">Location</MudTh>
                                             <MudTh Class="mud-theme-primary font-bold"></MudTh>
                                         </HeaderContent>
                                         <RowTemplate>
                                             <MudTd DataLabel="">
-                                                <MudAvatar Size="Size.Small">
-                                                    <MudImage Src="@context.Image" Alt="Player Image"></MudImage>
-                                                </MudAvatar>
+                                                <PlayerAvatar Image="@context.Image" />
                                             </MudTd>
                                             <MudTd DataLabel="First Name">
                                                 @if (CanReadStats)
