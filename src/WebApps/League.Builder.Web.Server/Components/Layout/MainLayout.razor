@@ -13,7 +13,7 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<MudLayout>
+<MudLayout Class="d-flex flex-column min-h-100">
     <MudAppBar>
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
@@ -49,11 +49,23 @@
     <MudDrawer @bind-Open="@_drawerOpen">
         <MyNavMenu />
     </MudDrawer>
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Medium">
+    <MudMainContent Class="flex-grow-1 d-flex flex-column">
+        <MudContainer MaxWidth="MaxWidth.Medium" Class="flex-grow-1">
             @Body
         </MudContainer>
     </MudMainContent>
+    <MudPaper Class="mud-appbar d-flex justify-center py-3 mt-auto" Elevation="0">
+        <MudStack Row="true" Justify="Justify.Center" Spacing="1">
+            <MudText Typo="Typo.caption" Class="font-bold footer-text-white pr-3">
+                © @DateTime.Now.Year League Builder
+            </MudText>
+
+            <MudText Typo="Typo.caption" Class="footer-text-white">
+                Version @AppVersion.Short
+            </MudText>
+        </MudStack>
+
+    </MudPaper>
     <MudScrollToTop>
         <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.ArrowCircleUp" />
     </MudScrollToTop>
