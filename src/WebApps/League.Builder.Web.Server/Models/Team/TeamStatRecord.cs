@@ -30,14 +30,33 @@ public class PlayerStatsRecord
         BasketballStatsModel = stats;
     }
 
+    public PlayerStatsRecord(PlayerModel player, FootballSeasonStats stats, decimal passingYardsPerGame,
+                             decimal rushingYardsPerGame, decimal receivingYardsPerGame)
+    {
+        PlayerId = player.Id;
+        FirstName = player.FirstName;
+        LastName = player.LastName;
+        Number = player.PlayerDetail.Number;
+        Position = player.PlayerDetail.Position;
+        Image = player.Image;
+        PassingYardsPerGame = passingYardsPerGame;
+        RushingYardsPerGame = rushingYardsPerGame;
+        ReceivingYardsPerGame = receivingYardsPerGame;
+        FootballStatsModel = stats;
+    }
+
     public Guid PlayerId { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public int Number { get; set; }
     public string Position { get; set; }
     public string Image { get; set; }
+    public decimal PassingYardsPerGame { get; set;  }
+    public decimal RushingYardsPerGame { get; set;  }
+    public decimal ReceivingYardsPerGame { get; set;  }
     public BaseballSeasonStats BaseballStatsModel { get; set; }
     public BasketballSeasonStats BasketballStatsModel { get; set; }
+    public FootballSeasonStats FootballStatsModel { get; set; }
 
 }
 
@@ -92,4 +111,22 @@ public class BasketballPlayerStats
     public decimal FreeThrowsMadePerGame { get; set; }
     public decimal FreeThrowsAttemptedPerGame { get; set; }
     public decimal FreeThrowPercentage { get; set; }
+}
+
+public class FootballSeasonStats
+{
+    public FootballSeasonStats(FootballOffensiveStatsModel offensiveStatsModel, FootballDefensiveStatsModel defensiveStatsModel,
+                            FootballKickingStatsModel kickingStatsModel, int totalGamesPlayed)
+    {
+        OffensiveStatsModel = offensiveStatsModel;
+        DefensiveStatsModel = defensiveStatsModel;
+        KickingStatsModel = kickingStatsModel;
+        TotalGamesPlayed = totalGamesPlayed;
+    }
+
+    public FootballOffensiveStatsModel OffensiveStatsModel { get; set; }
+    public FootballDefensiveStatsModel DefensiveStatsModel { get; set; }
+    public FootballKickingStatsModel KickingStatsModel { get; set; }
+    public int TotalGamesPlayed { get; set; }
+
 }

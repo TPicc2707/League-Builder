@@ -1,0 +1,35 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary"></MudTh>
+        <MudTh Class="mud-theme-primary font-bold">Name</MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.TotalGamesPlayed">GP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.KickingStatsModel.FieldGoalsMade">FG</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.KickingStatsModel.FieldGoalsAttempted">FGA</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.KickingStatsModel.LongestKick">LNGK</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.KickingStatsModel.ExtraPointsMade">XPM</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.KickingStatsModel.ExtraPointsAttempted">XPA</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.KickingStatsModel.Points">PTS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.KickingStatsModel.Punts">PUNT</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.KickingStatsModel.PuntingYards">YDS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.KickingStatsModel.LongestPunt">LNG</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="">
+            <PlayerAvatar Image="@context.Image" />
+        </MudTd>
+        <MudTd DataLabel="Name" Style="font-size:smaller">@context.FirstName @context.LastName</MudTd>
+        <MudTd DataLabel="GamesPlayed" Style="margin-left: 5px; font-size: .875rem;">@context.FootballStatsModel.TotalGamesPlayed</MudTd>
+        <MudTd DataLabel="FG" Style="margin-left: 5px; font-size: .875rem;">@context.FootballStatsModel.KickingStatsModel.FieldGoalsMade</MudTd>
+        <MudTd DataLabel="FGA" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.KickingStatsModel.FieldGoalsAttempted</MudTd>
+        <MudTd DataLabel="LNGK" Style="margin-left: 9px; font-size: .875rem;">@context.FootballStatsModel.KickingStatsModel.LongestKick</MudTd>
+        <MudTd DataLabel="XPM" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.KickingStatsModel.ExtraPointsMade</MudTd>
+        <MudTd DataLabel="XPA" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.KickingStatsModel.ExtraPointsAttempted</MudTd>
+        <MudTd DataLabel="PTS" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.KickingStatsModel.Points</MudTd>
+        <MudTd DataLabel="PUNTS" Style="margin-left: 9px; font-size: .875rem;">@context.FootballStatsModel.KickingStatsModel.Punts</MudTd>
+        <MudTd DataLabel="YDS" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.KickingStatsModel.PuntingYards</MudTd>
+        <MudTd DataLabel="LNG" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.KickingStatsModel.LongestPunt</MudTd>
+    </RowTemplate>
+</MudTable>
+@code {
+    [Parameter] public IEnumerable<PlayerStatsRecord> Rows { get; set; }
+}

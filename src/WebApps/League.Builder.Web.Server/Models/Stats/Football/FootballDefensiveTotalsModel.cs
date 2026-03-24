@@ -11,4 +11,5 @@ public class FootballDefensiveTotalsModel
     public int DefensiveTouchdowns { get; set; }
     public int ForcedFumbles { get; set; }
     public int RecoveredFumbles { get; set; }
+    public int LongestDefensiveInterception { get; set; }
 }

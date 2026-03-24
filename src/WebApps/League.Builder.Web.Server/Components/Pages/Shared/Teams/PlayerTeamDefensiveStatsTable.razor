@@ -1,0 +1,38 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary"></MudTh>
+        <MudTh Class="mud-theme-primary font-bold">Name</MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.TotalGamesPlayed">GP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.DefensiveStatsModel.Tackles">TOT</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.DefensiveStatsModel.Sacks">SACK</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.DefensiveStatsModel.TacklesForLoss">TFL</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.DefensiveStatsModel.ForcedFumbles">FF</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.DefensiveStatsModel.RecoveredFumbles">RF</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.DefensiveStatsModel.DefensiveInterceptions">INT</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.DefensiveStatsModel.DefensiveInterceptionYards">YDS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.DefensiveStatsModel.DefensiveTouchdowns">TDS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.DefensiveStatsModel.LongestDefensiveInterceptionPlay">LNG</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.DefensiveStatsModel.PassesDefended">PD</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="">
+            <PlayerAvatar Image="@context.Image" />
+        </MudTd>
+        <MudTd DataLabel="Name" Style="font-size:smaller">@context.FirstName @context.LastName</MudTd>
+        <MudTd DataLabel="GamesPlayed" Style="margin-left: 5px; font-size: .875rem;">@context.FootballStatsModel.TotalGamesPlayed</MudTd>
+        <MudTd DataLabel="TOT" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.DefensiveStatsModel.Tackles</MudTd>
+        <MudTd DataLabel="SACKS" Style="margin-left: 11px; font-size: .875rem;">@context.FootballStatsModel.DefensiveStatsModel.Sacks</MudTd>
+        <MudTd DataLabel="TFL" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.DefensiveStatsModel.TacklesForLoss</MudTd>
+        <MudTd DataLabel="FF" Style="margin-left: 5px; font-size: .875rem;">@context.FootballStatsModel.DefensiveStatsModel.ForcedFumbles</MudTd>
+        <MudTd DataLabel="FR" Style="margin-left: 5px; font-size: .875rem;">@context.FootballStatsModel.DefensiveStatsModel.RecoveredFumbles</MudTd>
+        <MudTd DataLabel="INT" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.DefensiveStatsModel.DefensiveInterceptions</MudTd>
+        <MudTd DataLabel="YDS" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.DefensiveStatsModel.DefensiveInterceptionYards</MudTd>
+        <MudTd DataLabel="TDS" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.DefensiveStatsModel.DefensiveTouchdowns</MudTd>
+        <MudTd DataLabel="LNG" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.DefensiveStatsModel.LongestDefensiveInterceptionPlay</MudTd>
+        <MudTd DataLabel="PD" Style="margin-left: 5px; font-size: .875rem;">@context.FootballStatsModel.DefensiveStatsModel.PassesDefended</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public IEnumerable<PlayerStatsRecord> Rows { get; set; }
+}

@@ -1,0 +1,38 @@
+﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary"></MudTh>
+        <MudTh Class="mud-theme-primary font-bold">Name</MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.TotalGamesPlayed">GP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.OffensiveStatsModel.PassingCompletions">CMP</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.OffensiveStatsModel.PassingAttempts">ATT</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.OffensiveStatsModel.PassingCompletionPercentage">CMP%</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.OffensiveStatsModel.PassingYards">YDS</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.OffensiveStatsModel.PassingYardsPerPlay">AVG</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.OffensiveStatsModel.PassingTouchdowns">TD</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.OffensiveStatsModel.PassingInterceptions">INT</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.OffensiveStatsModel.LongestPassingPlay">LNG</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.PassingYardsPerGame">YDS/G</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.FootballStatsModel.OffensiveStatsModel.Sacks">S</MudTableSortLabel></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="">
+            <PlayerAvatar Image="@context.Image" />
+        </MudTd>
+        <MudTd DataLabel="Name" Style="font-size:smaller">@context.FirstName @context.LastName</MudTd>
+        <MudTd DataLabel="GamesPlayed" Style="margin-left: 5px; font-size: .875rem;">@context.FootballStatsModel.TotalGamesPlayed</MudTd>
+        <MudTd DataLabel="Completions" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.OffensiveStatsModel.PassingCompletions</MudTd>
+        <MudTd DataLabel="Attempts" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.OffensiveStatsModel.PassingAttempts</MudTd>
+        <MudTd DataLabel="ATT" Style="margin-left: 9px; font-size: .875rem;">@context.FootballStatsModel.OffensiveStatsModel.PassingCompletionPercentage.ToString("#0")%</MudTd>
+        <MudTd DataLabel="Yards" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.OffensiveStatsModel.PassingYards</MudTd>
+        <MudTd DataLabel="AVG">@context.FootballStatsModel.OffensiveStatsModel.PassingYardsPerPlay.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="Touchdowns" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.OffensiveStatsModel.PassingTouchdowns</MudTd>
+        <MudTd DataLabel="Interceptions" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.OffensiveStatsModel.PassingInterceptions</MudTd>
+        <MudTd DataLabel="Longest" Style="margin-left: 7px; font-size: .875rem;">@context.FootballStatsModel.OffensiveStatsModel.LongestPassingPlay</MudTd>
+        <MudTd DataLabel="YDS/G" Style="margin-left: 11px; font-size: .875rem;">@context.PassingYardsPerGame.ToString("#0.0")</MudTd>
+        <MudTd DataLabel="Sacks">@context.FootballStatsModel.OffensiveStatsModel.Sacks</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public IEnumerable<PlayerStatsRecord> Rows { get; set; }
+}

@@ -12,4 +12,5 @@ public class FootballReceivingTotalsModel
 
     //Derived for Player Stats
     public decimal ReceivingYardsPerGame { get; set; }
+    public decimal ReceivingYardsPerPlay { get; set; }
 }

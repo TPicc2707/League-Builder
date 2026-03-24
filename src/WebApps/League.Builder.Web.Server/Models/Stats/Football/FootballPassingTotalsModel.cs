@@ -8,7 +8,10 @@ public class FootballPassingTotalsModel
     public int PassingTouchdowns { get; set; }
     public int PassingInterceptions { get; set; }
     public int Sacks { get; set; }
+    public int LongestPassingPlay { get; set; }
 
     // Derived for Player Stats
     public decimal PassingYardsPerGame { get; set;  }
+    public decimal PassingYardsPerPlay { get; set;  }
+    public decimal PassingCompletionPercentage { get; set; }
 }

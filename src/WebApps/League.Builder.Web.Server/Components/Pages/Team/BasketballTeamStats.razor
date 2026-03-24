@@ -160,10 +160,10 @@
 
     private async Task CreatePlayerStats(Guid teamId, Guid seasonId)
     {
-        StandingsByTeam = await LoadTeamStandingsAsync(teamId);
+        await LoadPlayersAndImage(teamId);
         var teamGames = StandingsByTeam.Standings.FirstOrDefault(s => s.SeasonId == Season.Id).StandingsDetail.GamesPlayed;
-        PlayersByTeam = await LoadPlayersByTeamAsync(teamId);
-        await GetImageAsync(PlayersByTeam.Players);
+        TeamTotals = new();
+
         foreach (var player in PlayersByTeam.Players)
         {
             var playerTotalStats = new BasketballTotalsModel();
@@ -180,6 +180,14 @@
         }
 
         FinalizeTeamStats(teamGames);
+
+    }
+
+    private async Task LoadPlayersAndImage(Guid teamId)
+    {
+        StandingsByTeam = await LoadTeamStandingsAsync(teamId);
+        PlayersByTeam = await LoadPlayersByTeamAsync(teamId);
+        await GetImageAsync(PlayersByTeam.Players);
 
     }
 

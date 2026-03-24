@@ -16,16 +16,18 @@
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
+@inject ImageService ImageService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadGames, ", ", Roles.ReadSeasons)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="padding-top: 25px; padding-bottom: 25px;">
+            <MudItem Class="py-25">
                 <MudExpansionPanels>
                     <MudExpansionPanel Expanded="expandSearchPanel" Class="border border-solid" Style="border-color: #000000">
                         <TitleContent>
-                            <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">
+                            <MudText Typo="Typo.h4" Align="Align.Center" Class="font-bold">
                                 <MudStack Row="true" Justify="Justify.Center">
                                     <MudAvatar Size="Size.Medium">
                                         <MudImage Src="@TeamModel.Team.ImageFile" Alt="Team Image"></MudImage>
@@ -35,8 +37,8 @@
                                 </MudText>
                         </TitleContent>
                         <ChildContent>
-                            <MudStack Justify="Justify.FlexStart" Row="true" Style="padding-top: 25px;">
-                                <MudItem xs="6" md="6" lg="6">
+                            <MudStack Justify="Justify.FlexStart" Row="true" Class="pt-6">
+                                <MudItem xs="6">
                                     <MudSelect @bind-Value="seasonValue" Placeholder="@placeholder" Label="@placeholder">
                                         @foreach (var season in SeasonsModel.Seasons)
                                         {
@@ -44,11 +46,11 @@
                                         }
                                     </MudSelect>
                                 </MudItem>
-                                <MudItem xs="3" md="3" lg="3">
+                                <MudItem xs="3">
 
                                 </MudItem>
-                                <MudItem xs="3" md="3" lg="3" Style="align-content: center; padding: 10px;">
-                                    <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonGames" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                <MudItem xs="3" Class="p-3" Style="align-content: center;">
+                                    <MudButton Disabled="@(seasonValue <= 0)" OnClick="GetSeasonGames" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
                                 </MudItem>
                             </MudStack>
 
@@ -57,7 +59,7 @@
                 </MudExpansionPanels>
             </MudItem>
             <MudItem>
-                <MudPaper Elevation="2" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                <MudPaper Elevation="2" Class="border border-solid p-25" Style="border-color: #000000;">
                     <MudItem>
                         <MudTable Items="@Games.OrderBy(x => x.GameDetail.StartTime)" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                             <ColGroup>
@@ -66,12 +68,12 @@
                                 <col />
                             </ColGroup>
                             <HeaderContent>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Date</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Time</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Opponent</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Outcome</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Score</MudTh>
-                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Record</MudTh>
+                                <MudTh Class="mud-theme-primary font-bold">Date</MudTh>
+                                <MudTh Class="mud-theme-primary font-bold">Time</MudTh>
+                                <MudTh Class="mud-theme-primary font-bold">Opponent</MudTh>
+                                <MudTh Class="mud-theme-primary font-bold">Outcome</MudTh>
+                                <MudTh Class="mud-theme-primary font-bold">Score</MudTh>
+                                <MudTh Class="mud-theme-primary font-bold">Record</MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd DataLabel="Date">
@@ -81,65 +83,16 @@
                                     @context.GameDetail.StartTime.ToString("hh:mm tt")
                                 </MudTd>
                                 <MudTd DataLabel="Opponent">
-                                    <MudStack Row="true">
-                                        @if (context.AwayTeam.Id == TeamModel.Team.Id)
-                                        {
-                                            @awayPlaceholder
-                                            <MudAvatar Size="Size.Small">
-                                                <MudImage Src="@context.HomeTeamImage" Alt="Team Image"></MudImage>
-                                            </MudAvatar>
-                                            <AuthorizeView Roles="@Roles.UpdateGames" Context="EditAwayGame">
-                                                <Authorized>
-                                                    <MudLink Color="Color.Tertiary" Href="@($"/{editSport}/{context.Id}")">@context.HomeTeam.TeamName</MudLink>
-                                                </Authorized>
-                                                <NotAuthorized>
-                                                    @context.HomeTeam.TeamName
-                                                </NotAuthorized>
-                                            </AuthorizeView>
-                                        }
-                                        else
-                                        {
-                                            @homePlaceholder
-                                            <MudAvatar Size="Size.Small">
-                                                <MudImage Src="@context.AwayTeamImage" Alt="Team Image"></MudImage>
-                                            </MudAvatar>
-                                            <AuthorizeView Roles="@Roles.UpdateGames" Context="EditHomeGame">
-                                                <Authorized>
-                                                    <MudLink Color="Color.Tertiary" Href="@($"/{editSport}/{context.Id}")">@context.AwayTeam.TeamName</MudLink>
-                                                </Authorized>
-                                                <NotAuthorized>
-                                                    @context.AwayTeam.TeamName
-                                                </NotAuthorized>
-                                            </AuthorizeView>
-                                            }
-                                    </MudStack>
+                                    @OpponentCell(context)
                                 </MudTd>
                                 <MudTd DataLabel="Outcome">
-                                    @if(context.GameStatus == GameStatus.Completed)
-                                    {
-                                        @if (TeamModel.Team.Id == context.AwayTeam.Id)
-                                        {
-                                            <MudText Style="margin-left: 1em;" Color="@(context.GameDetail.AwayTeamScore > context.GameDetail.HomeTeamScore ? Color.Success : Color.Error)">
-                                                @(context.GameDetail.AwayTeamScore > context.GameDetail.HomeTeamScore ? "W" : "L")
-                                            </MudText>
-                                        }
-                                        else
-                                        {
-                                            <MudText Style="margin-left: 1rem;" Color="@(context.GameDetail.HomeTeamScore > context.GameDetail.AwayTeamScore ? Color.Success : Color.Error)">
-                                                @(context.GameDetail.HomeTeamScore > context.GameDetail.AwayTeamScore ? "W" : "L")
-                                            </MudText>
-                                        }
-                                    }
+                                   @OutcomeCell(context)
                                 </MudTd>
                                 <MudTd DataLabel="Score">
-                                    <MudText Style="margin-left: .25rem;">
-                                        @context.GameDetail.AwayTeamScore - @context.GameDetail.HomeTeamScore
-                                    </MudText>
+                                   @ScoreCell(context)
                                 </MudTd>
                                 <MudTd DataLabel="Record">
-                                    <MudText Style="margin-left: .5rem;">
-                                        @context.TeamSeasonWins - @context.TeamSeasonLosses
-                                    </MudText>
+                                    @RecordCell(context)
                                 </MudTd>
                             </RowTemplate>
                             <PagerContent>
@@ -185,55 +138,40 @@
     private GetTeamByIdResponse TeamModel { get; set; }
     private GetLeagueByIdResponse LeagueModel { get; set; }
     private IEnumerable<GameModel> Games { get; set; }
+    private bool CanUpdateGames;
 
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var teamId = Guid.Parse(Id);
-            SeasonsModel = await SeasonLocalCache.GetSeasonsCache();
-            if (SeasonsModel == null)
-            {
-                SeasonsModel = await SeasonService.GetSeasons();
-                await SeasonLocalCache.SetSeasonsCache(SeasonsModel);
-            }
-            Season = SeasonsModel.Seasons.First();
-            Model = await GameLocalCache.GetGamesByTeamCache(Id);
-            if (Model == null)
-            {
-                Model = await GamesService.GetGamesByTeam(teamId);
-                await GameLocalCache.SetGamesByTeamCache(Id, Model);
-            }
-            Games = Model.Games.Where(x => x.GameDetail.StartTime.Year == Season.Year);
-            TeamModel = await TeamLocalCache.GetTeamByIdCache(Id);
-            if (TeamModel == null)
-            {
-                TeamModel = await TeamService.GetTeamById(teamId);
-                await TeamLocalCache.SetTeamByIdCache(Id, TeamModel);
-            }
-            LeagueModel = await LeagueLocalCache.GetLeagueByIdCache(TeamModel.Team.LeagueId.ToString());
-            if (LeagueModel == null)
-            {
-                LeagueModel = await LeagueService.GetLeague(TeamModel.Team.LeagueId);
-                await LeagueLocalCache.SetLeagueByIdCache(TeamModel.Team.LeagueId.ToString(), LeagueModel);
-            }
-            editSport = $"edit{LeagueModel.League.Sport}gamestats";
-            seasonValue = Season.Year;
-            await GetImageAsync();
-            await GetTeamImageAsync();
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            CanUpdateGames = user.IsInRole(Roles.UpdateGames);
+
+            await LoadAllAsync();
             PageLoad = true;
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
+    }
+
+    private async Task LoadAllAsync()
+    {
+        var teamId = Guid.Parse(Id);
+        SeasonsModel = await LoadSeasonsAsync();
+        Season = SeasonsModel.Seasons.First();
+        Model = await LoadGamesAsync(teamId);
+        Games = Model.Games.Where(x => x.GameDetail.StartTime.Year == Season.Year);
+        TeamModel = await LoadTeamAsync(teamId);
+        LeagueModel = await LoadLeagueAsync(TeamModel.Team.LeagueId);
+        editSport = $"edit{LeagueModel.League.Sport}gamestats";
+        seasonValue = Season.Year;
+        await GetImageAsync();
+        TeamModel.Team.ImageFile = await ImageService.GetTeamImageAsync(LeagueModel.League, TeamModel.Team);
     }
 
     private async Task GetSeasonGames()
@@ -243,12 +181,7 @@
             PageLoad = false;
             teamSeasonWins = 0;
             teamSeasonLosses = 0;
-            SeasonModel = await SeasonLocalCache.GetSeasonByYearCache(seasonValue);
-            if (SeasonModel == null)
-            {
-                SeasonModel = await SeasonService.GetSeasonByYear(seasonValue);
-                await SeasonLocalCache.SetSeasonByYearCache(seasonValue, SeasonModel);
-            }
+            SeasonModel = await LoadSeasonAsync(seasonValue);
             Season = SeasonModel.Season;
             Games = Model.Games.Where(x => x.GameDetail.StartTime.Year == Season.Year);
             await GetImageAsync();
@@ -258,68 +191,154 @@
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
-    }
-
-    private async Task GetTeamImageAsync()
-    {
-        var keyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{TeamModel.Team.TeamName}/{TeamModel.Team.ImageFile}";
-        TeamModel.Team.ImageFile = await AWSService.GetImage(keyPath);
     }
 
     private async Task GetImageAsync()
     {
         foreach (var game in Games.OrderBy(x => x.GameDetail.StartTime))
         {
-            GetTeamByIdResponse opponent;
-            if(game.AwayTeam.Id == TeamModel.Team.Id)
-            {
-                if(game.GameStatus == GameStatus.Completed)
-                {
-                    teamSeasonWins = game.GameDetail.AwayTeamScore > game.GameDetail.HomeTeamScore ? teamSeasonWins + 1 : teamSeasonWins;
-                    teamSeasonLosses = game.GameDetail.AwayTeamScore > game.GameDetail.HomeTeamScore ? teamSeasonLosses : teamSeasonLosses + 1;
-                    game.TeamSeasonWins = teamSeasonWins;
-                    game.TeamSeasonLosses = teamSeasonLosses;
-                }
-                opponent = await TeamLocalCache.GetTeamByIdCache(game.HomeTeam.Id.ToString());
-                if (opponent == null)
-                {
-                    opponent = await TeamService.GetTeamById(game.HomeTeam.Id);
-                    await TeamLocalCache.SetTeamByIdCache(Id, TeamModel);
-                }
+            bool isAway = game.AwayTeam.Id == TeamModel.Team.Id;
+            var opponentId = isAway ? game.HomeTeam.Id : game.AwayTeam.Id;
 
-                var opponentKeyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{opponent.Team.TeamName}/{opponent.Team.ImageFile}";
-                game.HomeTeamImage = await AWSService.GetImage(opponentKeyPath);
-            }
+            if (game.GameStatus == GameStatus.Completed)
+                UpdateSeasonRecord(game, isAway);
+
+            var opponent = await GetOpponentAsync(opponentId);
+
+            var opponentImage = await ImageService.GetTeamImageAsync(LeagueModel.League, opponent.Team);
+
+            if (isAway)
+                game.HomeTeamImage = opponentImage;
             else
-            {
-                if(game.GameStatus == GameStatus.Completed)
-                {
-                    teamSeasonWins = game.GameDetail.HomeTeamScore > game.GameDetail.AwayTeamScore ? teamSeasonWins + 1 : teamSeasonWins;
-                    teamSeasonLosses = game.GameDetail.HomeTeamScore > game.GameDetail.AwayTeamScore ? teamSeasonLosses : teamSeasonLosses + 1;
+                game.AwayTeamImage = opponentImage;
 
-                    game.TeamSeasonWins = teamSeasonWins;
-                    game.TeamSeasonLosses = teamSeasonLosses;
-                }
-
-                opponent = await TeamLocalCache.GetTeamByIdCache(game.AwayTeam.Id.ToString());
-                if (opponent == null)
-                {
-                    opponent = await TeamService.GetTeamById(game.AwayTeam.Id);
-                    await TeamLocalCache.SetTeamByIdCache(Id, TeamModel);
-                }
-
-                var opponentKeyPath = $"/{LeagueModel.League.Sport}/{LeagueModel.League.Name}/teams/{opponent.Team.TeamName}/{opponent.Team.ImageFile}";
-                game.AwayTeamImage = await AWSService.GetImage(opponentKeyPath);
-                
-            }
+            game.TeamSeasonWins = teamSeasonWins;
+            game.TeamSeasonLosses = teamSeasonLosses;
         }
+
     }
+
+    private void UpdateSeasonRecord(GameModel game, bool isAway)
+    {
+        int teamScore = isAway ? game.GameDetail.AwayTeamScore : game.GameDetail.HomeTeamScore;
+        int oppScore = isAway ? game.GameDetail.HomeTeamScore : game.GameDetail.AwayTeamScore;
+
+        if (teamScore > oppScore)
+            teamSeasonWins++;
+        else
+            teamSeasonLosses++;
+    }
+
+    private async Task<GetTeamByIdResponse> GetOpponentAsync(Guid opponentId)
+    {
+        var opponent = await LoadTeamAsync(opponentId);
+
+        return opponent;
+    }
+
+    private async Task HandleError(Exception ex)
+    {
+        if (KeycloakTokenService.ShouldForceLogout())
+        {
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+            await _module.InvokeVoidAsync("logout");
+        }
+        ErrorState.Message = ex.Message;
+        NavManager.NavigateTo("/error");
+    }
+
+    private Task<GetSeasonsResponse> LoadSeasonsAsync() =>
+       DataLoader.GetOrLoad(
+           () => SeasonLocalCache.GetSeasonsCache(),
+           () => SeasonService.GetSeasons(),
+           (s) => SeasonLocalCache.SetSeasonsCache(s)
+   );
+
+    private Task<GetSeasonByYearResponse> LoadSeasonAsync(int year) =>
+     DataLoader.GetOrLoad(
+         () => SeasonLocalCache.GetSeasonByYearCache(year),
+         () => SeasonService.GetSeasonByYear(year),
+         (s) => SeasonLocalCache.SetSeasonByYearCache(year, s)
+     );
+
+
+    private Task<GetGamesByTeamResponse> LoadGamesAsync(Guid id) =>
+        DataLoader.GetOrLoad(
+            () => GameLocalCache.GetGamesByTeamCache(id.ToString()),
+            () => GamesService.GetGamesByTeam(id),
+            (g) => GameLocalCache.SetGamesByTeamCache(id.ToString(), g)
+    );
+
+    private Task<GetTeamByIdResponse> LoadTeamAsync(Guid id) =>
+        DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamByIdCache(id.ToString()),
+            () => TeamService.GetTeamById(id),
+            (t) => TeamLocalCache.SetTeamByIdCache(id.ToString(), t)
+    );
+
+    private Task<GetLeagueByIdResponse> LoadLeagueAsync(Guid leagueId) =>
+        DataLoader.GetOrLoad(
+            () => LeagueLocalCache.GetLeagueByIdCache(leagueId.ToString()),
+            () => LeagueService.GetLeague(leagueId),
+            (l) => LeagueLocalCache.SetLeagueByIdCache(leagueId.ToString(), l)
+    );
+
+    private record OpponentView(Guid Id, string TeamName, string Image);
+
+    private RenderFragment OpponentCell(GameModel game) =>@<MudStack Row="true" Spacing="2">
+        @{
+            bool isAway = game.AwayTeam.Id == TeamModel.Team.Id;
+            var opponent = isAway ? new OpponentView(game.HomeTeam.Id, game.HomeTeam.TeamName, game.HomeTeamImage) : new OpponentView(game.AwayTeam.Id, game.AwayTeam.TeamName, game.AwayTeamImage);
+        }
+        <MudAvatar Size="Size.Small">
+            <MudImage Src="@opponent.Image" Alt="Team Image" />
+        </MudAvatar>
+        @if(CanUpdateGames)
+        {
+            <MudLink Color="Color.Tertiary" Href="@($"/{editSport}{game.Id}")">
+                @opponent.TeamName
+            </MudLink>
+        }
+        else
+        {
+            @opponent.TeamName
+        }
+    </MudStack>
+    ;
+
+    private RenderFragment OutcomeCell(GameModel game) =>@<div>
+        @if(game.GameStatus == GameStatus.Completed)
+        {
+            bool isAway = game.AwayTeam.Id == TeamModel.Team.Id;
+            int teamScore = isAway ? game.GameDetail.AwayTeamScore : game.GameDetail.HomeTeamScore;
+            int oppScore = isAway ? game.GameDetail.HomeTeamScore : game.GameDetail.AwayTeamScore;
+
+            bool win = teamScore > oppScore;
+
+            <MudText Color="@(win ? Color.Success : Color.Error)" Class="ml-4">
+                @(win ? "W" : "L")
+            </MudText>
+        }
+    </div>
+    ;
+
+    private RenderFragment ScoreCell(GameModel game) =>@<div>
+        @if(game.GameStatus == GameStatus.Completed)
+        {
+            <MudText Class="ml-2">
+                @game.GameDetail.AwayTeamScore - @game.GameDetail.HomeTeamScore
+            </MudText>
+        }
+    </div>;
+
+    private RenderFragment RecordCell(GameModel game) =>@<div>
+        @if(game.GameStatus == GameStatus.Completed)
+        {
+            <MudText Class="ml-2">
+                @game.TeamSeasonWins - @game.TeamSeasonLosses
+            </MudText>
+        }
+    </div>;
 }
