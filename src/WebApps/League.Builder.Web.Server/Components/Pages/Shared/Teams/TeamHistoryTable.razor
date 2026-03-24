@@ -1,0 +1,39 @@
+﻿<MudTable Items="@Rows" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
+    <HeaderContent>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(StandingsModel x) => x.StandingsDetail.Wins">Season</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(StandingsModel x) => x.StandingsDetail.Wins">Wins</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(StandingsModel x) => x.StandingsDetail.Losses">Losses</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(StandingsModel x) => x.WinPercentage">PCT</MudTableSortLabel></MudTh>
+        <MudTh Class="mud-theme-primary font-bold">Playoffs</MudTh>
+        <MudTh Class="mud-theme-primary font-bold">League Champion</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Season">
+            <MudText Class="ml-1">@context.Year</MudText>
+        </MudTd>
+        <MudTd DataLabel="Wins">
+            <MudText Class="ml-3">@context.StandingsDetail.Wins</MudText>
+        </MudTd>
+        <MudTd DataLabel="Losses">
+            <MudText Class="ml-4">@context.StandingsDetail.Losses</MudText>
+        </MudTd>
+        <MudTd DataLabel="Win Percentage">
+            <MudText>@context.WinPercentage.ToString("#.000")</MudText>
+        </MudTd>
+        <MudTd DataLabel="Playoffs">
+            <MudText Class="ml-4">
+                <MudIcon Color="Color.Error" Icon="@Icons.Material.Filled.Clear" />
+            </MudText>
+        </MudTd>
+        <MudTd DataLabel="League Champion">
+            <MudText Class="ml-10">
+                <MudIcon Color="Color.Error" Icon="@Icons.Material.Filled.Clear" />
+            </MudText>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+
+@code {
+    [Parameter] public IEnumerable<StandingsModel> Rows { get; set; }
+}

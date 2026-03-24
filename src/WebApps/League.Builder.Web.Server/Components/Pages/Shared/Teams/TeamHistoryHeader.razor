@@ -1,0 +1,20 @@
+﻿<MudStack Row="true">
+    <MudItem xs="4">
+        <MudImage Src="@Team.Image" Width="225" Height="225" Alt="Swedish Farm House" Elevation="25" Class="rounded-lg ma-4" />
+    </MudItem>
+    <MudItem xs="6" Class="ma-4">
+        <MudText Typo="Typo.h4" Align="Align.Start" Class="font-bold">@Team.TeamName</MudText>
+        <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-1 font-bold">@Team.LeagueName</MudText>
+        <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-5 font-bold">Total Record: @Wins - @Losses</MudText>
+        <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-1 font-bold">
+            League Championships: 0
+        </MudText>
+        <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-1 font-bold">Playoff Appearances: 0</MudText>
+    </MudItem>
+</MudStack>
+
+@code {
+    [Parameter] public TeamModel Team { get; set; }
+    [Parameter] public int Wins {get;set;}
+    [Parameter] public int Losses { get; set; }
+}
