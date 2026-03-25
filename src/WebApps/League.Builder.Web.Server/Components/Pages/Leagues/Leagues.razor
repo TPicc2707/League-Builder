@@ -79,143 +79,73 @@
         </MudItem>
         @if (Model != null)
         {
-            <MudItem Class="pt-6">
+            <MudItem Class="py-6">
                 <MudExpansionPanels>
                     <MudExpansionPanel Expanded="true" Class="border border-solid px-6" Style="border-color: #000000;">
                         <TitleContent>
                             <MudText Typo="Typo.h5" Align="Align.Center" Class="font-bold">Results</MudText>
                         </TitleContent>
                         <ChildContent>
-                            <AuthorizeView Roles="@Roles.CreateLeagues" Context="createAuth">
-                                <Authorized>
-                                    <MudItem>
-                                        <MudTable Items="@Model" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
-                                            <ToolBarContent>
-                                                <MudStack Justify="Justify.FlexStart">
-                                                    <MudButton Href="/createleague/" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
-                                                </MudStack>
-                                            </ToolBarContent>
-                                            <HeaderContent>
-                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
-                                                <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<LeagueModel, object>(x => x.Name)">Name</MudTableSortLabel></MudTh>
-                                                <MudTh Class="mud-theme-primary font-bold">Owner</MudTh>
-                                                <MudTh Class="mud-theme-primary font-bold">Sport</MudTh>
-                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
-                                            </HeaderContent>
-                                            <RowTemplate>
-                                                <MudTd DataLabel="">
-                                                    <LeagueAvatar Src="@context.Image" Size="Size.Small" />
-                                                </MudTd>
-                                                <MudTd DataLabel="League Name">
-                                                    <MudTooltip Text="League Details" Color="Color.Secondary">
-                                                        <MudLink Color="Color.Tertiary" Href="@($"/teamsbyleague/{context.Id}")">@context.Name</MudLink>
-                                                    </MudTooltip>
-                                                </MudTd>                                                
-                                                <MudTd DataLabel="Owner">@String.Concat(context.OwnerFirstName, " ", context.OwnerLastName)</MudTd>
-                                                <MudTd DataLabel="Description">@context.Sport</MudTd>
-                                                <MudTd DataLabel="Links">
-                                                    @if (CanReadGames)
-                                                    {
-                                                        <LeagueActionIcon Tooltip="Games"
-                                                                          Icon="@Icons.Material.Filled.CalendarMonth"
-                                                                          Href="@($"/leaguegames/{context.Id}")" />
-                                                    }
-                                                    @if (CanReadStandings)
-                                                    {
-                                                        <LeagueActionIcon Tooltip="Standings"
-                                                                          Icon="@Icons.Material.Filled.BarChart"
-                                                                          Href="@($"/leaguestandings/{context.Id}")" />
-                                                    }
-                                                    @if (CanReadStats)
-                                                    {
-                                                        @StatsIcon(context)
-                                                    }
-                                                    @if (CanReadLeagues)
-                                                    {
-                                                        <LeagueActionIcon Tooltip="League History"
-                                                                          Icon="@Icons.Material.Filled.MenuBook"
-                                                                          Href="@($"/leaguehistory/{context.Id}")" />
-                                                    }
-                                                    @if (CanUpdateLeagues)
-                                                    {
-                                                        <LeagueActionIcon Tooltip="Settings"
-                                                                          Icon="@Icons.Material.Filled.Settings"
-                                                                          Href="@($"/updateleaguesettings/{context.Id}")" />
-                                                        <LeagueActionIcon Tooltip="Update"
-                                                                          Icon="@Icons.Material.Filled.Update"
-                                                                          Href="@($"/updateleague/{context.Id}")" />
-                                                    }
-                                                </MudTd>
-                                            </RowTemplate>
-                                            <PagerContent>
-                                                <MudTablePager />
-                                            </PagerContent>
-                                        </MudTable>
-                                    </MudItem>
-                                </Authorized>
-                                <NotAuthorized>
-                                    <MudItem>
-                                        <MudTable Items="@Model" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
-                                            <HeaderContent>
-                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
-                                                <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<LeagueModel, object>(x => x.Name)">Name</MudTableSortLabel></MudTh>
-                                                <MudTh Class="mud-theme-primary font-bold">Description</MudTh>
-                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
-                                            </HeaderContent>
-                                            <RowTemplate>
-                                                <MudTd DataLabel="">
-                                                    <LeagueAvatar Src="@context.Image" Size="Size.Small" />
-                                                </MudTd>
-                                                <MudTd DataLabel="League Name">
-                                                    <MudTooltip Text="League Details" Color="Color.Secondary">
-                                                        <MudLink Color="Color.Tertiary" Href="@($"/teamsbyleague/{context.Id}")">@context.Name</MudLink>
-                                                    </MudTooltip>
-                                                </MudTd>
-                                                <MudTd DataLabel="Description">@context.Description</MudTd>
-                                                <MudTd DataLabel="Links">
-                                                    <MudTooltip Text="Email" Color="Color.Secondary">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Email" Color="Color.Tertiary" Edge="Edge.Start" />
-                                                    </MudTooltip>
-                                                    @if (CanReadGames)
-                                                    {
-                                                        <LeagueActionIcon Tooltip="Games"
-                                                                          Icon="@Icons.Material.Filled.CalendarMonth"
-                                                                          Href="@($"/leaguegames/{context.Id}")" />
-                                                    }
-                                                    @if (CanReadStandings)
-                                                    {
-                                                        <LeagueActionIcon Tooltip="Standings"
-                                                                          Icon="@Icons.Material.Filled.BarChart"
-                                                                          Href="@($"/leaguestandings/{context.Id}")" />
-                                                    }
-                                                    @if (CanReadStats)
-                                                    {
-                                                        @StatsIcon(context)
-                                                    }
-                                                    @if (CanReadLeagues)
-                                                    {
-                                                        <LeagueActionIcon Tooltip="League History"
-                                                                          Icon="@Icons.Material.Filled.MenuBook"
-                                                                          Href="@($"/leaguehistory/{context.Id}")" />
-                                                    }
-                                                    @if(CanUpdateLeagues)
-                                                    {
-                                                        <LeagueActionIcon Tooltip="Settings"
-                                                                          Icon="@Icons.Material.Filled.Settings"
-                                                                          Href="@($"/updateleaguesettings/{context.Id}")" />
-                                                        <LeagueActionIcon Tooltip="Update"
-                                                                          Icon="@Icons.Material.Filled.Update"
-                                                                          Href="@($"/updateleague/{context.Id}")" />
-                                                    }
-                                                </MudTd>
-                                            </RowTemplate>
-                                            <PagerContent>
-                                                <MudTablePager />
-                                            </PagerContent>
-                                        </MudTable>
-                                    </MudItem>
-                                </NotAuthorized>
-                            </AuthorizeView>
+                            <MudItem>
+                                <MudTable Items="@Model" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000" ToolBarContent="@(CanCreateLeagues ? _toolBarContent : null)">                                 
+                                    <HeaderContent>
+                                        <MudTh Class="mud-theme-primary font-bold"></MudTh>
+                                        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<LeagueModel, object>(x => x.Name)">Name</MudTableSortLabel></MudTh>
+                                        <MudTh Class="mud-theme-primary font-bold">Owner</MudTh>
+                                        <MudTh Class="mud-theme-primary font-bold">Sport</MudTh>
+                                        <MudTh Class="mud-theme-primary font-bold"></MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="">
+                                            <LeagueAvatar Src="@context.Image" Size="Size.Small" />
+                                        </MudTd>
+                                        <MudTd DataLabel="League Name">
+                                            <MudTooltip Text="League Details" Color="Color.Secondary">
+                                                <MudLink Color="Color.Tertiary" Href="@($"/teamsbyleague/{context.Id}")">@context.Name</MudLink>
+                                            </MudTooltip>
+                                        </MudTd>
+                                        <MudTd DataLabel="Owner">@String.Concat(context.OwnerFirstName, " ", context.OwnerLastName)</MudTd>
+                                        <MudTd DataLabel="Description">@context.Sport</MudTd>
+                                        <MudTd DataLabel="Links">
+                                            @if (CanReadGames)
+                                            {
+                                                <LeagueActionIcon Tooltip="Games"
+                                                                  Icon="@Icons.Material.Filled.CalendarMonth"
+                                                                  Href="@($"/leaguegames/{context.Id}")" />
+                                            }
+                                            @if (CanReadStandings)
+                                            {
+                                                <LeagueActionIcon Tooltip="Standings"
+                                                                  Icon="@Icons.Material.Filled.BarChart"
+                                                                  Href="@($"/leaguestandings/{context.Id}")" />
+                                            }
+                                            @if (CanReadStats)
+                                            {
+                                                @StatsIcon(context)
+                                            }
+                                            @if (CanReadLeagues)
+                                            {
+                                                <LeagueActionIcon Tooltip="League History"
+                                                                  Icon="@Icons.Material.Filled.MenuBook"
+                                                                  Href="@($"/leaguehistory/{context.Id}")" />
+                                            }
+                                            @if (CanUpdateLeagues)
+                                            {
+                                                <LeagueActionIcon Tooltip="Settings"
+                                                                  Icon="@Icons.Material.Filled.Settings"
+                                                                  Href="@($"/updateleaguesettings/{context.Id}")" />
+                                                <LeagueActionIcon Tooltip="Update"
+                                                                  Icon="@Icons.Material.Filled.Update"
+                                                                  Href="@($"/updateleague/{context.Id}")" />
+                                            }
+                                        </MudTd>
+                                    </RowTemplate>
+                                    <PagerContent>
+                                        <MudTablePager />
+                                    </PagerContent>
+                                </MudTable>
+                            </MudItem>
+
                         </ChildContent>
                     </MudExpansionPanel>
                 </MudExpansionPanels>
@@ -246,6 +176,7 @@
     private bool CanReadStandings;
     private bool CanReadStats;
     private bool CanReadLeagues;
+    private bool CanCreateLeagues;
     private bool CanUpdateLeagues;
 
     protected override async Task OnInitializedAsync()
@@ -257,6 +188,7 @@
         CanReadStandings = user.IsInRole(Roles.ReadStandings);
         CanReadStats = user.IsInRole(Roles.ReadStats);
         CanReadLeagues = user.IsInRole(Roles.ReadLeagues);
+        CanCreateLeagues = user.IsInRole(Roles.CreateLeagues);
         CanUpdateLeagues = user.IsInRole(Roles.UpdateLeagues);
     }
 
@@ -342,6 +274,17 @@
         _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
         await _module.InvokeVoidAsync("logout");
     }
+
+    RenderFragment _toolBarContent =>
+    @<MudStack Justify="Justify.FlexStart">
+            <MudButton Href="/createleague/"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="ml-auto"
+                       Style="width: 200px;">
+                Create
+            </MudButton>
+    </MudStack>;
 }
 
 @functions{

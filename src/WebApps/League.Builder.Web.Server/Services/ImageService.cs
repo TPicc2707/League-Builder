@@ -39,7 +39,14 @@ public class ImageService
         await _aws.UploadImages(keyPath, model.File);
     }
 
-    public async Task UploadTeamImageAsync(LeagueModel league, CreateTeamModel model)
+    public async Task UploadNewTeamImageAsync(LeagueModel league, CreateTeamModel model)
+    {
+        var keyPath = $"/{league.Sport}/{league.Name}/teams/{model.TeamName}/{model.ImageFile}";
+
+        await _aws.UploadImages(keyPath, model.File);
+    }
+
+    public async Task UploadUpdatedTeamImageAsync(LeagueModel league, UpdateTeamModel model)
     {
         var keyPath = $"/{league.Sport}/{league.Name}/teams/{model.TeamName}/{model.ImageFile}";
 
@@ -73,6 +80,15 @@ public class ImageService
     {
         var oldPath = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/players/{String.Concat(oldPlayer.FirstName, " ", oldPlayer.LastName)}/{oldPlayer.ImageFile}";
         var newPath = $"/{league.Sport}/{league.Name}/teams/{team.TeamName}/players/{String.Concat(newPlayer.FirstName, " ", newPlayer.LastName)}/{newPlayer.ImageFile}";
+
+        await _aws.CopyObjectToNewFolder(oldPath, newPath);
+
+    }
+
+    public async Task CopyTeamImageForUpdateAsync(LeagueModel league, TeamModel oldTeam, UpdateTeamModel newTeam)
+    {
+        var oldPath = $"/{league.Sport}/{league.Name}/teams/{oldTeam.TeamName}/{oldTeam.ImageFile}";
+        var newPath = $"/{league.Sport}/{league.Name}/teams/{newTeam.TeamName}/{newTeam.ImageFile}";
 
         await _aws.CopyObjectToNewFolder(oldPath, newPath);
 

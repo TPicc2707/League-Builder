@@ -29,7 +29,7 @@
                     <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight:bold">Create Team</MudText>
                 </MudPaper>
             </MudItem>
-            <MudItem style="margin-top: 50px; margin-bottom: 50px;">
+            <MudItem Class="mt-50 mb-50">
                 <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
                     <FluentValidationValidator @ref="fluentValidationValidator" />
                     <MudPaper Class="border border-solid p-25" Style="border-color: #000000; width: 100%;">
@@ -259,7 +259,7 @@
     {
         model.ImageFile = model.File?.Name;
 
-        await ImageService.UploadTeamImageAsync(league, model);
+        await ImageService.UploadNewTeamImageAsync(league, model);
     }
 
     private async Task<CreateTeamResponse> CreateTeamAsync()
