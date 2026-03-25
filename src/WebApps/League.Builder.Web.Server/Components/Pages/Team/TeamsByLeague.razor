@@ -9,24 +9,25 @@
 @inject ITeamLocalCacheService TeamLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
+@inject ImageService ImageService
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="padding-top: 100px;">
-                <MudItem xs="12" md="12" lg="12" Style="padding-bottom: 25px;">
+            <MudItem Class="pt-24">
+                <MudItem xs="12" Class="pb-6">
                     <MudCard Class="border border-solid" Style="border-color: #000000">
                         <MudCardContent>
                             <MudStack Row="true">
-                                <MudItem xs="4" md="4" lg="4">
+                                <MudItem xs="4">
                                     <MudImage Src="@League.League.Image" Width="225" Height="225" Alt="Swedish Farm House" Elevation="25" Class="rounded-lg ma-4" />
                                 </MudItem>
-                                <MudItem xs="6" md="6" lg="6" Class="ma-4">
-                                    <MudText Typo="Typo.h4" Align="Align.Start" Style="font-weight:bold; ">@League.League.Name</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 10px;">@String.Concat(League.League.OwnerFirstName, " ", League.League.OwnerLastName)</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 10px;">@League.League.Sport</MudText>
-                                    <MudText Typo="Typo.body1" Align="Align.Start" Style="padding-top: 10px;">@League.League.Description</MudText>
+                                <MudItem xs="6" Class="ma-4">
+                                    <MudText Typo="Typo.h4" Align="Align.Start" Class="font-bold">@League.League.Name</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-3">@String.Concat(League.League.OwnerFirstName, " ", League.League.OwnerLastName)</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-3">@League.League.Sport</MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Start" Class="pt-3">@League.League.Description</MudText>
                                 </MudItem>
                             </MudStack>
                         </MudCardContent>
@@ -37,11 +38,11 @@
 
                 </MudItem>
             </MudItem>
-            <MudItem Style="padding-top: 25px;">
+            <MudItem Class="pt-6">
                 <MudExpansionPanels>
                     <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000">
                         <TitleContent>
-                            <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">Teams</MudText>
+                            <MudText Typo="Typo.h5" Align="Align.Center" Class="font-bold">Teams</MudText>
                         </TitleContent>
                         <ChildContent>
                             <AuthorizeView Roles="@Roles.CreateTeams" Context="createTeamsAuth">
@@ -50,21 +51,19 @@
                                         <MudTable Items="@Teams.Teams" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <ToolBarContent>
                                                 <MudStack Justify="Justify.FlexStart">
-                                                    <MudButton OnClick="NavigateToCreateTeam" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
+                                                    <MudButton Href="@($"/createteam/{Id}")" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" style="width: 200px;">Create</MudButton>
                                                 </MudStack>
                                             </ToolBarContent>
                                             <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<TeamModel, object>(x => x.TeamName)">Name</MudTableSortLabel></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Team Owner</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Location</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(TeamModel x) => x.TeamName">Name</MudTableSortLabel></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Team Owner</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Location</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 <MudTd DataLabel="">
-                                                    <MudAvatar Size="Size.Small">
-                                                        <MudImage Src="@context.Image" Alt="Team Image"></MudImage>
-                                                    </MudAvatar>
+                                                    <PlayerAvatar Image="@context.Image" />
                                                 </MudTd>
                                                 <MudTd DataLabel="Team Name">
                                                     <MudTooltip Text="Team Details" Color="Color.Secondary">
@@ -76,16 +75,16 @@
                                                 <MudTd DataLabel="Links">
                                                     <AuthorizeView Roles="@Roles.ReadGames" Context="teamGamesAuth">
                                                         <MudTooltip Text="Schedule" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/teamgames/", context.Id)" />
+                                                            <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/teamgames/{context.Id}")" />
                                                         </MudTooltip>
                                                     </AuthorizeView>
                                                     <AuthorizeView Roles="@Roles.UpdateTeams" Context="updateAuth">
                                                         <MudTooltip Text="Update" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateteam/", context.Id)" />
+                                                            <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/updateteam/{context.Id}")" />
                                                         </MudTooltip>
                                                     </AuthorizeView>
                                                     <MudTooltip Text="Trade Player" Color="Color.Secondary">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.CompareArrows" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/moveplayers/", context.Id)" />
+                                                        <MudIconButton Icon="@Icons.Material.Filled.CompareArrows" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/moveplayers/{context.Id}")" />
                                                     </MudTooltip>
                                                 </MudTd>
                                             </RowTemplate>
@@ -99,28 +98,26 @@
                                     <MudItem>
                                         <MudTable Items="@Teams.Teams" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
                                             <HeaderContent>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"><MudTableSortLabel SortBy="new Func<TeamModel, object>(x => x.TeamName)">Name</MudTableSortLabel></MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary">Description</MudTh>
-                                                <MudTh Style="font-weight:bold" Class="mud-theme-primary"></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<TeamModel, object>(x => x.TeamName)">Name</MudTableSortLabel></MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold">Description</MudTh>
+                                                <MudTh Class="mud-theme-primary font-bold"></MudTh>
                                             </HeaderContent>
                                             <RowTemplate>
                                                 <MudTd DataLabel="">
-                                                    <MudAvatar Size="Size.Small">
-                                                        <MudImage Src="@context.Image" Alt="Team Image"></MudImage>
-                                                    </MudAvatar>
+                                                    <PlayerAvatar Image="@context.Image" />
                                                 </MudTd>
                                                 <MudTd DataLabel="Team Name"><MudLink Color="Color.Tertiary" Href="@($"/playersbyteam/{context.Id}")">@context.TeamName</MudLink></MudTd>
                                                 <MudTd DataLabel="Description">@context.Description</MudTd>
                                                 <MudTd DataLabel="Links">
                                                     <AuthorizeView Roles="@Roles.ReadGames" Context="teamGamesAuth">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/teamgames/", context.Id)" />
+                                                        <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/teamgames/{context.Id}")" />
                                                     </AuthorizeView>
                                                     <AuthorizeView Roles="@Roles.UpdateTeams" Context="updateAuth">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/updateteam/", context.Id)" />
+                                                        <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/updateteam/{context.Id}")" />
                                                     </AuthorizeView>
                                                     <MudTooltip Text="Trade Player" Color="Color.Secondary">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.CompareArrows" Color="Color.Tertiary" Edge="Edge.Start" Href="@String.Concat("/moveplayers/", context.Id)" />
+                                                        <MudIconButton Icon="@Icons.Material.Filled.CompareArrows" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/moveplayers/{context.Id}")" />
                                                     </MudTooltip>
                                                 </MudTd>
                                             </RowTemplate>
@@ -153,11 +150,8 @@
     [Inject] private IDialogService DialogService { get; set; }
     private IJSObjectReference? _module;
     private bool PageLoad = false;
-    private int TeamCount = 0;
     private int PageSize = 0;
-    private int Counter = 0;
     private Justify _justify = Justify.SpaceEvenly;
-    private int TeamCounter = 0;
 
     private GetLeagueByIdResponse League { get; set; }
     private GetTeamsByLeagueResponse Teams { get; set; }
@@ -166,34 +160,26 @@
     {
         try
         {
-            var leagueId = Guid.Parse(Id);
-            League = await LeagueLocalCache.GetLeagueByIdCache(Id);
-            if (League == null)
-            {
-                League = await LeagueService.GetLeague(leagueId);
-                await LeagueLocalCache.SetLeagueByIdCache(Id, League);
-            }
-            await GetLeagueImageAsync();
-            Teams = await TeamLocalCache.GetTeamsByLeagueCache(Id);
-            if (Teams == null)
-            {
-                Teams = await TeamService.GetTeamsByLeague(leagueId);
-                await TeamLocalCache.SetTeamsByLeagueCache(Id, Teams);
-            }
-            await GetImageAsync();
+            await LoadAllAsync();
             PageLoad = true;
 
         }
         catch (Exception ex)
         {
-            if (KeycloakTokenService.ShouldForceLogout())
-            {
-                _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
-                await _module.InvokeVoidAsync("logout");
-            }
-            ErrorState.Message = ex.Message;
-            NavManager.NavigateTo("/error");
+            await HandleError(ex);
         }
+    }
+
+    private async Task LoadAllAsync()
+    {
+        var leagueId = Guid.Parse(Id);
+
+        League = await LoadLeagueAsync(leagueId);
+        League.League.Image = await ImageService.GetLeagueImageAsync(League.League);
+
+        Teams = await LoadTeamsAsync(leagueId);
+
+        await GetImageAsync();
     }
 
     private Task OpenDialogAsync(Guid id)
@@ -212,33 +198,34 @@
         return DialogService.ShowAsync<LeagueContactInfoMessageBox>("Contact Info", parameters, options);
     }
 
-    private IEnumerable<TeamModel> GetTeamsForRow(int count)
-    {
-        Console.WriteLine(count);
-        var teams = Teams.Teams.OrderBy(p => p.TeamName).Skip(4 * count).Take(4);
-        TeamCounter++;
-        return teams;
-    }
-
     private async Task GetImageAsync()
     {
         foreach (var team in Teams.Teams)
+            team.Image = await ImageService.GetTeamImageAsync(League.League, team);
+    }
+
+    private async Task HandleError(Exception ex)
+    {
+        if (KeycloakTokenService.ShouldForceLogout())
         {
-            var keyPath = $"/{League.League.Sport}/{League.League.Name}/teams/{team.TeamName}/{team.ImageFile}";
-            team.Image = await AWSService.GetImage(keyPath);
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./js/authRefresh.js");
+            await _module.InvokeVoidAsync("logout");
         }
+        ErrorState.Message = ex.Message;
+        NavManager.NavigateTo("/error");
     }
 
-    private async Task GetLeagueImageAsync()
-    {
-        string keyPath = $"/{League.League.Sport}/{League.League.Name}/{League.League.ImageFile}";
-        League.League.Image = await AWSService.GetImage(keyPath);
-    }
+    private Task<GetLeagueByIdResponse> LoadLeagueAsync(Guid id) =>
+        DataLoader.GetOrLoad(
+            () => LeagueLocalCache.GetLeagueByIdCache(id.ToString()),
+            () => LeagueService.GetLeague(id),
+            (l) => LeagueLocalCache.SetLeagueByIdCache(id.ToString(), l)
+    );
 
-    private async Task NavigateToCreateTeam()
-    {
-        NavManager.NavigateTo($"/createteam/{Id}");
-    }
-
-
+    private Task<GetTeamsByLeagueResponse> LoadTeamsAsync(Guid id) =>
+        DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamsByLeagueCache(id.ToString()),
+            () => TeamService.GetTeamsByLeague(id),
+            (t) => TeamLocalCache.SetTeamsByLeagueCache(id.ToString(), t)
+    );
 }
