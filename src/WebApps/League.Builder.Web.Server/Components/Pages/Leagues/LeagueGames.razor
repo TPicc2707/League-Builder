@@ -79,13 +79,17 @@
     private GetSeasonsResponse SeasonsModel { get; set; }
     private GetSeasonByYearResponse SeasonModel { get; set; }
     private GetLeagueGamesByDateResponse LeagueGamesModel { get; set; }
+    private AnyBaseballGameLineupByGameIdResponse AwayLineupResponse {get; set;}
+    private AnyBaseballGameLineupByGameIdResponse HomeLineupResponse {get; set;}
 
     private IJSObjectReference? _module;
     private Guid LeagueId => Guid.Parse(Id);
+    private List<GamesTableModel> GameList { get; set; } = new();
     private string CurrentDateString => new DateTime(Season.Year, Month, Day).ToString("yyyy-MM-dd");
     private bool CanCreateGames;
     private bool CanUpdateGames;
     private bool CanReadGames;
+    private bool CanCreateStats;
     private bool CanReadStats;
     private bool CanUpdateLeagues;
 
@@ -99,6 +103,7 @@
             CanCreateGames = user.IsInRole(Roles.CreateGames);
             CanUpdateGames = user.IsInRole(Roles.UpdateGames);
             CanReadGames = user.IsInRole(Roles.ReadGames);
+            CanCreateStats = user.IsInRole(Roles.CreateStats);
             CanReadStats = user.IsInRole(Roles.ReadStats);
             CanUpdateLeagues = user.IsInRole(Roles.UpdateLeagues);
 
@@ -115,6 +120,7 @@
                 () => SeasonService.GetSeasons(),
                 (s) => SeasonLocalCache.SetSeasonsCache(s)
             );
+
 
             Season = SeasonsModel.Seasons.First();
             seasonValue = Season.Year;
@@ -135,6 +141,16 @@
     private async Task LoadGamesAsync()
     {
         LeagueGamesModel = await GamesService.GetLeagueGamesByDate(LeagueId, CurrentDateString);
+        foreach(var game in LeagueGamesModel.Games)
+        {
+            AwayLineupResponse = await GamesService.AnyBaseballGameLineupByGameId(game.Id, game.AwayTeam.Id);
+            HomeLineupResponse = await GamesService.AnyBaseballGameLineupByGameId(game.Id, game.HomeTeam.Id);
+            var g = new GamesTableModel{
+                Game = game, 
+                LineupsExist = AwayLineupResponse.IsLineupCreated && HomeLineupResponse.IsLineupCreated
+            };
+            GameList.Add(g);
+        }
         await GetImageAsync();
         AdjustDaysOfMonth(Month);
     }
@@ -153,7 +169,7 @@
             Season = SeasonModel.Season;
             Month = monthValue;
             Day = dayValue;
-
+            GameList = new();
             await LoadGamesAsync();
             StateHasChanged();
             PageLoad = true;
@@ -290,6 +306,12 @@
         NavManager.NavigateTo("/error");
     }
 
+    public class GamesTableModel
+    {
+        public GameModel Game { get; set; }
+        public bool LineupsExist { get; set; }
+    }
+
     private RenderFragment SearchPanel =>@<MudStack Row="true" Justify="Justify.FlexStart">
         <MudItem xs="3">
              <MudSelect T="int" ValueChanged="AdjustDaysOfMonth" Value="@monthValue" Label="@monthPlaceholder">
@@ -327,7 +349,7 @@
     </MudStack>
     ;
 
-    private RenderFragment GameTable =>@<MudTable T="GameModel" Items="@LeagueGamesModel.Games" Hover="true"
+    private RenderFragment GameTable =>@<MudTable T="GamesTableModel" Items="@GameList" Hover="true"
                   Class="border border-solid border-black">
             <ToolBarContent>
                 @if (CanCreateGames)
@@ -344,16 +366,16 @@
             </ToolBarContent>
             <HeaderContent>
                 <MudTh Class="font-bold mud-theme-primary">
-                    <MudTableSortLabel T="GameModel" SortBy="@(x => x.AwayTeam.TeamName)">Away Team</MudTableSortLabel>
+                <MudTableSortLabel T="GamesTableModel" SortBy="@(x => x.Game.AwayTeam.TeamName)">Away Team</MudTableSortLabel>
                 </MudTh>
                 <MudTh Class="font-bold mud-theme-primary">
-                    <MudTableSortLabel T="GameModel" SortBy="@(x => x.HomeTeam.TeamName)">Home Team</MudTableSortLabel>
+                <MudTableSortLabel T="GamesTableModel" SortBy="@(x => x.Game.HomeTeam.TeamName)">Home Team</MudTableSortLabel>
                 </MudTh>
                 <MudTh Class="font-bold mud-theme-primary">
                     Score
                 </MudTh>
                 <MudTh Class="font-bold mud-theme-primary">
-                    <MudTableSortLabel T="GameModel" SortBy="@(x => x.GameDetail.StartTime)">Start Time</MudTableSortLabel>
+                <MudTableSortLabel T="GamesTableModel" SortBy="@(x => x.Game.GameDetail.StartTime)">Start Time</MudTableSortLabel>
                 </MudTh>
                 <MudTh Class="font-bold mud-theme-primary">
                     End Time
@@ -369,36 +391,36 @@
                 <MudTd>
                     <MudStack Row="true">
                         <MudAvatar Size="Size.Small">
-                            <MudImage Src="@game.AwayTeamImage" />
+                        <MudImage Src="@game.Game.AwayTeamImage" />
                         </MudAvatar>
-                        @game.AwayTeam.TeamName
+                        @game.Game.AwayTeam.TeamName
                     </MudStack>
                 </MudTd>
 
                 <MudTd>
                     <MudStack Row="true">
                         <MudAvatar Size="Size.Small">
-                    <MudImage Src="@game.HomeTeamImage" />
+                    <MudImage Src="@game.Game.HomeTeamImage" />
                         </MudAvatar>
-                        @game.HomeTeam.TeamName
+                        @game.Game.HomeTeam.TeamName
                     </MudStack>
                 </MudTd>
 
-                <MudTd>@game.GameDetail.AwayTeamScore - @game.GameDetail.HomeTeamScore</MudTd>
-                <MudTd>@game.GameDetail.StartTime.ToString("hh:mm tt")</MudTd>
+                <MudTd>@game.Game.GameDetail.AwayTeamScore - @game.Game.GameDetail.HomeTeamScore</MudTd>
+                <MudTd>@game.Game.GameDetail.StartTime.ToString("hh:mm tt")</MudTd>
                 <MudTd>
-                    @if(game.GameStatus == GameStatus.Completed)
+                    @if (game.Game.GameStatus == GameStatus.Completed)
                     {
-                        @game.GameDetail.EndTime?.ToString("hh:mm tt")
+                        @game.Game.GameDetail.EndTime?.ToString("hh:mm tt")
                     }
                 </MudTd>
-                <MudTd>@Constants.GameStatus(game.GameStatus)</MudTd>
+                <MudTd>@Constants.GameStatus(game.Game.GameStatus)</MudTd>
                 <MudTd>
-                    @if(game.GameStatus is not GameStatus.Completed and not GameStatus.InProgress)
+                    @if (game.Game.GameStatus is not GameStatus.Completed and not GameStatus.InProgress)
                     {
                         @if(CanCreateGames)
                         {
-                            <MudLink Href="@($"{NavigateEditSportLineup}{game.Id}")" Target="_blank">
+                            <MudLink Href="@($"{NavigateEditSportLineup}{game.Game.Id}")" Target="_blank">
                                 <MudIcon Icon="@Icons.Material.Filled.EventNote" />
                             </MudLink>
                         }
@@ -407,7 +429,7 @@
                     {
                         if (CanReadGames)
                         {
-                    <MudLink Href="@($"{NavigateSportLineup}{game.Id}")" Target="_blank">
+                            <MudLink Href="@($"{NavigateSportLineup}{game.Game.Id}")" Target="_blank">
                                 <MudIcon Icon="@Icons.Material.Filled.EventNote" />
                             </MudLink>
                         }
@@ -416,17 +438,26 @@
                 <MudTd>
                     @if (CanUpdateGames)
                     {
-                <MudLink Href="@($"/updategame/{game.Id}")" Target="_blank">
+                        <MudLink Href="@($"/updategame/{game.Game.Id}")" Target="_blank">
                             <MudIcon Icon="@Icons.Material.Filled.Edit" />
                         </MudLink>
                     }
                 </MudTd>
                 <MudTd>
-                    @if(game.GameStatus is GameStatus.Completed or GameStatus.InProgress)
+                    @if (game.Game.GameStatus is GameStatus.Completed)
                     {
                         @if(CanReadStats){
-                            <MudLink Href="@($"{(editStats ? NavigateEditSportStats : NavigateSportStats)}{game.Id}")" Target="_blank">
+                            <MudLink Href="@($"{(editStats ? NavigateEditSportStats : NavigateSportStats)}{game.Game.Id}")" Target="_blank">
                                 <MudIcon Icon="@Icons.Material.Filled.QueryStats" />
+                            </MudLink>
+                        }
+                    }
+                    @if (game.Game.GameStatus is not GameStatus.Completed && game.LineupsExist)
+                    {
+                        @if (CanCreateStats)
+                        {
+                            <MudLink Href="@($"/simulatebaseballgame/{game.Game.Id}")" Target="_blank">
+                                <MudIcon Icon="@Icons.Material.Filled.PlayCircle" />
                             </MudLink>
                         }
                     }

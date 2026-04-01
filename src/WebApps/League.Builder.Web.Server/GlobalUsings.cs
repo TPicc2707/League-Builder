@@ -24,3 +24,4 @@ global using League.Builder.Web.Server.Services.Cache;
 global using League.Builder.Web.Server.Persistence;
 global using Amazon.S3;
 global using FluentValidation;
+global using League.Builder.Web.Server.Extensions;

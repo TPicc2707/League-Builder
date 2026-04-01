@@ -57,6 +57,7 @@ builder.Services.AddScoped<KeycloakTokenService>();
 builder.Services.AddScoped<ErrorState>();
 builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<StatsSubmissionService>();
+builder.Services.AddScoped<IGameSimulatorService, GameSimulatorService>();
 builder.Services.AddScoped<IAWSService, AWSService>();
 builder.Services.AddScoped<ISupportService, SupportService>();
 builder.Services.AddScoped<ILeagueLocalCacheService, LeagueLocalCacheService>();

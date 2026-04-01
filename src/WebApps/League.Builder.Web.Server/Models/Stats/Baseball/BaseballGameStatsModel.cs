@@ -61,27 +61,65 @@ public class BaseballGameStatsModel
     public Guid GameId { get; set; }
     public string PlayerName { get; set; }
     public string Position { get; set; }
-    public int AtBats { get; set; }
-    public int Hits { get; set; }
-    public int TotalBases { get; set; }
-    public int Runs { get; set; }
-    public int Doubles { get; set; }
-    public int Triples { get; set; }
-    public int HomeRuns { get; set; }
-    public int RunsBattedIn { get; set; }
-    public int StolenBases { get; set; }
-    public int Strikeouts { get; set; }
-    public int Walks { get; set; }
-    public int HitByPitch { get; set; }
-    public int SacrificeFly { get; set; }
-    public int Wins { get; set; }
-    public int Losses { get; set; }
-    public int PitchingRuns { get; set; }
+    public int AtBats { get; set; } = 0;
+    public int Hits { get; set; } = 0;
+    public int TotalBases { get; set; } = 0;
+    public int Runs { get; set; } = 0;
+    public int Doubles { get; set; } = 0;
+    public int Triples { get; set; } = 0;
+    public int HomeRuns { get; set; } = 0;
+    public int RunsBattedIn { get; set; } = 0;
+    public int StolenBases { get; set; } = 0;
+    public int Strikeouts { get; set; } = 0;
+    public int Walks { get; set; } = 0;
+    public int HitByPitch { get; set; } = 0;
+    public int SacrificeFly { get; set; } = 0;
+    public int Wins { get; set; } = 0;
+    public int Losses { get; set; } = 0;
+    public int PitchingRuns { get; set; } = 0;
     public bool Start { get; set; }
-    public int Saves { get; set; }
+    public int Saves { get; set; } = 0;
     public decimal Innings { get; set; }
-    public int HitsAllowed { get; set; }
-    public int WalksAllowed { get; set; }
-    public int PitchingStrikeouts { get; set; }
+    public int HitsAllowed { get; set; } = 0;
+    public int WalksAllowed { get; set; } = 0;
+    public int PitchingStrikeouts { get; set; } = 0;
+    public int OutsRecorded { get; set; } = 0;
+    public decimal InningsPitched
+    {
+        get
+        {
+            int fullInnings = OutsRecorded / 3;
+            int remainderOuts = OutsRecorded % 3;
+            return fullInnings + (remainderOuts * 0.1m);
+        }
+    }
 
+    public decimal CombinedBattingAverage(BaseballHittingTotalsModel season)
+    {
+        int totalAB = season.AtBats + AtBats;
+        int totalHits = season.Hits + Hits;
+        return totalAB == 0 ? 0 : Math.Round((decimal)totalHits / totalAB, 3);
+    }
+
+    public decimal CombinedOnBasePercentage(BaseballHittingTotalsModel season)
+    {
+        int totalPA =
+            (season.AtBats + AtBats) +
+            (season.Walks + Walks) +
+            (season.HBPs + HitByPitch) +
+            (season.SFs + SacrificeFly);
+
+        if (totalPA == 0)
+            return 0;
+
+        int totalOnBase =
+            (season.Hits + Hits) +
+            (season.Walks + Walks) +
+            (season.HBPs + HitByPitch);
+
+        return Math.Round((decimal)totalOnBase / totalPA, 3);
+    }
+
+    public int BattingOrderPosition { get; set; }
+    public string BattingOrderDisplay { get; set; } = "";
 }

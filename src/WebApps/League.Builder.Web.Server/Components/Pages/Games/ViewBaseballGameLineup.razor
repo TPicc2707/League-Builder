@@ -16,24 +16,24 @@
     <Authorized>
         @if (PageLoad)
         {
-            <MudItem Style="padding-top: 50px;">
-                <MudPaper Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+            <MudItem Class="pt-12">
+                <MudPaper Class="border border-solid p-25" Style="border-color: #000000;">
                     <MudText Typo="Typo.h5" Align="Align.Center" Style="font-weight:bold">@AwayTeam.Team.TeamName vs @HomeTeam.Team.TeamName Lineups</MudText>
                 </MudPaper>
             </MudItem>
-            <MudItem Style="padding-top: 25px;">
-                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+            <MudItem Class="pt-4">
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid p-25" Style="border-color: #000000;">
                     <MudTabPanel Text="@AwayTeam.Team.TeamName">
-                         <MudItem Style="padding-top: 25px;">
+                        <MudItem Class="pt-4">
                              <MudGrid>
-                                 <MudItem xs="12" md="12">
+                                 <MudItem xs="12">
                                      <MudStack Row="true">
-                                        <MudItem xs="6" md="6">
+                                        <MudItem xs="6">
                                             <LineupList Title="Lineup"
                                                         Players="AwayLineup.Take(9)"
                                                         ItemText="@(p => $"{p.BattingOrderPosition}. {p.PlayerName}, {p.Position}")" />
                                         </MudItem>
-                                        <MudItem xs="6" md="6">
+                                        <MudItem xs="6">
                                             <LineupList Title="Bench"
                                                         Players="AwayLineup.Skip(9)"
                                                         ItemText="@(p => $"{p.PlayerName}, {p.Position}")" />
@@ -49,24 +49,24 @@
                          </MudItem>
                     </MudTabPanel>
                     <MudTabPanel Text="@HomeTeam.Team.TeamName">
-                        <MudItem Style="padding-top: 25px;">
+                        <MudItem Class="pt-4">
                             <MudGrid>
-                                <MudItem xs="12" md="12">
+                                <MudItem xs="12">
                                     <MudStack Row="true">
-                                        <MudItem xs="6" md="6">
+                                        <MudItem xs="6">
                                             <LineupList Title="Lineup"
-                                                        Players="AwayLineup.Take(9)"
+                                                        Players="HomeLineup.Take(9)"
                                                         ItemText="@(p => $"{p.BattingOrderPosition}. {p.PlayerName}, {p.Position}")" />
                                         </MudItem>
-                                        <MudItem xs="6" md="6">
+                                        <MudItem xs="6">
                                             <LineupList Title="Bench"
-                                                        Players="AwayLineup.Skip(9)"
+                                                    Players="HomeLineup.Skip(9)"
                                                         ItemText="@(p => $"{p.PlayerName}, {p.Position}")" />
                                         </MudItem>
                                     </MudStack>
                                     <LineupList Title="Starting Pitcher"
                                                 Players="AwayPitchers"
-                                                ItemText="@(p => AwayLineupResponse.GameLineup.BaseballLineup.StartingPitcher == p.Id
+                                                ItemText="@(p => HomeLineupResponse.GameLineup.BaseballLineup.StartingPitcher == p.Id
                                                             ? $"{p.FirstName} {p.LastName} Starter"
                                                             : $"{p.FirstName} {p.LastName}")" />
                                 </MudItem>

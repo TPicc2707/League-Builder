@@ -22,5 +22,4 @@ public class BaseballHittingTotalsModel
     public decimal Slugging { get; set; }
     public decimal OBP { get; set; }
     public decimal OPS { get; set; }
-
 }
