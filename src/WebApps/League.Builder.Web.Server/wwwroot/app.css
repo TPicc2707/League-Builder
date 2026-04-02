@@ -92,3 +92,114 @@ w-200 {width: 200px !important;}
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+.clean-boxscore-table .mud-table-cell{
+    padding: 4px 8px;
+    font-size: .85rem;
+}
+
+.clean-boxscore-table .mud-table-header{
+    font-weight: 600;
+    font-size: .8rem;
+}
+
+.clean-boxscore-table .mud-table{
+    border-color: #ccc !important
+}
+
+.boxscore-panel{
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    background-color: #fafafa;
+}
+
+.boxscore-header {
+    font-weight: 600;
+    color: white;
+}
+
+.boxscore-tabs .mud-tab {
+    padding: 4px 12px !important;
+    min-height: 32px !important;
+    font-size: .85rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+    .boxscore-tabs .mud-tab.mud-tab-active {
+        color: #000;
+    }
+
+.boxscore-tabs .mud-tabs-toolbar {
+    border-bottom: 1px solid #d0d0d0;
+}
+
+.boxscore-tabs {
+    margin-bottom: 8px;
+}
+
+.boxscore-tabs .mud-tab.mud-tab-active {
+    border-bottom: 3px solid var(--team-color);
+}
+
+.diamond-container {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto;
+}
+
+.base {
+    width: 18px;
+    height: 18px;
+    background-color: white;
+    border: 2px solid #000;
+    transform: rotate(45deg);
+    position: absolute;
+}
+
+    .base.occupied {
+        background-color: #4caf50;
+    }
+
+/* 2nd base (top) */
+.second {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+}
+
+/* 3rd base (left) */
+.third {
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+/* 1st base (right) */
+.first {
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+/* Home plate (bottom) */
+.home-base {
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 28px;
+    background: white;
+    border: 2px solid #000;
+    /* MLB home plate proportions */
+    /* Corrected outer edges */
+    clip-path: polygon( 30% 0%, /* top left */
+    70% 0%, /* top right */
+    85% 35%, /* right shoulder (flatter + shorter) */
+    50% 100%, /* bottom point */
+    15% 35% /* left shoulder (flatter + shorter) */
+    );
+}
+

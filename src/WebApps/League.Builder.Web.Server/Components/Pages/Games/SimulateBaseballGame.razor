@@ -12,9 +12,17 @@
 @inject ITeamLocalCacheService TeamLocalCache
 @inject ILeagueService LeagueService
 @inject ILeagueLocalCacheService LeagueLocalCache
+@inject IStandingsService StandingsService
+@inject IStandingsLocalCacheService StandingsLocalCache
 @inject ISnackbar Snackbar
 @inject ImageService ImageService
 
+@* <style>
+    :root {
+        --team-color: @CurrentTeamColor;
+    }
+</style>
+ *@
 @if (PageLoad)
 {
     <AuthorizeView Roles="@Roles.CreateStats" Context="auth">
@@ -198,14 +206,20 @@
                         <div class="d-flex justify-space-between">
                             <div>
                                 <MudText Typo="Typo.h6" Class="font-bold">Batter</MudText>
-                                <MudText>@CurrentBatter?.PlayerName</MudText>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <PlayerAvatar Image="@CurrentBatter?.PlayerImage" />
+                                    <MudText>@CurrentBatter?.PlayerName</MudText>
+                                </MudStack>
                                 <MudText Class="text-body2">
                                     (@CurrentBatter?.Hits - @CurrentBatter?.AtBats), @CurrentBatter?.RunsBattedIn RBI, @CurrentBatter?.Runs R
                                 </MudText>
                             </div>
                             <div>
                                 <MudText Typo="Typo.h6" Class="font-bold">Pitcher</MudText>
-                                <MudText>@CurrentPitcher?.PlayerName</MudText>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <PlayerAvatar Image="@CurrentPitcher?.PlayerImage" />
+                                    <MudText>@CurrentPitcher?.PlayerName</MudText>
+                                </MudStack>                                
                                 <MudText Class="text-body2">
                                     @CurrentPitcher?.Innings IP,
                                     @CurrentPitcher?.HitsAllowed H, 
@@ -215,75 +229,109 @@
                             </div>
                         </div>
                     </MudPaper>
-                    <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2">
-                        <PlayerAvatar Image="@CurrentBattingTeamImage" />
-                        <MudText Typo="Typo.h5" Class="mb-0">
-                            @CurrentBattingTeamName Batting
-                        </MudText>
-                    </MudStack>
-                    <MudTable Items="CurrentBattingStats" Dense="true" Hover="true" Class="mb-4 border border-solid" Style="border-color: #000000;">
-                        <HeaderContent>
-                            <MudTh>#</MudTh>
-                            <MudTh>Player</MudTh>
-                            <MudTh>AB</MudTh>
-                            <MudTh>H</MudTh>
-                            <MudTh>RBI</MudTh>
-                            <MudTh>R</MudTh>
-                            <MudTh>BB</MudTh>
-                            <MudTh>K</MudTh>
-                            <MudTh>AVG</MudTh>
-                            <MudTh>OBP</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd>@context.BattingOrderDisplay</MudTd>
-                            <MudTd>@context.PlayerName</MudTd>
-                            <MudTd><MudText Style="margin-left: 5px; font-size: .875rem;">@context.AtBats</MudText></MudTd>
-                            <MudTd>@context.Hits</MudTd>
-                            <MudTd><MudText Style="margin-left: 7px; font-size: .875rem;">@context.RunsBattedIn</MudText></MudTd>
-                            <MudTd>@context.Runs</MudTd>
-                            <MudTd><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Walks</MudText></MudTd>
-                            <MudTd>@context.Strikeouts</MudTd>
-                            <MudTd><MudText Style="font-size: .875rem;">@context.CombinedBattingAverage(SeasonTotals[context.PlayerId]).ToString("0.000")</MudText></MudTd>
-                            <MudTd><MudText Style="font-size: .875rem;">@context.CombinedOnBasePercentage(SeasonTotals[context.PlayerId]).ToString("0.000")</MudText></MudTd>
-                        </RowTemplate>
-                    </MudTable>
-
-                    @if (BoxScoreNotes.Any())
+                    <MudPaper Class="pa-4 mb-4 border border-solid" Style="border-color: #000000">
+                        <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-2">Base Runners</MudText>
+                        <div class="diamond-container">
+                            <div class="base third @((SimState?.Runners.ThirdOccupied ?? false) ? "occupied" : "")"></div>
+                            <div class="base second @((SimState?.Runners.SecondOccupied ?? false) ? "occupied" : "")"></div>
+                            <div class="base first @((SimState?.Runners.FirstOccupied ?? false) ? "occupied" : "")"></div>
+                            <div class="home-base"></div>
+                        </div>
+                    </MudPaper>
+                    <MudTabs @bind-ActivePanelIndex="activeTeamTab" Rounded="true" Centered="true" Class="boxscore-tabs" Color="Color.Primary">
+                        <MudTabPanel Text="@GameByIdResponse.Game.AwayTeam.TeamName" />
+                        <MudTabPanel Text="@GameByIdResponse.Game.HomeTeam.TeamName" />
+                    </MudTabs>
+                    @if(activeBoxTab == 0)
                     {
-                        <MudPaper Class="pa-3 my-3 border border-solid" Elevation="0" Style="border-color: #000000;">
-                            <MudText Typo="Typo.subtitle2" Class="mb-1">Game Notes</MudText>
-
-                            @foreach (var note in BoxScoreNotes)
+                        <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Class="my-2" Spacing="2">
+                            <PlayerAvatar Image="@(activeTeamTab == 0 ? GameByIdResponse.Game.AwayTeamImage : GameByIdResponse.Game.HomeTeamImage)" />
+                            <MudText Typo="Typo.h5" Class="mb-0">
+                                @(activeTeamTab == 0 ? GameByIdResponse.Game.AwayTeam.TeamName : GameByIdResponse.Game.HomeTeam.TeamName) Batting
+                            </MudText>
+                        </MudStack>
+                        <MudTable Items="activeTeamTab == 0 ? AwayBattingStats : HomeBattingStats" Dense="true" Hover="true" Class="mb-4 border border-solid clean-boxscore-table" Style="border-color: #000000;">
+                            <HeaderContent>
+                                <MudTh>#</MudTh>
+                                <MudTh>Player</MudTh>
+                                <MudTh>AB</MudTh>
+                                <MudTh>H</MudTh>
+                                <MudTh>RBI</MudTh>
+                                <MudTh>R</MudTh>
+                                <MudTh>BB</MudTh>
+                                <MudTh>K</MudTh>
+                                <MudTh>AVG</MudTh>
+                                <MudTh>OBP</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.BattingOrderDisplay</MudTd>
+                                <MudTd>@context.PlayerName</MudTd>
+                                <MudTd><MudText Style="margin-left: 5px; font-size: .875rem;">@context.AtBats</MudText></MudTd>
+                                <MudTd>@context.Hits</MudTd>
+                                <MudTd><MudText Style="margin-left: 7px; font-size: .875rem;">@context.RunsBattedIn</MudText></MudTd>
+                                <MudTd>@context.Runs</MudTd>
+                                <MudTd><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Walks</MudText></MudTd>
+                                <MudTd>@context.Strikeouts</MudTd>
+                                <MudTd><MudText Style="font-size: .875rem;">@context.CombinedBattingAverage(SeasonTotals[context.PlayerId]).ToString("0.000")</MudText></MudTd>
+                                <MudTd><MudText Style="font-size: .875rem;">@context.CombinedOnBasePercentage(SeasonTotals[context.PlayerId]).ToString("0.000")</MudText></MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                        @if(activeTeamTab == 0)
+                        {
+                            @if (AwayBoxScoreNotes.Any())
                             {
-                                <MudText Typo="Typo.body2">@note</MudText>
+                                <MudDivider Class="my-3" />
+                                <MudPaper Class="pa-3 my-3 border border-solid boxscore-panel" Elevation="0" Style="border-color: #000000;">
+                                    <MudText Typo="Typo.subtitle2" Class="mb-1 boxscore-header">Game Notes</MudText>
+                                    @foreach (var note in AwayBoxScoreNotes)
+                                    {
+                                        <MudText Typo="Typo.body2" Class="mb-1">@note</MudText>
+                                    }
+                                </MudPaper>
                             }
-                        </MudPaper>
-                    }
+                        }
+                        else
+                        {
+                            @if (HomeBoxScoreNotes.Any())
+                            {
+                                <MudDivider Class="my-3" />
 
-                    <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="2">
-                        <PlayerAvatar Image="@CurrentBattingTeamImage" />
-                        <MudText Typo="Typo.h5" Class="mb-0">
-                            @CurrentBattingTeamName Pitching
-                        </MudText>
-                    </MudStack>
-                    <MudTable Items="CurrentPitchingStats" Dense="true" Hover="true" Class="mb-4 border border-solid" Style="border-color: #000000;">
-                        <HeaderContent>
-                            <MudTh>Player</MudTh>
-                            <MudTh>IP</MudTh>
-                            <MudTh>H</MudTh>
-                            <MudTh>R</MudTh>
-                            <MudTh>BB</MudTh>
-                            <MudTh>K</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd>@context.PlayerName</MudTd>
-                            <MudTd><MudText Style="font-size: .875rem;">@context.Innings</MudText></MudTd>
-                            <MudTd>@context.HitsAllowed</MudTd>
-                            <MudTd>@context.PitchingRuns</MudTd>
-                            <MudTd><MudText Style="margin-left: 5px; font-size: .875rem;">@context.WalksAllowed</MudText></MudTd>
-                            <MudTd>@context.PitchingStrikeouts</MudTd>
-                        </RowTemplate>
-                    </MudTable>
+                                <MudPaper Class="pa-3 my-3 border border-solid boxscore-panel" Elevation="0" Style="border-color: #000000;">
+                                    <MudText Typo="Typo.subtitle2" Class="mb-1 boxscore-header">Game Notes</MudText>
+                                    @foreach (var note in HomeBoxScoreNotes)
+                                    {
+                                        <MudText Typo="Typo.body2" Class="mb-1">@note</MudText>
+                                    }
+                                </MudPaper>
+                            }
+
+                        }
+
+                        <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Class="my-2" Spacing="2">
+                            <PlayerAvatar Image="@(activeTeamTab == 0 ? GameByIdResponse.Game.AwayTeamImage : GameByIdResponse.Game.HomeTeamImage)" />
+                            <MudText Typo="Typo.h5" Class="mb-0">
+                                @(activeTeamTab == 0 ? GameByIdResponse.Game.AwayTeam.TeamName : GameByIdResponse.Game.HomeTeam.TeamName) Pitching
+                            </MudText>
+                        </MudStack>
+                        <MudTable Items="activeTeamTab == 0 ? AwayPitchingStats : HomePitchingStats" Dense="true" Hover="true" Class="mb-4 border border-solid clean-boxscore-table" Style="border-color: #000000;">
+                            <HeaderContent>
+                                <MudTh>Player</MudTh>
+                                <MudTh>IP</MudTh>
+                                <MudTh>H</MudTh>
+                                <MudTh>R</MudTh>
+                                <MudTh>BB</MudTh>
+                                <MudTh>K</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.PlayerName</MudTd>
+                                <MudTd><MudText Style="font-size: .875rem;">@context.Innings</MudText></MudTd>
+                                <MudTd>@context.HitsAllowed</MudTd>
+                                <MudTd>@context.PitchingRuns</MudTd>
+                                <MudTd><MudText Style="margin-left: 5px; font-size: .875rem;">@context.WalksAllowed</MudText></MudTd>
+                                <MudTd>@context.PitchingStrikeouts</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
                 </MudPaper>
             }
         </Authorized>
@@ -315,6 +363,7 @@ else
     private GetPlayerBaseballStatsBySeasonResponse AwayPlayerStatsResponse { get; set; }
     private GetPlayerBaseballStatsBySeasonResponse HomePlayerStatsResponse { get; set; }
     private GetSeasonByIdResponse SeasonByIdResponse { get; set; }
+    private GetStandingsByTeamResponse StandingsResponse { get; set; }
     private List<LineupListItem> HomeLineup = new();
     private List<LineupListItem> AwayLineup = new();
     Dictionary<Guid, BaseballHittingTotalsModel> SeasonTotals = new();
@@ -329,14 +378,14 @@ else
     private List<Guid> HomeBench = new();
     private List<Guid> AwayBench = new();
     private bool GameCompleted = false;
+    private int activeTeamTab = 0;
+    private int activeBoxTab = 0;
 
-    private IEnumerable<BaseballGameStatsModel> CurrentBattingStats
+    private IEnumerable<BaseballGameStatsModel> AwayBattingStats
     {
         get
         {
-            var order = SimState?.TopOfInning == true
-                ? SimState.AwayBattingOrder
-                : SimState.HomeBattingOrder;
+            var order = SimState.AwayBattingOrder;
 
             var list = new List<BaseballGameStatsModel>();
 
@@ -360,11 +409,39 @@ else
         }
     }
 
-    private IEnumerable<string> BoxScoreNotes
+    private IEnumerable<BaseballGameStatsModel> HomeBattingStats
     {
         get
         {
-            var stats = CurrentBattingStats;
+            var order = SimState.HomeBattingOrder;
+
+            var list = new List<BaseballGameStatsModel>();
+
+            for (int i = 0; i < order.Count; i++)
+            {
+                var slot = order[i];
+
+                for (int j = 0; j < slot.Count; j++)
+                {
+                    var id = slot[j];
+                    var stats = GameStats[id];
+
+                    stats.BattingOrderPosition = i + 1;
+                    stats.BattingOrderDisplay = j == 0 ? (i + 1).ToString() : "";
+
+                    list.Add(stats);
+                }
+            }
+
+            return list.OrderBy(x => x.BattingOrderPosition);
+        }
+    }
+
+    private IEnumerable<string> AwayBoxScoreNotes
+    {
+        get
+        {
+            var stats = AwayBattingStats;
 
             var notes = new List<string>();
 
@@ -386,10 +463,37 @@ else
         }
     }
 
-    private IEnumerable<BaseballGameStatsModel> CurrentPitchingStats =>
-    SimState?.TopOfInning == true
-        ? GetPitchingStats(SimState.AwayPitchersUsed)
-        : GetPitchingStats(SimState.HomePitchersUsed);
+    private IEnumerable<string> HomeBoxScoreNotes
+    {
+        get
+        {
+            var stats = HomeBattingStats;
+
+            var notes = new List<string>();
+
+            foreach (var s in stats)
+            {
+                var parts = new List<string>();
+
+                if (s.TotalBases > 0)
+                    parts.Add($"{s.TotalBases} TB(s)");
+
+                if (s.HitByPitch > 0)
+                    parts.Add($"{s.HitByPitch} HBP(s)");
+
+                if (parts.Count > 0)
+                    notes.Add($"{s.PlayerName}: {string.Join(", ", parts)}");
+            }
+
+            return notes;
+        }
+    }
+
+    private IEnumerable<BaseballGameStatsModel> AwayPitchingStats =>
+        GetPitchingStats(SimState.AwayPitchersUsed);
+
+    private IEnumerable<BaseballGameStatsModel> HomePitchingStats =>
+        GetPitchingStats(SimState.HomePitchersUsed);
 
     private string CurrentBattingTeamName =>
         SimState?.TopOfInning == true
@@ -408,6 +512,12 @@ else
             GameStats.Values.FirstOrDefault(s => s.PlayerId == SimState.CurrentPitcherId);
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadAllAsync();
+        PageLoad = true;
+    }
+
+    private async Task LoadAllAsync()
     {
         var gameId = Guid.Parse(Id);
         GameByIdResponse = await LoadGameAsync(gameId);
@@ -434,10 +544,6 @@ else
 
         AwayLineup.Sort((a, b) => a.BattingOrderPosition.CompareTo(b.BattingOrderPosition));
         HomeLineup.Sort((a, b) => a.BattingOrderPosition.CompareTo(b.BattingOrderPosition));
-
-
-        // BaseballPositions = Constants.BaseballPositions();
-        PageLoad = true;
     }
 
     private void BuildLineup(
@@ -505,7 +611,7 @@ else
     }
 
 
-    private void BuildGameStats()
+    private async Task BuildGameStats()
     {
         GameStats.Clear();
 
@@ -521,13 +627,15 @@ else
                 p.LastName,
                 p.PlayerDetail.Position
             );
+            GameStats[p.Id].PlayerImage = await ImageService.GetPlayerImageAsync(LeagueByIdResponse.League, p.TeamId == AwayTeamByIdResponse.Team.Id ? AwayTeamByIdResponse.Team : HomeTeamByIdResponse.Team, p);
         }
     }
 
     private async Task StartSimulation()
     {
+        PageLoad = false;
         await LoadSeasonTotalsAsync();
-        BuildGameStats();
+        await BuildGameStats();
 
         SimState = GameSimService.StartGame(
             HomeLineupResponse.GameLineup,
@@ -536,6 +644,12 @@ else
             GameStats
         );
 
+        AssignBench();
+        PageLoad = true;
+    }
+
+    private void AssignBench()
+    {
         SimState.AwayBullpen = AwayPlayers.Players.Where(p => p.PlayerDetail.Position == PositionFilter.BASEBALL && p.Id != SimState.AwayPitcherId).Select(p => p.Id).ToList();
         SimState.HomeBullpen = HomePlayers.Players.Where(p => p.PlayerDetail.Position == PositionFilter.BASEBALL && p.Id != SimState.HomePitcherId).Select(p => p.Id).ToList();
         SimState.HomeBenchPlayers = HomeBench;
@@ -553,7 +667,7 @@ else
 
         SimState = GameSimService.SimulateNextAtBat(SimState, GameStats);
 
-        Console.WriteLine("ENGINE SimState Hash: " + SimState.GetHashCode());
+
         StateHasChanged();
         PageLoad = true;
     }
@@ -597,12 +711,24 @@ else
     private async Task SaveGame()
     {
         PageLoad = false;
+        await CreateGameStats();
+
+        await CompleteGame();
+
+        Snackbar.Add("Game stats saved!", MudBlazor.Severity.Success);
+
+        GameCompleted = true;
+        PageLoad = true;
+    }
+
+    private async Task CreateGameStats()
+    {
         var winner = GameSimService.DetermineWinningPitcher(SimState);
         var loser = GameSimService.DetermineLosingPitcher(SimState);
         var homeStarter = SimState?.HomePitchersUsed.OrderBy(x => x.Value).First().Key;
         var awayStarter = SimState?.AwayPitchersUsed.OrderBy(x => x.Value).First().Key;
 
-        foreach(var kvp in GameStats)
+        foreach (var kvp in GameStats)
         {
             var playerId = kvp.Key;
             var stats = kvp.Value;
@@ -624,22 +750,68 @@ else
 
             await StatService.CreateBaseballStats(new CreateBaseballStatsRequest(createStat));
         }
+    }
 
-        var record = new UpdateGameRecord(GameByIdResponse.Game.Id, 
-                                           GameByIdResponse.Game.LeagueId, 
-                                           SimState.AwayScore > SimState.HomeScore ? GameByIdResponse.Game.AwayTeam.Id : GameByIdResponse.Game.HomeTeam.Id, 
-                                           GameByIdResponse.Game.SeasonId,
-                                           new GameDetailModel(SimState.AwayScore, SimState.HomeScore, GameByIdResponse.Game.GameDetail.StartTime, DateTime.Now),
-                                           GameByIdResponse.Game.AwayTeam,
-                                           GameByIdResponse.Game.HomeTeam,
-                                           (int)GameStatus.Completed);
+    private async Task CompleteGame()
+    {
+        var record = new UpdateGameRecord(GameByIdResponse.Game.Id,
+                                   GameByIdResponse.Game.LeagueId,
+                                   SimState.AwayScore > SimState.HomeScore ? GameByIdResponse.Game.AwayTeam.Id : GameByIdResponse.Game.HomeTeam.Id,
+                                   GameByIdResponse.Game.SeasonId,
+                                   new GameDetailModel(SimState.AwayScore, SimState.HomeScore, GameByIdResponse.Game.GameDetail.StartTime, GameByIdResponse.Game.GameDetail.StartTime.AddHours(2)),
+                                   GameByIdResponse.Game.AwayTeam,
+                                   GameByIdResponse.Game.HomeTeam,
+                                   (int)GameStatus.Completed);
 
         await GameService.UpdateGame(new UpdateGameRequest(record));
+        await ClearGameCache();
 
-        Snackbar.Add("Game stats saved!", MudBlazor.Severity.Success);
+        await UpdateTeamStandings(GameByIdResponse.Game.AwayTeam.Id, record);
+        await UpdateTeamStandings(GameByIdResponse.Game.HomeTeam.Id, record);
 
-        GameCompleted = true;
-        PageLoad = true;
+    }
+
+    private async Task ClearGameCache()
+    {
+        await GameLocalCache.DeleteGameByIdCache(Id);
+        await GameLocalCache.DeleteGamesByLeagueCache(GameByIdResponse.Game.LeagueId.ToString());
+        await GameLocalCache.DeleteGamesByTeamCache(GameByIdResponse.Game.AwayTeam.Id.ToString());
+        await GameLocalCache.DeleteGamesByTeamCache(GameByIdResponse.Game.HomeTeam.Id.ToString());
+
+    }
+
+    private async Task UpdateTeamStandings(Guid teamId, UpdateGameRecord game)
+    {
+        StandingsResponse = await LoadTeamStandingsAsync(teamId);
+
+        var currentStandings = StandingsResponse.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id);
+
+        var detail = new StandingsDetailModel(
+            currentStandings.StandingsDetail.GamesPlayed + 1,
+            game.WinningTeamId == teamId ? currentStandings.StandingsDetail.Wins + 1 : currentStandings.StandingsDetail.Wins,
+            game.WinningTeamId == teamId ? currentStandings.StandingsDetail.Losses : currentStandings.StandingsDetail.Losses + 1,
+            currentStandings.StandingsDetail.Ties,
+            currentStandings.StandingsDetail.PlayoffTeam,
+            currentStandings.StandingsDetail.Champion
+        );
+
+
+        var update = new UpdateStandingsModel(
+            currentStandings.Id,
+            game.LeagueId,
+            SeasonByIdResponse.Season.Id,
+            detail,
+            (int)currentStandings.StandingsStatus,
+            new TeamDetailModel(teamId, "")
+        );
+        await StandingsService.UpdateStandings(new(update));
+        await ClearStandingsCache(teamId, game);
+    }
+
+    private async Task ClearStandingsCache(Guid teamId, UpdateGameRecord game)
+    {
+        await StandingsLocalCache.DeleteStandingsByLeagueCache(game.LeagueId.ToString());
+        await StandingsLocalCache.DeleteStandingsByTeamCache(teamId.ToString());
     }
 
     private IEnumerable<BaseballGameStatsModel> GetPitchingStats(Dictionary<Guid, int> pitchersUsed)
@@ -714,6 +886,13 @@ else
             () => SeasonService.GetSeason(seasonId),
             (s) => SeasonLocalCache.SetSeasonByIdCache(seasonId.ToString(), s)
     );
+
+    private Task<GetStandingsByTeamResponse> LoadTeamStandingsAsync(Guid teamId) =>
+        DataLoader.GetOrLoad(
+            () => StandingsLocalCache.GetStandingsByTeamCache(teamId.ToString()),
+            () => StandingsService.GetStandingsByTeam(teamId),
+            (s) => StandingsLocalCache.SetStandingsByTeamCache(teamId.ToString(), s)
+        );
 
     public class LineupListItem
     {

@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace League.Builder.Web.Server.Models.Game;
 
@@ -8,6 +7,8 @@ public class UpdateGameModel
     public Guid LeagueId { get; set; }
     public Guid AwayTeamId { get; set; }
     public Guid HomeTeamId { get; set; }
+    public Guid OriginalAwayTeamId { get; set; }
+    public Guid OriginalHomeTeamId { get; set; }
     public Guid WinningTeamId { get; set; }
     public DateTime? StartDate { get; set; }
     public TimeSpan? StartTime { get; set; }

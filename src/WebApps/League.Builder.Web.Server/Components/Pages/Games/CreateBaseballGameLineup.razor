@@ -28,7 +28,7 @@
                                                   OnItemDropped="AwayLineupItemUpdated"
                                                   Pitchers="Away.Pitchers"
                                                   SelectedPitcher="Away.SelectedPitcher"
-                                                  SelectedPitcherChanged="@((Guid v) => Away.SelectedPitcher = v)"
+                                                  SelectedPitcherChanged="@((Guid? v) => Away.SelectedPitcher = v)"
                                                   OnSave="SaveAwayLineup"
                                                   IsLocked="Away.IsLocked" />
                         </MudTabPanel>
@@ -38,7 +38,7 @@
                                                   OnItemDropped="HomeLineupItemUpdated"
                                                   Pitchers="Home.Pitchers"
                                                   SelectedPitcher="Home.SelectedPitcher"
-                                                  SelectedPitcherChanged="@((Guid v) => Home.SelectedPitcher = v)"
+                                                  SelectedPitcherChanged="@((Guid? v) => Home.SelectedPitcher = v)"
                                                   OnSave="SaveHomeLineup"
                                                   IsLocked="Home.IsLocked" />
                         </MudTabPanel>
@@ -297,7 +297,7 @@
         public List<PlayerModel> Pitchers { get; set; } = new();
         public List<DropItem> Lineup { get; set; } = new();
         public bool IsLocked { get; set; }
-        public Guid SelectedPitcher {get; set;}
+        public Guid? SelectedPitcher {get; set;}
         public GetBaseballGameLineupByGameIdResponse ExistingLineup { get; set; }
         public AnyBaseballGameLineupByGameIdResponse ExistingCheck {get; set;}
     }

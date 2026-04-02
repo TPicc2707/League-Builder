@@ -28,7 +28,7 @@
         @if (PageLoad)
         {
             <TeamHeader Game="GameModel.Game" />
-            <MudItem style="margin-top: 50px; margin-bottom: 50px;">
+            <MudItem Class="my-12">
                 <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
                     <FluentValidationValidator @ref="fluentValidationValidator" />
                     <MudPaper Class="border border-solid game-card" Style="width: 100%;">
@@ -39,10 +39,10 @@
                                         <MudItem xs="12" sm="10">
                                             @Card(@<div>
                                                     @StepHeader(Icons.Material.Filled.SportsEsports, "Game Information")
-                                                    <MudSelect Required Disabled="isGameCompleted" Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
+                                                    <MudSelect Required Disabled="isGameCompleted || isGameInProgress" Class="mt-3" Label="Away Team" @bind-Value="model.AwayTeamId">
                                                         @TeamOptions
                                                     </MudSelect>
-                                                    <MudSelect Required Disabled="isGameCompleted" Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
+                                                    <MudSelect Required Disabled="isGameCompleted || isGameInProgress" Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
                                                         @TeamOptions
                                                     </MudSelect>
                                                 </div>)
@@ -66,11 +66,11 @@
                                                     <MudSelect Required Disabled="isGameCompleted" Class="mt-3" Label="Winning Team" @bind-Value="model.WinningTeamId">
                                                         @WinningTeamOptions
                                                     </MudSelect>
+                                                    <MudTextField Required Disabled="isGameCompleted" Label="@($"{AwayTeam.TeamName} Team Score")" Class="mt-3"
+                                                                  @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
+                                                    <MudTextField Required Disabled="isGameCompleted" Label="@($"{HomeTeam.TeamName} Team Score")" Class="mt-3"
+                                                                  @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
                                                 }
-                                                <MudTextField Required Disabled="isGameCompleted" Label="@($"{AwayTeam.TeamName} Team Score")" Class="mt-3"
-                                                    @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
-                                                <MudTextField Required Disabled="isGameCompleted" Label="@($"{HomeTeam.TeamName} Team Score")" Class="mt-3"
-                                                    @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
                                                 <MudSelect Required Disabled="isGameCompleted" Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
                                                     @GameStatusOptions
                                                 </MudSelect>
@@ -89,10 +89,13 @@
                                 <MudStep Title="Update Game Time">
                                     @Card(@<div>
                                         @StepHeader(Icons.Material.Filled.AccessTime, "Game Time")
-                                        <MudDatePicker Required Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.StartDate" />
-                                        <MudTimePicker Required Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed ? true : false)" Class="mt-3" Label="Start Time" AmPm Editable @bind-Time="model.StartTime" />
-                                        <MudDatePicker Required="@(model.GameStatus == GameStatus.Completed)" Disabled="isGameCompleted" Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.EndDate" />
-                                        <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed)" Disabled="isGameCompleted" Class="mt-3" Label="End Time" AmPm Editable @bind-Time="model.EndTime" />
+                                        <MudDatePicker Required Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed)" Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.StartDate" />
+                                        <MudTimePicker Required Disabled="@(model.GameStatus == GameStatus.InProgress || model.GameStatus == GameStatus.Completed)" Class="mt-3" Label="Start Time" AmPm Editable @bind-Time="model.StartTime" />
+                                        @if(isGameCompleted)
+                                        {
+                                            <MudDatePicker Required="@(model.GameStatus == GameStatus.Completed)" Disabled="isGameCompleted" Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.EndDate" />
+                                            <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed)" Disabled="isGameCompleted" Class="mt-3" Label="End Time" AmPm Editable @bind-Time="model.EndTime" />
+                                        }
                                         </div>)
                                 </MudStep>
                                 <MudStep Title="Review">
@@ -106,23 +109,27 @@
                                                 <MudSelect Required ReadOnly Class="mt-3" Label="Home Team" @bind-Value="model.HomeTeamId">
                                                     @TeamOptions
                                                 </MudSelect>
-                                                @if (model.GameStatus == GameStatus.Completed)
+                                                @if (isGameCompleted)
                                                 {
                                                     <MudSelect Required ReadOnly Class="mt-3" Label="Winning Team" @bind-Value="model.WinningTeamId">
                                                         @WinningTeamOptions
                                                     </MudSelect>
+                                                    <MudTextField Required ReadOnly Label="@($"{AwayTeam.TeamName} Team Score")" Class="mt-3"
+                                                                  @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
+                                                    <MudTextField Required ReadOnly Label="@($"{HomeTeam.TeamName} Team Score")" Class="mt-3"
+                                                                  @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
+
                                                 }
-                                                <MudTextField Required ReadOnly Label="@($"{AwayTeam.TeamName} Team Score")" Class="mt-3"
-                                                              @bind-Value="model.AwayTeamScore" For="@(() => model.AwayTeamScore)" />
-                                                <MudTextField Required ReadOnly Label="@($"{HomeTeam.TeamName} Team Score")" Class="mt-3"
-                                                              @bind-Value="model.HomeTeamScore" For="@(() => model.HomeTeamScore)" />
                                                 <MudSelect Required ReadOnly Class="mt-3" Label="Game Status" @bind-Value="model.GameStatus">
                                                     @GameStatusOptions
                                                 </MudSelect>
                                                 <MudDatePicker Required ReadOnly Class="mt-3" Label="Start Date" DateFormat="MM/dd/yyyy" Editable="true" @bind-Date="model.StartDate" />
                                                 <MudTimePicker Required ReadOnly Class="mt-3" Label="Start Time" AmPm Editable @bind-Time="model.StartTime" />
-                                                <MudDatePicker Required="@(model.GameStatus == GameStatus.Completed)" ReadOnly Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.EndDate" />
-                                                <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed)" ReadOnly Class="mt-3" Label="End Time" AmPm Editable @bind-Time="model.EndTime" />,                                               
+                                                @if(isGameCompleted)
+                                                {
+                                                    <MudDatePicker Required="@(model.GameStatus == GameStatus.Completed)" ReadOnly Class="mt-3" Label="End Date" DateFormat="MM/dd/yyyy" Editable @bind-Date="model.EndDate" />
+                                                    <MudTimePicker Required="@(model.GameStatus == GameStatus.Completed)" ReadOnly Class="mt-3" Label="End Time" AmPm Editable @bind-Time="model.EndTime" />
+                                                }
                                                 </div>,
                                                 @<MudButton Disabled="isGameCompleted" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth="true">Update</MudButton>)
                                         </MudItem>
@@ -173,7 +180,10 @@
     private IEnumerable<TeamModel> TeamsInGame;
     private TeamModel AwayTeam;
     private TeamModel HomeTeam;
-    private bool isGameCompleted = false;
+    private bool isGameCompleted =>
+        GameModel.Game.GameStatus == GameStatus.Completed;
+    private bool isGameInProgress =>
+        GameModel.Game.GameStatus == GameStatus.InProgress;
     bool success;
     private int _index;
     private bool canProceed = false;
@@ -259,6 +269,8 @@
         model.LeagueId = g.LeagueId;
         model.AwayTeamId = g.AwayTeam.Id;
         model.HomeTeamId = g.HomeTeam.Id;
+        model.OriginalAwayTeamId = g.AwayTeam.Id;
+        model.OriginalHomeTeamId = g.HomeTeam.Id;
         model.AwayTeamScore = g.GameDetail.AwayTeamScore;
         model.HomeTeamScore = g.GameDetail.HomeTeamScore;
         model.GameStatus = g.GameStatus;
@@ -325,6 +337,11 @@
     private async Task OnStepInteraction(StepperInteractionEventArgs args)
     {
         canProceed = false;
+        if(GameModel.Game.GameStatus == GameStatus.Completed)
+        {
+            canProceed = true;
+            return;
+        }
         await ValidModel();
         if (args.Action == StepAction.Complete)
         {
@@ -367,21 +384,28 @@
 
             if (model.StartDate.HasValue)
             {
-                await ValidateTeamGameLimit(
-                    model.AwayTeamId,
-                    model.StartDate.Value.Year,
-                    LeagueResponse.League.TotalGamesPerSeason,
-                    result,
-                    nameof(UpdateGameModel.AwayTeamId)
+                if(model.OriginalAwayTeamId != model.AwayTeamId)
+                {
+                    await ValidateTeamGameLimit(
+                        model.AwayTeamId,
+                        model.StartDate.Value.Year,
+                        LeagueResponse.League.TotalGamesPerSeason,
+                        result,
+                        nameof(UpdateGameModel.AwayTeamId)
                 );
 
-                await ValidateTeamGameLimit(
-                   model.HomeTeamId,
-                   model.StartDate.Value.Year,
-                   LeagueResponse.League.TotalGamesPerSeason,
-                   result,
-                   nameof(UpdateGameModel.HomeTeamId)
-               );
+                }
+                if(model.OriginalHomeTeamId != model.HomeTeamId)
+                {
+                    await ValidateTeamGameLimit(
+                        model.HomeTeamId,
+                        model.StartDate.Value.Year,
+                        LeagueResponse.League.TotalGamesPerSeason,
+                        result,
+                        nameof(UpdateGameModel.HomeTeamId)
+                    );
+
+                }
             }
 
 
@@ -446,12 +470,13 @@
 
         var detail = new StandingsDetailModel(
             currentStandings.StandingsDetail.GamesPlayed + 1,
-            model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Wins + 1 : currentStandings.StandingsDetail.Wins,
+            model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Wins + 1 : currentStandings.StandingsDetail.Wins, 
             model.WinningTeamId == teamId ? currentStandings.StandingsDetail.Losses : currentStandings.StandingsDetail.Losses + 1,
             currentStandings.StandingsDetail.Ties,
             currentStandings.StandingsDetail.PlayoffTeam,
             currentStandings.StandingsDetail.Champion
         );
+
 
         var update = new UpdateStandingsModel(
             currentStandings.Id,
@@ -503,7 +528,7 @@
 
     private RenderFragment GameStatusOptions => __builder =>
     {
-        foreach (var status in Enum.GetValues<GameStatus>())
+        foreach (var status in Enum.GetValues<GameStatus>().Where(x => x != GameStatus.Completed))
         {
             <MudSelectItem Value="status">@status</MudSelectItem>
             ;
@@ -514,7 +539,7 @@
     {
         <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
             <MudIcon Icon="@icon" Color="Color.Secondary" Size="Size.Medium" />
-            <MudText Typo="Typo.h6" Style="font-weight: bold;">@title</MudText>
+            <MudText Typo="Typo.h6" Class="font-bold">@title</MudText>
         </MudStack>
         ;
     };

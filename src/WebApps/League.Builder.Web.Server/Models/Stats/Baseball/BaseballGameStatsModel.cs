@@ -60,6 +60,7 @@ public class BaseballGameStatsModel
     public Guid SeasonId { get; set; }
     public Guid GameId { get; set; }
     public string PlayerName { get; set; }
+    public string PlayerImage { get; set; }
     public string Position { get; set; }
     public int AtBats { get; set; } = 0;
     public int Hits { get; set; } = 0;

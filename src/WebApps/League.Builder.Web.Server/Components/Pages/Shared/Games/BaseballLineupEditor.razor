@@ -44,7 +44,7 @@
                 </ItemRenderer>
             </MudDropContainer>
             <MudPaper Class="ma-4 flex-grow-1 border border-solid" Style="border-color: #000000">
-                <MudList T="Guid" 
+                <MudList T="Guid?" 
                          @bind-SelectedValue="SelectedPitcher" 
                          SelectionMode="SelectionMode.SingleSelection" 
                          Color="Color.Secondary" 
@@ -54,7 +54,7 @@
                     </MudItem>
                     @foreach (var p in Pitchers)
                     {
-                        <MudListItem Text="@GetPitcherDisplay(p)" Value="@p.Id" />
+                        <MudListItem Text="@GetPitcherDisplay(p)" Value="@((Guid?)p.Id)" />
                     }
                 </MudList>
             </MudPaper>
@@ -85,10 +85,20 @@
     [Parameter] public List<DropItem> Lineup { get; set; }
     [Parameter] public EventCallback<MudItemDropInfo<DropItem>> OnItemDropped { get; set; }
     [Parameter] public List<PlayerModel> Pitchers { get; set; }
-    [Parameter] public Guid SelectedPitcher { get; set; }
-    [Parameter] public EventCallback<Guid> SelectedPitcherChanged { get; set; }
+    [Parameter] public Guid? SelectedPitcher { get => _selectedPitcher; 
+        set
+        {
+            if(_selectedPitcher != value)
+            {
+                _selectedPitcher = value;
+                SelectedPitcherChanged.InvokeAsync(value);
+            }    
+        }
+    }
+    [Parameter] public EventCallback<Guid?> SelectedPitcherChanged { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public bool IsLocked { get; set; }
+    private Guid? _selectedPitcher;
 
     private async Task HandleDrop(MudItemDropInfo<DropItem> dropInfo)
     {
@@ -97,7 +107,7 @@
 
     private string GetPitcherDisplay(PlayerModel p)
     {
-        return p.Id == SelectedPitcher
+        return SelectedPitcher.HasValue && p.Id == SelectedPitcher
             ? $"{p.FirstName} {p.LastName}, Starter"
             : $"{p.FirstName} {p.LastName}";
     }

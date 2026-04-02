@@ -42,7 +42,7 @@
                                     <LineupList Title="Starting Pitcher"
                                                 Players="AwayPitchers"
                                                 ItemText="@(p => AwayLineupResponse.GameLineup.BaseballLineup.StartingPitcher == p.Id
-                                                            ? $"{p.FirstName} {p.LastName} Starter"
+                                                            ? $"{p.FirstName} {p.LastName}, Starter"
                                                             : $"{p.FirstName} {p.LastName}")" />
                                  </MudItem>
                              </MudGrid>
@@ -65,9 +65,9 @@
                                         </MudItem>
                                     </MudStack>
                                     <LineupList Title="Starting Pitcher"
-                                                Players="AwayPitchers"
+                                                Players="HomePitchers"
                                                 ItemText="@(p => HomeLineupResponse.GameLineup.BaseballLineup.StartingPitcher == p.Id
-                                                            ? $"{p.FirstName} {p.LastName} Starter"
+                                                            ? $"{p.FirstName} {p.LastName}, Starter"
                                                             : $"{p.FirstName} {p.LastName}")" />
                                 </MudItem>
                             </MudGrid>
@@ -90,7 +90,7 @@
     [Parameter]
     public string Id { get; set; }
     private bool PageLoad = false;
-    private int benchNumber = 9; //number of players allowed in the lineup this will increment starting at 10
+    private int benchNumber = 10; //number of players allowed in the lineup this will increment starting at 10
     private GetGameByIdResponse GameByIdResponse { get; set; }
     private GetBaseballGameLineupByGameIdResponse AwayLineupResponse { get; set; }
     private GetBaseballGameLineupByGameIdResponse HomeLineupResponse { get; set; }
