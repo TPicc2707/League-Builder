@@ -22,7 +22,11 @@ builder.Services.AddKeycloakPolicies(ServiceName.PlayerService);
 
 var app = builder.Build();
 
-app.MapDefaultEndpoints();
+app.UseExceptionHandler(options => { });
+
+app.UseRouting();
+
+app.UseCors();
 
 app.UseAuthentication();
 
@@ -31,7 +35,7 @@ app.UseAuthorization();
 // Configure the HTTP request pipeline.
 app.UseApiServices();
 
-app.UseCors();
+app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

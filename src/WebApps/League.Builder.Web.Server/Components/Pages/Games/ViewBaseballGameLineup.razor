@@ -196,7 +196,7 @@
                     PlayerId = player.Id,
                     TeamId = teamId,
                     PlayerName = $"{player.FirstName} {player.LastName}",
-                    Position = player.PlayerDetail.Position,
+                    Position = BaseballPositions[player.PlayerDetail.Position],
                     BattingOrderPosition = ResolveBattingOrder(lineup, player.Id)
                 };
 

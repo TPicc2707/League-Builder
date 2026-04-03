@@ -17,23 +17,15 @@ public class AuthorizationHandler(IHttpContextAccessor httpContextAccessor, IDat
 
         if(httpContext is not null)
         {
-            var cookieManager = new ChunkingCookieManager();
-            var cookie = cookieManager.GetRequestCookie(httpContext, ".AspNetCore.Cookies");
+            var result = await httpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-            if (!string.IsNullOrEmpty(cookie))
+            var accessToken = result?.Properties?.GetTokenValue("access_token");
+
+            if (!string.IsNullOrWhiteSpace(accessToken))
             {
-                var dataProtector = dataProtectionProvider.CreateProtector("Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware",
-                CookieAuthenticationDefaults.AuthenticationScheme, "v2");
-                var ticketFormat = new TicketDataFormat(dataProtector);
-                var authTicket = ticketFormat.Unprotect(cookie);
-                var accessToken = authTicket?.Properties?.GetTokenValue("access_token");
-
-                if (!string.IsNullOrWhiteSpace(accessToken))
-                {
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                }
-
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             }
+
         }
 
         var response = await base.SendAsync(request, cancellationToken);

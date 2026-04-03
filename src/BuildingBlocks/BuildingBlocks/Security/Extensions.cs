@@ -13,7 +13,9 @@ public static class Extensions
                     configureOptions: options =>
                     {
                         options.RequireHttpsMetadata = false;
-                        options.Audience = "account";
+                        options.Audience = "league-builder-api";
+                        options.Authority = "http://localhost:8080/realms/LeagueRealm";
+                        options.RequireHttpsMetadata = false;
                     });
 
         return services;

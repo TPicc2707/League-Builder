@@ -46,7 +46,11 @@ builder.Services.AddKeycloakPolicies(ServiceName.LeagueService);
 
 var app = builder.Build();
 
-app.MapDefaultEndpoints();
+app.UseExceptionHandler(options => { });
+
+app.UseRouting();
+
+app.UseCors();
 
 app.UseAuthentication();
 
@@ -54,9 +58,7 @@ app.UseAuthorization();
 
 app.MapCarter();
 
-app.UseCors();
-
-app.UseExceptionHandler(options => { });
+app.MapDefaultEndpoints();
 
 app.MapHealthChecks("/healthz",
     new HealthCheckOptions

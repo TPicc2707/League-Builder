@@ -30,6 +30,10 @@ public class AuthController : ControllerBase
         var refreshToken = props.GetTokenValue("refresh_token");
         var expiresAt = props.GetTokenValue("expires_at");
 
+        Console.WriteLine($"expires_at raw: {expiresAt}");
+        Console.WriteLine($"refresh_token present: {!string.IsNullOrEmpty(refreshToken)}");
+        Console.WriteLine($"expiringSoon: {AuthorizationStatus.TokenIsExpiringSoon(expiresAt)}");
+
         if (string.IsNullOrEmpty(refreshToken))
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -48,7 +52,7 @@ public class AuthController : ControllerBase
 
         props.UpdateTokenValue("access_token", newTokens.AccessToken);
         props.UpdateTokenValue("refresh_token", newTokens.RefreshToken);
-        props.UpdateTokenValue("expires_At", newTokens.ExpiresAt);
+        props.UpdateTokenValue("expires_at", newTokens.ExpiresAt);
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, result.Principal, props);
 

@@ -148,7 +148,7 @@
                                 <MudTd>
                                     <MudStack Row="true">
                                         <PlayerAvatar Image="@GameByIdResponse.Game.AwayTeamImage" />
-                                        @GameByIdResponse.Game.AwayTeam.TeamName
+                                        @GameByIdResponse.Game.AwayTeam.TeamName <span>@AwayTeamRecord</span
                                     </MudStack>
                                 </MudTd>
                                 @foreach (var awayRuns in InningNumbers)
@@ -162,7 +162,7 @@
                                 <MudTd>
                                     <MudStack Row="true">
                                         <PlayerAvatar Image="@GameByIdResponse.Game.HomeTeamImage" />
-                                        @GameByIdResponse.Game.HomeTeam.TeamName
+                                        @GameByIdResponse.Game.HomeTeam.TeamName <span>@HomeTeamRecord</span>
                                     </MudStack>
                                 </MudTd>
                                 @foreach (var homeRuns in InningNumbers)
@@ -362,6 +362,8 @@ else
     private GetGameByIdResponse GameByIdResponse { get; set; }
     private GetPlayerBaseballStatsBySeasonResponse AwayPlayerStatsResponse { get; set; }
     private GetPlayerBaseballStatsBySeasonResponse HomePlayerStatsResponse { get; set; }
+    private GetStandingsByTeamResponse AwayTeamStandings {get; set;}
+    private GetStandingsByTeamResponse HomeTeamStandings {get; set;}
     private GetSeasonByIdResponse SeasonByIdResponse { get; set; }
     private GetStandingsByTeamResponse StandingsResponse { get; set; }
     private List<LineupListItem> HomeLineup = new();
@@ -505,11 +507,19 @@ else
             ? GameByIdResponse.Game.AwayTeamImage
             : GameByIdResponse.Game.HomeTeamImage;
 
+    private string AwayTeamRecord =>
+        $"( {AwayTeamStandings.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id).StandingsDetail.Wins} - {AwayTeamStandings.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id).StandingsDetail.Losses} )";
+
+    private string HomeTeamRecord =>
+        $"( {HomeTeamStandings.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id).StandingsDetail.Wins} - {HomeTeamStandings.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id).StandingsDetail.Losses} )";
+
+
     private BaseballGameStatsModel CurrentBatter =>
             GameStats.Values.FirstOrDefault(s => s.PlayerId == SimState.CurrentBatterId);
 
     private BaseballGameStatsModel CurrentPitcher =>
             GameStats.Values.FirstOrDefault(s => s.PlayerId == SimState.CurrentPitcherId);
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -524,6 +534,8 @@ else
         LeagueByIdResponse = await LoadLeagueAsync(GameByIdResponse.Game.LeagueId);
         AwayTeamByIdResponse = await LoadTeamAsync(GameByIdResponse.Game.AwayTeam.Id);
         HomeTeamByIdResponse = await LoadTeamAsync(GameByIdResponse.Game.HomeTeam.Id);
+        AwayTeamStandings = await LoadTeamStandingsAsync(AwayTeamByIdResponse.Team.Id);
+        HomeTeamStandings = await LoadTeamStandingsAsync(HomeTeamByIdResponse.Team.Id);
 
         GameByIdResponse.Game.AwayTeamImage = await ImageService.GetTeamImageAsync(LeagueByIdResponse.League, AwayTeamByIdResponse.Team);
         GameByIdResponse.Game.HomeTeamImage = await ImageService.GetTeamImageAsync(LeagueByIdResponse.League, HomeTeamByIdResponse.Team);
@@ -734,7 +746,7 @@ else
             var stats = kvp.Value;
 
             stats.Wins = playerId == winner ? 1 : 0;
-            stats.Losses = playerId == winner ? 1 : 0;
+            stats.Losses = playerId == loser ? 1 : 0;
             stats.Start = playerId == homeStarter || playerId == awayStarter;
             var createHittingStat = BuildHittingCreate(stats);
             var createPitchingStat = BuildPitchingCreate(stats);

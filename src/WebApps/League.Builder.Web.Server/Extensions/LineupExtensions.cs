@@ -17,6 +17,40 @@ public static class LineupExtensions
             new() { lineup.Ninth },
         };
     }
+
+    public static BaseballHittingTotalsModel ToSeasonTotals(
+        this IEnumerable<BaseballStatsModel> stats)
+    {
+        var totals = new BaseballHittingTotalsModel();
+
+        foreach (var s in stats)
+        {
+            totals.AtBats += s.HittingStats.AtBats;
+            totals.Runs += s.HittingStats.Runs;
+            totals.Hits += s.HittingStats.Hits;
+            totals.RBIs += s.HittingStats.RunsBattedIn;
+            totals.Walks += s.HittingStats.Walks;
+            totals.HBPs += s.HittingStats.HitByPitch;
+            totals.Strikeouts += s.HittingStats.Strikeouts;
+            totals.SBs += s.HittingStats.StolenBases;
+            totals.TBs += s.HittingStats.TotalBases;
+            totals.Doubles += s.HittingStats.Doubles;
+            totals.Triples += s.HittingStats.Triples;
+            totals.HomeRuns += s.HittingStats.HomeRuns;
+            totals.SFs += s.HittingStats.SacrificeFly;
+        }
+
+        // Derived stats
+        totals.BattingAverage = totals.AtBats == 0 ? 0 : (decimal)totals.Hits / totals.AtBats;
+        totals.Slugging = totals.AtBats == 0 ? 0 : (decimal)totals.TBs / totals.AtBats;
+        totals.OBP = totals.AtBats + totals.Walks + totals.HBPs == 0
+            ? 0
+            : (decimal)(totals.Hits + totals.Walks + totals.HBPs)
+              / (totals.AtBats + totals.Walks + totals.HBPs + totals.SFs);
+        totals.OPS = totals.Slugging + totals.OBP;
+
+        return totals;
+    }
 }
 
 public static class StatsToProbabilities
@@ -112,47 +146,5 @@ public static class StatsToProbabilities
             PTriple = pTriple,
             PHomer = pHr
         };
-    }
-}
-
-public static class GameStatsUpdater
-{
-    public static BaseballHittingTotalsModel ToSeasonTotals(
-    this IEnumerable<BaseballStatsModel> games)
-    {
-        var totals = new BaseballHittingTotalsModel();
-
-        foreach (var g in games)
-        {
-            totals.AtBats += g.HittingStats.AtBats;
-            totals.Runs += g.HittingStats.Runs;
-            totals.Hits += g.HittingStats.Hits;
-            totals.RBIs += g.HittingStats.RunsBattedIn;
-            totals.Walks += g.HittingStats.Walks;
-            totals.HBPs += g.HittingStats.HitByPitch;
-            totals.Strikeouts += g.HittingStats.Strikeouts;
-            totals.SBs += g.HittingStats.StolenBases;
-            totals.TBs += g.HittingStats.TotalBases;
-            totals.Doubles += g.HittingStats.Doubles;
-            totals.Triples += g.HittingStats.Triples;
-            totals.HomeRuns += g.HittingStats.HomeRuns;
-            totals.SFs += g.HittingStats.SacrificeFly;
-        }
-
-        // Derived stats
-        if (totals.AtBats > 0)
-        {
-            totals.BattingAverage = (decimal)totals.Hits / totals.AtBats;
-            totals.Slugging = (decimal)totals.TBs / totals.AtBats;
-        }
-
-        var plateAppearances = totals.AtBats + totals.Walks + totals.HBPs + totals.SFs;
-        if (plateAppearances > 0)
-        {
-            totals.OBP = (decimal)(totals.Hits + totals.Walks + totals.HBPs) / plateAppearances;
-            totals.OPS = totals.OBP + totals.Slugging;
-        }
-
-        return totals;
     }
 }

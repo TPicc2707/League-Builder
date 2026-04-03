@@ -38,17 +38,18 @@ public class KeycloakTokenService
             return null;
 
         var json = await response.Content.ReadAsStringAsync();
-        var doc = JsonDocument.Parse(json);
-        var accessToken = doc.RootElement.GetProperty("access_token").GetString();
-        var handler = new JwtSecurityTokenHandler();
-        var jwt = handler.ReadJwtToken(accessToken);
-        var expCliam = jwt.Claims.First(c => c.Type == "exp");
-        var expUtc = DateTimeOffset.FromUnixTimeSeconds(long.Parse(expCliam.Value)).UtcDateTime;
-
-        Console.WriteLine($"Expiration lives till: {expUtc:o}");
-
         var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(json);
-        tokenResponse.ComputeExpiresAt();
+
+        // Extract access token expiration from JWT
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(tokenResponse.AccessToken);
+
+        var expUnix = long.Parse(jwt.Claims.First(c => c.Type == "exp").Value);
+        var expUtc = DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime;
+
+        tokenResponse.ExpiresAt = expUtc.ToString("o");
+
+        Console.WriteLine($"Access token expires at: {tokenResponse.ExpiresAt}");
 
         return tokenResponse;
     }

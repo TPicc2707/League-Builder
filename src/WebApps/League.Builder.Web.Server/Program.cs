@@ -32,6 +32,7 @@ builder.Services.AddAuthentication(options =>
     options.ClientSecret = builder.Configuration.GetSection("KeycloakSecret").Value;
     options.ResponseType = OpenIdConnectResponseType.Code;
     options.RequireHttpsMetadata = false;
+    options.Authority = builder.Configuration.GetSection("KeycloakAuthority").Value;
     options.TokenValidationParameters.NameClaimType = JwtRegisteredClaimNames.Name;
     options.SaveTokens = true;
     options.UseTokenLifetime = false;
