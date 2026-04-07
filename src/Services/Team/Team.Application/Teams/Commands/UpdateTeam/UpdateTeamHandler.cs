@@ -41,6 +41,7 @@ public class UpdateTeamHandler(IApplicationDbContext dbContext, IPublishEndpoint
             teamAddress: updatedTeamAddress,
             description: teamDto.Description,
             imageFile: teamDto.ImageFile,
+            teamColor: teamDto.TeamColor,
             status: teamDto.TeamStatus,
             teamManager: updatedTeamManager);
     }

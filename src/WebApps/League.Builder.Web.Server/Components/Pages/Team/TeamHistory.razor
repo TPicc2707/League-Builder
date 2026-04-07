@@ -22,7 +22,7 @@
     <AuthorizeView Roles="@String.Concat(Roles.ReadTeams, ", ", Roles.ReadGames)" Context="auth">
         <Authorized>
             <MudItem Class="pt-24">
-                <MudItem xs="12" Class="pb-6">
+                <MudItem xs="12" Class="mt-12 pb-6">
                     @Card(@<div>
                             <TeamHistoryHeader Team="@TeamByIdResponse.Team"
                                                Wins="@TotalWins"
@@ -31,7 +31,8 @@
                 </MudItem>
             </MudItem>
             <MudItem>
-                <TeamHistoryTable Rows="@TeamStandingsResponse.Standings.OrderByDescending(x => x.Year)" />
+                <TeamHistoryTable Rows="@TeamStandingsResponse.Standings.OrderByDescending(x => x.Year)"
+                                  TeamColor="@TeamByIdResponse.Team.TeamColor"/>
             </MudItem>
         </Authorized>
         <NotAuthorized>

@@ -121,7 +121,6 @@
                 (s) => SeasonLocalCache.SetSeasonsCache(s)
             );
 
-
             Season = SeasonsModel.Seasons.First();
             seasonValue = Season.Year;
 
@@ -388,7 +387,7 @@
                 <MudTh></MudTh>
             </HeaderContent>
             <RowTemplate Context="game">
-                <MudTd>
+                <MudTd Class="@(game.Game.GameDetail.AwayTeamScore < game.Game.GameDetail.HomeTeamScore ? "team-lost" : "")">
                     <MudStack Row="true">
                         <MudAvatar Size="Size.Small">
                         <MudImage Src="@game.Game.AwayTeamImage" />
@@ -397,7 +396,7 @@
                     </MudStack>
                 </MudTd>
 
-                <MudTd>
+                <MudTd Class="@(game.Game.GameDetail.HomeTeamScore < game.Game.GameDetail.AwayTeamScore ? "team-lost" : "")">
                     <MudStack Row="true">
                         <MudAvatar Size="Size.Small">
                     <MudImage Src="@game.Game.HomeTeamImage" />

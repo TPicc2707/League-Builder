@@ -173,11 +173,11 @@
         address = String.Concat(PlayerModel.Player.PlayerAddress.AddressLine, ", ", PlayerModel.Player.PlayerAddress.State, ", ", PlayerModel.Player.PlayerAddress.ZipCode);
 
 
-        BuildRows();
+        await BuildRows();
         Calculate(StatsModel.BasketballStats);
     }
 
-    private void BuildRows()
+    private async Task BuildRows()
     {
         PlayerStats.Clear();
         foreach(var stat in StatsModel.BasketballStats)
@@ -187,7 +187,14 @@
             ? game.AwayTeam.TeamName
             : game.HomeTeam.TeamName;
 
-            PlayerStats.Add(new PlayerStatRecord(opposingTeam, stat));
+            var team = game.AwayTeam.Id != PlayerModel.Player.TeamId
+            ? await TeamService.GetTeamById(game.AwayTeam.Id)
+            : await TeamService.GetTeamById(game.HomeTeam.Id);
+
+            var teamImage = await ImageService.GetTeamImageAsync(LeagueModel.League, team.Team);
+
+
+            PlayerStats.Add(new PlayerStatRecord(opposingTeam, teamImage, stat));
         }
     }
 

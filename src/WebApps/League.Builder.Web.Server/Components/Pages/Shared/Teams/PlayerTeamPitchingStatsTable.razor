@@ -1,19 +1,19 @@
 ﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
     <HeaderContent>
-        <MudTh Class="mud-theme-primary font-bold"></MudTh>
-        <MudTh Class="mud-theme-primary font-bold">Name</MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.TotalGamesPlayed">GP</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.TotalPitchingStarts">GS</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.EarnedRunAverage">ERA</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Wins">W</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Losses">L</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Saves">SV</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Innings">IP</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.HitsAllowed">H</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Runs">R</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.WalksAllowed">BB</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.PitchingStrikeouts">K</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.WalksHitsPerInning">WHIP</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">Name</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.TotalGamesPlayed">GP</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.TotalPitchingStarts">GS</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.EarnedRunAverage">ERA</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Wins">W</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Losses">L</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Saves">SV</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Innings">IP</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.HitsAllowed">H</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.Runs">R</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.WalksAllowed">BB</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.PitchingStrikeouts">K</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(PlayerStatsRecord x) => x.BaseballStatsModel.PitchingStatsModel.WalksHitsPerInning">WHIP</MudTableSortLabel></MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="">
@@ -37,4 +37,5 @@
 
 @code {
     [Parameter] public IEnumerable<PlayerStatsRecord> Rows { get; set; }
+    [Parameter] public string TeamColor { get; set; }
 }

@@ -42,6 +42,19 @@
                                                 @StepHeader(Icons.Material.Filled.Info, "Team Information")
                                                 <MudTextField Required Label="Team Name" HelperText="Max. 150 characters"
                                                               @bind-Value="model.TeamName" For="@(() => model.TeamName)" Clearable/>
+                                                <MudSelect Required AdornmentColor="Color.Primary" Class="mt-3" Label="Color" @bind-Value="model.TeamColor">
+                                                    @foreach (var colors in Constants.Colors())
+                                                    {
+                                                        <MudSelectItem Value="@colors.Value">
+                                                            <div class="d-flex align-center">
+                                                                <div style="@($"background-color: {colors.Value}; width: 20px; height: 20px; margin-right: 10px; border-radius: 4px;")"></div>
+                                                                <MudText>
+                                                                    @colors.Key
+                                                                </MudText>
+                                                            </div>
+                                                        </MudSelectItem>
+                                                    }
+                                                </MudSelect>
                                                 <MudSelect Required="true" Class="mt-3" Label="League" @bind-Value="leagueId">
                                                     @foreach (var league in LeaguesResponse.Leagues.Where(l => l.Id == leagueId))
                                                     {
@@ -112,6 +125,19 @@
                                                 @StepHeader(Icons.Material.Filled.RemoveRedEye, "Review")
                                                     <MudTextField Required Label="Team Name" HelperText="Max. 50 characters"
                                                                   @bind-Value="model.TeamName" For="@(() => model.TeamName)" ReadOnly />
+                                                    <MudSelect Required AdornmentColor="Color.Primary" Class="mt-3" Label="Color" @bind-Value="model.TeamColor" ReadOnly>
+                                                        @foreach (var colors in Constants.Colors())
+                                                        {
+                                                            <MudSelectItem Value="@colors.Value">
+                                                                <div class="d-flex align-center">
+                                                                    <div style="@($"background-color: {colors.Value}; width: 20px; height: 20px; margin-right: 10px; border-radius: 4px;")"></div>
+                                                                    <MudText>
+                                                                        @colors.Key
+                                                                    </MudText>
+                                                                </div>
+                                                            </MudSelectItem>
+                                                        }
+                                                    </MudSelect>
                                                     <MudSelect Required Class="mt-3" Label="League" @bind-Value="leagueId" ReadOnly>
                                                         @foreach (var league in LeaguesResponse.Leagues.Where(l => l.Id == leagueId))
                                                         {
@@ -266,7 +292,7 @@
     {
         Models.Team.AddressModel address = new Models.Team.AddressModel(model.FirstName, model.LastName, model.EmailAddress, model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
         Models.Team.ManagerModel manager = new Models.Team.ManagerModel(model.ManagerFirstName, model.ManagerFirstName, model.ManagerEmailAddress);
-        CreateTeamRequest request = new CreateTeamRequest(new CreateTeamRecord(leagueId, model.TeamName, address, model.Description, model.ImageFile, manager));
+        CreateTeamRequest request = new CreateTeamRequest(new CreateTeamRecord(leagueId, model.TeamName, address, model.Description, model.ImageFile, model.TeamColor, manager));
         return await TeamService.CreateTeam(request);
     }
 

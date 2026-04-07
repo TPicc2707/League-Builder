@@ -220,32 +220,32 @@
     ;
 
     private RenderFragment ManagementPanel =>@<MudExpansionPanels>
-        <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000">
+    <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000">
             <TitleContent>
                 <MudText Typo="Typo.h5" Align="Align.Center" Class="font-bold">Management</MudText>
             </TitleContent>
             <ChildContent>
                 <MudStack Row="true">
                     <MudItem xs="6">
-                        <MudCard Class="border border-solid" Style="border-color: #000000">
+                    <MudCard Class="border border-solid" Style="border-color: #000000">
                             <MudCardContent>
                                 <MudStack Row="true" AlignItems="AlignItems.Center">
                                     <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Size="Size.Medium" />
                                     <MudText Typo="Typo.body1" Class="font-bold">Team Admin: </MudText>
                                     <MudText Typo="Typo.body1" Class="font-bold">@Team.Team.TeamAddress.FirstName @Team.Team.TeamAddress.LastName</MudText>
-                                    <MudIconButton Href="@AdminMailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                                    <MudIconButton Href="@AdminMailUrl" Icon="@Icons.Material.Filled.Email" Style="@($"color: {Team.Team.TeamColor}")" />
                                 </MudStack>
                             </MudCardContent>
                         </MudCard>
                     </MudItem>
                     <MudItem xs="6">
-                        <MudCard Class="border border-solid" Style="border-color: #000000">
+                    <MudCard Class="border border-solid" Style="border-color: #000000">
                             <MudCardContent>
                                 <MudStack Row="true" AlignItems="AlignItems.Center">
                                     <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Medium" />
                                     <MudText Typo="Typo.body1" Class="font-bold">Team Manager: </MudText>
                                     <MudText Typo="Typo.body1" Class="font-bold">@Team.Team.TeamManager.FirstName @Team.Team.TeamManager.LastName</MudText>
-                                    <MudIconButton Href="@ManagerMailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                                    <MudIconButton Href="@ManagerMailUrl" Icon="@Icons.Material.Filled.Email" Style="@($"color: {Team.Team.TeamColor}")" />
                                 </MudStack>
                             </MudCardContent>
                         </MudCard>
@@ -256,13 +256,13 @@
     </MudExpansionPanels>;
 
     private RenderFragment ManagementCard(string icon, string label, string name, string mailUrl) =>@<MudItem xs="6">
-            <MudCard Class="border border-solid" Style="border-color: #000000">
+    <MudCard Class="border border-solid" Style="border-color: #000000">
                 <MudCardContent>
                     <MudStack Row="true" AlignItems="AlignItems.Center">
                         <MudIcon Icon="@icon" Size="Size.Medium" />
                         <MudText Typo="Typo.body1" Class="font-bold">@label: </MudText>
                         <MudText Typo="Typo.body1" Class="font-bold">@name</MudText>
-                        <MudIconButton Href="@mailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                        <MudIconButton Href="@mailUrl" Icon="@Icons.Material.Filled.Email" Style="@($"color: {Team.Team.TeamColor}")" />
                     </MudStack>
                 </MudCardContent>
             </MudCard>
@@ -271,7 +271,7 @@
 
 
     private RenderFragment PlayersPanel =>@<MudExpansionPanels>
-        <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000">
+    <MudExpansionPanel Expanded="true" Class="border border-solid" Style="border-color: #000000">
             <TitleContent>
                 <MudText Typo="Typo.h5" Align="Align.Center" Class="font-bold">Players</MudText>
             </TitleContent>
@@ -299,29 +299,28 @@
                       Class="border border-solid"
                       Style="border-color: #000000">
                       <ToolBarContent>
-                           @if(canCreate)
+                        @if (canCreate && !IsTeamMaxOnPlayers)
                           {
                             <MudStack Justify="Justify.FlexStart">
                                 <MudButton Href="@($"/createplayer/{Id}")"
                                                 Variant="Variant.Filled"
-                                                Color="Color.Primary"
-                                                Style="width: 200px;">
+                                                Style="@($"background-color: {Team.Team.TeamColor}; width: 200px;")">
                                         Create
                                 </MudButton>
                             </MudStack>
                           }
                       </ToolBarContent>
                       <HeaderContent>
-                        <MudTh Class="mud-theme-primary font-bold"></MudTh>
-                        <MudTh Class="mud-theme-primary font-bold">
+                        <MudTh Class="font-bold" Style="@($"background-color: {Team.Team.TeamColor}")"></MudTh>
+                        <MudTh Class="font-bold" Style="@($"background-color: {Team.Team.TeamColor}")">
                             <MudTableSortLabel T="PlayerModel" SortBy="x => x.FirstName">First Name</MudTableSortLabel>
                         </MudTh>
-                        <MudTh Class="mud-theme-primary font-bold">
+                        <MudTh Class="font-bold" Style="@($"background-color: {Team.Team.TeamColor}")">
                             <MudTableSortLabel T="PlayerModel" SortBy="x => x.LastName">Last Name</MudTableSortLabel>
                         </MudTh>
-                        <MudTh Class="mud-theme-primary font-bold">Position</MudTh>
-                        <MudTh Class="mud-theme-primary font-bold">Location</MudTh>
-                        <MudTh Class="mud-theme-primary font-bold"></MudTh>
+                        <MudTh Class="font-bold" Style="@($"background-color: {Team.Team.TeamColor}")">Position</MudTh>
+                        <MudTh Class="font-bold" Style="@($"background-color: {Team.Team.TeamColor}")">Location</MudTh>
+                        <MudTh Class="font-bold" Style="@($"background-color: {Team.Team.TeamColor}")"></MudTh>
                       </HeaderContent>
                       <RowTemplate>
                         <MudTd>
@@ -347,7 +346,7 @@
                             {
                                 <MudTooltip Text="Update" Color="Color.Secondary">
                                     <MudIconButton Icon="@Icons.Material.Filled.Update"
-                                                    Color="Color.Tertiary"
+                                                    Style="@($"color: {Team.Team.TeamColor}")"
                                                     Href="@($"/updateplayer/{context.Id}")" />
                                 </MudTooltip>
                             }
@@ -384,7 +383,7 @@
             {
                 <MudTooltip Text="Update" Color="Color.Secondary">
                     <MudIconButton Icon="@Icons.Material.Filled.Update"
-                                   Color="Color.Tertiary"
+                                   Style="@($"color: {Team.Team.TeamColor}")"
                                    Href="@($"/updateplayer/{player.Id}")" />
                 </MudTooltip>
             }
@@ -393,8 +392,8 @@
 
     private RenderFragment PlayerNameLink(PlayerModel player, string text) => @<AuthorizeView Roles="@Roles.ReadStats" Context="statsAuth">
         <Authorized>
-            <MudTooltip Text="Player Details" Color="Color.Secondary">
-                <MudLink Color="Color.Tertiary" Href="@GetStatLink(player)">
+            <MudTooltip Text="Player Details" Style="@($"color: {Team.Team.TeamColor}")">
+            <MudLink Style="@($"color: {Team.Team.TeamColor} !important")" Href="@GetStatLink(player)">
                     @text
                 </MudLink>
             </MudTooltip>

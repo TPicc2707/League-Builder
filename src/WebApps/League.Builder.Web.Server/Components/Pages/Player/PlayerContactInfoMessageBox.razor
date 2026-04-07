@@ -1,29 +1,33 @@
 ﻿@using League.Builder.Web.Server.Services.Cache
 @inject IPlayerService PlayerService
+@inject ITeamService TeamService
 @inject NavigationManager NavManager;
 @inject IPlayerLocalCacheService PlayerLocalCache
+@inject ITeamLocalCacheService TeamLocalCache
 
-<MudDialog>
-    <TitleContent>
-        <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Primary" Style="font-weight: bold;">Contact Info</MudText>
-    </TitleContent>
-    <DialogContent>
-        @if (DataLoad)
-        {
+@if (DataLoad)
+{
+    <MudDialog>
+        <TitleContent>
+            <MudText Align="Align.Center" Typo="Typo.h4" Class="font-bold" Style="@($"color: {TeamModel.Team.TeamColor} !important")">Contact Info</MudText>
+        </TitleContent>
+        <DialogContent>
             <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
-                <MudIconButton Href="@MailUrl" Icon="@Icons.Material.Filled.Email" Color="Color.Primary" />
+                <MudIconButton Href="@MailUrl" Icon="@Icons.Material.Filled.Email" Style="@($"color: {TeamModel.Team.TeamColor} !important")" />
                 <MudText Typo="Typo.h6">@PlayerModel.Player.PlayerDetail.EmailAddress</MudText>
             </MudStack>
             <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
-                <MudIcon Icon="@Icons.Material.Filled.Phone" Color="Color.Primary" />
+                <MudIcon Icon="@Icons.Material.Filled.Phone" Style="@($"color: {TeamModel.Team.TeamColor} !important")" />
                 <MudText Typo="Typo.h6">@PlayerModel.Player.PlayerDetail.PhoneNumber</MudText>
             </MudStack>
-        }
-    </DialogContent>
-    <DialogActions>
-        <MudButton Color="Color.Primary" OnClick="Ok">Ok</MudButton>
-    </DialogActions>
-</MudDialog>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Style="@($"background-color: {TeamModel.Team.TeamColor} !important")" OnClick="Ok">Ok</MudButton>
+        </DialogActions>
+    </MudDialog>
+    
+}
+
 @code {
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; }
@@ -34,15 +38,20 @@
     private string MailUrl = string.Empty;
 
     GetPlayerByIdResponse PlayerModel { get; set; }
+    GetTeamByIdResponse TeamModel { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        PlayerModel = await PlayerLocalCache.GetPlayerByIdCache(Id.ToString());
-        if(PlayerModel == null)
-        {
-            PlayerModel = await PlayerService.GetPlayerById(Id);
-            await PlayerLocalCache.SetPlayerByIdCache(PlayerModel, Id.ToString());
-        }
+        PlayerModel = await DataLoader.GetOrLoad(
+            () => PlayerLocalCache.GetPlayerByIdCache(Id.ToString()),
+            () => PlayerService.GetPlayerById(Id),
+            (p) => PlayerLocalCache.SetPlayerByIdCache(p, Id.ToString())
+        );
+        TeamModel = await DataLoader.GetOrLoad(
+            () => TeamLocalCache.GetTeamByIdCache(PlayerModel.Player.TeamId.ToString()),
+            () => TeamService.GetTeamById(PlayerModel.Player.TeamId),
+            (t) => TeamLocalCache.SetTeamByIdCache(PlayerModel.Player.TeamId.ToString(), t)
+        );
         MailUrl = $"mailto:{PlayerModel.Player.PlayerDetail.EmailAddress}?subject=MessageTitle&amp;body=Message Content";
         DataLoad = true;
     }

@@ -38,19 +38,60 @@
                         </TitleContent>
                         <ChildContent>
                             <MudStack Justify="Justify.FlexStart" Row="true" Class="pt-6">
-                                <MudItem xs="6">
-                                    <MudSelect @bind-Value="seasonValue" Placeholder="@placeholder" Label="@placeholder">
-                                        @foreach (var season in SeasonsModel.Seasons)
-                                        {
-                                            <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                <MudItem xs="7">
+                                    <style>
+                                        .team-popover .mud-list-item:hover,
+                                        .team-popover .mud-list-item.mud-selected-item {
+                                            background-color: @(TeamModel.Team.TeamColor) !important;
+                                            color: white !important;
                                         }
-                                    </MudSelect>
+
+                                        .team-popover:focus-within .mud-input-label {
+                                            color: @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select:hover .mud-input-label {
+                                            color: @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select .mud-input-label.mud-focused {
+                                            color: @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select:focus-within .mud-input-label{
+                                            color: @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select:hover .mud-input-underline:before {
+                                            border-bottom: 2px solid @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select .mud-input-underline:after {
+                                            border-bottom: 2px solid @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select.mud-input-root .mud-input-underline:after {
+                                            border-bottom-color: @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+
+                                    </style>
+                                    <div class="team-select">
+                                        <MudSelect @bind-Value="seasonValue"
+                                                   Placeholder="@placeholder"
+                                                   Label="@placeholder" PopoverClass="team-popover">
+                                            @foreach (var season in SeasonsModel.Seasons)
+                                            {
+                                                <MudSelectItem Value="@season.Year">@season.Year</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </div>
                                 </MudItem>
-                                <MudItem xs="3">
+                                <MudItem xs="2">
 
                                 </MudItem>
                                 <MudItem xs="3" Class="p-3" Style="align-content: center;">
-                                    <MudButton Disabled="@(seasonValue <= 0)" OnClick="GetSeasonGames" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                    <MudButton Disabled="@(seasonValue <= 0)" OnClick="GetSeasonGames" Variant="Variant.Filled" Class="ml-auto" Style="@($"background-color: {TeamModel.Team.TeamColor}; width: 200px;")">Search</MudButton>
                                 </MudItem>
                             </MudStack>
 
@@ -58,7 +99,7 @@
                     </MudExpansionPanel>
                 </MudExpansionPanels>
             </MudItem>
-            <MudItem>
+            <MudItem Class="my-4">
                 <MudPaper Elevation="2" Class="border border-solid p-25" Style="border-color: #000000;">
                     <MudItem>
                         <MudTable Items="@Games.OrderBy(x => x.GameDetail.StartTime)" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
@@ -68,12 +109,12 @@
                                 <col />
                             </ColGroup>
                             <HeaderContent>
-                                <MudTh Class="mud-theme-primary font-bold">Date</MudTh>
-                                <MudTh Class="mud-theme-primary font-bold">Time</MudTh>
-                                <MudTh Class="mud-theme-primary font-bold">Opponent</MudTh>
-                                <MudTh Class="mud-theme-primary font-bold">Outcome</MudTh>
-                                <MudTh Class="mud-theme-primary font-bold">Score</MudTh>
-                                <MudTh Class="mud-theme-primary font-bold">Record</MudTh>
+                                <MudTh Class="font-bold" Style="@($"background-color: {TeamModel.Team.TeamColor}")">Date</MudTh>
+                                <MudTh Class="font-bold" Style="@($"background-color: {TeamModel.Team.TeamColor}")">Time</MudTh>
+                                <MudTh Class="font-bold" Style="@($"background-color: {TeamModel.Team.TeamColor}")">Opponent</MudTh>
+                                <MudTh Class="font-bold" Style="@($"background-color: {TeamModel.Team.TeamColor}")">Outcome</MudTh>
+                                <MudTh Class="font-bold" Style="@($"background-color: {TeamModel.Team.TeamColor}")">Score</MudTh>
+                                <MudTh Class="font-bold" Style="@($"background-color: {TeamModel.Team.TeamColor}")">Record</MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd DataLabel="Date">
@@ -285,6 +326,15 @@
             (l) => LeagueLocalCache.SetLeagueByIdCache(leagueId.ToString(), l)
     );
 
+    string ToRgb(string hex)
+    {
+        hex = hex.Replace("#", "");
+        var r = int.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+        var g = int.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+        var b = int.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
+        return $"{r},{g},{b}";
+    }
+
     private record OpponentView(Guid Id, string TeamName, string Image);
 
     private RenderFragment OpponentCell(GameModel game) =>@<MudStack Row="true" Spacing="2">
@@ -297,7 +347,7 @@
         </MudAvatar>
         @if(CanUpdateGames)
         {
-            <MudLink Color="Color.Tertiary" Href="@($"/{editSport}{game.Id}")">
+            <MudLink Style="@($"color: {TeamModel.Team.TeamColor} !important")" Href="@($"/{editSport}{game.Id}")">
                 @opponent.TeamName
             </MudLink>
         }

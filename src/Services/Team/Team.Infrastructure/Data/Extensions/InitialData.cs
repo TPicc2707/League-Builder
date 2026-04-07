@@ -32,6 +32,7 @@ internal class InitialData
                                                   teamAddress: address1,
                                                   "We love playing baseball.",
                                                   "team.png",
+                                                  "#ffffff",
                                                   manager1);
 
             var team2 = Domain.Models.Team.Create(TeamId.Of(new Guid("7dc0013c-f09b-4e47-b4dc-b63161f8f055")),
@@ -40,6 +41,7 @@ internal class InitialData
                                                   teamAddress: address2,
                                                   "We love playing baseball.",
                                                   "team.png",
+                                                  "#ffffff",
                                                   manager2);
 
             var team3 = Domain.Models.Team.Create(TeamId.Of(new Guid("063770fb-5651-49bd-a04e-74687df1bd57")),
@@ -47,6 +49,7 @@ internal class InitialData
                                                   TeamName.Of("Eagles"),
                                                   teamAddress: address3,
                                                   "We love playing football.",
+                                                  "#ffffff",
                                                   "team.png",
                                                   manager3);
 
@@ -55,6 +58,7 @@ internal class InitialData
                                                   TeamName.Of("Pirates"),
                                                   teamAddress: address4,
                                                   "We love playing football.",
+                                                  "#ffffff",
                                                   "team.png",
                                                   manager4);
 
@@ -63,6 +67,7 @@ internal class InitialData
                                                   TeamName.Of("Cardinals"),
                                                   teamAddress: address5,
                                                   "We love playing baseball.",
+                                                  "#ffffff",
                                                   "team.png",
                                                   manager5);
 

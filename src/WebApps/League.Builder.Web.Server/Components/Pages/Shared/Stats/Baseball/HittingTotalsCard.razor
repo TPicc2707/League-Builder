@@ -5,17 +5,17 @@
             <MudCard Class="border border-solid" Style="border-color: #000000">
                 <MudCardHeader>
                     <CardHeaderContent>
-                        <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@card.Label</MudText>
+                        <MudText Style="@($"color: {TeamColor} !important")" Align="Align.Center" Typo="Typo.h4">@card.Label</MudText>
                     </CardHeaderContent>
                 </MudCardHeader>
                 <MudCardContent>
-                    <MudText Color="Color.Tertiary" Align="Align.Center" Typo="Typo.h4">@card.Value</MudText>
+                    <MudText Align="Align.Center" Typo="Typo.h4">@card.Value</MudText>
                 </MudCardContent>
                 <MudCardActions Style="justify-content: end;">
                     <MudButton Variant="Variant.Text" 
-                               Color="Color.Tertiary" 
+                               Style="@($"color: {TeamColor} !important")"
                                OnClick="@(() => OnInfoClick.InvokeAsync(card.Description))">
-                               <MudIcon Size="Size.Small" Color="Color.Tertiary" Icon="@Icons.Material.Filled.Info" />
+                        <MudIcon Size="Size.Small" Style="@($"color: {TeamColor} !important")" Icon="@Icons.Material.Filled.Info" />
                     </MudButton>
                 </MudCardActions>
             </MudCard>
@@ -26,8 +26,8 @@
 @code {
     [Parameter] public BaseballHittingTotalsModel Totals {get; set;}
     [Parameter] public EventCallback<string> OnInfoClick { get; set; }
-
-        private IEnumerable<(string Label, string Value, string Description)> Cards =>
+    [Parameter] public string TeamColor { get; set; }
+    private IEnumerable<(string Label, string Value, string Description)> Cards =>
             new[]
             {
                 ("Average", Totals.BattingAverage.ToString("#.000"), BaseballStatDescriptions.Average),

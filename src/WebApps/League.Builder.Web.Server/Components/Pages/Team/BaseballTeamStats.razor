@@ -40,38 +40,98 @@
                         </TitleContent>
                         <ChildContent>
                             <MudStack Justify="Justify.FlexStart" Row="true" Class="pt-6">
-                                <MudItem xs="6">
-                                    <MudSelect @bind-Value="seasonValue" Placeholder="@seasonPlaceholder" Label="@seasonPlaceholder">
-                                        @foreach (var season in SeasonsModel.Seasons)
-                                        {
-                                            <MudSelectItem Value="season.Year">@season.Year</MudSelectItem>
+                                <MudItem xs="7">
+                                    <style>
+                                        .team-popover .mud-list-item:hover,
+                                        .team-popover .mud-list-item.mud-selected-item {
+                                            background-color: @(TeamModel.Team.TeamColor) !important;
+                                            color: white !important;
                                         }
-                                    </MudSelect>
+
+                                        .team-popover:focus-within .mud-input-label {
+                                            color: @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select:hover .mud-input-label {
+                                            color: @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select .mud-input-label.mud-focused {
+                                            color: @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select:focus-within .mud-input-label {
+                                            color: @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select:hover .mud-input-underline:before {
+                                            border-bottom: 2px solid @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select .mud-input-underline:after {
+                                            border-bottom: 2px solid @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                        .team-select.mud-input-root .mud-input-underline:after {
+                                            border-bottom-color: @(TeamModel.Team.TeamColor) !important;
+                                        }
+
+                                    </style>
+                                    <div class="team-select">
+                                        <MudSelect @bind-Value="seasonValue"
+                                                   Placeholder="@seasonPlaceholder"
+                                                   Label="@seasonPlaceholder" PopoverClass="team-popover">
+                                            @foreach (var season in SeasonsModel.Seasons)
+                                            {
+                                                <MudSelectItem Value="@season.Year">@season.Year</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </div>
                                 </MudItem>
-                                <MudItem xs="3">
+                                <MudItem xs="2">
 
                                 </MudItem>
                                 <MudItem xs="3" Class="p-3" Style="align-content: center;">
-                                    <MudButton Disabled="@(seasonValue <= 0)" OnClick="GetTeamStatsBySeason" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 150px;">Search</MudButton>
+                                    <MudButton Disabled="@(seasonValue <= 0)" OnClick="GetTeamStatsBySeason" Variant="Variant.Filled" Class="ml-auto" Style="@($"background-color: {TeamModel.Team.TeamColor}; width: 200px;")">Search</MudButton>
                                 </MudItem>
                             </MudStack>
                         </ChildContent>
                     </MudExpansionPanel>
                 </MudExpansionPanels>
             </MudItem>
-            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid p-25" Style=" border-color: #000000;">
+            <style>
+                .custom-tab-bar .mud-tabs-tabbar {
+                    background-color: @TeamModel.Team.TeamColor !important; /* Change to your color */
+                    color: white; /* Optional: Change text/icon color */
+                }
+
+                /* Active tab */
+                .custom-tab-bar .mud-tab.mud-tab-active {
+                    color: white !important;
+                    border-bottom-color: white;
+                }
+
+                .custom-tab-bar .mud-tab-slider {
+                    background-color: white !important;
+                }
+            </style>
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Class="border border-solid p-25 custom-tab-bar" Style=" border-color: #000000;">
                 <MudTabPanel Text="Hitting Stats">
                     <MudItem Class="py-25">
                         <HittingTotalsCard Totals="TeamHittingTotals"
-                                           OnInfoClick="OpenStatDialogAsync" />
-                        <PlayerTeamHittingStatsTable Rows="TeamStats.Players" />
+                                           OnInfoClick="OpenStatDialogAsync"
+                                           TeamColor="@TeamModel.Team.TeamColor"/>
+                        <PlayerTeamHittingStatsTable Rows="TeamStats.Players"
+                                                     TeamColor="@TeamModel.Team.TeamColor" />
                  </MudItem>
                 </MudTabPanel>
                 <MudTabPanel Text="Pitching Stats">
                     <MudItem Class="py-25">
                         <PitchingTotalsCard Totals="TeamPitchingTotals"
-                                            OnInfoClick="OpenStatDialogAsync" />
-                        <PlayerTeamPitchingStatsTable Rows="TeamStats.Players" />
+                                            OnInfoClick="OpenStatDialogAsync"
+                                            TeamColor="@TeamModel.Team.TeamColor" />
+                        <PlayerTeamPitchingStatsTable Rows="TeamStats.Players" 
+                                                      TeamColor="@TeamModel.Team.TeamColor" />
                     </MudItem>
                 </MudTabPanel>
             </MudTabs>

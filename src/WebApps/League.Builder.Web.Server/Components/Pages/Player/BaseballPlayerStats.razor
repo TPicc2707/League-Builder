@@ -29,29 +29,50 @@
                     <PlayerHeaderCard Player="PlayerModel"
                                       Team="TeamModel"
                                       Image="@imageFile"
-                                      Address="address"
+                                      Address="@address"
                                       OnContactClick="OpenContactDialogAsync" />
                 <MudItem Class="padtop-20">
                     <SeasonSelectorPanel Seasons="SeasonsModel.Seasons"
                                          SelectedSeason="seasonValue"
                                          SelectedSeasonChanged="@((int v) => seasonValue = v)"
                                          OnSearch="GetPlayerStatsBySeason"
-                                         Title="@($"{SeasonModel.Season.Year} Stats")" />
+                                         Title="@($"{SeasonModel.Season.Year} Stats")" 
+                                         TeamColor="@TeamModel.Team.TeamColor"/>
                 </MudItem>
                 <MudItem Class="padtop-20 mb-50">
-                    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid pa-6" Style="border-color: #000000;">
+                    <style>
+                        .custom-tab-bar .mud-tabs-tabbar {
+                            background-color: @TeamModel.Team.TeamColor !important; /* Change to your color */
+                            color: white; /* Optional: Change text/icon color */
+                        }
+
+                        /* Active tab */
+                        .custom-tab-bar .mud-tab.mud-tab-active {
+                            color: white !important;
+                            border-bottom-color: white;
+                        }
+
+                        .custom-tab-bar .mud-tab-slider {
+                            background-color: white !important;
+                        }
+                    </style>
+                    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Class="border border-solid pa-6 custom-tab-bar" Style="border-color: #000000;">
                         <MudTabPanel Text="Hitting Stats">
                             <MudItem Class="padtop-20">
                                 <HittingTotalsCard Totals="HittingTotalsModel"
-                                                   OnInfoClick="OpenStatDialogAsync" />
-                                <PlayerStatHittingTable Rows="PlayerStats" />
+                                                   OnInfoClick="OpenStatDialogAsync" 
+                                                   TeamColor="@TeamModel.Team.TeamColor"/>
+                                <PlayerStatHittingTable Rows="PlayerStats" 
+                                                        TeamColor="@TeamModel.Team.TeamColor"/>
                             </MudItem>
                         </MudTabPanel>
                         <MudTabPanel Text="Pitching Stats">
                             <MudItem Class="padtop-20">
                                 <PitchingTotalsCard Totals="PitchingTotalsModel"
-                                                    OnInfoClick="OpenStatDialogAsync" />
-                                <PlayerStatPitchingTable Rows="PlayerStats" />
+                                                    OnInfoClick="OpenStatDialogAsync"
+                                                    TeamColor="@TeamModel.Team.TeamColor" />
+                                <PlayerStatPitchingTable Rows="PlayerStats" 
+                                                         TeamColor="@TeamModel.Team.TeamColor"/>
                             </MudItem>
                         </MudTabPanel>
                     </MudTabs>
@@ -151,6 +172,8 @@
             (l) => LeagueLocalCache.SetLeagueByIdCache(TeamModel.Team.LeagueId.ToString(), l)
         );
 
+        TeamModel.Team.Image = await ImageService.GetTeamImageAsync(LeagueModel.League, TeamModel.Team);
+
         SeasonModel = await DataLoader.GetOrLoad(
             () => SeasonLocalCache.GetSeasonByYearCache(year),
             () => SeasonService.GetSeasonByYear(year),
@@ -172,11 +195,11 @@
         imageFile = await ImageService.GetPlayerImageAsync(LeagueModel.League, TeamModel.Team, PlayerModel.Player);
         address = String.Concat(PlayerModel.Player.PlayerAddress.AddressLine, ", ", PlayerModel.Player.PlayerAddress.State, ", ", PlayerModel.Player.PlayerAddress.ZipCode);
 
-        BuildRows();
+        await BuildRows();
         Calculate(StatsModel.BaseballStats);
     }
 
-    private void BuildRows()
+    private async Task BuildRows()
     {
         PlayerStats.Clear();
         foreach(var stat in StatsModel.BaseballStats)
@@ -186,7 +209,13 @@
             ? game.AwayTeam.TeamName 
             : game.HomeTeam.TeamName;
 
-            PlayerStats.Add(new PlayerStatRecord(opposingTeam, stat));
+            var team = game.AwayTeam.Id != PlayerModel.Player.TeamId
+            ? await TeamService.GetTeamById(game.AwayTeam.Id)
+            : await TeamService.GetTeamById(game.HomeTeam.Id);
+
+            var teamImage = await ImageService.GetTeamImageAsync(LeagueModel.League, team.Team);
+
+            PlayerStats.Add(new PlayerStatRecord(opposingTeam, teamImage, stat));
         }
     }
 
@@ -232,7 +261,7 @@
 
     private decimal SafeERA(int runs, decimal innings) =>
         innings == 0 ? 0 : (decimal)runs / innings * 9;
-    
+
     private decimal SafeWHIP(int walks, int hits, decimal innings) =>
         innings == 0 ? 0 : (decimal)(walks + hits) / innings;
 
@@ -246,7 +275,7 @@
 
     private Task OpenStatDialogAsync(string message)
     {
-        var parameters = new DialogParameters<StatInfoMessageBox> { { x => x.Message, message } };
+        var parameters = new DialogParameters<StatInfoMessageBox> { { x => x.Message, message}, { x => x.TeamColor, TeamModel.Team.TeamColor } };
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
 
         return DialogService.ShowAsync<StatInfoMessageBox>("Stat Info", parameters, options);

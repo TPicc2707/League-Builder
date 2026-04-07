@@ -11,7 +11,12 @@
             </MudItem>
             <MudItem xs="4" md="4" lg="4" Class="ma-4">
                 <MudText Typo="Typo.h4" Class="font-bold">@Player.Player.FirstName @Player.Player.LastName</MudText>
-                <MudText Typo="Typo.body1">@Team.Team.TeamName</MudText>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                    <PlayerAvatar Image="@Team.Team.Image" />
+                    <MudText Typo="Typo.body1">
+                        @Team.Team.TeamName
+                    </MudText>
+                </MudStack>
                 <MudText Typo="Typo.body1">#@Player.Player.PlayerDetail.Number</MudText>
                 <MudText Typo="Typo.body1">@Address</MudText>
                 <MudText Typo="Typo.body1">Birthday: @Player.Player.PlayerDetail.BirthDate.ToString("MMM dd, yyyy")</MudText>
@@ -23,7 +28,7 @@
     </MudCardContent>
     <MudCardActions Class="ma-4">
         <MudButton Variant="Variant.Text" 
-        Color="Color.Tertiary" 
+        Style="@($"color: {Team.Team.TeamColor} !important")"
         OnClick="OnContactClick">
         Contact Info
     </MudButton>

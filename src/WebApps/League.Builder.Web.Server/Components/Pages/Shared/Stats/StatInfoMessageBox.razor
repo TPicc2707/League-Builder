@@ -1,12 +1,12 @@
 ﻿<MudDialog>
     <TitleContent>
-        <MudText Align="Align.Center" Typo="Typo.h4" Color="Color.Primary" Style="font-weight: bold;">Stat Info</MudText>
+        <MudText Align="Align.Center" Typo="Typo.h4" Style="@($"color: {TeamColor} !important")" Class="font-bold">Stat Info</MudText>
     </TitleContent>
     <DialogContent>
         <MudText Align="Align.Center" Typo="Typo.h6">@Message</MudText>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Primary" OnClick="Ok">Ok</MudButton>
+        <MudButton Style="@($"color: {TeamColor} !important")" OnClick="Ok">Ok</MudButton>
     </DialogActions>
 </MudDialog>
 @code {
@@ -15,6 +15,9 @@
 
     [Parameter]
     public string Message { get; set; }
+
+    [Parameter]
+    public string TeamColor { get; set; }
 
     private void Ok() => MudDialog.Cancel();
 }

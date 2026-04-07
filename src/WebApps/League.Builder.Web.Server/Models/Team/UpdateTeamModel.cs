@@ -30,6 +30,8 @@ public class UpdateTeamModel
 
     public string ImageFile { get; set; }
 
+    public string TeamColor { get; set;  }
+
     public IBrowserFile File { get; set; }
 
     public TeamStatus TeamStatus { get; set; }
@@ -66,7 +68,7 @@ public class UpdateTeamModelValidator : AbstractValidator<UpdateTeamModel>
                 .Length(2, 50).WithMessage("Name must be between 2 and 50 characters");
         RuleFor(x => x.ManagerEmailAddress).NotEmpty().WithMessage("Manager Email Address is required")
                 .EmailAddress().WithMessage("A valid Email Address is required");
-
+        RuleFor(x => x.TeamColor).NotEmpty().WithMessage("Team Color is required.");
     }
 
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>

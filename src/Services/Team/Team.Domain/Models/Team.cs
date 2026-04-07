@@ -6,11 +6,12 @@ public class Team : Entity<TeamId>
     public Address TeamAddress { get; private set; } = default!;
     public string Description { get; private set; } = default!;
     public string ImageFile { get; private set; } = default!;
+    public string TeamColor { get; private set; } = default!;
     public TeamStatus TeamStatus { get; private set; } = default!;
     public Manager TeamManager { get; private set; } = default!;
 
 
-    public static Team Create(TeamId id, LeagueId leagueId, TeamName teamName, Address teamAddress, string description, string imageFile, Manager teamManager)
+    public static Team Create(TeamId id, LeagueId leagueId, TeamName teamName, Address teamAddress, string description, string imageFile, string teamColor, Manager teamManager)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(imageFile);
 
@@ -22,6 +23,7 @@ public class Team : Entity<TeamId>
             TeamAddress = teamAddress,
             Description = description,
             ImageFile = imageFile,
+            TeamColor = teamColor,
             TeamStatus = TeamStatus.OffSeason,
             TeamManager = teamManager
         };
@@ -29,7 +31,7 @@ public class Team : Entity<TeamId>
         return team;
     }
 
-    public void Update(LeagueId leagueId, TeamName teamName, Address teamAddress, string description, string imageFile, TeamStatus status, Manager teamManager)
+    public void Update(LeagueId leagueId, TeamName teamName, Address teamAddress, string description, string imageFile, string teamColor, TeamStatus status, Manager teamManager)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(imageFile);
 
@@ -38,6 +40,7 @@ public class Team : Entity<TeamId>
         TeamAddress = teamAddress;
         Description = description;
         ImageFile = imageFile;
+        TeamColor = teamColor;
         TeamStatus = status;
         TeamManager = teamManager;
     }

@@ -18,6 +18,7 @@ public static class TeamExtensions
                 team.TeamAddress.ZipCode),
             Description: team.Description,
             ImageFile: team.ImageFile,
+            TeamColor: team.TeamColor,
             TeamStatus: team.TeamStatus,
             TeamManager: new ManagerDto(
                 team.TeamManager.FirstName,
@@ -44,6 +45,7 @@ public static class TeamExtensions
                 team.TeamAddress.ZipCode),
             Description: team.Description,
             ImageFile: team.ImageFile,
+            TeamColor: team.TeamColor,
             TeamStatus: team.TeamStatus,
             TeamManager: new ManagerDto(
                 team.TeamManager.FirstName,

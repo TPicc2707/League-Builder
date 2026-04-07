@@ -1,17 +1,22 @@
 ﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
     <HeaderContent>
-        <MudTh Class="mud-theme-primary font-bold">VS</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">S</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">W</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">L</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">IP</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">H</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">R</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">BB</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">K</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">VS</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">S</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">W</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">L</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">IP</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">H</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">R</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">BB</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">K</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Opposing Team" Style="font-size: 12px;">@context.OpposingTeam</MudTd>
+        <MudTd DataLabel="Opposing Team" Style="font-size: 12px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <PlayerAvatar Image="@context.OpposingTeamImage" />
+                <span>@context.OpposingTeam</span>
+            </div>
+        </MudTd>
         @if (context.BaseballStatsModel.PitchingStats.Start)
         {
             <MudTd DataLabel="S"><MudIcon Color="@Color.Success" Style="font-size: 14px;" Icon="@Icons.Material.Filled.Check" /></MudTd>
@@ -32,4 +37,5 @@
 
 @code {
     [Parameter] public IEnumerable<PlayerStatRecord> Rows { get; set; }
+    [Parameter] public string TeamColor { get; set; }
 }

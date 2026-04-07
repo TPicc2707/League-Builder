@@ -33,6 +33,7 @@ public class CreateTeamHandler(IApplicationDbContext dbContext, IPublishEndpoint
                 teamAddress: teamAddress,
                 description: teamDto.Description,
                 imageFile: teamDto.ImageFile,
+                teamColor: teamDto.TeamColor,
                 teamManager: teamManager
                 );
 

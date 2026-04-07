@@ -26,6 +26,8 @@ public class CreateTeamModel
 
     public string ImageFile { get; set; }
 
+    public string TeamColor { get; set;  }
+
     public IBrowserFile File { get; set; }
 
     public TeamStatus TeamStatus { get; set; }
@@ -58,6 +60,7 @@ public class CreateTeamModelValidator : AbstractValidator<CreateTeamModel>
         RuleFor(x => x.EmailAddress).NotEmpty().WithMessage("Email Address is required")
                 .EmailAddress().WithMessage("A valid Email Address is required");
         RuleFor(x => x.File).NotEmpty().WithMessage("File is required");
+        RuleFor(x => x.TeamColor).NotEmpty().WithMessage("Team Color is required.");
         RuleFor(x => x.ManagerFirstName).NotEmpty().WithMessage("Manager First Name is required.")
         .Length(2, 50).WithMessage("Name must be between 2 and 50 characters");
         RuleFor(x => x.ManagerLastName).NotEmpty().WithMessage("Manager Last Name is required.")

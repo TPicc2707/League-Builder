@@ -73,6 +73,29 @@
                                                     <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/teamgames/{context.Id}")" />
                                                 </MudTooltip>
                                             }
+                                            @if (CanReadStats)
+                                            {
+                                                <MudTooltip Text="Stats" Color="Color.Secondary">
+                                                    @if (context.Sport == SportName.BASEBALL)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/baseballteamstats/{context.Id}")" />
+                                                    }
+                                                    @if (context.Sport == SportName.BASKETBALL)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/basketballteamstats/{context.Id}")" />
+                                                    }
+                                                    @if (context.Sport == SportName.FOOTBALL)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/footballteamstats/{context.Id}")" />
+                                                    }
+                                                </MudTooltip>
+                                            }
+                                            @if (CanReadTeams)
+                                            {
+                                                <MudTooltip Text="Team History" Color="Color.Secondary">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.MenuBook" Color="Color.Tertiary" Edge="Edge.Start" Target="_blank" Href="@($"/teamhistory/{context.Id}")" />
+                                                </MudTooltip>
+                                            }
                                             @if (CanUpdateTeams)
                                             {
                                                 <MudTooltip Text="Update" Color="Color.Secondary">
@@ -116,7 +139,9 @@
     private Justify _justify = Justify.SpaceEvenly;
     private bool CanCreateTeams;
     private bool CanUpdateTeams;
+    private bool CanReadTeams;
     private bool CanReadGames;
+    private bool CanReadStats;
 
     private GetLeagueByIdResponse League { get; set; }
     private GetTeamsByLeagueResponse Teams { get; set; }
@@ -130,7 +155,9 @@
 
             CanCreateTeams = user.IsInRole(Roles.CreateTeams);
             CanUpdateTeams = user.IsInRole(Roles.UpdateTeams);
+            CanReadTeams = user.IsInRole(Roles.ReadTeams);
             CanReadGames = user.IsInRole(Roles.ReadGames);
+            CanReadStats = user.IsInRole(Roles.ReadStats);
 
             await LoadAllAsync();
             PageLoad = true;
@@ -150,6 +177,9 @@
         League.League.Image = await ImageService.GetLeagueImageAsync(League.League);
 
         Teams = await LoadTeamsAsync(leagueId);
+
+        foreach (var team in Teams.Teams)
+            team.Sport = League.League.Sport;
 
         await GetImageAsync();
     }

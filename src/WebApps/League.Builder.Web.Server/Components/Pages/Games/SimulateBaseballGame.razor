@@ -17,21 +17,11 @@
 @inject ISnackbar Snackbar
 @inject ImageService ImageService
 
-@* <style>
-    :root {
-        --team-color: @CurrentTeamColor;
-    }
-</style>
- *@
 @if (PageLoad)
 {
     <AuthorizeView Roles="@Roles.CreateStats" Context="auth">
         <Authorized>
-            <MudItem Class="mt-12">
-                <MudPaper Class="border border-solid p-25 mb-6" Style="border-color: #000000;">
-                    <MudText Typo="Typo.h4" Align="Align.Center" Class="font-bold">Baseball Game Simulator</MudText>
-                </MudPaper>
-            </MudItem>
+            <TeamHeader Game="GameByIdResponse.Game" />
             @if (!SimulationStarted)
             {
                 <MudItem Class="mt-12 d-flex justify-center">
@@ -238,7 +228,29 @@
                             <div class="home-base"></div>
                         </div>
                     </MudPaper>
-                    <MudTabs @bind-ActivePanelIndex="activeTeamTab" Rounded="true" Centered="true" Class="boxscore-tabs" Color="Color.Primary">
+                    <style>
+                        .custom-tab-bar .mud-tabs-tabbar {
+                            background-color: @CurrentTeamColor !important; /* Change to your color */
+                            color: white; /* Optional: Change text/icon color */
+                        }
+
+                        /* Active tab */
+                        .custom-tab-bar .mud-tab.mud-tab-active {
+                            color: white !important;
+                            border-bottom-color: white;
+                        }
+
+                        .custom-tab-bar .mud-tab-slider {
+                            background-color: white !important;
+                        }
+
+                        .custom-tab-bar .mud-tab.mud-tab-active:hover {
+                            color: white !important;
+                            background-color: @CurrentTeamColor !important; /* optional */
+                        }
+
+                    </style>
+                    <MudTabs @bind-ActivePanelIndex="activeTeamTab" Rounded="true" Centered="true" Class="boxscore-tabs custom-tab-bar" Color="Color.Primary">
                         <MudTabPanel Text="@GameByIdResponse.Game.AwayTeam.TeamName" />
                         <MudTabPanel Text="@GameByIdResponse.Game.HomeTeam.TeamName" />
                     </MudTabs>
@@ -252,16 +264,16 @@
                         </MudStack>
                         <MudTable Items="activeTeamTab == 0 ? AwayBattingStats : HomeBattingStats" Dense="true" Hover="true" Class="mb-4 border border-solid clean-boxscore-table" Style="border-color: #000000;">
                             <HeaderContent>
-                                <MudTh>#</MudTh>
-                                <MudTh>Player</MudTh>
-                                <MudTh>AB</MudTh>
-                                <MudTh>H</MudTh>
-                                <MudTh>RBI</MudTh>
-                                <MudTh>R</MudTh>
-                                <MudTh>BB</MudTh>
-                                <MudTh>K</MudTh>
-                                <MudTh>AVG</MudTh>
-                                <MudTh>OBP</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">#</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">Player</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">AB</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">H</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">RBI</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">R</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">BB</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">K</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">AVG</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">OBP</MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd>@context.BattingOrderDisplay</MudTd>
@@ -315,12 +327,12 @@
                         </MudStack>
                         <MudTable Items="activeTeamTab == 0 ? AwayPitchingStats : HomePitchingStats" Dense="true" Hover="true" Class="mb-4 border border-solid clean-boxscore-table" Style="border-color: #000000;">
                             <HeaderContent>
-                                <MudTh>Player</MudTh>
-                                <MudTh>IP</MudTh>
-                                <MudTh>H</MudTh>
-                                <MudTh>R</MudTh>
-                                <MudTh>BB</MudTh>
-                                <MudTh>K</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">Player</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">IP</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">H</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">R</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">BB</MudTh>
+                                <MudTh Style="@($"background-color: {CurrentTeamColor}")">K</MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd>@context.PlayerName</MudTd>
@@ -507,6 +519,12 @@ else
             ? GameByIdResponse.Game.AwayTeamImage
             : GameByIdResponse.Game.HomeTeamImage;
 
+    private string CurrentTeamColor =>
+        activeTeamTab == 0
+        ? AwayTeamByIdResponse.Team.TeamColor 
+        : HomeTeamByIdResponse.Team.TeamColor;
+
+
     private string AwayTeamRecord =>
         $"( {AwayTeamStandings.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id).StandingsDetail.Wins} - {AwayTeamStandings.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id).StandingsDetail.Losses} )";
 
@@ -519,7 +537,6 @@ else
 
     private BaseballGameStatsModel CurrentPitcher =>
             GameStats.Values.FirstOrDefault(s => s.PlayerId == SimState.CurrentPitcherId);
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -681,6 +698,10 @@ else
 
 
         StateHasChanged();
+
+        activeTeamTab = SimState?.TopOfInning == true
+        ? 0 : 1;
+
         PageLoad = true;
     }
 

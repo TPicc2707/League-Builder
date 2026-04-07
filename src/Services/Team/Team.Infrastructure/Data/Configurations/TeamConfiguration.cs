@@ -60,6 +60,8 @@ public class TeamConfiguration : IEntityTypeConfiguration<Domain.Models.Team>
 
         builder.Property(c => c.ImageFile).IsRequired();
 
+        builder.Property(c => c.TeamColor).IsRequired();
+
         builder.Property(t => t.TeamStatus)
             .HasDefaultValue(TeamStatus.OffSeason)
             .HasConversion(

@@ -6,20 +6,57 @@
         <ChildContent>
             <MudStack Row="true">
                 <MudItem xs="8">
-                    <MudSelect T="int" Value="SelectedSeason" Label="Season" ValueChanged="SelectedSeasonChanged">
-                        @foreach (var s in Seasons)
-                        {
-                            <MudSelectItem Value="@s.Year">@s.Year</MudSelectItem>
+                    <style>
+                        .team-popover .mud-list-item:hover,
+                        .team-popover .mud-list-item.mud-selected-item {
+                            background-color: @(TeamColor) !important;
+                            color: white !important;
                         }
-                    </MudSelect>
+
+                        .team-popover:focus-within .mud-input-label {
+                            color: @(TeamColor) !important;
+                        }
+
+                        .team-select:hover .mud-input-label {
+                            color: @(TeamColor) !important;
+                        }
+
+                        .team-select .mud-input-label.mud-focused {
+                            color: @(TeamColor) !important;
+                        }
+
+                        .team-select:focus-within .mud-input-label {
+                            color: @(TeamColor) !important;
+                        }
+
+                        .team-select:hover .mud-input-underline:before {
+                            border-bottom: 2px solid @(TeamColor) !important;
+                        }
+
+                        .team-select .mud-input-underline:after {
+                            border-bottom: 2px solid @(TeamColor) !important;
+                        }
+
+                        .team-select.mud-input-root .mud-input-underline:after {
+                            border-bottom-color: @(TeamColor) !important;
+                        }
+
+                    </style>
+                    <div class="team-select">
+                        <MudSelect T="int" Value="SelectedSeason" Label="Season" ValueChanged="SelectedSeasonChanged" PopoverClass="team-popover">
+                            @foreach (var s in Seasons)
+                            {
+                                <MudSelectItem Value="@s.Year">@s.Year</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
                 </MudItem>
                 <MudItem xs="4" Style="align-content: center; padding: 10px;">
                     <MudButton Disabled="@(SelectedSeason <= 0)" 
                                OnClick="OnSearch" 
-                               Variant="Variant.Filled" 
-                               Color="Color.Primary" 
+                               Variant="Variant.Filled"                               
                                Class="ml-auto" 
-                               Style="width: 150px;">
+                               Style="@($"background-color: {TeamColor}; width: 200px;")">
                                Search
                            </MudButton>
                 </MudItem>
@@ -33,4 +70,5 @@
     [Parameter] public EventCallback<int> SelectedSeasonChanged { get; set; }
     [Parameter] public EventCallback OnSearch { get; set; }
     [Parameter] public string Title { get; set; }
+    [Parameter] public string TeamColor { get; set; }
 }

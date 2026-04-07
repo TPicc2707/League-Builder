@@ -1,11 +1,11 @@
 ﻿<MudTable Items="@Rows" Hover="true" SortLabel="Sort By" Class="border border-solid" Style="border-color: #000000">
     <HeaderContent>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(StandingsModel x) => x.StandingsDetail.Wins">Season</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(StandingsModel x) => x.StandingsDetail.Wins">Wins</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(StandingsModel x) => x.StandingsDetail.Losses">Losses</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="(StandingsModel x) => x.WinPercentage">PCT</MudTableSortLabel></MudTh>
-        <MudTh Class="mud-theme-primary font-bold">Playoffs</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">League Champion</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(StandingsModel x) => x.StandingsDetail.Wins">Season</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(StandingsModel x) => x.StandingsDetail.Wins">Wins</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(StandingsModel x) => x.StandingsDetail.Losses">Losses</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")"><MudTableSortLabel SortBy="(StandingsModel x) => x.WinPercentage">PCT</MudTableSortLabel></MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">Playoffs</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">League Champion</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Season">
@@ -36,4 +36,5 @@
 
 @code {
     [Parameter] public IEnumerable<StandingsModel> Rows { get; set; }
+    [Parameter] public string TeamColor { get; set; }
 }

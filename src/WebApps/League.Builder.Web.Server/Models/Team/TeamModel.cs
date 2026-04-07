@@ -10,6 +10,7 @@ public class TeamModel
     public AddressModel TeamAddress { get; set; } = default!;
     public string Description { get; set; } = default!;
     public string ImageFile { get; set; } = default!;
+    public string TeamColor { get; set; } = default!;
     public string Image { get; set; } = default!;
     public TeamStatus TeamStatus { get; set; } = default!;
     public ManagerModel TeamManager { get; set; } = default!;
@@ -21,6 +22,7 @@ public record CreateTeamRecord(
     AddressModel TeamAddress,
     string Description,
     string ImageFile,
+    string TeamColor,
     ManagerModel TeamManager);
 
 public record UpdateTeamRecord(
@@ -30,6 +32,7 @@ public record UpdateTeamRecord(
     AddressModel TeamAddress,
     string Description,
     string ImageFile,
+    string TeamColor,
     int TeamStatus,
     ManagerModel TeamManager);
 

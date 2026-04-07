@@ -1,22 +1,27 @@
 ﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
     <HeaderContent>
-        <MudTh Class="mud-theme-primary font-bold">VS</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">AB</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">R</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">H</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">RBI</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">BB</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">HBP</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">K</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">SB</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">TB</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">2B</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">3B</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">HR</MudTh>
-        <MudTh Class="mud-theme-primary font-bold">SF</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">VS</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">AB</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">R</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">H</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">RBI</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">BB</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">HBP</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">K</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">SB</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">TB</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">2B</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">3B</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">HR</MudTh>
+        <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">SF</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Opposing Team" Style="font-size: 12px;">@context.OpposingTeam</MudTd>
+        <MudTd DataLabel="Opposing Team" Style="font-size: 12px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <PlayerAvatar Image="@context.OpposingTeamImage" />
+                <span>@context.OpposingTeam</span>
+            </div>
+        </MudTd>
         <MudTd DataLabel="At Bats" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStats.AtBats</MudTd>
         <MudTd DataLabel="Runs">@context.BaseballStatsModel.HittingStats.Runs</MudTd>
         <MudTd DataLabel="Hits">@context.BaseballStatsModel.HittingStats.Hits</MudTd>
@@ -35,4 +40,5 @@
 
 @code {
     [Parameter] public IEnumerable<PlayerStatRecord> Rows { get; set; }
+    [Parameter] public string TeamColor { get; set; }
 }
