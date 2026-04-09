@@ -38,7 +38,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("seasonDb")!);
 
-builder.Services.AddCustomAuthentication();
+builder.Services.AddCustomAuthentication(builder.Configuration);
 
 builder.Services.AddKeycloakPolicies(ServiceName.SeasonService);
 

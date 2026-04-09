@@ -1,11 +1,20 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BuildingBlocks.Security;
 
 public static class Extensions
 {
-    public static IServiceCollection AddCustomAuthentication(this IServiceCollection services)
+    public static IServiceCollection AddCustomAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+        var isLocal = env == "Development" || env == "Local";
+
+        var authority = isLocal
+            ? "http://localhost:8080/realms/LeagueRealm"
+            : "https://auth.myleaguebuilder.com/realms/LeagueRealm";
+
         services.AddAuthentication()
                 .AddKeycloakJwtBearer(
                     serviceName: "keycloak",
@@ -14,7 +23,7 @@ public static class Extensions
                     {
                         options.RequireHttpsMetadata = false;
                         options.Audience = "league-builder-api";
-                        options.Authority = "http://localhost:8080/realms/LeagueRealm";
+                        options.Authority = authority;
                         options.RequireHttpsMetadata = false;
                     });
 

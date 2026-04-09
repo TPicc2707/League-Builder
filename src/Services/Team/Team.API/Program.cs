@@ -18,7 +18,7 @@ builder.Services.AddCors(options =>
     .AllowAnyMethod());
 });
 
-builder.Services.AddCustomAuthentication();
+builder.Services.AddCustomAuthentication(builder.Configuration);
 
 builder.Services.AddKeycloakPolicies(ServiceName.TeamService);
 

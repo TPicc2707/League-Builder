@@ -40,7 +40,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("leagueDb")!);
 
-builder.Services.AddCustomAuthentication();
+builder.Services.AddCustomAuthentication(builder.Configuration);
 
 builder.Services.AddKeycloakPolicies(ServiceName.LeagueService);
 
