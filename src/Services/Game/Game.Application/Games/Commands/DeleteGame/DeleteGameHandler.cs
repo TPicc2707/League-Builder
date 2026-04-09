@@ -1,6 +1,6 @@
 ﻿namespace Game.Application.Games.Commands.DeleteGame;
 
-public class DeleteGameHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
+public class DeleteGameHandler(IApplicationDbContext dbContext, IBus _bus)
     : ICommandHandler<DeleteGameCommand, DeleteGameResult>
 {
     public async Task<DeleteGameResult> Handle(DeleteGameCommand command, CancellationToken cancellationToken)
@@ -26,7 +26,7 @@ public class DeleteGameHandler(IApplicationDbContext dbContext, IPublishEndpoint
             Id = command.GameId
         };
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new DeleteGameResult(true);
     }

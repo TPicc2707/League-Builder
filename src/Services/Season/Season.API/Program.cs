@@ -23,7 +23,7 @@ builder.Services.AddMarten(opts =>
 if (builder.Environment.IsDevelopment())
     builder.Services.InitializeMartenWith<SeasonInitialData>();
 
-builder.Services.AddMessageBroker(Assembly.GetExecutingAssembly());
+builder.Services.AddMessageBroker("season-api", Assembly.GetExecutingAssembly());
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 

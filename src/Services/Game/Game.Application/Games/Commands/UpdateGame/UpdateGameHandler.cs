@@ -1,6 +1,6 @@
 ﻿namespace Game.Application.Games.Commands.UpdateGame;
 
-public class UpdateGameHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
+public class UpdateGameHandler(IApplicationDbContext dbContext, IBus _bus)
     : ICommandHandler<UpdateGameCommand, UpdateGameResult>
 {
     public async Task<UpdateGameResult> Handle(UpdateGameCommand command, CancellationToken cancellationToken)
@@ -25,7 +25,7 @@ public class UpdateGameHandler(IApplicationDbContext dbContext, IPublishEndpoint
             Id = game.Id.Value
         };
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new UpdateGameResult(true);
     }

@@ -1,5 +1,5 @@
 ﻿namespace Team.Application.Teams.Commands.UpdateTeam;
-public class UpdateTeamHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
+public class UpdateTeamHandler(IApplicationDbContext dbContext, IBus _bus)
     : ICommandHandler<UpdateTeamCommand, UpdateTeamResult>
 {
     public async Task<UpdateTeamResult> Handle(UpdateTeamCommand command, CancellationToken cancellationToken)
@@ -25,7 +25,7 @@ public class UpdateTeamHandler(IApplicationDbContext dbContext, IPublishEndpoint
             Description = team.Description
         };
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new UpdateTeamResult(true);
     }

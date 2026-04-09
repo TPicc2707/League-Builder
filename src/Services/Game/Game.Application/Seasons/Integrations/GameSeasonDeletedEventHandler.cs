@@ -2,14 +2,14 @@
 
 public class SeasonDeletionEventHandler
     (ISender sender, ILogger<SeasonDeletionEventHandler> logger)
-    : IConsumer<SeasonDeletionEvent>
+    : IHandleMessages<SeasonDeletionEvent>
 {
-    public async Task Consume(ConsumeContext<SeasonDeletionEvent> context)
+    public async Task Handle(SeasonDeletionEvent message)
     {
         //TODO: Delete Season
-        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
+        logger.LogInformation("Integration Event handled: {IntegrationEvent}", message.GetType().Name);
 
-        var command = MapToDeleteSeasonCommand(context.Message);
+        var command = MapToDeleteSeasonCommand(message);
         await sender.Send(command);
     }
 

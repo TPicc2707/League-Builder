@@ -1,6 +1,6 @@
 ﻿namespace Player.Application.Players.Commands.CreatePlayer;
 
-public class CreatePlayerHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
+public class CreatePlayerHandler(IApplicationDbContext dbContext, IBus _bus)
     : ICommandHandler<CreatePlayerCommand, CreatePlayerResult>
 {
     public async Task<CreatePlayerResult> Handle(CreatePlayerCommand command, CancellationToken cancellationToken)
@@ -17,7 +17,7 @@ public class CreatePlayerHandler(IApplicationDbContext dbContext, IPublishEndpoi
             LastName = player.LastName.Value
         };
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new CreatePlayerResult(player.Id.Value);
     }

@@ -1,5 +1,5 @@
 ﻿namespace Team.Application.Teams.Commands.CreateTeam;
-public class CreateTeamHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
+public class CreateTeamHandler(IApplicationDbContext dbContext, IBus _bus)
     : ICommandHandler<CreateTeamCommand, CreateTeamResult>
 {
     public async Task<CreateTeamResult> Handle(CreateTeamCommand command, CancellationToken cancellationToken)
@@ -16,7 +16,7 @@ public class CreateTeamHandler(IApplicationDbContext dbContext, IPublishEndpoint
             Description = team.Description
         };
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new CreateTeamResult(team.Id.Value);
     }

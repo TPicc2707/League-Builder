@@ -2,7 +2,7 @@
 global using BuildingBlocks.CQRS;
 global using BuildingBlocks.Exceptions;
 global using BuildingBlocks.Messaging.Events;
-global using BuildingBlocks.Messaging.MassTransit;
+global using BuildingBlocks.Messaging.MessageBus;
 global using BuildingBlocks.Pagination;
 global using FluentValidation;
 global using Game.Application.Data;
@@ -21,11 +21,11 @@ global using Game.Application.Teams.Commands.UpdateTeam;
 global using Game.Domain.Enum;
 global using Game.Domain.Models;
 global using Game.Domain.ValueObjects;
-global using MassTransit;
 global using MediatR;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
+global using Rebus.Bus;
+global using Rebus.Handlers;
 global using System.Reflection;
-

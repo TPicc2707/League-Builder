@@ -2,15 +2,15 @@
 global using BuildingBlocks.CQRS;
 global using BuildingBlocks.Exceptions;
 global using BuildingBlocks.Messaging.Events;
-global using BuildingBlocks.Messaging.MassTransit;
+global using BuildingBlocks.Messaging.MessageBus;
 global using BuildingBlocks.Pagination;
 global using FluentValidation;
-global using MassTransit;
 global using MediatR;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
+global using Rebus.Handlers;
 global using Standings.Application.Data;
 global using Standings.Application.Dtos;
 global using Standings.Application.Exceptions;

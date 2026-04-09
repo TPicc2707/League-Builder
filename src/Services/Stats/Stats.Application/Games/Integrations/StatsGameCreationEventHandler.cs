@@ -2,14 +2,14 @@
 
 public class StatsGameCreationEventHandler
     (ISender sender, ILogger<StatsGameCreationEventHandler> logger)
-    : IConsumer<GameCreationEvent>
+    : IHandleMessages<GameCreationEvent>
 {
-    public async Task Consume(ConsumeContext<GameCreationEvent> context)
+    public async Task Handle(GameCreationEvent message)
     {
         //TODO: Create new game
-        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
+        logger.LogInformation("Integration Event handled: {IntegrationEvent}", message.GetType().Name);
 
-        var command = MaptoCreateGameCommand(context.Message);
+        var command = MaptoCreateGameCommand(message);
         await sender.Send(command);
     }
 

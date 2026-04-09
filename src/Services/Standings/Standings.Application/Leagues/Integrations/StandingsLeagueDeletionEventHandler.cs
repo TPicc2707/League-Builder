@@ -2,14 +2,14 @@
 
 public class StandingsLeagueDeletionEventHandler
     (ISender sender, ILogger<StandingsLeagueDeletionEventHandler> logger)
-    : IConsumer<LeagueDeletionEvent>
+    : IHandleMessages<LeagueDeletionEvent>
 {
-    public async Task Consume(ConsumeContext<LeagueDeletionEvent> context)
+    public async Task Handle(LeagueDeletionEvent context)
     {
         //TODO: Delete Team
-        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
+        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.GetType().Name);
 
-        var command = MapToDeleteLeagueCommand(context.Message);
+        var command = MapToDeleteLeagueCommand(context);
         await sender.Send(command);
     }
 

@@ -22,7 +22,7 @@ public class CreateLeagueCommandValidator : AbstractValidator<CreateLeagueComman
 }
 
 internal class CreateLeagueCommandHandler
-    (IDocumentSession documentSession, IPublishEndpoint publishEndpoint)
+    (IDocumentSession documentSession, IBus _bus)
     : ICommandHandler<CreateLeagueCommand, CreateLeagueResult>
 {
     public async Task<CreateLeagueResult> Handle(CreateLeagueCommand command, CancellationToken cancellationToken)
@@ -57,7 +57,7 @@ internal class CreateLeagueCommandHandler
 
         var eventMessage = league.Adapt<LeagueCreationEvent>();
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         // return CreateLeagueResult result
 

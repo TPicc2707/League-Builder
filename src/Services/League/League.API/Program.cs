@@ -25,7 +25,7 @@ builder.Services.AddMarten(opts =>
 if (builder.Environment.IsDevelopment())
     builder.Services.InitializeMartenWith<LeagueInitialData>();
 
-builder.Services.AddMessageBroker(Assembly.GetExecutingAssembly());
+builder.Services.AddMessageBroker("league-api", Assembly.GetExecutingAssembly());
 
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 

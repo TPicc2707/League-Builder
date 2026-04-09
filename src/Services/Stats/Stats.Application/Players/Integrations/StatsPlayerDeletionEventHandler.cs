@@ -2,14 +2,14 @@
 
 public class StatsPlayerDeletionEventHandler
     (ISender sender, ILogger<StatsPlayerDeletionEventHandler> logger)
-    : IConsumer<PlayerDeletionEvent>
+    : IHandleMessages<PlayerDeletionEvent>
 {
-    public async Task Consume(ConsumeContext<PlayerDeletionEvent> context)
+    public async Task Handle(PlayerDeletionEvent message)
     {
         //TODO: Delete Player
-        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
+        logger.LogInformation("Integration Event handled: {IntegrationEvent}", message.GetType().Name);
 
-        var command = MapToDeletePlayerCommand(context.Message);
+        var command = MapToDeletePlayerCommand(message);
         await sender.Send(command);
     }
 

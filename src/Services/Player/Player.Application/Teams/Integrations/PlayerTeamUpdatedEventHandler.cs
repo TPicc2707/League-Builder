@@ -1,14 +1,14 @@
 ﻿namespace Player.Application.Teams.Integrations;
 
 public class PlayerTeamUpdatedEventHandler(ISender sender, ILogger<PlayerTeamUpdatedEventHandler> logger)
-    : IConsumer<TeamUpdatedEvent>
+    : IHandleMessages<TeamUpdatedEvent>
 {
-    public async Task Consume(ConsumeContext<TeamUpdatedEvent> context)
+    public async Task Handle(TeamUpdatedEvent message)
     {
         //TODO: Update league
-        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
+        logger.LogInformation("Integration Event handled: {IntegrationEvent}", message.GetType().Name);
 
-        var command = MapToUpdateTeamCommand(context.Message);
+        var command = MapToUpdateTeamCommand(message);
         await sender.Send(command);
     }
 

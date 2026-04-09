@@ -16,7 +16,7 @@ public class UpdateSeasonCommandValidator : AbstractValidator<UpdateSeasonComman
 
 
 public class UpdateSeasonHandler
-    (IDocumentSession documentSession, IPublishEndpoint publishEndpoint)
+    (IDocumentSession documentSession, IBus _bus)
     : ICommandHandler<UpdateSeasonCommand, UpdateSeasonResult>
 {
     public async Task<UpdateSeasonResult> Handle(UpdateSeasonCommand command, CancellationToken cancellationToken)
@@ -38,7 +38,7 @@ public class UpdateSeasonHandler
 
         var eventMessage = season.Adapt<SeasonUpdatedEvent>();
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new UpdateSeasonResult(true);
     }

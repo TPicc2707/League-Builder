@@ -1,3 +1,6 @@
+using BuildingBlocks.Messaging.MessageBus;
+using Rebus.Bus;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -20,6 +23,10 @@ builder.Services.AddCustomAuthentication();
 builder.Services.AddKeycloakPolicies(ServiceName.StatService);
 
 var app = builder.Build();
+
+var bus = app.Services.GetRequiredService<IBus>();
+
+await bus.SubscribeToHandledEvents(typeof(ApplicationAssemblyMarker).Assembly);
 
 app.UseExceptionHandler(options => { });
 

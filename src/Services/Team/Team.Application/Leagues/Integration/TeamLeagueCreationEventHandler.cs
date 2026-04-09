@@ -1,14 +1,14 @@
 ﻿namespace Team.Application.Leagues.Integration;
 public class LeagueCreationEventHandler
     (ISender sender, ILogger<LeagueCreationEventHandler> logger)
-    : IConsumer<LeagueCreationEvent>
+    : IHandleMessages<LeagueCreationEvent>
 {
-    public async Task Consume(ConsumeContext<LeagueCreationEvent> context)
+    public async Task Handle(LeagueCreationEvent message)
     {
         //TODO: Create new league
-        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
+        logger.LogInformation("Integration Event handled: {IntegrationEvent}", message.GetType().Name);
 
-        var command = MapToCreateLeagueCommand(context.Message);
+        var command = MapToCreateLeagueCommand(message);
         await sender.Send(command);
     }
 

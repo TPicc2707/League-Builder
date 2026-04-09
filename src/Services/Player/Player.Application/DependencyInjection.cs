@@ -12,7 +12,7 @@ public static class DependencyInjection
         });
 
         //services.AddFeatureManagement();
-        services.AddMessageBroker(Assembly.GetExecutingAssembly());
+        services.AddMessageBroker("player-api", Assembly.GetExecutingAssembly());
 
         return services;
     }

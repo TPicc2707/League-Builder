@@ -15,7 +15,7 @@ public class CreateSeasonCommandValidator : AbstractValidator<CreateSeasonComman
 }
 
 internal class CreateSeasonCommandHandler
-    (IDocumentSession documentSession, IPublishEndpoint publishEndpoint)
+    (IDocumentSession documentSession, IBus _bus)
     : ICommandHandler<CreateSeasonCommand, CreateSeasonResult>
 {
     public async Task<CreateSeasonResult> Handle(CreateSeasonCommand command, CancellationToken cancellationToken)
@@ -41,7 +41,7 @@ internal class CreateSeasonCommandHandler
 
         var eventMessage = season.Adapt<SeasonCreationEvent>();
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         // return CreateSeasonResult result
 

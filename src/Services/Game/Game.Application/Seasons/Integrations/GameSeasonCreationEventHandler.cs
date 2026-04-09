@@ -2,14 +2,14 @@
 
 public class GameSeasonCreationEventHandler
     (ISender sender, ILogger<GameSeasonCreationEventHandler> logger)
-    : IConsumer<SeasonCreationEvent>
+    : IHandleMessages<SeasonCreationEvent>
 {
-    public async Task Consume(ConsumeContext<SeasonCreationEvent> context)
+    public async Task Handle(SeasonCreationEvent message)
     {
         //TODO: Create new season
-        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
+        logger.LogInformation("Integration Event handled: {IntegrationEvent}", message.GetType().Name);
 
-        var command = MaptoCreateSeasonCommand(context.Message);
+        var command = MaptoCreateSeasonCommand(message);
         await sender.Send(command);
     }
 

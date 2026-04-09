@@ -1,6 +1,6 @@
 ﻿namespace Player.Application.Players.Commands.UpdatePlayer;
 
-public class UpdatePlayerHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
+public class UpdatePlayerHandler(IApplicationDbContext dbContext, IBus _bus)
     : ICommandHandler<UpdatePlayerCommand, UpdatePlayerResult>
 {
     public async Task<UpdatePlayerResult> Handle(UpdatePlayerCommand command, CancellationToken cancellationToken)
@@ -26,7 +26,7 @@ public class UpdatePlayerHandler(IApplicationDbContext dbContext, IPublishEndpoi
             LastName = player.LastName.Value
         };
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new UpdatePlayerResult(true);
     }

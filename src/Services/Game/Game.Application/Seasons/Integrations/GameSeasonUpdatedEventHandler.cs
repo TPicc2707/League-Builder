@@ -1,14 +1,14 @@
 ﻿namespace Game.Application.Seasons.Integrations;
 
 public class GameSeasonUpdatedEventHandler(ISender sender, ILogger<GameSeasonUpdatedEventHandler> logger)
-    : IConsumer<SeasonUpdatedEvent>
+    : IHandleMessages<SeasonUpdatedEvent>
 {
-    public async Task Consume(ConsumeContext<SeasonUpdatedEvent> context)
+    public async Task Handle(SeasonUpdatedEvent message)
     {
         //TODO: Update season
-        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
+        logger.LogInformation("Integration Event handled: {IntegrationEvent}", message.GetType().Name);
 
-        var command = MapToUpdateSeasonCommand(context.Message);
+        var command = MapToUpdateSeasonCommand(message);
         await sender.Send(command);
     }
 

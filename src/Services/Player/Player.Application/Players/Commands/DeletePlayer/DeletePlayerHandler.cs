@@ -1,6 +1,6 @@
 ﻿namespace Player.Application.Players.Commands.DeletePlayer;
 
-public class DeletePlayerHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
+public class DeletePlayerHandler(IApplicationDbContext dbContext, IBus _bus)
     : ICommandHandler<DeletePlayerCommand, DeletePlayerResult>
 {
     public async Task<DeletePlayerResult> Handle(DeletePlayerCommand command, CancellationToken cancellationToken)
@@ -26,7 +26,7 @@ public class DeletePlayerHandler(IApplicationDbContext dbContext, IPublishEndpoi
             Id = player.Id.Value
         };
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new DeletePlayerResult(true);
     }

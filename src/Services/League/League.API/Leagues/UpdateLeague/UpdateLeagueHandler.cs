@@ -23,7 +23,7 @@ public class UpdateLeagueCommandValidator : AbstractValidator<UpdateLeagueComman
 }
 
 public class UpdateLeagueCommandHandler
-    (IDocumentSession documentSession, IPublishEndpoint publishEndpoint)
+    (IDocumentSession documentSession, IBus _bus)
     : ICommandHandler<UpdateLeagueCommand, UpdateLeagueResult>
 {
     public async Task<UpdateLeagueResult> Handle(UpdateLeagueCommand command, CancellationToken cancellationToken)
@@ -54,7 +54,7 @@ public class UpdateLeagueCommandHandler
 
         var eventMessage = league.Adapt<LeagueUpdatedEvent>();
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new UpdateLeagueResult(true);
     }

@@ -11,7 +11,7 @@ public static class DependencyInjection
         });
 
         //services.AddFeatureManagement();
-        services.AddMessageBroker(Assembly.GetExecutingAssembly());
+        services.AddMessageBroker("team-api", Assembly.GetExecutingAssembly());
 
         return services;
     }

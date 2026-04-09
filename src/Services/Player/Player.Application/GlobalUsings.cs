@@ -2,10 +2,9 @@
 global using BuildingBlocks.CQRS;
 global using BuildingBlocks.Exceptions;
 global using BuildingBlocks.Messaging.Events;
-global using BuildingBlocks.Messaging.MassTransit;
+global using BuildingBlocks.Messaging.MessageBus;
 global using BuildingBlocks.Pagination;
 global using FluentValidation;
-global using MassTransit;
 global using MediatR;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Configuration;
@@ -22,3 +21,5 @@ global using Player.Domain.Enum;
 global using Player.Domain.Models;
 global using Player.Domain.ValueObjects;
 global using System.Reflection;
+global using Rebus.Bus;
+global using Rebus.Handlers;

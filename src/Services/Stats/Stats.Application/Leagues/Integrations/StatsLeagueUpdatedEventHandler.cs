@@ -1,14 +1,14 @@
 ﻿namespace Stats.Application.Leagues.Integrations;
 
 public class StatsLeagueUpdatedEventHandler(ISender sender, ILogger<StatsLeagueUpdatedEventHandler> logger)
-    : IConsumer<LeagueUpdatedEvent>
+    : IHandleMessages<LeagueUpdatedEvent>
 {
-    public async Task Consume(ConsumeContext<LeagueUpdatedEvent> context)
+    public async Task Handle(LeagueUpdatedEvent message)
     {
         //TODO: Update league
-        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
+        logger.LogInformation("Integration Event handled: {IntegrationEvent}", message.GetType().Name);
 
-        var command = MapToUpdateLeagueCommand(context.Message);
+        var command = MapToUpdateLeagueCommand(message);
         await sender.Send(command);
     }
 

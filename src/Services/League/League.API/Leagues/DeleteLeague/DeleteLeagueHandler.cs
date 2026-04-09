@@ -12,7 +12,7 @@ public class DeleteLeagueCommandValidator : AbstractValidator<DeleteLeagueComman
 }
 
 public class DeleteLeagueCommandHandler
-    (IDocumentSession documentSession, IPublishEndpoint publishEndpoint)
+    (IDocumentSession documentSession, IBus _bus)
     : ICommandHandler<DeleteLeagueCommand, DeleteLeagueResult>
 {
     public async Task<DeleteLeagueResult> Handle(DeleteLeagueCommand command, CancellationToken cancellationToken)
@@ -25,7 +25,7 @@ public class DeleteLeagueCommandHandler
             Id = command.Id
         };
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new DeleteLeagueResult(true);
     }

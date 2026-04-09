@@ -2,14 +2,14 @@
 
 public class StatsTeamCreationEventHandler
     (ISender sender, ILogger<StatsTeamCreationEventHandler> logger)
-    : IConsumer<TeamCreationEvent>
+    : IHandleMessages<TeamCreationEvent>
 {
-    public async Task Consume(ConsumeContext<TeamCreationEvent> context)
+    public async Task Handle(TeamCreationEvent message)
     {
         //TODO: Create new team
-        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
+        logger.LogInformation("Integration Event handled: {IntegrationEvent}", message.GetType().Name);
 
-        var command = MaptoCreateTeamCommand(context.Message);
+        var command = MaptoCreateTeamCommand(message);
         await sender.Send(command);
     }
 

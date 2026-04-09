@@ -2,10 +2,9 @@
 global using BuildingBlocks.CQRS;
 global using BuildingBlocks.Exceptions;
 global using BuildingBlocks.Messaging.Events;
-global using BuildingBlocks.Messaging.MassTransit;
+global using BuildingBlocks.Messaging.MessageBus;
 global using BuildingBlocks.Pagination;
 global using FluentValidation;
-global using MassTransit;
 global using MediatR;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Configuration;
@@ -22,4 +21,5 @@ global using Team.Application.Leagues.Commands.UpdateLeague;
 global using Team.Domain.Enums;
 global using Team.Domain.Models;
 global using Team.Domain.ValueObjects;
-global using Mapster;
+global using Rebus.Bus;
+global using Rebus.Handlers;

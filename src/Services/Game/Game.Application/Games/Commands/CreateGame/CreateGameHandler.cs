@@ -1,6 +1,6 @@
 ﻿namespace Game.Application.Games.Commands.CreateGame;
 
-public class CreateGameHandler(IApplicationDbContext dbContext, IPublishEndpoint publishEndpoint)
+public class CreateGameHandler(IApplicationDbContext dbContext, IBus _bus)
     : ICommandHandler<CreateGameCommand, CreateGameResult>
 {
     public async Task<CreateGameResult> Handle(CreateGameCommand command, CancellationToken cancellationToken)
@@ -15,7 +15,7 @@ public class CreateGameHandler(IApplicationDbContext dbContext, IPublishEndpoint
             Id = game.Id.Value
         };
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new CreateGameResult(game.Id.Value);
     }

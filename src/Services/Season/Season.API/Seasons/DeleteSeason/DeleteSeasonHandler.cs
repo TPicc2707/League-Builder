@@ -13,7 +13,7 @@ public class DeleteSeasonCommandValidator : AbstractValidator<DeleteSeasonComman
 }
 
 public class DeleteSeasonHandler
-    (IDocumentSession documentSession, IPublishEndpoint publishEndpoint)
+    (IDocumentSession documentSession, IBus _bus)
     : ICommandHandler<DeleteSeasonCommand, DeleteSeasonResult>
 {
     public async Task<DeleteSeasonResult> Handle(DeleteSeasonCommand command, CancellationToken cancellationToken)
@@ -26,7 +26,7 @@ public class DeleteSeasonHandler
             Id = command.Id
         };
 
-        await publishEndpoint.Publish(eventMessage, cancellationToken);
+        await _bus.Publish(eventMessage);
 
         return new DeleteSeasonResult(true);
     }

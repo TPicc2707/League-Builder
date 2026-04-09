@@ -2,14 +2,14 @@
 
 public class StatsPlayerCreationEventHandler
     (ISender sender, ILogger<StatsPlayerCreationEventHandler> logger)
-    : IConsumer<PlayerCreationEvent>
+    : IHandleMessages<PlayerCreationEvent>
 {
-    public async Task Consume(ConsumeContext<PlayerCreationEvent> context)
+    public async Task Handle(PlayerCreationEvent message)
     {
         //TODO: Create new player
-        logger.LogInformation("Integration Event handled: {IntegrationEvent}", context.Message.GetType().Name);
+        logger.LogInformation("Integration Event handled: {IntegrationEvent}", message.GetType().Name);
 
-        var command = MaptoCreatePlayerCommand(context.Message);
+        var command = MaptoCreatePlayerCommand(message);
         await sender.Send(command);
     }
 
