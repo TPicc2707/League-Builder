@@ -64,6 +64,12 @@ app.MapHealthChecks("/healthz",
     new HealthCheckOptions
     {
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    }).AllowAnonymous();
+
+app.MapHealthChecks("/support/healthz",
+    new HealthCheckOptions
+    {
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
     }).RequireAuthorization(KeycloakPolicy.SupportLeaguePolicy);
 
 

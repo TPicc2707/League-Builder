@@ -10,7 +10,7 @@ public interface ILeagueService
     Task<GetLeaguesBySportResponse> GetLeaguesBySport(string sport);
     [Get("/league-service/leagues/name/{name}")]
     Task<GetLeaguesByNameResponse> GetLeaguesByName(string name);
-    [Get("/league-service/healthz")]
+    [Get("/league-service/support/healthz")]
     Task<string> GetLeagueHealth();
     [Post("/league-service/leagues")]
     Task<CreateLeagueResponse> CreateLeague(CreateLeagueRequest request);
