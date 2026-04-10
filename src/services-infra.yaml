@@ -81,6 +81,15 @@ Resources:
       DomainValidationOptions:
         - DomainName: league.myleaguebuilder.com
           HostedZoneId: Z017284424G0ZTG1FUTE6
+
+  TeamApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: team.myleaguebuilder.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: team.myleaguebuilder.com
+          HostedZoneId: Z017284424G0ZTG1FUTE6
   
   HttpsListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -103,6 +112,20 @@ Resources:
       ListenerArn: !Ref HttpsListener
       Certificates:
         - CertificateArn: !Ref LeagueApiCertificate
+
+  TeamApiListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Certificates:
+        - CertificateArn: !Ref TeamApiCertificate
+
+  KeycloakListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Certificates:
+        - CertificateArn: !Ref KeycloakCertificate
 
 
   KeycloakDNSRecord:
@@ -130,6 +153,16 @@ Resources:
     Properties:
       HostedZoneId: Z017284424G0ZTG1FUTE6
       Name: league.myleaguebuilder.com.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+
+  TeamApiDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: Z017284424G0ZTG1FUTE6
+      Name: team.myleaguebuilder.com.
       Type: A
       AliasTarget:
         DNSName: !GetAtt ApplicationLoadBalancer.DNSName
@@ -168,13 +201,28 @@ Resources:
   PostgresTaskSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow Keycloak to reach Postgres
+      GroupDescription: Allow Keycloak and Apis to reach Postgres
       VpcId: !ImportValue leaguebuilder-dev-VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 5432
           ToPort: 5432
           SourceSecurityGroupId: !Ref KeycloakTaskSecurityGroup
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+
+  SqlServerTaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow Apis to reach Sql Server
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 1433
+          ToPort: 1433
+          SourceSecurityGroupId: !ImportValue leaguebuilder-dev-ApiSecurityGroupId
 
   ApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -452,6 +500,7 @@ Resources:
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
             - !ImportValue leaguebuilder-dev-InstanceSG
+            - !Ref SqlServerTaskSecurityGroup
 
   RabbitMqLogs:
     Type: AWS::Logs::LogGroup
@@ -608,6 +657,8 @@ Resources:
     DependsOn:
       - ApplicationLoadBalancer
       - KeycloakHttpRedirectListener
+      - KeycloakListenerCertificate
+      - KeycloakListenerRule
     Properties:
       Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
       LaunchType: EC2

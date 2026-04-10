@@ -22,7 +22,7 @@ builder.Services.AddMarten(opts =>
     opts.Connection(builder.Configuration.GetConnectionString("leagueDb")!);
 }).UseLightweightSessions();
 
-if (builder.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Test"))
     builder.Services.InitializeMartenWith<LeagueInitialData>();
 
 builder.Services.AddMessageBroker("league-api", Assembly.GetExecutingAssembly());

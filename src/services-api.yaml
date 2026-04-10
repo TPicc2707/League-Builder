@@ -216,20 +216,6 @@ Resources:
       Actions:
         - Type: forward
           TargetGroupArn: !Ref LeagueApiTargetGroup
-  
-  LeagueApiListenerRule:
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    Properties:
-      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
-      Priority: 20
-      Conditions:
-        - Field: host-header
-          HostHeaderConfig:
-            Values:
-              - league.myleaguebuilder.com
-      Actions:
-        - Type: forward
-          TargetGroupArn: !Ref LeagueApiTargetGroup
     
     ########################################
     # team-api
@@ -262,7 +248,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: http://+:8080
+              Value: !Sub "http://+:${TeamApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${TeamApiPort}'
             - Name: HTTPS_PORTS
@@ -321,6 +307,37 @@ Resources:
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
             - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+      LoadBalancers:
+        - TargetGroupArn: !Ref TeamApiTargetGroup
+          ContainerName: team-api
+          ContainerPort: !Ref TeamApiPort
+
+    
+  TeamApiTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: !Ref TeamApiPort
+      TargetType: ip
+      HealthCheckPath: /healthz
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200-399"
+  
+  TeamApiListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
+      Priority: 21
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - team.myleaguebuilder.com
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref TeamApiTargetGroup
 
     ########################################
     # player-api
