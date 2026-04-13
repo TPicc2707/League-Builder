@@ -16,6 +16,6 @@ public interface ISeasonService
     Task<DeleteSeasonResponse> DeleteSeason(Guid id);
 
     //Health
-    [Get("/season-service/healthz")]
+    [Get("/season-service/support/healthz")]
     Task<string> GetSeasonHealth();
 }

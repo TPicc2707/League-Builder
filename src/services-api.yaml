@@ -450,7 +450,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
-      Priority: 20
+      Priority: 22
       Conditions:
         - Field: host-header
           HostHeaderConfig:
@@ -672,7 +672,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: http://+:8080
+              Value: !Sub "http://+:${SeasonApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${SeasonApiPort}'
             - Name: HTTPS_PORTS
@@ -731,6 +731,37 @@ Resources:
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
             - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+      LoadBalancers:
+        - TargetGroupArn: !Ref SeasonApiTargetGroup
+          ContainerName: season-api
+          ContainerPort: !Ref SeasonApiPort
+    
+  
+  SeasonApiTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: !Ref SeasonApiPort
+      TargetType: ip
+      HealthCheckPath: /healthz
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200-399"
+  
+  SeasonApiListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
+      Priority: 23
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - season.myleaguebuilder.com
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref SeasonApiTargetGroup
 
     ########################################
     # game-api

@@ -100,6 +100,15 @@ Resources:
         - DomainName: player.myleaguebuilder.com
           HostedZoneId: Z017284424G0ZTG1FUTE6
   
+  SeasonApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: season.myleaguebuilder.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: season.myleaguebuilder.com
+          HostedZoneId: Z017284424G0ZTG1FUTE6
+  
   HttpsListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -135,6 +144,13 @@ Resources:
       ListenerArn: !Ref HttpsListener
       Certificates:
         - CertificateArn: !Ref PlayerApiCertificate
+
+  SeasonApiListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Certificates:
+        - CertificateArn: !Ref SeasonApiCertificate
 
   KeycloakListenerCertificate:
     Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
@@ -189,6 +205,16 @@ Resources:
     Properties:
       HostedZoneId: Z017284424G0ZTG1FUTE6
       Name: player.myleaguebuilder.com.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+  
+  SeasonApiDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: Z017284424G0ZTG1FUTE6
+      Name: season.myleaguebuilder.com.
       Type: A
       AliasTarget:
         DNSName: !GetAtt ApplicationLoadBalancer.DNSName

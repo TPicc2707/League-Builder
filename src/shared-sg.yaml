@@ -30,6 +30,10 @@ Resources:
           FromPort: 6002
           ToPort: 6002
           SourceSecurityGroupId: !Ref ALBSecurityGroup
+        - IpProtocol: tcp
+          FromPort: 6004
+          ToPort: 6004
+          SourceSecurityGroupId: !Ref ALBSecurityGroup
       SecurityGroupEgress:
         - IpProtocol: -1
           CidrIp: 0.0.0.0/0

@@ -20,7 +20,7 @@ builder.Services.AddMarten(opts =>
     opts.Connection(builder.Configuration.GetConnectionString("seasonDb")!);
 }).UseLightweightSessions();
 
-if (builder.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Test"))
     builder.Services.InitializeMartenWith<SeasonInitialData>();
 
 builder.Services.AddMessageBroker("season-api", Assembly.GetExecutingAssembly());
@@ -59,6 +59,12 @@ app.MapCarter();
 app.MapDefaultEndpoints();
 
 app.MapHealthChecks("/healthz",
+    new HealthCheckOptions
+    {
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    }).AllowAnonymous();
+
+app.MapHealthChecks("/support/healthz",
     new HealthCheckOptions
     {
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
