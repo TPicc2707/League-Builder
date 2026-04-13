@@ -22,7 +22,7 @@ public interface IPlayerService
     Task<GetPlayersBeforeBirthDateResponse> GetPlayersBeforeBirthDate(string birthDate);
     [Get("/player-service/players/after-birthdate/{birthDate}")]
     Task<GetPlayersAfterBirthDateResponse> GetPlayersAfterBirthDate(string birthDate);
-    [Get("/player-service/healthz")]
+    [Get("/player-service/support/healthz")]
     Task<string> GetPlayerHealth();
     [Post("/player-service/players")]
     Task<CreatePlayerResponse> CreatePlayer(CreatePlayerRequest player);

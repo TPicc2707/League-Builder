@@ -18,11 +18,17 @@ public static class DependencyInjection
         app.MapCarter();
 
         app.UseExceptionHandler(options => { });
-        app.MapHealthChecks("/healthz",
+        app.MapHealthChecks("/support/healthz",
             new HealthCheckOptions
             {
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             }).RequireAuthorization(KeycloakPolicy.SupportPlayerPolicy);
+
+        app.MapHealthChecks("/healthz",
+            new HealthCheckOptions
+            {
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            }).AllowAnonymous();
 
 
         return app;
