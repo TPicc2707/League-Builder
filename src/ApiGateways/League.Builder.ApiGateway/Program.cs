@@ -6,6 +6,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+var isLocal = env == "Development" || env == "Local";
+
+var authority = isLocal
+    ? "http://localhost:8080/realms/LeagueRealm"
+    : "https://auth.myleaguebuilder.com/realms/LeagueRealm";
+
+
 builder.Services.AddAuthentication()
                 .AddKeycloakJwtBearer(
                     serviceName: "keycloak",
@@ -13,7 +22,9 @@ builder.Services.AddAuthentication()
                     configureOptions: options =>
                     {
                         options.RequireHttpsMetadata = false;
-                        options.Audience = "account";
+                        options.Audience = "league-builder-api";
+                        options.Authority = authority;
+                        options.RequireHttpsMetadata = false;
                     });
 
 
