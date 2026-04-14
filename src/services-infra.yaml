@@ -109,6 +109,42 @@ Resources:
         - DomainName: season.myleaguebuilder.com
           HostedZoneId: Z017284424G0ZTG1FUTE6
   
+  StandingsApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: standings.myleaguebuilder.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: standings.myleaguebuilder.com
+          HostedZoneId: Z017284424G0ZTG1FUTE6
+
+  GameApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: game.myleaguebuilder.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: game.myleaguebuilder.com
+          HostedZoneId: Z017284424G0ZTG1FUTE6
+
+  StatsApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: stats.myleaguebuilder.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: stats.myleaguebuilder.com
+          HostedZoneId: Z017284424G0ZTG1FUTE6
+  
+  ApiGatewayCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: gateway.myleaguebuilder.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: gateway.myleaguebuilder.com
+          HostedZoneId: Z017284424G0ZTG1FUTE6
+  
   HttpsListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -151,6 +187,34 @@ Resources:
       ListenerArn: !Ref HttpsListener
       Certificates:
         - CertificateArn: !Ref SeasonApiCertificate
+  
+  StandingsApiListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Certificates:
+        - CertificateArn: !Ref StandingsApiCertificate
+
+  GameApiListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Certificates:
+        - CertificateArn: !Ref GameApiCertificate
+
+  StatsApiListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Certificates:
+        - CertificateArn: !Ref StatsApiCertificate
+
+  ApiGatewayListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Certificates:
+        - CertificateArn: !Ref ApiGatewayCertificate
 
   KeycloakListenerCertificate:
     Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
@@ -215,6 +279,46 @@ Resources:
     Properties:
       HostedZoneId: Z017284424G0ZTG1FUTE6
       Name: season.myleaguebuilder.com.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+  
+  StandingsApiDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: Z017284424G0ZTG1FUTE6
+      Name: standings.myleaguebuilder.com.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+  
+  GameApiDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: Z017284424G0ZTG1FUTE6
+      Name: game.myleaguebuilder.com.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+  
+  StatsApiDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: Z017284424G0ZTG1FUTE6
+      Name: stats.myleaguebuilder.com.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+
+  ApiGatewayDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: Z017284424G0ZTG1FUTE6
+      Name: gateway.myleaguebuilder.com.
       Type: A
       AliasTarget:
         DNSName: !GetAtt ApplicationLoadBalancer.DNSName

@@ -491,7 +491,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: http://+:8080
+              Value: !Sub "http://+:${StatsApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${StatsApiPort}'
             - Name: HTTPS_PORTS
@@ -550,6 +550,37 @@ Resources:
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
             - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+      LoadBalancers:
+        - TargetGroupArn: !Ref StatsApiTargetGroup
+          ContainerName: stats-api
+          ContainerPort: !Ref StatsApiPort
+
+  
+  StatsApiTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: !Ref StatsApiPort
+      TargetType: ip
+      HealthCheckPath: /healthz
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200-399"
+  
+  StatsApiListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
+      Priority: 24
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - stats.myleaguebuilder.com
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref StatsApiTargetGroup
 
     ########################################
     # standings-api
@@ -581,7 +612,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: http://+:8080
+              Value: !Sub "http://+:${StandingsApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${StandingsApiPort}'
             - Name: HTTPS_PORTS
@@ -640,6 +671,36 @@ Resources:
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
             - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+      LoadBalancers:
+        - TargetGroupArn: !Ref StandingsApiTargetGroup
+          ContainerName: standings-api
+          ContainerPort: !Ref StandingsApiPort
+  
+  StandingsApiTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: !Ref StandingsApiPort
+      TargetType: ip
+      HealthCheckPath: /healthz
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200-399"
+  
+  StandingsApiListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
+      Priority: 25
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - standings.myleaguebuilder.com
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref StandingsApiTargetGroup
 
     ########################################
     # season-api
@@ -794,7 +855,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: http://+:8080
+              Value: !Sub "http://+:${GameApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${GameApiPort}'
             - Name: HTTPS_PORTS
@@ -853,6 +914,36 @@ Resources:
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
             - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+      LoadBalancers:
+        - TargetGroupArn: !Ref GameApiTargetGroup
+          ContainerName: game-api
+          ContainerPort: !Ref GameApiPort
+  
+  GameApiTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: !Ref GameApiPort
+      TargetType: ip
+      HealthCheckPath: /healthz
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200-399"
+  
+  GameApiListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
+      Priority: 26
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - game.myleaguebuilder.com
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref GameApiTargetGroup
 
   LeagueApiDiscoveryService:
     Type: AWS::ServiceDiscovery::Service
@@ -969,7 +1060,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: http://+:8080
+              Value: !Sub "http://+:${LeagueBuilderApiGatewayPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${LeagueBuilderApiGatewayPort}'
             - Name: HTTPS_PORTS
@@ -1006,6 +1097,49 @@ Resources:
             - !ImportValue leaguebuilder-dev-PublicSubnet2
           SecurityGroups:
             - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+      LoadBalancers:
+        - TargetGroupArn: !Ref LeagueBuilderApiGatewayTargetGroup
+          ContainerName: league-builder-apigateway
+          ContainerPort: !Ref LeagueBuilderApiGatewayPort
+
+  LeagueBuilderApiGatewayTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: !Ref LeagueBuilderApiGatewayPort
+      TargetType: ip
+      HealthCheckPath: /healthz
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200-399"
+  
+  LeagueBuilderApiGatewayListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
+      Priority: 27
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - gateway.myleaguebuilder.com
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref LeagueBuilderApiGatewayTargetGroup
+
+  
+  LeagueBuilderApiGatewayDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: league-builder-apigateway
+      NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
 
   ########################################
     # league-builder-web-server (public)

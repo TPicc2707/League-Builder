@@ -43,7 +43,7 @@ app.UseApiServices();
 
 app.MapDefaultEndpoints();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Test"))
 {
     await app.InitialiseDatabaseAsync();
 }

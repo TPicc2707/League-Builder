@@ -88,7 +88,7 @@ public interface IStatsService
 
 
     //Health
-    [Get("/stats-service/healthz")]
+    [Get("/stats-service/support/healthz")]
     Task<string> GetStatsHealth();
 
 }

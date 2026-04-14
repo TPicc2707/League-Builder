@@ -18,7 +18,7 @@ public interface IGameService
     Task<GetLeagueGamesByDateResponse> GetLeagueGamesByDate(Guid leagueId, string date);
     [Get("/game-service/games/team/{teamId}")]
     Task<GetGamesByTeamResponse> GetGamesByTeam(Guid teamId);
-    [Get("/standings-service/healthz")]
+    [Get("/standings-service/support/healthz")]
     Task<string> GetGameHealth();
     [Post("/game-service/games")]
     Task<CreateGameResponse> CreateGame(CreateGameRequest game);

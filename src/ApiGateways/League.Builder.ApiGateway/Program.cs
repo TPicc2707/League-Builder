@@ -59,6 +59,9 @@ builder.Services.AddRateLimiter(rateLimiterOptions =>
 
 var app = builder.Build();
 
+// Health check endpoint
+app.MapGet("/healthz", () => Results.Ok("OK")).AllowAnonymous();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
