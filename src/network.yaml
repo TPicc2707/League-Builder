@@ -43,11 +43,53 @@ Resources:
       Tags:
         - Key: Name
           Value: leaguebuilder-dev-public-b
+  
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.3.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: leaguebuilder-dev-private-a
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.4.0/24
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: leaguebuilder-dev-private-b
 
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: leaguebuilder-dev-private-rt
+  
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2
+      RouteTableId: !Ref PrivateRouteTable
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -99,10 +141,6 @@ Resources:
           ToPort: 6002
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
-          FromPort: 6003
-          ToPort: 6003
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
           FromPort: 6004
           ToPort: 6004
           CidrIp: 0.0.0.0/0
@@ -150,6 +188,22 @@ Outputs:
     Value: !Ref PublicSubnet2
     Export:
       Name: leaguebuilder-dev-PublicSubnet2
+
+  PrivateSubnet1:
+    Value: !Ref PrivateSubnet1
+    Export:
+      Name: leaguebuilder-dev-PrivateSubnet1
+
+  PrivateSubnet2:
+    Value: !Ref PrivateSubnet2
+    Export:
+      Name: leaguebuilder-dev-PrivateSubnet2
+
+  PrivateRouteTableId:
+    Description: Private route table for private subnets
+    Value: !Ref PrivateRouteTable
+    Export:
+      Name: leaguebuilder-dev-PrivateRouteTableId
 
   InstanceSecurityGroupId:
     Value: !Ref InstanceSecurityGroup

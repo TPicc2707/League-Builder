@@ -73,7 +73,6 @@ Resources:
           ToPort: 443
           CidrIp: 0.0.0.0/0
 
-
 Outputs:
   ApiSecurityGroupId:
     Description: Security group for API tasks

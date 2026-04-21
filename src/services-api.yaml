@@ -23,13 +23,6 @@ Parameters:
   PlayerApiPort:
     Type: Number
     Default: 6002
-  LeagueBuilderApiGatewayImage:
-    Type: String
-    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/league-builder-apigateway:latest
-    Description: ECR image URI for league-builder-apigateway
-  LeagueBuilderApiGatewayPort:
-    Type: Number
-    Default: 6003
   SeasonApiImage:
     Type: String
     Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/season-api:latest
@@ -125,7 +118,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: !Sub "http://+:${LeagueApiPort}"
+              Value: !Sub "http://0.0.0.0:${LeagueApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${LeagueApiPort}'
             - Name: HTTPS_PORTS
@@ -190,7 +183,7 @@ Resources:
         - TargetGroupArn: !Ref LeagueApiTargetGroup
           ContainerName: league-api
           ContainerPort: !Ref LeagueApiPort
-  
+            
   LeagueApiTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -248,7 +241,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: !Sub "http://+:${TeamApiPort}"
+              Value: !Sub "http://0.0.0.0:${TeamApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${TeamApiPort}'
             - Name: HTTPS_PORTS
@@ -294,6 +287,8 @@ Resources:
 
   TeamApiService:
     Type: AWS::ECS::Service
+    DependsOn:
+      - TeamApiListenerRule
     Properties:
       Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
       LaunchType: FARGATE
@@ -311,7 +306,6 @@ Resources:
         - TargetGroupArn: !Ref TeamApiTargetGroup
           ContainerName: team-api
           ContainerPort: !Ref TeamApiPort
-
     
   TeamApiTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -370,7 +364,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: !Sub "http://+:${PlayerApiPort}"
+              Value: !Sub "http://0.0.0.0:${PlayerApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${PlayerApiPort}'
             - Name: HTTPS_PORTS
@@ -416,6 +410,8 @@ Resources:
 
   PlayerApiService:
     Type: AWS::ECS::Service
+    DependsOn:
+      - PlayerApiListenerRule
     Properties:
       Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
       LaunchType: FARGATE
@@ -491,7 +487,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: !Sub "http://+:${StatsApiPort}"
+              Value: !Sub "http://0.0.0.0:${StatsApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${StatsApiPort}'
             - Name: HTTPS_PORTS
@@ -537,6 +533,8 @@ Resources:
 
   StatsApiService:
     Type: AWS::ECS::Service
+    DependsOn:
+      - StatsApiListenerRule
     Properties:
       Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
       LaunchType: FARGATE
@@ -612,7 +610,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: !Sub "http://+:${StandingsApiPort}"
+              Value: !Sub "http://0.0.0.0:${StandingsApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${StandingsApiPort}'
             - Name: HTTPS_PORTS
@@ -658,6 +656,8 @@ Resources:
 
   StandingsApiService:
     Type: AWS::ECS::Service
+    DependsOn:
+      - StandingsApiListenerRule
     Properties:
       Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
       LaunchType: FARGATE
@@ -733,7 +733,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: !Sub "http://+:${SeasonApiPort}"
+              Value: !Sub "http://0.0.0.0:${SeasonApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${SeasonApiPort}'
             - Name: HTTPS_PORTS
@@ -779,6 +779,8 @@ Resources:
 
   SeasonApiService:
     Type: AWS::ECS::Service
+    DependsOn:
+      - SeasonApiListenerRule
     Properties:
       Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
       LaunchType: FARGATE
@@ -855,7 +857,7 @@ Resources:
             - Name: ASPNETCORE_ENVIRONMENT
               Value: Test
             - Name: ASPNETCORE_URLS
-              Value: !Sub "http://+:${GameApiPort}"
+              Value: !Sub "http://0.0.0.0:${GameApiPort}"
             - Name: HTTP_PORTS
               Value: !Sub '${GameApiPort}'
             - Name: HTTPS_PORTS
@@ -901,6 +903,8 @@ Resources:
 
   GameApiService:
     Type: AWS::ECS::Service
+    DependsOn:
+      - GameApiListenerRule
     Properties:
       Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
       LaunchType: FARGATE
@@ -1021,118 +1025,6 @@ Resources:
     Type: AWS::ServiceDiscovery::Service
     Properties:
       Name: season-api
-      NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
-      DnsConfig:
-        DnsRecords:
-          - Type: A
-            TTL: 10
-      HealthCheckCustomConfig:
-        FailureThreshold: 1
-
-    ########################################
-    # league-builder-apigateway
-    ########################################
-
-  LeagueBuilderApiGatewayLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/league-builder-apigateway
-      RetentionInDays: 7
-
-  LeagueBuilderApiGatewayTask:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: league-builder-apigateway
-      RequiresCompatibilities: 
-        - FARGATE
-      NetworkMode: awsvpc
-      Cpu: '512'
-      Memory: '1024'
-      ExecutionRoleArn: !Ref TaskExecutionRole
-      TaskRoleArn: !Ref TaskExecutionRole
-      ContainerDefinitions:
-        - Name: league-builder-apigateway
-          Image: !Ref LeagueBuilderApiGatewayImage
-          PortMappings:
-            - ContainerPort: !Ref LeagueBuilderApiGatewayPort
-              Protocol: tcp
-          Environment:
-            - Name: ASPNETCORE_ENVIRONMENT
-              Value: Test
-            - Name: ASPNETCORE_URLS
-              Value: !Sub "http://+:${LeagueBuilderApiGatewayPort}"
-            - Name: HTTP_PORTS
-              Value: !Sub '${LeagueBuilderApiGatewayPort}'
-            - Name: HTTPS_PORTS
-              Value: !Sub '${LeagueBuilderApiGatewayPort}'
-            - Name: KEYCLOAK_HTTP
-              Value: http://keycloak.internal:8080
-            - Name: KEYCLOAK_MANAGEMENT
-              Value: http://keycloak.internal:9000
-            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
-              Value: http://aspire.internal:18889
-            - Name: OTEL_EXPORTER_OTLP_PROTOCOL
-              Value: grpc
-            - Name: OTEL_SERVICE_NAME
-              Value: league-builder-apigateway
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: /ecs/league-builder-apigateway
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: ecs
-
-  LeagueBuilderApiGatewayService:
-    Type: AWS::ECS::Service
-    Properties:
-      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
-      LaunchType: FARGATE
-      DesiredCount: 1
-      TaskDefinition: !Ref LeagueBuilderApiGatewayTask
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
-          Subnets:
-            - !ImportValue leaguebuilder-dev-PublicSubnet1
-            - !ImportValue leaguebuilder-dev-PublicSubnet2
-          SecurityGroups:
-            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
-      LoadBalancers:
-        - TargetGroupArn: !Ref LeagueBuilderApiGatewayTargetGroup
-          ContainerName: league-builder-apigateway
-          ContainerPort: !Ref LeagueBuilderApiGatewayPort
-
-  LeagueBuilderApiGatewayTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      VpcId: !ImportValue leaguebuilder-dev-VpcId
-      Protocol: HTTP
-      Port: !Ref LeagueBuilderApiGatewayPort
-      TargetType: ip
-      HealthCheckPath: /healthz
-      HealthCheckProtocol: HTTP
-      Matcher:
-        HttpCode: "200-399"
-  
-  LeagueBuilderApiGatewayListenerRule:
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    Properties:
-      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
-      Priority: 27
-      Conditions:
-        - Field: host-header
-          HostHeaderConfig:
-            Values:
-              - gateway.myleaguebuilder.com
-      Actions:
-        - Type: forward
-          TargetGroupArn: !Ref LeagueBuilderApiGatewayTargetGroup
-
-  
-  LeagueBuilderApiGatewayDiscoveryService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties:
-      Name: league-builder-apigateway
       NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
       DnsConfig:
         DnsRecords:

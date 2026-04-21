@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: League Builder services (subset) on ECS/EC2 
+ 
+Parameters:
+  LeagueBuilderApiGatewayImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/league-builder-apigateway:latest
+    Description: ECR image URI for league-builder-apigateway
+  LeagueBuilderApiGatewayPort:
+    Type: Number
+    Default: 6003
+
+Resources:
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+########################################
+    # league-builder-apigateway
+########################################
+
+  LeagueBuilderApiGatewayLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/league-builder-apigateway
+      RetentionInDays: 7
+
+  LeagueBuilderApiGatewayTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: league-builder-apigateway
+      RequiresCompatibilities: 
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: league-builder-apigateway
+          Image: !Ref LeagueBuilderApiGatewayImage
+          PortMappings:
+            - ContainerPort: !Ref LeagueBuilderApiGatewayPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: !Sub "http://+:${LeagueBuilderApiGatewayPort}"
+            - Name: HTTP_PORTS
+              Value: !Sub '${LeagueBuilderApiGatewayPort}'
+            - Name: HTTPS_PORTS
+              Value: !Sub '${LeagueBuilderApiGatewayPort}'
+            - Name: KEYCLOAK_HTTP
+              Value: http://keycloak.internal:8080
+            - Name: KEYCLOAK_MANAGEMENT
+              Value: http://keycloak.internal:9000
+            - Name: OTEL_EXPORTER_OTLP_ENDPOINT
+              Value: http://aspire.internal:18889
+            - Name: OTEL_EXPORTER_OTLP_PROTOCOL
+              Value: grpc
+            - Name: OTEL_SERVICE_NAME
+              Value: league-builder-apigateway
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/league-builder-apigateway
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  LeagueBuilderApiGatewayService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - LeagueBuilderApiGatewayListenerRule
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      EnableExecuteCommand: true
+      TaskDefinition: !Ref LeagueBuilderApiGatewayTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+      LoadBalancers:
+        - TargetGroupArn: !Ref LeagueBuilderApiGatewayTargetGroup
+          ContainerName: league-builder-apigateway
+          ContainerPort: !Ref LeagueBuilderApiGatewayPort
+
+  LeagueBuilderApiGatewayTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: !Ref LeagueBuilderApiGatewayPort
+      TargetType: ip
+      HealthCheckPath: /healthz
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200-399"
+  
+  LeagueBuilderApiGatewayListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
+      Priority: 27
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - gateway.myleaguebuilder.com
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref LeagueBuilderApiGatewayTargetGroup

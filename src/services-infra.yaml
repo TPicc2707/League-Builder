@@ -780,7 +780,7 @@ Resources:
             - Name: KC_DB_USERNAME
               Value: postgres
             - Name: KC_DB_PASSWORD
-              Value: postgres-dev-password
+              Value: !Ref PostgresPassword
             - Name: KC_HOSTNAME
               Value: https://auth.myleaguebuilder.com
             - Name: KC_HOSTNAME_ADMIN
