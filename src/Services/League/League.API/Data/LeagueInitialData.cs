@@ -18,10 +18,10 @@ public class LeagueInitialData : IInitialData
         new()
         {
             Id = new Guid("5334c996-8457-4cf0-815c-ed2b77c4ff61"),
-            Name = "Dummy Baseball League",
+            Name = "Northern Timber League",
             Sport = "Baseball",
             Description = "This league is made for experienced players.",
-            ImageFile = "league-1.png",
+            ImageFile = "ntl.png",
             EmailAddress = "tony.pic@email.com",
             Created_DateTime = DateTime.Now,
             Created_User = "tony.pic",

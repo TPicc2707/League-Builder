@@ -1,4 +1,4 @@
-﻿@page "/teams"
+﻿ @page "/teams"
 @using League.Builder.Web.Server.Services.Cache
 @inject NavigationManager NavManager
 @inject ILeagueService LeagueService
@@ -37,8 +37,8 @@
                                             </MudButton>
                                         </MudItem>
                                     </MudTabPanel>
-                                    <MudTabPanel Text="Team Name" Class="padtop-20">
-                                        <MudStack Row="true">
+                                    <MudTabPanel Text="Team Name">
+                                        <MudStack Row="true" Class="padtop-20">
                                             <MudItem xs="9">
                                                 <MudTextField @bind-Value="teamName" Placeholder="Team Name" />
                                             </MudItem>
@@ -55,7 +55,7 @@
                                         </MudStack>
                                     </MudTabPanel>
                                     <MudTabPanel Text="State">
-                                        <MudStack Row="true" Class="padtop-20">
+                                        <MudStack Row="true" Class="pt-1">
                                             <MudItem xs="9">
                                                 <MudSelect Label="State" @bind-Value="state">
                                                     @foreach (var state in Constants.States())
@@ -64,7 +64,7 @@
                                                     }
                                                 </MudSelect>
                                             </MudItem>
-                                            <MudItem xs="3" Style="align-content:center">
+                                            <MudItem xs="3" Style="align-content:center" Class="pt-2">
                                                 <MudButton Disabled="@(state == string.Empty)"
                                                            OnClick="@(()=> ExecuteSearch(SearchByStateInternal))"
                                                            Variant="Variant.Filled"

@@ -48,6 +48,70 @@ Resources:
       Roles:
         - !Ref EC2InstanceRole
 
+  # ==========================
+  # EBS VOLUMES
+  # ==========================
+
+  PostgresVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !GetAtt KeycloakPostgresRabbitMqECSInstance.AvailabilityZone
+      Size: 20
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.postgres-data
+
+  SqlVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !GetAtt SqlOllamaECSInstance.AvailabilityZone
+      Size: 40
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.sql-data
+
+  RabbitMqVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !GetAtt KeycloakPostgresRabbitMqECSInstance.AvailabilityZone
+      Size: 20
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.rabbitmq-data
+
+  KeycloakVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !GetAtt KeycloakPostgresRabbitMqECSInstance.AvailabilityZone
+      Size: 20
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.keycloak-data
+
+  OllamaVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !GetAtt SqlOllamaECSInstance.AvailabilityZone
+      Size: 40
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.ollama-data
+  
+  RedisVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !GetAtt SqlOllamaECSInstance.AvailabilityZone
+      Size: 40
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.redis-data
+
   SqlOllamaECSInstance:
     Type: AWS::EC2::Instance
     Properties:
@@ -70,6 +134,9 @@ Resources:
             mkdir -p /var/log/ecs
             mkdir -p /ecs/sqlserver-init
 
+            systemctl stop ecs || true
+            systemctl disable ecs || true
+
             cat << 'EOF' > /ecs/sqlserver-init/create-dbs.sql
             CREATE DATABASE teamDB;
             CREATE DATABASE playerDB;
@@ -78,11 +145,70 @@ Resources:
             CREATE DATABASE statsDB;
             GO
             EOF
-            chown -R ecs:ecs /ecs
-            echo "ECS_CLUSTER=leaguebuilder-dev-cluster" >> /etc/ecs/ecs.config
+
+            cat << 'EOF' > /usr/local/bin/sql-ollama-bootstrap.sh
+            #!/bin/bash
+            set -xe
+            SQL_DEV=/dev/nvme2n1
+            OLLAMA_DEV=/dev/nvme1n1
+            REDIS_DEV=/dev/nvme3n1
+
+            wait_for_device() {
+                local dev="$1"
+                for i in {1..60}; do
+                    if [ -b "$dev" ]; then
+                        echo "Device $dev is ready"
+                        return 0
+                    fi
+                    echo "Waiting for $dev..."
+                    sleep 2
+                done
+                echo "ERROR: Device $dev not found after waiting" >&2
+                return 1
+            }
+
+            wait_for_device "$SQL_DEV"
+            wait_for_device "$OLLAMA_DEV"
+            wait_for_device "$REDIS_DEV"
+
+            blkid "$SQL_DEV" || mkfs -t xfs "$SQL_DEV"
+            blkid "$OLLAMA_DEV" || mkfs -t xfs "$OLLAMA_DEV"
+            blkid "$REDIS_DEV" || mkfs -t xfs "$REDIS_DEV"
+
+            mkdir -p /mnt/sqlserver
+            mkdir -p /mnt/ollama
+            mkdir -p /mnt/redis
+
+            grep -q "$SQL_DEV" /etc/fstab || echo "$SQL_DEV /mnt/sqlserver xfs defaults,nofail 0 0" >> /etc/fstab
+            grep -q "$OLLAMA_DEV" /etc/fstab || echo "$OLLAMA_DEV /mnt/ollama xfs defaults,nofail 0 0" >> /etc/fstab
+            grep -q "$REDIS_DEV" /etc/fstab || echo "$REDIS_DEV /mnt/redis xfs defaults,nofail 0 0" >> /etc/fstab
+
+            mount -a || true
+
+            echo "ECS_CLUSTER=leaguebuilder-dev-cluster" > /etc/ecs/ecs.config
             echo "ECS_INSTANCE_ATTRIBUTES={\"Role\":\"sqlollama\"}" >> /etc/ecs/ecs.config
-            yum install -y ecs-init
-            systemctl enable --now ecs
+
+            systemctl restart ecs
+            EOF
+
+            cat << 'EOF' > /etc/systemd/system/sql-ollama-bootstrap.service
+            [Unit]
+            Description=SQL OLLAMA Bootstrap Service
+            Requires=dev-nvme1n1.device dev-nvme2n1.device dev-nvme3n1.device
+            After=network-online.target dev-nvme1n1.device dev-nvme2n1.device dev-nvme3n1.device
+            Wants=network-online.target
+
+            [Service]
+            Type=oneshot
+            ExecStart=/usr/local/bin/sql-ollama-bootstrap.sh
+            RemainAfterExit=yes
+
+            [Install]
+            WantedBy=multi-user.target
+            EOF
+
+            systemctl daemon-reload
+            systemctl enable sql-ollama-bootstrap.service
       Tags:
         - Key: Name
           Value: leaguebuilder-dev-sqlollama
@@ -106,7 +232,13 @@ Resources:
         Fn::Base64:
           Fn::Sub: |
             #!/bin/bash
+            set -xe
             yum update -y
+            yum install -y ecs-init
+
+            systemctl stop ecs || true
+            systemctl disable ecs || true
+
             mkdir -p /etc/ecs
             mkdir -p /var/log/ecs
             mkdir -p /ecs/postgres-init
@@ -116,11 +248,76 @@ Resources:
             CREATE DATABASE seasonDB;
             EOF
 
-            chown -R ecs:ecs /ecs
-            echo "ECS_CLUSTER=leaguebuilder-dev-cluster" >> /etc/ecs/ecs.config
+            cat << 'EOF' > /usr/local/bin/kpr-bootstrap.sh
+            #!/bin/bash
+            set -xe
+            POSTGRES_DEV=/dev/nvme1n1
+            RABBITMQ_DEV=/dev/nvme2n1
+            KEYCLOAK_DEV=/dev/nvme3n1
+
+            wait_for_device() {
+                local dev="$1"
+                for i in {1..60}; do
+                    if [ -b "$dev" ]; then
+                        echo "Device $dev is ready"
+                        return 0
+                    fi
+                    echo "Waiting for $dev..."
+                    sleep 2
+                done
+                echo "ERROR: Device $dev not found after waiting" >&2
+                return 1
+            }
+
+            wait_for_device "$POSTGRES_DEV"
+            wait_for_device "$RABBITMQ_DEV"
+            wait_for_device "$KEYCLOAK_DEV"
+
+            blkid "$POSTGRES_DEV" || mkfs -t xfs "$POSTGRES_DEV"
+            blkid "$RABBITMQ_DEV" || mkfs -t xfs "$RABBITMQ_DEV"
+            blkid "$KEYCLOAK_DEV" || mkfs -t xfs "$KEYCLOAK_DEV"
+
+            mkdir -p /mnt/postgres
+            mkdir -p /mnt/rabbitmq
+            mkdir -p /mnt/keycloak
+
+            grep -q "$POSTGRES_DEV" /etc/fstab || echo "$POSTGRES_DEV /mnt/postgres xfs defaults,nofail 0 0" >> /etc/fstab
+            grep -q "$RABBITMQ_DEV" /etc/fstab || echo "$RABBITMQ_DEV /mnt/rabbitmq xfs defaults,nofail 0 0" >> /etc/fstab
+            grep -q "$KEYCLOAK_DEV" /etc/fstab || echo "$KEYCLOAK_DEV /mnt/keycloak xfs defaults,nofail 0 0" >> /etc/fstab
+
+            mount -a || true
+
+            chown -R 26:26 /mnt/postgres || true
+            chown -R 999:999 /mnt/rabbitmq || true
+            chown -R 1000:1000 /mnt/keycloak || true
+
+
+            echo "ECS_CLUSTER=leaguebuilder-dev-cluster" > /etc/ecs/ecs.config
             echo "ECS_INSTANCE_ATTRIBUTES={\"Role\":\"kpr\"}" >> /etc/ecs/ecs.config
-            yum install -y ecs-init
-            systemctl enable --now ecs
+
+            systemctl restart ecs
+            EOF
+
+            chmod +x /usr/local/bin/kpr-bootstrap.sh
+
+            cat << 'EOF' > /etc/systemd/system/kpr-bootstrap.service
+            [Unit]
+            Description=KPR Bootstrap Service
+            Requires=dev-nvme1n1.device dev-nvme2n1.device dev-nvme3n1.device
+            After=network-online.target dev-nvme1n1.device dev-nvme2n1.device dev-nvme3n1.device
+            Wants=network-online.target
+
+            [Service]
+            Type=oneshot
+            ExecStart=/usr/local/bin/kpr-bootstrap.sh
+            RemainAfterExit=yes
+
+            [Install]
+            WantedBy=multi-user.target
+            EOF
+
+            systemctl daemon-reload
+            systemctl enable kpr-bootstrap.service
       Tags:
         - Key: Name
           Value: leaguebuilder-dev-kpr
@@ -152,3 +349,33 @@ Outputs:
     Value: !GetAtt KeycloakPostgresRabbitMqECSInstance.AvailabilityZone
     Export:
       Name: leaguebuilder-dev-KeycloakPostgresRabbitMqInstanceAZ
+  
+  PostgresVolumeId:
+    Value: !Ref PostgresVolume
+    Export:
+      Name: leaguebuilder-dev-PostgresVolumeId
+  
+  RabbitMqVolumeId:
+    Value: !Ref RabbitMqVolume
+    Export:
+      Name: leaguebuilder-dev-RabbitMqVolumeId
+
+  KeycloakVolumeId:
+    Value: !Ref KeycloakVolume
+    Export:
+      Name: leaguebuilder-dev-KeycloakVolumeId
+  
+  OllamaVolumeId:
+    Value: !Ref OllamaVolume
+    Export:
+      Name: leaguebuilder-dev-OllamaVolumeId
+  
+  RedisVolumeId:
+    Value: !Ref RedisVolume
+    Export:
+      Name: leaguebuilder-dev-RedisVolumeId
+
+  SqlVolumeId:
+    Value: !Ref SqlVolume
+    Export:
+      Name: leaguebuilder-dev-SqlVolumeId

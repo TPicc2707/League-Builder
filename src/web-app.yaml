@@ -1,0 +1,141 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: League Builder services (subset) on ECS/EC2 
+
+Parameters:
+  LeagueBuilderWebServerImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/league-builder-web-server:latest
+    Description: ECR image URI for league-builder-web-server
+  LeagueBuilderWebServerPort:
+    Type: Number
+    Default: 6008
+  
+Resources:
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AllowS3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                  - s3:CopyObject
+                Resource:
+                  - arn:aws:s3:::league-builder-images
+                  - arn:aws:s3:::league-builder-images/*
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  ########################################
+    # league-builder-web-server (public)
+  ########################################
+
+  LeagueBuilderWebServerLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/league-builder-web-server
+      RetentionInDays: 7
+
+  LeagueBuilderWebServerTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: league-builder-web-server
+      RequiresCompatibilities: 
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskRole
+      ContainerDefinitions:
+        - Name: league-builder-web-server
+          Image: !Ref LeagueBuilderWebServerImage
+          PortMappings:
+            - ContainerPort: !Ref LeagueBuilderWebServerPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: !Sub "http://+:${LeagueBuilderWebServerPort}"
+            - Name: ConnectionStrings__cache
+              Value: redis.internal:6379
+            - Name: ConnectionStrings__ollama
+              Value: http://ollama.internal:11434
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/league-builder-web-server
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+  
+  LeagueBuilderWebServerService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - LeagueBuilderWebServerListenerRule
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref LeagueBuilderWebServerTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+      LoadBalancers:
+        - TargetGroupArn: !Ref LeagueBuilderWebServerTargetGroup
+          ContainerName: league-builder-web-server
+          ContainerPort: !Ref LeagueBuilderWebServerPort
+
+  LeagueBuilderWebServerTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: !Ref LeagueBuilderWebServerPort
+      TargetType: ip
+      HealthCheckPath: /healthz
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200-399"
+
+  LeagueBuilderWebServerListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
+      Priority: 28
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - app.myleaguebuilder.com
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref LeagueBuilderWebServerTargetGroup

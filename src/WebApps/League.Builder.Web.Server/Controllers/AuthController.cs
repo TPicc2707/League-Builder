@@ -50,6 +50,8 @@ public class AuthController : ControllerBase
             return Unauthorized(new RefreshResult { Active = false });
         }
 
+        Console.WriteLine($"access_token: {newTokens.AccessToken}");
+
         props.UpdateTokenValue("access_token", newTokens.AccessToken);
         props.UpdateTokenValue("refresh_token", newTokens.RefreshToken);
         props.UpdateTokenValue("expires_at", newTokens.ExpiresAt);

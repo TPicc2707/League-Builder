@@ -94,6 +94,7 @@
         try
         {
             var response = await SeasonService.CreateSeason(new CreateSeasonRequest(model.Year, model.Description));
+            await SeasonLocalCache.DeleteSeasonsCache();
 
             await LoadAllAsync(response.Id);
 

@@ -24,7 +24,7 @@ internal static class LoginLogoutEndpointRouteBuilderExtensions
                 },
                 [
                     CookieAuthenticationDefaults.AuthenticationScheme,
-                        OpenIdConnectDefaults.AuthenticationScheme
+                        "keycloak"
                 ]);
         });
 
@@ -53,6 +53,6 @@ internal static class LoginLogoutEndpointRouteBuilderExtensions
         },
         [
             CookieAuthenticationDefaults.AuthenticationScheme,
-            OpenIdConnectDefaults.AuthenticationScheme
+            "keycloak"
         ]);
 }

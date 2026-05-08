@@ -144,6 +144,15 @@ Resources:
       DomainValidationOptions:
         - DomainName: gateway.myleaguebuilder.com
           HostedZoneId: Z017284424G0ZTG1FUTE6
+
+  WebServerCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: app.myleaguebuilder.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: app.myleaguebuilder.com
+          HostedZoneId: Z017284424G0ZTG1FUTE6
   
   HttpsListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -215,6 +224,13 @@ Resources:
       ListenerArn: !Ref HttpsListener
       Certificates:
         - CertificateArn: !Ref ApiGatewayCertificate
+
+  WebServerListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Certificates:
+        - CertificateArn: !Ref WebServerCertificate
 
   KeycloakListenerCertificate:
     Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
@@ -324,6 +340,16 @@ Resources:
         DNSName: !GetAtt ApplicationLoadBalancer.DNSName
         HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
 
+  WebServerDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: Z017284424G0ZTG1FUTE6
+      Name: app.myleaguebuilder.com.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+
   RabbitMqSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -391,70 +417,7 @@ Resources:
       SecurityGroups:
         - !ImportValue leaguebuilder-dev-ALBSecurityGroupId
 
-  # ==========================
-  # EBS VOLUMES
-  # ==========================
-
-  PostgresVolume:
-    Type: AWS::EC2::Volume
-    Properties:
-      AvailabilityZone: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqInstanceAZ
-      Size: 20
-      VolumeType: gp3
-      Tags:
-        - Key: Name
-          Value: league.builder.postgres-data
-
-  SqlVolume:
-    Type: AWS::EC2::Volume
-    Properties:
-      AvailabilityZone: !ImportValue leaguebuilder-dev-SqlOllamaInstanceAZ
-      Size: 40
-      VolumeType: gp3
-      Tags:
-        - Key: Name
-          Value: league.builder.sql-data
-
-  RabbitMqVolume:
-    Type: AWS::EC2::Volume
-    Properties:
-      AvailabilityZone: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqInstanceAZ
-      Size: 20
-      VolumeType: gp3
-      Tags:
-        - Key: Name
-          Value: league.builder.rabbitmq-data
-
-  KeycloakVolume:
-    Type: AWS::EC2::Volume
-    Properties:
-      AvailabilityZone: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqInstanceAZ
-      Size: 20
-      VolumeType: gp3
-      Tags:
-        - Key: Name
-          Value: league.builder.keycloak-data
-
-  OllamaVolume:
-    Type: AWS::EC2::Volume
-    Properties:
-      AvailabilityZone: !ImportValue leaguebuilder-dev-SqlOllamaInstanceAZ
-      Size: 40
-      VolumeType: gp3
-      Tags:
-        - Key: Name
-          Value: league.builder.ollama-data
   
-  RedisVolume:
-    Type: AWS::EC2::Volume
-    Properties:
-      AvailabilityZone: !ImportValue leaguebuilder-dev-SqlOllamaInstanceAZ
-      Size: 40
-      VolumeType: gp3
-      Tags:
-        - Key: Name
-          Value: league.builder.redis-data
-
   # ==========================
   # VOLUME ATTACHMENTS
   # (assumes you mount these devices in user data, e.g. /mnt/postgres, etc.)
@@ -464,44 +427,45 @@ Resources:
     Type: AWS::EC2::VolumeAttachment
     Properties:
       InstanceId: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqECSInstance
-      VolumeId: !Ref PostgresVolume
+      VolumeId: !ImportValue leaguebuilder-dev-PostgresVolumeId
       Device: /dev/xvdf
 
   SqlVolumeAttachment:
     Type: AWS::EC2::VolumeAttachment
     Properties:
       InstanceId: !ImportValue leaguebuilder-dev-SqlOllamaECSInstance
-      VolumeId: !Ref SqlVolume
+      VolumeId: !ImportValue leaguebuilder-dev-SqlVolumeId
       Device: /dev/xvdg
 
   RabbitMqVolumeAttachment:
     Type: AWS::EC2::VolumeAttachment
     Properties:
       InstanceId: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqECSInstance
-      VolumeId: !Ref RabbitMqVolume
+      VolumeId: !ImportValue leaguebuilder-dev-RabbitMqVolumeId
       Device: /dev/xvdh
 
   KeycloakVolumeAttachment:
     Type: AWS::EC2::VolumeAttachment
     Properties:
       InstanceId: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqECSInstance
-      VolumeId: !Ref KeycloakVolume
+      VolumeId: !ImportValue leaguebuilder-dev-KeycloakVolumeId
       Device: /dev/xvdi
 
   OllamaVolumeAttachment:
     Type: AWS::EC2::VolumeAttachment
     Properties:
       InstanceId: !ImportValue leaguebuilder-dev-SqlOllamaECSInstance
-      VolumeId: !Ref OllamaVolume
+      VolumeId: !ImportValue leaguebuilder-dev-OllamaVolumeId
       Device: /dev/xvdj
   
   RedisVolumeAttachment:
     Type: AWS::EC2::VolumeAttachment
     Properties:
       InstanceId: !ImportValue leaguebuilder-dev-SqlOllamaECSInstance
-      VolumeId: !Ref RedisVolume
+      VolumeId: !ImportValue leaguebuilder-dev-RedisVolumeId
       Device: /dev/xvdt
 
+  
   PostgresLogs:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -540,10 +504,15 @@ Resources:
           MountPoints:
             - ContainerPath: /docker-entrypoint-initdb.d
               SourceVolume: postgres-init
+            - ContainerPath: /var/lib/postgresql/data
+              SourceVolume: postgres-data
       Volumes:
         - Name: postgres-init
           Host:
             SourcePath: /ecs/postgres-init
+        - Name: postgres-data
+          Host:
+            SourcePath: /mnt/postgres
 
   PostgresService:
     Type: AWS::ECS::Service
@@ -604,6 +573,8 @@ Resources:
           MountPoints:
             - ContainerPath: /init
               SourceVolume: sqlserver-init
+            - ContainerPath: /var/opt/mssql
+              SourceVolume: sqlserver-data
           EntryPoint:
             - /bin/bash
             - -c
@@ -635,6 +606,9 @@ Resources:
         - Name: sqlserver-init
           Host:
             SourcePath: /ecs/sqlserver-init
+        - Name: sqlserver-data
+          Host:
+            SourcePath: /mnt/sqlserver
 
   SqlServerService:
     Type: AWS::ECS::Service
@@ -694,6 +668,13 @@ Resources:
               awslogs-group: /ecs/rabbitmq
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
+          MountPoints:
+            - SourceVolume: rabbitmq-data
+              ContainerPath: /var/lib/rabbitmq
+      Volumes:
+        - Name: rabbitmq-data
+          Host:
+            SourcePath: /mnt/rabbitmq
 
   RabbitMqService:
     Type: AWS::ECS::Service
@@ -793,6 +774,12 @@ Resources:
               Value: "true"
             - Name: KC_HTTP_MANAGEMENT_PORT
               Value: "9000"
+            - Name: KC_CACHE
+              Value: "local"
+            - Name: KC_CACHE_STACK
+              Value: "local"
+            - Name: KC_CACHE_CONFIG_FILE
+              Value: "cache-local.xml"
           HealthCheck:
             Command:
               - CMD-SHELL
@@ -807,6 +794,13 @@ Resources:
               awslogs-group: /ecs/keycloak
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
+          MountPoints:
+            - SourceVolume: keycloak-data
+              ContainerPath: /opt/keycloak/data
+      Volumes:
+        - Name: keycloak-data
+          Host:
+            SourcePath: /mnt/keycloak
 
   KeycloakService:
     Type: AWS::ECS::Service
@@ -911,6 +905,13 @@ Resources:
               awslogs-group: /ecs/ollama
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
+          MountPoints:
+            - SourceVolume: ollama-data
+              ContainerPath: /root/.ollama
+      Volumes:
+        - Name: ollama-data
+          Host:
+            SourcePath: /mnt/ollama
 
   OllamaService:
     Type: AWS::ECS::Service
@@ -970,6 +971,13 @@ Resources:
               awslogs-group: /ecs/redis
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
+          MountPoints:
+            - SourceVolume: redis-data
+              ContainerPath: /data
+      Volumes:
+        - Name: redis-data
+          Host:
+            SourcePath: /mnt/redis
 
   RedisService:
     Type: AWS::ECS::Service

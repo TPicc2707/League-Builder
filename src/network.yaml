@@ -161,8 +161,16 @@ Resources:
           ToPort: 6008
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 11434
+          ToPort: 11434
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 15672

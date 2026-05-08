@@ -31,7 +31,7 @@ internal class InitialData
                                                   TeamName.Of("Cannons"),
                                                   teamAddress: address1,
                                                   "We love playing baseball.",
-                                                  "team.png",
+                                                  "cannons.png",
                                                   "#ffffff",
                                                   manager1);
 
@@ -40,7 +40,7 @@ internal class InitialData
                                                   TeamName.Of("Bombers"),
                                                   teamAddress: address2,
                                                   "We love playing baseball.",
-                                                  "team.png",
+                                                  "bomber.png",
                                                   "#ffffff",
                                                   manager2);
 
@@ -49,8 +49,8 @@ internal class InitialData
                                                   TeamName.Of("Eagles"),
                                                   teamAddress: address3,
                                                   "We love playing football.",
+                                                  "eagles.png",
                                                   "#ffffff",
-                                                  "team.png",
                                                   manager3);
 
             var team4 = Domain.Models.Team.Create(TeamId.Of(new Guid("c9dcbacb-16e7-45e0-a496-b66ef212ac16")),
@@ -58,8 +58,8 @@ internal class InitialData
                                                   TeamName.Of("Pirates"),
                                                   teamAddress: address4,
                                                   "We love playing football.",
+                                                  "pirates.png",
                                                   "#ffffff",
-                                                  "team.png",
                                                   manager4);
 
             var team5 = Domain.Models.Team.Create(TeamId.Of(new Guid("0ef05e29-7562-4e93-b710-f875fe293db9")),
@@ -67,8 +67,8 @@ internal class InitialData
                                                   TeamName.Of("Cardinals"),
                                                   teamAddress: address5,
                                                   "We love playing baseball.",
+                                                  "cardinals.png",
                                                   "#ffffff",
-                                                  "team.png",
                                                   manager5);
 
             return new List<Domain.Models.Team> { team1, team2, team3, team4, team5 };
