@@ -2,10 +2,11 @@
 
 public class PlayerStatRecord
 {
-    public PlayerStatRecord(string team, string teamImage, BaseballStatsModel stats)
+    public PlayerStatRecord(string team, string teamImage, DateTime gameDate, BaseballStatsModel stats)
     {
         OpposingTeam = team;
         OpposingTeamImage = teamImage;
+        GameDate = gameDate;
         BaseballStatsModel = stats;
     }
 
@@ -25,6 +26,7 @@ public class PlayerStatRecord
 
     public string OpposingTeam { get; set; }
     public string OpposingTeamImage { get; set; }
+    public DateTime GameDate { get; set; }
     public BaseballStatsModel BaseballStatsModel { get; set; }
     public BasketballStatsModel BasketballStatsModel { get; set; }
     public FootballStatsModel FootballStatsModel { get; set; }

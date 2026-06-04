@@ -21,6 +21,10 @@ public class UpdateGameModel
     public int HomeTeamScore { get; set; }
 
     public GameStatus GameStatus { get; set; }
+    public List<int>? AwayInningRuns { get; set; }
+    public List<int>? HomeInningRuns { get; set; }
+    public int? AwayTotalHits { get; set; }
+    public int? HomeTotalHits { get; set; }
 }
 
 public class UpdateGameModelValidator : AbstractValidator<UpdateGameModel>

@@ -214,8 +214,9 @@
             : await TeamService.GetTeamById(game.HomeTeam.Id);
 
             var teamImage = await ImageService.GetTeamImageAsync(LeagueModel.League, team.Team);
+            var gameDate = game.GameDetail.StartTime;
 
-            PlayerStats.Add(new PlayerStatRecord(opposingTeam, teamImage, stat));
+            PlayerStats.Add(new PlayerStatRecord(opposingTeam, teamImage, gameDate, stat));
         }
     }
 
@@ -239,7 +240,7 @@
         HittingTotalsModel.BattingAverage = SafeAvg(HittingTotalsModel.Hits, HittingTotalsModel.AtBats);
         HittingTotalsModel.Slugging = SafeSlugging(HittingTotalsModel.TBs, HittingTotalsModel.AtBats);
 
-        HittingTotalsModel.OBP = SafeOBP(HittingTotalsModel.Hits, HittingTotalsModel.Walks, HittingTotalsModel.HBPs, HittingTotalsModel.SFs);
+        HittingTotalsModel.OBP = SafeOBP(HittingTotalsModel.Hits, HittingTotalsModel.Walks, HittingTotalsModel.HBPs, HittingTotalsModel.SFs, HittingTotalsModel.AtBats);
         HittingTotalsModel.OPS = HittingTotalsModel.OBP + HittingTotalsModel.Slugging;
 
         PitchingTotalsModel.ERA = SafeERA(PitchingTotalsModel.Runs, PitchingTotalsModel.Innings);
@@ -252,10 +253,10 @@
     private decimal SafeSlugging(int totalBases, int atBats) =>
         atBats == 0 ? 0 : (decimal)totalBases / atBats;
 
-    private decimal SafeOBP(int hits, int walks, int hbp, int sf)
+    private decimal SafeOBP(int hits, int walks, int hbp, int sf, int atBats)
     {
         var num = hits + walks + hbp;
-        var den = num + sf;
+        var den = atBats + walks + hbp + sf;
         return den == 0 ? 0 : (decimal)num / den;
     }
 

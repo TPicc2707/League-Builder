@@ -22,6 +22,7 @@
 @inject IStandingsLocalCacheService StandingsLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
+@inject ImageService ImageService
 
 <AuthorizeView Roles="@String.Concat(Roles.UpdateGames, ", ", Roles.UpdateStandings)" Context="auth">
     <Authorized>
@@ -235,6 +236,9 @@
             (t) => TeamLocalCache.SetTeamsByLeagueCache(GameModel.Game.LeagueId.ToString(), t)
         );
 
+        foreach(var team in TeamsResponse.Teams)
+            team.Image = await ImageService.GetTeamImageAsync(LeagueResponse.League, team);
+
         var awayTeam = await DataLoader.GetOrLoad(
            () => TeamLocalCache.GetTeamByIdCache(GameModel.Game.AwayTeam.Id.ToString()),
            () => TeamService.GetTeamById(GameModel.Game.AwayTeam.Id),
@@ -275,6 +279,10 @@
         model.HomeTeamScore = g.GameDetail.HomeTeamScore;
         model.GameStatus = g.GameStatus;
         model.WinningTeamId = g.WinningTeamId ?? g.HomeTeam.Id;
+        model.AwayInningRuns = g.GameDetail.AwayInningRuns?.Count != 0 ? g.GameDetail.AwayInningRuns : null;
+        model.HomeInningRuns = g.GameDetail.HomeInningRuns?.Count != 0 ? g.GameDetail.HomeInningRuns : null;
+        model.AwayTotalHits = g.GameDetail.AwayTotalHits is not null ? g.GameDetail.AwayTotalHits : null;
+        model.HomeTotalHits = g.GameDetail.HomeTotalHits is not null ? g.GameDetail.HomeTotalHits : null;
 
         model.StartDate = g.GameDetail.StartTime;
         model.StartTime = g.GameDetail.StartTime.TimeOfDay;
@@ -384,7 +392,13 @@
 
             if (model.StartDate.HasValue)
             {
-                if(model.OriginalAwayTeamId != model.AwayTeamId)
+                var originalTeams = new HashSet<Guid>
+                {
+                    model.OriginalHomeTeamId,
+                    model.OriginalAwayTeamId
+                };
+
+                if(!originalTeams.Contains(model.AwayTeamId))
                 {
                     await ValidateTeamGameLimit(
                         model.AwayTeamId,
@@ -395,7 +409,7 @@
                 );
 
                 }
-                if(model.OriginalHomeTeamId != model.HomeTeamId)
+                if (!originalTeams.Contains(model.HomeTeamId))
                 {
                     await ValidateTeamGameLimit(
                         model.HomeTeamId,
@@ -438,7 +452,7 @@
             model.LeagueId,
             model.WinningTeamId,
             SeasonResponse.Season.Id,
-            new GameDetailModel(model.AwayTeamScore, model.HomeTeamScore, start, end),
+            new GameDetailModel(model.AwayTeamScore, model.HomeTeamScore, start, end, model.AwayInningRuns, model.HomeInningRuns, model.AwayTotalHits, model.HomeTotalHits),
             new AwayTeamDetailModel(model.AwayTeamId, ""),
             new HomeTeamDetailModel(model.HomeTeamId, ""),
             (int)model.GameStatus
@@ -512,7 +526,14 @@
     {
         foreach (var team in TeamsResponse.Teams)
         {
-            <MudSelectItem Value="team.Id">@team.TeamName</MudSelectItem>
+            <MudSelectItem Value="@team.Id">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudAvatar Size="Size.Small">
+                        <MudImage Src="@team.Image" Alt="Team Image" />
+                    </MudAvatar>
+                    <MudText>@team.TeamName</MudText>
+                </MudStack>
+            </MudSelectItem>
             ;
         }
     };
@@ -530,10 +551,10 @@
     {
         foreach (var status in Enum.GetValues<GameStatus>().Where(x => x != GameStatus.Completed))
         {
-            <MudSelectItem Value="status">@status</MudSelectItem>
+            <MudSelectItem Value="status">@Constants.GameStatus(status)</MudSelectItem>
             ;
         }
-    };
+    };  // work on make this a string that has spaces instead of the enum name
 
     private Func<string, string, RenderFragment> StepHeader = (string icon, string title) => __builder =>
     {

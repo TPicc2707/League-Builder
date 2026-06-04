@@ -13,6 +13,7 @@
             <col />
             <col />
             <col />
+            <col />
             <col style="width:20px;" />
         </ColGroup>
         <HeaderContent>
@@ -20,6 +21,7 @@
             <MudTh Style="font-weight:bold" Class="mud-theme-primary">S</MudTh>
             <MudTh Style="font-weight:bold" Class="mud-theme-primary">W</MudTh>
             <MudTh Style="font-weight:bold" Class="mud-theme-primary">L</MudTh>
+            <MudTh Style="font-weight:bold" Class="mud-theme-primary">SV</MudTh>
             <MudTh Style="font-weight:bold" Class="mud-theme-primary">IP</MudTh>
             <MudTh Style="font-weight:bold" Class="mud-theme-primary">H</MudTh>
             <MudTh Style="font-weight:bold" Class="mud-theme-primary">R</MudTh>
@@ -38,7 +40,8 @@
             }
             <MudTd DataLabel="W">@context.Wins</MudTd>
             <MudTd DataLabel="L">@context.Losses</MudTd>
-            <MudTd DataLabel="IP"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Innings</MudText></MudTd>
+            <MudTd DataLabel="SV"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.Saves</MudText></MudTd>
+            <MudTd DataLabel="IP"><MudText Style="font-size: .875rem;">@context.Innings.ToString("#0.0")</MudText></MudTd>
             <MudTd DataLabel="H">@context.HitsAllowed</MudTd>
             <MudTd DataLabel="R">@context.PitchingRuns</MudTd>
             <MudTd DataLabel="BB"><MudText Style="margin-left: 5px; font-size: .875rem;">@context.WalksAllowed</MudText></MudTd>
@@ -54,6 +57,9 @@
             </MudTd>
             <MudTd DataLabel="L">
                 <MudTextField @bind-Value="context.Losses" Style="font-size: .875rem;" Required />
+            </MudTd>
+            <MudTd DataLabel="SV">
+                <MudTextField @bind-Value="context.Saves" Style="margin-left: 5px; font-size: .875rem;" Required />
             </MudTd>
             <MudTd DataLabel="IP">
                 <MudTextField @bind-Value="context.Innings" Style="margin-left: 5px; font-size: .875rem;" Required />

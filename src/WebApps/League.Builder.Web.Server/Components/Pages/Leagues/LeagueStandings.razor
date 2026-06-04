@@ -73,7 +73,7 @@
                             <MudTd DataLabel="Losses">@context.StandingsDetail.Losses</MudTd>
                             <MudTd DataLabel="Win Percentage">@context.WinPercentage.ToString("#0.000")</MudTd>
                             <MudTd DataLabel="Games Back">
-                                @(context.GamesBack == 0
+                                @(context.GamesBack <= 0
                                     ? firstPlacePlaceholder
                                     : context.GamesBack.ToString("#0.0"))
                                 </MudTd>

@@ -17,6 +17,7 @@
 @inject IGameLocalCacheService GameLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
+@inject ImageService ImageService
 
 <AuthorizeView Roles="@String.Concat(Roles.CreateGames)" Context="auth">
     <Authorized>
@@ -135,7 +136,15 @@
                 () => TeamService.GetTeamsByLeague(leagueId),
                 (t) => TeamLocalCache.SetTeamsByLeagueCache(Id, t)
             );
+            LeagueResponse = await DataLoader.GetOrLoad(
+                () => LeagueLocalCache.GetLeagueByIdCache(Id),
+                () => LeagueService.GetLeague(leagueId),
+                (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
+            );
             Teams = TeamsResponse.Teams.ToList();
+            foreach(var team in Teams)
+                team.Image = await ImageService.GetTeamImageAsync(LeagueResponse.League, team);
+
             if(Teams.Count >= 2)
             {
                 model.AwayTeamId = Teams[0].Id;
@@ -280,7 +289,7 @@
         var gameTime = model.StartDate.Value.Date.Add(model.StartTime.Value);
         var leagueId = Guid.Parse(Id);
         SeasonResponse = await SeasonService.GetSeasonByYear(gameTime.Year);
-        Models.Game.GameDetailModel gameDetail = new GameDetailModel(0, 0, gameTime, null);
+        Models.Game.GameDetailModel gameDetail = new GameDetailModel(0, 0, gameTime, null, null, null, null, null);
         Models.Game.AwayTeamDetailModel awayTeamDetail = new AwayTeamDetailModel(model.AwayTeamId, string.Empty);
         Models.Game.HomeTeamDetailModel homeTeamDetail = new HomeTeamDetailModel(model.HomeTeamId, string.Empty);
         CreateGameRecord createGameModel = new CreateGameRecord(leagueId, null, SeasonResponse.Season.Id, gameDetail, awayTeamDetail, homeTeamDetail);
@@ -306,7 +315,14 @@
     {
         foreach(var team in Teams)
         {
-            <MudSelectItem Value="@team.Id">@team.TeamName</MudSelectItem>
+            <MudSelectItem Value="@team.Id">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudAvatar Size="Size.Small">
+                        <MudImage Src="@team.Image" Alt="Team Image" />
+                    </MudAvatar>
+                    <MudText>@team.TeamName</MudText>
+                </MudStack>
+            </MudSelectItem>
             ;
         }
     };

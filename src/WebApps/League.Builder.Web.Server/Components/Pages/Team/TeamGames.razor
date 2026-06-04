@@ -342,12 +342,18 @@
             bool isAway = game.AwayTeam.Id == TeamModel.Team.Id;
             var opponent = isAway ? new OpponentView(game.HomeTeam.Id, game.HomeTeam.TeamName, game.HomeTeamImage) : new OpponentView(game.AwayTeam.Id, game.AwayTeam.TeamName, game.AwayTeamImage);
         }
+        @if(isAway){
+            <MudText Style="font-size:14px;">@@</MudText>
+        }
+        else{
+            <MudText Style="font-size:14px;">vs</MudText>
+        }
         <MudAvatar Size="Size.Small">
             <MudImage Src="@opponent.Image" Alt="Team Image" />
         </MudAvatar>
         @if(CanUpdateGames)
         {
-            <MudLink Style="@($"color: {TeamModel.Team.TeamColor} !important")" Href="@($"/{editSport}{game.Id}")">
+            <MudLink Style="@($"color: {TeamModel.Team.TeamColor} !important")" Href="@($"/{editSport}/{game.Id}")">
                 @opponent.TeamName
             </MudLink>
         }

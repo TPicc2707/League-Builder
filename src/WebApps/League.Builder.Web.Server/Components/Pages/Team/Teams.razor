@@ -119,22 +119,22 @@
                                                     @if (CanReadGames)
                                                     {
                                                         <MudTooltip Text="Schedule" Color="Color.Secondary">
-                                                            <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/teamgames/{context.Id}")" />
+                                                            <MudIconButton Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Tertiary" Edge="Edge.Start" Target="_blank" Href="@($"/teamgames/{context.Id}")" />
                                                         </MudTooltip>
 
                                                     }
                                                     <MudTooltip Text="Stats" Color="Color.Secondary">
                                                         @if (context.Sport == SportName.BASEBALL)
                                                         {
-                                                            <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/baseballteamstats/{context.Id}")" />
+                                                            <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Target="_blank" Href="@($"/baseballteamstats/{context.Id}")" />
                                                         }
                                                         @if (context.Sport == SportName.BASKETBALL)
                                                         {
-                                                            <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/basketballteamstats/{context.Id}")" />
+                                                            <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Target="_blank" Href="@($"/basketballteamstats/{context.Id}")" />
                                                         }
                                                         @if (context.Sport == SportName.FOOTBALL)
                                                         {
-                                                            <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/footballteamstats/{context.Id}")" />
+                                                            <MudIconButton Icon="@Icons.Material.Filled.QueryStats" Color="Color.Tertiary" Edge="Edge.Start" Target="_blank" Href="@($"/footballteamstats/{context.Id}")" />
                                                         }
                                                     </MudTooltip>
                                                 }
@@ -149,7 +149,7 @@
                                                 @if (CanUpdateTeams)
                                                 {
                                                     <MudTooltip Text="Update" Color="Color.Secondary">
-                                                        <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Href="@($"/updateteam/{context.Id}")" />
+                                                        <MudIconButton Icon="@Icons.Material.Filled.Update" Color="Color.Tertiary" Edge="Edge.Start" Target="_blank" Href="@($"/updateteam/{context.Id}")" />
                                                     </MudTooltip>
                                                 }
                                             </MudTd>

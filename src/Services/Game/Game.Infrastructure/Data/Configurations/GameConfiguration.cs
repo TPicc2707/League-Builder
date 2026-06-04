@@ -1,4 +1,5 @@
 ﻿using Game.Domain.Enum;
+using System.Text.Json;
 
 namespace Game.Infrastructure.Data.Configurations;
 
@@ -46,6 +47,18 @@ public class GameConfiguration : IEntityTypeConfiguration<Domain.Models.Game>
                 gameDetailBuilder.Property(x => x.HomeTeamScore);
                 gameDetailBuilder.Property(x => x.StartTime);
                 gameDetailBuilder.Property(x => x.EndTime);
+                gameDetailBuilder.Property(x => x.AwayInningRuns)
+                    .HasConversion(
+                        v => v == null ? null : JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                        v => v == null ? null : JsonSerializer.Deserialize<List<int>>(v)
+                    ).HasColumnType("nvarchar(max)");
+                gameDetailBuilder.Property(x => x.HomeInningRuns)
+                    .HasConversion(
+                        v => v == null ? null : JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                        v => v == null ? null : JsonSerializer.Deserialize<List<int>>(v)
+                    ).HasColumnType("nvarchar(max)");
+                gameDetailBuilder.Property(x => x.AwayTotalHits);
+                gameDetailBuilder.Property(x => x.AwayTotalHits);
             });
 
         builder.Property(t => t.GameStatus)

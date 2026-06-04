@@ -22,7 +22,7 @@ public class CreateGameHandler(IApplicationDbContext dbContext, IBus _bus)
 
     private Domain.Models.Game CreateNewGame(GameDto gameDto)
     {
-        var gameDetail = GameDetail.Of(gameDto.GameDetail.AwayTeamScore, gameDto.GameDetail.HomeTeamScore, gameDto.GameDetail.StartTime, gameDto.GameDetail.EndTime);
+        var gameDetail = GameDetail.Of(gameDto.GameDetail.AwayTeamScore, gameDto.GameDetail.HomeTeamScore, gameDto.GameDetail.StartTime, gameDto.GameDetail.EndTime, null, null, null, null);
 
         var newGame = Domain.Models.Game.Create(
             id: GameId.Of(Guid.NewGuid()),

@@ -11,6 +11,9 @@ public class GameSimulationState
     public List<int> AwayInningsRuns { get; set; } = new();
     public List<int> HomeInningsRuns { get; set; } = new();
 
+    public int TotalAwayHits { get; set; } = 0;
+    public int TotalHomeHits { get; set; } = 0;
+
     public int HomeScore { get; set; } = 0;
     public int AwayScore { get; set; } = 0;
 

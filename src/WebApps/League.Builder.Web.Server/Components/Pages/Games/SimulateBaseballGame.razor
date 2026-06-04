@@ -131,6 +131,7 @@
                                 <MudTh>@inningNumber</MudTh>
                             }
                             <MudTh>R</MudTh>
+                            <MudTh>H</MudTh>
                         </HeaderContent>
                         <RowTemplate>
                             @if(context == "Away")
@@ -146,6 +147,7 @@
                                     <MudTd>@SimState?.AwayInningsRuns.ElementAtOrDefault(awayRuns - 1)</MudTd>
                                 }
                                 <MudTd>@SimState.AwayScore</MudTd>
+                                <MudTd>@SimState.TotalAwayHits</MudTd>
                             }
                             else
                             {
@@ -160,6 +162,7 @@
                                     <MudTd>@SimState?.HomeInningsRuns.ElementAtOrDefault(homeRuns - 1)</MudTd>
                                 }
                                 <MudTd>@SimState.HomeScore</MudTd>
+                                <MudTd>@SimState.TotalHomeHits</MudTd>
                             }
                         </RowTemplate>
                     </MudTable>
@@ -227,8 +230,42 @@
                             <div class="base first @((SimState?.Runners.FirstOccupied ?? false) ? "occupied" : "")"></div>
                             <div class="home-base"></div>
                         </div>
+                        <div class="outs-container">
+                            @if ((bool)SimState?.TopOfInning)
+                            {
+                                <MudText Style="font-weight: bold;" Typo="Typo.body1">
+                                    Top @GetOrdinal(SimState?.Inning ?? 0)
+                                </MudText>
+                            }
+                            else
+                            {
+                                <MudText Style="font-weight: bold;" Typo="Typo.body1">
+                                    Bottom @GetOrdinal(SimState?.Inning ?? 0)
+                                </MudText>
+                            }
+                            <MudText Style="font-weight: bold;" Typo="Typo.body1" Align="Align.End">Outs: </MudText>
+                            <div class="out-light @(SimState?.Outs >= 1 ? "on" : "")"></div>
+                            <div class="out-light @(SimState?.Outs >= 2 ? "on" : "")"></div> 
+                        </div>
                     </MudPaper>
                     <style>
+                        .outs-container {
+                            display: flex;
+                            align-items: center;
+                            justify-content: end;
+                            gap: 8px;
+                        }
+                        .out-light {
+                            width: 14px;
+                            height: 14px;
+                            border-radius: 50%;
+                            border: 2px solid black;
+                            background-color: transparent;
+                        }
+
+                        .out-light.on {
+                            background-color: red;
+                        }
                         .custom-tab-bar .mud-tabs-tabbar {
                             background-color: @CurrentTeamColor !important; /* Change to your color */
                             color: white; /* Optional: Change text/icon color */
@@ -394,6 +431,7 @@ else
     private bool GameCompleted = false;
     private int activeTeamTab = 0;
     private int activeBoxTab = 0;
+    private string[] InningList = { "st", "nd", "rd", "th" };
 
     private IEnumerable<BaseballGameStatsModel> AwayBattingStats
     {
@@ -623,6 +661,20 @@ else
         };
     }
 
+    private string GetOrdinal(int n)
+    {
+        if(n % 100 is 11 or 12 or 13)
+            return $"{n}th";
+
+        return (n % 10) switch
+        {
+            1 => $"{n}st",
+            2 => $"{n}nd",
+            3 => $"{n}rd",
+            _ => $"{n}th"
+        };
+    }
+
     private async Task LoadSeasonTotalsAsync()
     {
         SeasonTotals.Clear();
@@ -791,7 +843,8 @@ else
                                    GameByIdResponse.Game.LeagueId,
                                    SimState.AwayScore > SimState.HomeScore ? GameByIdResponse.Game.AwayTeam.Id : GameByIdResponse.Game.HomeTeam.Id,
                                    GameByIdResponse.Game.SeasonId,
-                                   new GameDetailModel(SimState.AwayScore, SimState.HomeScore, GameByIdResponse.Game.GameDetail.StartTime, GameByIdResponse.Game.GameDetail.StartTime.AddHours(2)),
+                                   new GameDetailModel(SimState.AwayScore, SimState.HomeScore, GameByIdResponse.Game.GameDetail.StartTime, GameByIdResponse.Game.GameDetail.StartTime.AddHours(2), 
+                                                       SimState.AwayInningsRuns, SimState.HomeInningsRuns, SimState.TotalAwayHits, SimState.TotalHomeHits),
                                    GameByIdResponse.Game.AwayTeam,
                                    GameByIdResponse.Game.HomeTeam,
                                    (int)GameStatus.Completed);

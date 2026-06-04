@@ -153,6 +153,25 @@ public class GameSimulatorService : IGameSimulatorService
         return pitcherAtLead;
     }
 
+    public Guid? DetermineSaver(GameSimulationState state)
+    {
+        int difference = 0;
+        bool homeWon = state.HomeScore > state.AwayScore;
+
+        var pitchers = homeWon ? state.HomePitchersUsed : state.AwayPitchersUsed;
+
+        var lastPitcherId = pitchers.OrderBy(x => x.Value).Last().Key;
+
+        if(homeWon)
+            difference = state.HomeScore - state.AwayScore;
+        else
+            difference = state.AwayScore - state.HomeScore;
+        if (difference <= 3)
+            return lastPitcherId;
+
+        return null;
+    }
+
     public Guid DetermineLosingPitcher(GameSimulationState state)
     {
         bool homeWon = state.HomeScore > state.AwayScore;
@@ -199,6 +218,11 @@ public class GameSimulatorService : IGameSimulatorService
         gameStats[batterId].AtBats++;
         gameStats[batterId].TotalBases += 1;
 
+        if(state.TopOfInning)
+            state.TotalAwayHits++;
+        else
+            state.TotalHomeHits++;
+
         var pitcher = gameStats[state.CurrentPitcherId];
         pitcher.HitsAllowed++; 
     }
@@ -234,6 +258,11 @@ public class GameSimulatorService : IGameSimulatorService
         gameStats[batterId].TotalBases += 2;
         gameStats[batterId].Doubles++;
 
+        if (state.TopOfInning)
+            state.TotalAwayHits++;
+        else
+            state.TotalHomeHits++;
+
         var pitcher = gameStats[state.CurrentPitcherId];
         pitcher.HitsAllowed++;
     }
@@ -260,6 +289,11 @@ public class GameSimulatorService : IGameSimulatorService
         gameStats[batterId].TotalBases += 3;
         gameStats[batterId].Triples++;
 
+        if (state.TopOfInning)
+            state.TotalAwayHits++;
+        else
+            state.TotalHomeHits++;
+
         var pitcher = gameStats[state.CurrentPitcherId];
         pitcher.HitsAllowed++;
     }
@@ -285,6 +319,11 @@ public class GameSimulatorService : IGameSimulatorService
         gameStats[batterId].HomeRuns++;
         gameStats[batterId].AtBats++;
         gameStats[batterId].TotalBases += 4;
+
+        if (state.TopOfInning)
+            state.TotalAwayHits++;
+        else
+            state.TotalHomeHits++;
 
         var pitcher = gameStats[state.CurrentPitcherId];
         pitcher.HitsAllowed++;

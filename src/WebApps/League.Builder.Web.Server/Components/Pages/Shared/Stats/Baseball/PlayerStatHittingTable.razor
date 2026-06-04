@@ -1,4 +1,4 @@
-﻿<MudTable Items="@Rows" Hover="true" Class="border border-solid" Style="border-color: #000000">
+﻿<MudTable Items="@Rows.OrderByDescending(r => r.GameDate)" Hover="true" Class="border border-solid" Style="border-color: #000000">
     <HeaderContent>
         <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">VS</MudTh>
         <MudTh Class="font-bold" Style="@($"background-color: {TeamColor}")">AB</MudTh>
@@ -19,8 +19,8 @@
         <MudTd DataLabel="Opposing Team" Style="font-size: 12px;">
             <div style="display: flex; align-items: center; gap: 6px;">
                 <PlayerAvatar Image="@context.OpposingTeamImage" />
-                <span>@context.OpposingTeam</span>
-            </div>
+                <span style="font-size: 11px;">@context.OpposingTeam - @context.GameDate.ToString("MM/dd")</span>
+           </div>
         </MudTd>
         <MudTd DataLabel="At Bats" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStats.AtBats</MudTd>
         <MudTd DataLabel="Runs">@context.BaseballStatsModel.HittingStats.Runs</MudTd>

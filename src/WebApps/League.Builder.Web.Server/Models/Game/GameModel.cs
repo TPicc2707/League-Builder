@@ -37,7 +37,7 @@ public record UpdateGameRecord(
     int GameStatus);
 
 
-public record GameDetailModel(int AwayTeamScore, int HomeTeamScore, DateTime StartTime, DateTime? EndTime);
+public record GameDetailModel(int AwayTeamScore, int HomeTeamScore, DateTime StartTime, DateTime? EndTime, List<int> AwayInningRuns, List<int> HomeInningRuns, int? AwayTotalHits, int? HomeTotalHits);
 
 public record AwayTeamDetailModel(Guid Id, string TeamName);
 public record HomeTeamDetailModel(Guid Id, string TeamName);

@@ -1,0 +1,167 @@
+﻿@page "/signup"
+@inject ISnackbar Snackbar
+@inject NavigationManager NavManager
+@inject ErrorState ErrorState
+@inject IValidator<RegisterModel> RegisterModelValidator
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IJSRuntime JsRuntime
+@inject KeycloakTokenService KeycloakTokenService
+@inject IDialogService DialogService
+
+<MudItem Style="padding-top: 50px;">
+    <MudPaper Class="border border-solid border-black p-25">
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="font-bold">Sign Up</MudText>
+    </MudPaper>
+</MudItem>
+<MudItem Class="mt-50 mb-50">
+    <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+        <FluentValidationValidator @ref="fluentValidationValidator" />
+         <MudPaper Class="border border-solid border-black p-25" Style="width: 100%;">
+             <MudStepper @bind-ActiveIndex="_index" OnPreviewInteraction="@OnStepInteraction" CurrentStepColor="Color.Secondary" CompletedStepColor="Color.Success">
+                 <ChildContent>
+                     <MudStep Title="Sign Up Information" Class="mb-4">
+                        <MudGrid Justify="Justify.Center">
+                            <MudItem xs="12" sm="10">
+                                @Card(@<div>
+                                        @StepHeader(Icons.Material.Filled.Info, "Sign Up Information")
+                                        <MudTextField Required Label="First Name" HelperText="Max. 15 characters"
+                                                            @bind-Value="model.FirstName" For="@(() => model.FirstName)" />
+                                        <MudTextField Required Label="Last Name" HelperText="Max. 50 characters"
+                                                            @bind-Value="model.LastName" For="@(() => model.LastName)" />
+                                        <MudTextField Label="Email Address" Class="mt-3" Required
+                                                        @bind-Value="model.Email" For="@(() => model.Email)" />
+                                </div>)
+                            </MudItem>
+                        </MudGrid>
+                     </MudStep>
+                    <MudStep Title="Review" Class="mb-4">
+                        <MudGrid Justify="Justify.Center">
+                            <MudItem xs="12" sm="10">
+                                @Card(@<div>
+                                    @StepHeader(Icons.Material.Filled.RemoveRedEye, "Review")
+                                        <MudTextField Required Label="First Name" HelperText="Max. 15 characters"
+                                                        @bind-Value="model.FirstName" For="@(() => model.FirstName)" ReadOnly />
+                                        <MudTextField Required Label="Last Name" Class="mt-3" ReadOnly
+                                                        @bind-Value="model.LastName" For="@(() => model.LastName)" />
+                                        <MudTextField Required Label="Email" Class="mt-3" ReadOnly
+                                                        @bind-Value="model.Email" For="@(() => model.Email)" />
+                                    </div>,
+                                    @<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" FullWidth>Sign Up</MudButton>
+                                )
+                            </MudItem>
+                        </MudGrid>
+                    </MudStep>
+                 </ChildContent>
+                <ActionContent Context="stepper">
+                    <MudIconButton OnClick="@(() => stepper.PreviousStepAsync())"
+                                   Icon="@Icons.Material.Filled.ArrowBack"
+                                   Color="Color.Primary"
+                                   Disabled="_index == 0">
+                    </MudIconButton>
+                    <MudSpacer />
+                    <MudIconButton OnClick="@(() => stepper.NextStepAsync())"
+                                   Icon="@Icons.Material.Filled.ArrowForward"
+                                   Color="Color.Primary"
+                                   Disabled="_index == 1">
+                    </MudIconButton>
+                </ActionContent>
+             </MudStepper>
+         </MudPaper>
+    </EditForm>
+</MudItem>
+
+@code {
+    private int _index;
+    private List<string> errors = new();
+    RegisterModel model = new();
+    private bool canProceed = false;
+    private FluentValidationValidator fluentValidationValidator;
+
+    private async Task OnStepInteraction(StepperInteractionEventArgs args)
+    {
+        canProceed = false;
+        await ValidateCurrentStep();
+        if(args.Action == StepAction.Complete && !canProceed)
+        {
+            await OpenErrorDialogAsync();
+            args.Cancel = true;
+        }
+    }
+
+    private async Task ValidateCurrentStep()
+    {
+        errors.Clear();
+
+        var properties = _index switch
+        {
+            0 => new[] { nameof(RegisterModel.FirstName), nameof(RegisterModel.LastName), nameof(RegisterModel.Email) },
+            _ => Array.Empty<string>()
+        };
+
+        if(properties.Length == 0)
+        {
+            canProceed = true;
+            return;
+        }
+
+        var result = await RegisterModelValidator.ValidateAsync(
+            model,
+            options => options.IncludeProperties(properties)
+        );
+
+        canProceed = result.IsValid;
+
+        foreach (var error in result.Errors)
+            errors.Add(error.ErrorMessage);
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        try
+        {
+            var success = await KeycloakTokenService.SignUpAsync(model);
+            if (success)
+            {
+                Snackbar.Add("Your account has been submitted for approval.", MudBlazor.Severity.Success);
+                NavManager.NavigateTo("/");
+            }
+            else
+            {
+                Snackbar.Add("Something went wrong submitting your information. Please try again later.", MudBlazor.Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorState.Message = ex.Message;
+            NavManager.NavigateTo("/error");
+
+        }
+
+    }
+
+    private Task OpenErrorDialogAsync()
+    {
+        var parameters = new DialogParameters<ErrorMessageBox> { { x => x.Errors, errors } };
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        return DialogService.ShowAsync<ErrorMessageBox>("Errors", parameters, options);
+    }
+
+    private Func<string, string, RenderFragment> StepHeader = (string icon, string title) => @<MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center" Row="true">
+            <MudIcon Icon="@icon" Color="Color.Secondary" Size="Size.Medium" />
+            <MudText Typo="Typo.h6" Class="font-bold">@title</MudText>
+        </MudStack>;
+
+    private RenderFragment Card(RenderFragment content, RenderFragment actions = null) => @<MudCard Class="border border-solid border-black">
+        <MudCardContent>
+            @content
+        </MudCardContent>
+        @if (actions is not null)
+        {
+                <MudCardActions>
+                    @actions
+                </MudCardActions>
+        }
+        </MudCard>
+    ;
+}

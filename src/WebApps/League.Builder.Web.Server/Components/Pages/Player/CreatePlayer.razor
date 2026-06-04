@@ -103,6 +103,7 @@
                                     <MudGrid Justify="Justify.Center">
                                         <MudItem xs="12" sm="10">
                                             @Card(@<div>
+                                                @StepHeader(Icons.Material.Filled.RemoveRedEye, "Review")
                                                 <MudTextField Required ReadOnly Label="First Name" HelperText="Max. 50 characters"
                                                               @bind-Value="model.FirstName" For="@(() => model.FirstName)" />
                                                 <MudTextField Required ReadOnly Label="Last Name" HelperText="Max. 50 characters"

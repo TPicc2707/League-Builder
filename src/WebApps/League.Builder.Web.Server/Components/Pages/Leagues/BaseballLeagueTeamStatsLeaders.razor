@@ -1,5 +1,4 @@
-﻿@page "/baseballleaguestatsleaders/{id}"
-@using League.Builder.Web.Server.Services.Cache
+﻿@page "/baseballleagueteamstatsleaders/{id}"
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
 @inject ISeasonService SeasonService
@@ -17,7 +16,6 @@
 @inject IPlayerLocalCacheService PlayerLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
-
 
 <AuthorizeView Roles="@String.Concat(Roles.ReadStats, ", ", Roles.ReadPlayers, ", ", Roles.ReadTeams, ", ", Roles.ReadSeasons, ", ", Roles.ReadLeagues)" Context="auth">
     <Authorized>
@@ -40,10 +38,10 @@
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
-                                    <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonStatLeaders" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
+                                    <MudButton Disabled="@(seasonValue <= 0 ? true : false)" OnClick="GetSeasonTeamStatLeaders" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Search</MudButton>
                                 </MudItem>
                                 <MudItem xs="4" md="4" lg="4" Style="align-content: center; padding: 10px;">
-                                    <MudButton Href="@($"/baseballleagueteamstatsleaders/{Id}")" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Team Stats</MudButton>
+                                    <MudButton Href="@($"/baseballleaguestatsleaders/{Id}")" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" Style="width: 200px;">Player Stats</MudButton>
                                 </MudItem>
                             </MudStack>
                         </ChildContent>
@@ -53,13 +51,13 @@
             <MudItem Class="stat-padding">
                 <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid stat-border" Style="padding: 25px;">
                     <MudTabPanel Text="Hitting">
-                        <BaseballHittingLeadersTable Leaders="@StatLeaders.Where(x => x.Position != PositionFilter.BASEBALL)" />
+                        <BaseballHittingTeamLeadersTable Leaders="@TeamStatLeaders" />
                     </MudTabPanel>
                     <MudTabPanel Text="Pitching">
-                        <BaseballPitchingLeadersTable Leaders="@StatLeaders.Where(x => x.Position == PositionFilter.BASEBALL)" />
+                        <BaseballPitchingTeamLeadersTable Leaders="@TeamStatLeaders" />
                     </MudTabPanel>
                 </MudTabs>
-            </MudItem> 
+            </MudItem>
         }
         else
         {
@@ -70,18 +68,17 @@
         <NoAccess />
     </NotAuthorized>
 </AuthorizeView>
+
 @code {
     [Parameter]
     public string Id { get; set; }
     private bool PageLoad = false;
-    private Justify _justify = Justify.SpaceEvenly;
     private SeasonModel Season;
-    private List<BaseballStatLeaderModel> StatLeaders = new List<BaseballStatLeaderModel>();
+    private List<BaseballStatTeamLeaderModel> TeamStatLeaders = new List<BaseballStatTeamLeaderModel>();
     private string placeholder = "Season";
     private int seasonValue;
     private bool expandSearchPanel = false;
     private IJSObjectReference? _module;
-    private GetPlayerByIdResponse PlayerModel { get; set; }
     private GetTeamByIdResponse TeamModel { get; set; }
     private GetLeagueByIdResponse LeagueModel { get; set; }
     private GetLeagueBaseballStatsBySeasonResponse StatsModel { get; set; }
@@ -106,8 +103,9 @@
                 (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
             );
 
-            await CreateStatsLeadersByLeague(leagueId);
+            await CreateTeamStatsLeadersByLeague(leagueId);
             PageLoad = true;
+
         }
         catch (Exception ex)
         {
@@ -121,18 +119,18 @@
         }
     }
 
-    private async Task CreateStatsLeadersByLeague(Guid leagueId)
+    private async Task CreateTeamStatsLeadersByLeague(Guid leagueId)
     {
         StatsModel = await DataLoader.GetOrLoad(
             () => StatsLocalCache.GetLeagueBaseballStatsBySeasonCache(leagueId.ToString(), Season.Id.ToString()),
             () => StatsService.GetLeagueBaseballStatsBySeason(leagueId, Season.Id),
             (s) => StatsLocalCache.SetLeagueBaseballStatsBySeasonCache(leagueId.ToString(), Season.Id.ToString(), s)
         );
+
         await BuildStatLeaders();
     }
 
-
-    public async Task GetSeasonStatLeaders()
+    public async Task GetSeasonTeamStatLeaders()
     {
         PageLoad = false;
         Season = SeasonsModel.Seasons.FirstOrDefault(s => s.Year == seasonValue);
@@ -147,24 +145,19 @@
         PageLoad = true;
     }
 
-    private async Task GetImageAsync(BaseballStatLeaderModel stat)
-        => stat.Image = await ImageService.GetPlayerImageAsync(LeagueModel.League, TeamModel.Team, PlayerModel.Player);
+    private async Task GetImageAsync(BaseballStatTeamLeaderModel stat)
+        => stat.Image = await ImageService.GetTeamImageAsync(LeagueModel.League, TeamModel.Team);
+
 
     private async Task BuildStatLeaders()
     {
-        StatLeaders.Clear();
+        TeamStatLeaders.Clear();
 
         foreach (var stat in StatsModel.BaseballStats)
         {
-            var leader = StatLeaders.FirstOrDefault(s => s.PlayerId == stat.PlayerId);
+            var leader = TeamStatLeaders.FirstOrDefault(s => s.TeamId == stat.TeamId);
             if (leader is null)
             {
-                PlayerModel = await DataLoader.GetOrLoad(
-                    () => PlayerLocalCache.GetPlayerByIdCache(stat.PlayerId.ToString()),
-                    () => PlayerService.GetPlayerById(stat.PlayerId),
-                    (p) => PlayerLocalCache.SetPlayerByIdCache(p, stat.PlayerId.ToString())
-                );
-
                 TeamModel = await DataLoader.GetOrLoad(
                     () => TeamLocalCache.GetTeamByIdCache(stat.TeamId.ToString()),
                     () => TeamService.GetTeamById(stat.TeamId),
@@ -172,7 +165,7 @@
                 );
                 leader = CreateLeader(stat);
                 await GetImageAsync(leader);
-                StatLeaders.Add(leader);
+                TeamStatLeaders.Add(leader);
             }
             else
             {
@@ -181,7 +174,7 @@
         }
     }
 
-    private BaseballStatLeaderModel CreateLeader(BaseballStatsModel stat)
+    private BaseballStatTeamLeaderModel CreateLeader(BaseballStatsModel stat)
     {
         var h = stat.HittingStats;
         var p = stat.PitchingStats;
@@ -189,13 +182,10 @@
         var obp = SafeOBP(h.Hits, h.Walks, h.HitByPitch, h.SacrificeFly, h.AtBats);
         var slg = SafeSlugging(h.TotalBases, h.AtBats);
 
-        return new BaseballStatLeaderModel
+        return new BaseballStatTeamLeaderModel
         {
-            PlayerId = PlayerModel.Player.Id,
-            PlayerName = String.Concat(PlayerModel.Player.FirstName, " ", PlayerModel.Player.LastName),
-            Position = PlayerModel.Player.PlayerDetail.Position,
-            Team = TeamModel.Team.TeamName,
-
+            TeamId = TeamModel.Team.Id,
+            TeamName = TeamModel.Team.TeamName,
             AtBats = h.AtBats,
             Hits = h.Hits,
             Runs = h.Runs,
@@ -225,11 +215,10 @@
             Saves = p.Saves,
             EarnedRunAverage = SafeERA(p.Runs, p.Innings),
             WalksHitsPerInning = SafeWHIP(p.WalksAllowed, p.HitsAllowed, p.Innings),
-            GamesPlayed = h.AtBats > 0 || p.Innings > 0 ? 1 : 0
         };
     }
 
-    private void UpdateLeader(BaseballStatLeaderModel leader, BaseballStatsModel stat)
+    private void UpdateLeader(BaseballStatTeamLeaderModel leader, BaseballStatsModel stat)
     {
         var h = stat.HittingStats;
         var p = stat.PitchingStats;
@@ -263,8 +252,6 @@
         leader.Saves += p.Saves;
         leader.EarnedRunAverage = SafeERA(leader.RunsAllowed, leader.InningsPitched);
         leader.WalksHitsPerInning = SafeWHIP(leader.WalksAllowed, leader.HitsAllowed, leader.InningsPitched);
-        leader.GamesPlayed += h.AtBats > 0 || p.Innings > 0 ? 1 : 0;
-
     }
 
     private decimal SafeAvg(int numerator, int denominator) =>

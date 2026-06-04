@@ -291,7 +291,7 @@
     private async Task<CreateTeamResponse> CreateTeamAsync()
     {
         Models.Team.AddressModel address = new Models.Team.AddressModel(model.FirstName, model.LastName, model.EmailAddress, model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
-        Models.Team.ManagerModel manager = new Models.Team.ManagerModel(model.ManagerFirstName, model.ManagerFirstName, model.ManagerEmailAddress);
+        Models.Team.ManagerModel manager = new Models.Team.ManagerModel(model.ManagerFirstName, model.ManagerLastName, model.ManagerEmailAddress);
         CreateTeamRequest request = new CreateTeamRequest(new CreateTeamRecord(leagueId, model.TeamName, address, model.Description, model.ImageFile, model.TeamColor, manager));
         return await TeamService.CreateTeam(request);
     }

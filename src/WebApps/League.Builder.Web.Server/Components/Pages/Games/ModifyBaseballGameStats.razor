@@ -5,6 +5,8 @@
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
 @inject IPlayerService PlayerService
+@inject ISeasonService SeasonService
+@inject IStandingsService StandingsService
 @inject StatsSubmissionService StatsSubmissionService
 @inject ImageService ImageService
 @inject IAWSService AWSService
@@ -17,6 +19,8 @@
 @inject IStatsLocalCacheService StatsLocalCache
 @inject ILeagueLocalCacheService LeagueLocalCache
 @inject ITeamLocalCacheService TeamLocalCache
+@inject ISeasonLocalCacheService SeasonLocalCache
+@inject IStandingsLocalCacheService StandingsLocalCache
 @inject IJSRuntime JsRuntime
 @inject KeycloakTokenService KeycloakTokenService
 
@@ -26,7 +30,64 @@
         {
             <TeamHeader Game="GameModel.Game" />
             <MudItem Style="padding-top: 25px;">
-                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px;">
+                <MudTable Items="@(new List<string> { "Away", "Home"})" Dense="true" Hover="true" Bordered="true" Class="mb-4 border border-solid" Style="border-color: #000000;">
+                    <HeaderContent>
+                        <MudTh>Teams</MudTh>
+                        @foreach (var inningNumber in InningCount)
+                        {
+                            <MudTh>@inningNumber</MudTh>
+                        }
+                        <MudTh>R</MudTh>
+                        <MudTh>H</MudTh>
+                    </HeaderContent>
+                     <RowTemplate> @*Add This to Edit Baseball Stats Page*@
+                            @if(context == "Away")
+                            {
+                                <MudTd>
+                                    <MudStack Row="true">
+                                        <PlayerAvatar Image="@GameModel.Game.AwayTeamImage" />
+                                        @GameModel.Game.AwayTeam.TeamName <span>@AwayTeamRecord</span
+                                    </MudStack>
+                                </MudTd>
+                                @foreach (var awayRuns in InningCount)
+                                {
+                                    <MudTd>@GameModel.Game.GameDetail.AwayInningRuns.ElementAtOrDefault(awayRuns - 1)</MudTd>
+                                }
+                                <MudTd>@GameModel.Game.GameDetail.AwayTeamScore</MudTd>
+                                if(GameModel.Game.GameDetail.AwayTotalHits is not null)
+                                {
+                                    <MudTd>@GameModel.Game.GameDetail.AwayTotalHits</MudTd>
+                                }
+                                else
+                                {
+                                    <MudTd>0</MudTd>
+                                }
+                            }
+                            else
+                            {
+                                <MudTd>
+                                    <MudStack Row="true">
+                                        <PlayerAvatar Image="@GameModel.Game.HomeTeamImage" />
+                                        @GameModel.Game.HomeTeam.TeamName <span>@HomeTeamRecord</span>
+                                    </MudStack>
+                                </MudTd>
+                                @foreach (var homeRuns in InningCount)
+                                {
+                                    <MudTd>@GameModel.Game.GameDetail.HomeInningRuns.ElementAtOrDefault(homeRuns - 1)</MudTd>
+                                }
+                                <MudTd>@GameModel.Game.GameDetail.HomeTeamScore</MudTd>
+                                if(GameModel.Game.GameDetail.HomeTotalHits is not null)
+                                {
+                                    <MudTd>@GameModel.Game.GameDetail.HomeTotalHits</MudTd>
+                                }
+                                else
+                                {
+                                    <MudTd>0</MudTd>
+                                }                           
+                            }
+                        </RowTemplate>
+                </MudTable>
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Centered="true" Color="Color.Primary" Class="border border-solid" Style="border-color: #000000; padding: 25px; margin-bottom: 25px">
                     <MudTabPanel Text="@($"{GameModel.Game.AwayTeam.TeamName} Stats")">
                         <ModifyBaseballHittingTable Stats="@Model.Where(x => x.TeamId == GameModel.Game.AwayTeam.Id && x.Position != PositionFilter.BASEBALL)"
                                                     SelectedItem="@hittingStatSelectedItem"
@@ -91,17 +152,27 @@
     BaseballGameStatsModel hittingStatBeforeEdit;
     BaseballGameStatsModel pitchingStatBeforeEdit;
     GetGameByIdResponse GameModel { get; set; }
+    GetSeasonByIdResponse SeasonByIdResponse { get; set; }
     GetLeagueByIdResponse LeagueByIdResponse { get; set; }
     GetTeamByIdResponse AwayTeamByIdResponse { get; set; }
     GetTeamByIdResponse HomeTeamByIdResponse { get; set; }
     GetPlayersByTeamResponse AwayPlayersModel { get; set; }
     GetPlayersByTeamResponse HomePlayersModel { get; set; }
+    GetStandingsByTeamResponse AwayTeamStandings { get; set; }
+    GetStandingsByTeamResponse HomeTeamStandings { get; set; }
     GetBaseballStatsByTeamResponse AwayPlayerStatsModel { get; set; }
     GetBaseballStatsByTeamResponse HomePlayerStatsModel { get; set; }
     GetBaseballStatsByPlayerResponse PlayerStatsModel { get; set; }
     private IJSObjectReference? _module;
     private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
     private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
+    private List<int> InningCount;
+    private string AwayTeamRecord =>
+        $"( {AwayTeamStandings.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id).StandingsDetail.Wins} - {AwayTeamStandings.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id).StandingsDetail.Losses} )";
+
+    private string HomeTeamRecord =>
+        $"( {HomeTeamStandings.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id).StandingsDetail.Wins} - {HomeTeamStandings.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id).StandingsDetail.Losses} )";
+
 
     private HittingTotalAccumalator AwayHit = new();
     private PitchingTotalAccumalator AwayPitch = new();
@@ -178,6 +249,29 @@
                 () => GameService.GetGameById(gameId),
                 (g) => GameLocalCache.SetGameByIdCache(Id, g)
             );
+
+            SeasonByIdResponse = await DataLoader.GetOrLoad(
+                () => SeasonLocalCache.GetSeasonByIdCache(GameModel.Game.SeasonId.ToString()),
+                () => SeasonService.GetSeason(GameModel.Game.SeasonId),
+                (s) => SeasonLocalCache.SetSeasonByIdCache(GameModel.Game.SeasonId.ToString(), s)
+            );
+
+            AwayTeamStandings = await DataLoader.GetOrLoad(
+                () => StandingsLocalCache.GetStandingsByTeamCache(GameModel.Game.AwayTeam.Id.ToString()),
+                () => StandingsService.GetStandingsByTeam(GameModel.Game.AwayTeam.Id),
+                (s) => StandingsLocalCache.SetStandingsByTeamCache(GameModel.Game.AwayTeam.Id.ToString(), s)
+            );
+
+            HomeTeamStandings = await DataLoader.GetOrLoad(
+                () => StandingsLocalCache.GetStandingsByTeamCache(GameModel.Game.HomeTeam.Id.ToString()),
+                () => StandingsService.GetStandingsByTeam(GameModel.Game.HomeTeam.Id),
+                (s) => StandingsLocalCache.SetStandingsByTeamCache(GameModel.Game.HomeTeam.Id.ToString(), s)
+            );
+
+            var inningCount = GameModel.Game.GameDetail.AwayInningRuns?.Count;
+
+            InningCount = Enumerable.Range(1, (int)inningCount).ToList();
+
 
             AwayPlayersModel = await DataLoader.GetOrLoad(
                 () => PlayerLocalCache.GetPlayersByTeamCache(GameModel.Game.AwayTeam.Id.ToString()),
@@ -298,6 +392,7 @@
         pitch.HitsAllowed += playerStat.PitchingStats.HitsAllowed;
         pitch.WalksAllowed += playerStat.PitchingStats.WalksAllowed;
         pitch.Strikeouts += playerStat.PitchingStats.PitchingStrikeouts;
+
     }
 
 

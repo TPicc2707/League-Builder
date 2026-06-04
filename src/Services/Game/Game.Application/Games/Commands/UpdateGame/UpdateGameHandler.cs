@@ -32,7 +32,11 @@ public class UpdateGameHandler(IApplicationDbContext dbContext, IBus _bus)
 
     private async Task UpdateNewGameWithNewValues(Domain.Models.Game game, GameDto gameDto)
     {
-        var updatedGameDetail = GameDetail.Of(gameDto.GameDetail.AwayTeamScore, gameDto.GameDetail.HomeTeamScore, gameDto.GameDetail.StartTime, gameDto.GameDetail.EndTime);
+        var updatedGameDetail = GameDetail.Of(gameDto.GameDetail.AwayTeamScore, gameDto.GameDetail.HomeTeamScore, gameDto.GameDetail.StartTime, gameDto.GameDetail.EndTime, 
+            gameDto.GameDetail.AwayInningRuns?.Count != 0 ? gameDto.GameDetail.AwayInningRuns : null,
+            gameDto.GameDetail.HomeInningRuns?.Count != 0 ? gameDto.GameDetail.HomeInningRuns : null,
+            gameDto.GameDetail.AwayTotalHits is not null ? gameDto.GameDetail.AwayTotalHits : null,
+            gameDto.GameDetail.HomeTotalHits is not null ? gameDto.GameDetail.HomeTotalHits : null);
 
         game.Update(
             leagueId: LeagueId.Of(gameDto.LeagueId),

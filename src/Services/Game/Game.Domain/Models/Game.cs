@@ -9,7 +9,6 @@ public class Game : Entity<GameId>
     public SeasonId SeasonId { get; private set; } = default!;
     public GameDetail GameDetail { get; private set; } = default!;
     public GameStatus GameStatus { get; private set; } = default;
-
     public static Game Create(GameId id, LeagueId leagueId, TeamId awayTeamId, TeamId homeTeamId, SeasonId seasonId, GameDetail gameDetail)
     {
         var game = new Game()

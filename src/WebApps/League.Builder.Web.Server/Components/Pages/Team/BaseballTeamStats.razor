@@ -279,8 +279,8 @@
     {
         TeamHittingTotals.BattingAverage = SafeAvg(TeamHittingTotals.Hits, TeamHittingTotals.AtBats);
         TeamHittingTotals.Slugging = SafeSlugging(TeamHittingTotals.TBs, TeamHittingTotals.AtBats);
-        TeamHittingTotals.OBP = SafeOBP(TeamHittingTotals.Hits, TeamHittingTotals.Walks, TeamHittingTotals.HBPs, TeamHittingTotals.SFs);
-        TeamHittingTotals.OPS = TeamHittingTotals.OBP + TeamHittingTotals.OPS;
+        TeamHittingTotals.OBP = SafeOBP(TeamHittingTotals.Hits, TeamHittingTotals.Walks, TeamHittingTotals.HBPs, TeamHittingTotals.SFs, TeamHittingTotals.AtBats);
+        TeamHittingTotals.OPS = TeamHittingTotals.OBP + TeamHittingTotals.Slugging;
         TeamPitchingTotals.ERA = SafeERA(TeamPitchingTotals.Runs, TeamPitchingTotals.Innings);
         TeamPitchingTotals.WHIP = SafeWHIP(TeamPitchingTotals.WalksAllowed, TeamPitchingTotals.HitsAllowed, TeamPitchingTotals.Innings);
     }
@@ -321,7 +321,7 @@
     {
         hit.BattingAverage = SafeAvg(hit.Hits, hit.AtBats);
         hit.Slugging = SafeSlugging(hit.TBs, hit.AtBats);
-        hit.OBP = SafeOBP(hit.Hits, hit.Walks, hit.HBPs, hit.SFs);
+        hit.OBP = SafeOBP(hit.Hits, hit.Walks, hit.HBPs, hit.SFs, hit.AtBats);
         hit.OPS = hit.OBP + hit.Slugging;
         
         pitch.ERA = SafeERA(pitch.Runs, pitch.Innings);
@@ -364,10 +364,10 @@
     private decimal SafeSlugging(int totalBases, int atBats) =>
         atBats == 0 ? 0 : (decimal)totalBases / atBats;
 
-    private decimal SafeOBP(int hits, int walks, int hbp, int sf)
+    private decimal SafeOBP(int hits, int walks, int hbp, int sf, int atBats)
     {
         var num = hits + walks + hbp;
-        var den = num + sf;
+        var den = atBats + walks + hbp + sf;
         return den == 0 ? 0 : (decimal)num / den;
     }
 

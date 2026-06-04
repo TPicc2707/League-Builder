@@ -5,6 +5,7 @@ using Game.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -12,9 +13,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Game.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260521185438_Add_Baseball_Box_Score_Runs")]
+    partial class Add_Baseball_Box_Score_Runs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,9 +74,6 @@ namespace Game.Infrastructure.Migrations
                             b1.Property<int>("AwayTeamScore")
                                 .HasColumnType("int");
 
-                            b1.Property<int?>("AwayTotalHits")
-                                .HasColumnType("int");
-
                             b1.Property<DateTime?>("EndTime")
                                 .HasColumnType("datetime2");
 
@@ -81,9 +81,6 @@ namespace Game.Infrastructure.Migrations
                                 .HasColumnType("nvarchar(max)");
 
                             b1.Property<int>("HomeTeamScore")
-                                .HasColumnType("int");
-
-                            b1.Property<int?>("HomeTotalHits")
                                 .HasColumnType("int");
 
                             b1.Property<DateTime>("StartTime")

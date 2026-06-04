@@ -184,6 +184,7 @@ builder.Services.AddScoped<IValidator<UpdatePlayerModel>, UpdatePlayerModelValid
 builder.Services.AddScoped<IValidator<UpdateGameModel>, UpdateGameModelValidator>();
 builder.Services.AddScoped<IValidator<UpdateSeasonModel>, UpdateSeasonModelValidator>();
 builder.Services.AddScoped<IValidator<UpdateLeagueSettingsModel>, UpdateLeagueSettingsModelValidator>();
+builder.Services.AddScoped<IValidator<RegisterModel>, RegisterModelValidator>();
 
 string serverApiBaseAddress = builder.Environment.IsDevelopment()
     ? "https://localhost:6068/"

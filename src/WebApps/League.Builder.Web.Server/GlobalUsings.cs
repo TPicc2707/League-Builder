@@ -1,5 +1,6 @@
 ﻿global using League.Builder.Web.Server;
 global using League.Builder.Web.Server.Components;
+global using League.Builder.Web.Server.Models;
 global using League.Builder.Web.Server.Models.Game;
 global using League.Builder.Web.Server.Models.League;
 global using League.Builder.Web.Server.Models.Player;
