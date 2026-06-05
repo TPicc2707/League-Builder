@@ -18,7 +18,6 @@ public interface IGameSimulatorService
         Guid hitterId,
         bool isHomeTeam);
 
-    Guid DetermineWinningPitcher(GameSimulationState state);
-
-    Guid DetermineLosingPitcher(GameSimulationState state);
+    void WinningPitcher(GameSimulationState state);
+    void LosingPitcher(GameSimulationState state);
 }

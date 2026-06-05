@@ -90,6 +90,12 @@ public class GameSimulatorService : IGameSimulatorService
 
     public void ChangePitcher(GameSimulationState state, Guid pitcherId, bool isHomeTeam)
     {
+        if(state.WinningPitcher == Guid.Empty)
+            WinningPitcher(state);
+
+        if (state.LosingPitcher == Guid.Empty)
+            LosingPitcher(state);
+
         if (isHomeTeam)
         {
             state.HomePitcherId = pitcherId;
@@ -97,6 +103,8 @@ public class GameSimulatorService : IGameSimulatorService
             if(!state.HomePitchersUsed.ContainsKey(pitcherId))
                 state.HomePitchersUsed[pitcherId] = state.HomePitchersUsed.Count;
             state.HomeBullpen.Remove(pitcherId);
+
+            DetermineSaver(state, state.CurrentPitcherId, true);
         }
         else
         {
@@ -105,6 +113,8 @@ public class GameSimulatorService : IGameSimulatorService
             if (!state.AwayPitchersUsed.ContainsKey(pitcherId))
                 state.AwayPitchersUsed[pitcherId] = state.AwayPitchersUsed.Count;
             state.AwayBullpen.Remove(pitcherId);
+
+            DetermineSaver(state, state.CurrentPitcherId, false);
         }
 
         state.LastPlayMessage = "Pitching Change";
@@ -133,59 +143,21 @@ public class GameSimulatorService : IGameSimulatorService
         state.LastPlayMessage = "Pinch Hitter enters the game";
     }
 
-    public Guid DetermineWinningPitcher(GameSimulationState state)
+    private void DetermineSaver(GameSimulationState state, Guid currentPitcherId, bool homeTeam)
     {
-        bool homeWon = state.HomeScore > state.AwayScore;
+        int difference;
+        if (state.HomeScore == state.AwayScore) return;
 
-        var pitchers = homeWon ? state.HomePitchersUsed : state.AwayPitchersUsed;
+        bool homeWinning = state.HomeScore > state.AwayScore;
 
-        // starter = first pitcher used
-        var starterId = pitchers.OrderBy(x => x.Value).First().Key;
-        var starterStats = state.GameStats[starterId];
-
-        int inningLeadTaken = FindInningWhenLeadBecamePermanent(state);
-        Guid pitcherAtLead = GetPitcherAtInning(state, inningLeadTaken, homeWon);
-
-        // Starter must pitch at least 5 innings and leave with lead to qualify for win
-        if (starterStats.Innings >= 5 && pitcherAtLead == starterId)
-            return starterId;
-
-        return pitcherAtLead;
-    }
-
-    public Guid? DetermineSaver(GameSimulationState state)
-    {
-        int difference = 0;
-        bool homeWon = state.HomeScore > state.AwayScore;
-
-        var pitchers = homeWon ? state.HomePitchersUsed : state.AwayPitchersUsed;
-
-        var lastPitcherId = pitchers.OrderBy(x => x.Value).Last().Key;
-
-        if(homeWon)
+        if(homeWinning)
             difference = state.HomeScore - state.AwayScore;
         else
             difference = state.AwayScore - state.HomeScore;
-        if (difference <= 3)
-            return lastPitcherId;
 
-        return null;
-    }
+        if (difference <= 3 && state.WinningPitcher != Guid.Empty && homeWinning == homeTeam)
+            state.SavingPitcher = currentPitcherId;
 
-    public Guid DetermineLosingPitcher(GameSimulationState state)
-    {
-        bool homeWon = state.HomeScore > state.AwayScore;
-
-        // Losing team is opposite
-        bool awayLost = homeWon;
-        bool homeLost = !homeWon;
-
-        int inningLeadTaken = FindInningWhenLeadBecamePermanent(state);
-
-        // Get pitcher for the losing team at that inning
-        var losingPitcher = GetPitcherAtInning(state, inningLeadTaken, homeWon: !homeWon);
-
-        return losingPitcher;
     }
 
     private void ApplySingle(GameSimulationState state, Guid batterId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
@@ -408,6 +380,10 @@ public class GameSimulatorService : IGameSimulatorService
 
     private void ScoreRun(GameSimulationState state, Guid runnerId, Guid batterId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
     {
+        // 1. Check who was leading BEFORE the play
+        // Positive = Home leading, Negative = Away leading, 0 = Tied
+        int scoreDifferentialBefore = state.HomeScore - state.AwayScore;
+
         if (state.TopOfInning)
         {
             state.AwayScore++;
@@ -435,6 +411,68 @@ public class GameSimulatorService : IGameSimulatorService
             if (state.HomeScore > state.AwayScore)
                 state.GameOver = true;
         }
+
+        // 3. Check who is leading AFTER the play
+        int scoreDifferentialAfter = state.HomeScore - state.AwayScore;
+
+        // 4. Determine if a critical change happened
+        bool wasTied = (scoreDifferentialBefore == 0);
+        bool isNowTied = (scoreDifferentialAfter == 0);
+
+        // A lead flip happened if the advantage swung from Home to Away or vice-versa
+        // (e.g., from +1 to -1, or from -2 to +1)
+        bool leadFlipped = (scoreDifferentialBefore > 0 && scoreDifferentialAfter < 0) ||
+                            (scoreDifferentialBefore < 0 && scoreDifferentialAfter > 0);
+
+        bool leadBroken = wasTied && !isNowTied; // Tied → Home or Away lead
+        bool gameBecameTied = !wasTied && isNowTied; // Home or Away lead → Tied
+
+        if(leadBroken || gameBecameTied || leadFlipped)
+        {
+            WinningPitcher(state);
+            LosingPitcher(state);
+        }
+    }
+
+    public void WinningPitcher(GameSimulationState state)
+    {
+        // A game must be official (at least 5 innings) for a win to matter
+        // Home team can win in 4.5 innings if leading in the bottom of the 5th
+        bool isOfficial = (state.Inning > 5) || (state.Inning == 5 && !state.TopOfInning);
+
+        if (!isOfficial) return;
+
+        if(state.HomeScore > state.AwayScore)
+        {
+            state.WinningPitcher = state.HomePitcherId;
+        }
+        else if(state.AwayScore > state.HomeScore)
+        {
+            state.WinningPitcher = state.AwayPitcherId;
+        }
+        else
+        {
+            state.WinningPitcher = Guid.Empty; // Tie game, no winning pitcher
+        }
+    }
+
+    public void LosingPitcher(GameSimulationState state)
+    {
+        if (state.HomeScore > state.AwayScore)
+        {
+            state.LosingPitcher = state.AwayPitcherId;
+        }
+        else if (state.AwayScore > state.HomeScore)
+        {
+            state.LosingPitcher = state.HomePitcherId;
+        }
+        else
+        {
+            state.LosingPitcher = Guid.Empty; // Tie game, no losing pitcher
+        }
+
+        if (state.SavingPitcher == state.LosingPitcher)
+            state.SavingPitcher = null; // Can't have a save if the "saver" is also the losing pitcher
     }
 
     private string BuildPlayMessage(string batterName, AtBatResult result)
@@ -505,60 +543,5 @@ public class GameSimulatorService : IGameSimulatorService
         state.CurrentBatterId = state.TopOfInning
                                         ? state.HomeBatterId
                                         : state.AwayBatterId;
-    }
-
-    private int FindInningWhenLeadBecamePermanent(GameSimulationState state)
-    {
-        var awayCum = Cumulative(state.AwayInningsRuns);
-        var homeCum = Cumulative(state.HomeInningsRuns);
-
-        bool homeWon = state.HomeScore > state.AwayScore;
-
-        for(int i = 0; i < Math.Min(awayCum.Count, homeCum.Count); i++) 
-        { 
-            bool homeAhead = homeCum[i] > awayCum[i];
-            bool awayAhead = awayCum[i] > homeCum[i];
-
-            if (homeWon && homeAhead)
-                return i;
-
-            if(!homeWon && awayAhead)
-                return i;
-        }
-
-        return awayCum.Count - 1;
-    }
-
-    private List<int> Cumulative(List<int> runs)
-    {
-        var list = new List<int>();
-        int total = 0;
-
-        foreach(var r in runs)
-        {
-            total += r;
-            list.Add(total);
-        }
-
-        return list;
-    }
-
-
-    private Guid GetPitcherAtInning(GameSimulationState state, int inning, bool homeWon)
-    {
-        var pitchersUsed = homeWon ? state.HomePitchersUsed : state.AwayPitchersUsed;
-
-        foreach(var kvp in pitchersUsed.OrderBy(x => x.Value))
-        {
-            var pitcherId = kvp.Key;
-            var stats = state.GameStats[pitcherId];
-
-            if(stats.Innings > inning)
-                return pitcherId;
-        }
-
-
-        // Fallback
-        return pitchersUsed.OrderBy(x => x.Value).First().Key;
     }
 }

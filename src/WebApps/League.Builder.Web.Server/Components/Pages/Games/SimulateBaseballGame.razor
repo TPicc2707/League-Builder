@@ -796,6 +796,7 @@ else
     private async Task SaveGame()
     {
         PageLoad = false;
+
         await CreateGameStats();
 
         await CompleteGame();
@@ -808,8 +809,12 @@ else
 
     private async Task CreateGameStats()
     {
-        var winner = GameSimService.DetermineWinningPitcher(SimState);
-        var loser = GameSimService.DetermineLosingPitcher(SimState);
+        if (SimState?.WinningPitcher == Guid.Empty)
+            GameSimService.WinningPitcher(SimState);
+
+        if (SimState?.LosingPitcher == Guid.Empty)
+            GameSimService.LosingPitcher(SimState);
+
         var homeStarter = SimState?.HomePitchersUsed.OrderBy(x => x.Value).First().Key;
         var awayStarter = SimState?.AwayPitchersUsed.OrderBy(x => x.Value).First().Key;
 
@@ -818,9 +823,10 @@ else
             var playerId = kvp.Key;
             var stats = kvp.Value;
 
-            stats.Wins = playerId == winner ? 1 : 0;
-            stats.Losses = playerId == loser ? 1 : 0;
+            stats.Wins = playerId == SimState?.WinningPitcher ? 1 : 0;
+            stats.Losses = playerId == SimState?.LosingPitcher ? 1 : 0;
             stats.Start = playerId == homeStarter || playerId == awayStarter;
+            stats.Saves = playerId == SimState?.SavingPitcher ? 1 : 0;
             var createHittingStat = BuildHittingCreate(stats);
             var createPitchingStat = BuildPitchingCreate(stats);
             var createStat = new CreateBaseballStatsModel(
@@ -841,7 +847,7 @@ else
     {
         var record = new UpdateGameRecord(GameByIdResponse.Game.Id,
                                    GameByIdResponse.Game.LeagueId,
-                                   SimState.AwayScore > SimState.HomeScore ? GameByIdResponse.Game.AwayTeam.Id : GameByIdResponse.Game.HomeTeam.Id,
+                                   SimState?.AwayScore > SimState?.HomeScore ? GameByIdResponse.Game.AwayTeam.Id : GameByIdResponse.Game.HomeTeam.Id,
                                    GameByIdResponse.Game.SeasonId,
                                    new GameDetailModel(SimState.AwayScore, SimState.HomeScore, GameByIdResponse.Game.GameDetail.StartTime, GameByIdResponse.Game.GameDetail.StartTime.AddHours(2), 
                                                        SimState.AwayInningsRuns, SimState.HomeInningsRuns, SimState.TotalAwayHits, SimState.TotalHomeHits),
@@ -863,7 +869,6 @@ else
         await GameLocalCache.DeleteGamesByLeagueCache(GameByIdResponse.Game.LeagueId.ToString());
         await GameLocalCache.DeleteGamesByTeamCache(GameByIdResponse.Game.AwayTeam.Id.ToString());
         await GameLocalCache.DeleteGamesByTeamCache(GameByIdResponse.Game.HomeTeam.Id.ToString());
-
     }
 
     private async Task UpdateTeamStandings(Guid teamId, UpdateGameRecord game)

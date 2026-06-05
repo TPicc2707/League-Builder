@@ -34,6 +34,8 @@ public class GameSimulationState
     public Dictionary<Guid, int> AwayPitchersUsed = new();
 
     public Guid WinningPitcher { get; set; }
+    public Guid LosingPitcher { get; set; }
+    public Guid? SavingPitcher { get; set; }
 
     public int HomeBatterIndex { get; set; } = new();
     public int AwayBatterIndex { get; set; } = new();
