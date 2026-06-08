@@ -13,6 +13,8 @@ public class StandingsModel
     public StandingsStatus StandingsStatus { get; set; } = default!;
     public TeamDetailModel Team { get; set; } = default!;
     public int Year { get; set; } = default!;
+    public int Streak { get; set; } = default!;
+    public string StreakMessage { get; set; } = default!;
 }
 
 public record CreateStandingsModel(
