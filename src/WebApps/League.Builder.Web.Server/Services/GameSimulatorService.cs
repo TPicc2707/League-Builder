@@ -48,13 +48,18 @@ public class GameSimulatorService : IGameSimulatorService
         if (_engine is null)
             throw new InvalidOperationException("StartGame must be called before SimulateNextAtBat.");
 
+        TryStolenBase(state, gameStats);
+
+        if (state.Outs >= 3 || state.GameOver)
+            return state;
+
         var batterName = gameStats.FirstOrDefault(x => x.Value.PlayerId == state.CurrentBatterId).Value.PlayerName;
         var result = _engine.GetOutcome(state.CurrentBatterId);
 
         if (!gameStats.TryGetValue(state.CurrentBatterId, out var stats))
-            throw new InvalidOperationException($"No BaseeballGameStatsModel found for player {state.CurrentBatterId}");
+            throw new InvalidOperationException($"No BaseballGameStatsModel found for player {state.CurrentBatterId}");
 
-        state.LastPlayMessage = BuildPlayMessage(batterName, result);
+        state.LastPlayMessage += " " + BuildPlayMessage(batterName, result);
 
         switch (result)
         {
@@ -543,5 +548,138 @@ public class GameSimulatorService : IGameSimulatorService
         state.CurrentBatterId = state.TopOfInning
                                         ? state.HomeBatterId
                                         : state.AwayBatterId;
+    }
+
+    private void TryStolenBase(GameSimulationState state, IDictionary<Guid, BaseballGameStatsModel> gameStats)
+    {
+        var r1 = state.Runners.RunnerOnFirst;
+        var r2 = state.Runners.RunnerOnSecond;
+
+        if(r1.HasValue && r2.HasValue)
+        {
+            if (state.Outs == 2)
+                return;
+
+            if(Random.Shared.NextDouble() < 0.05)
+            {
+                AttemptDoubleSteal(state, r1.Value, r2.Value, gameStats);
+                return;
+            }
+        }
+
+        Guid? singleRunner = r1 ?? r2;
+
+        if (singleRunner is null)
+            return;
+
+        if (r2.HasValue)
+        {
+            Guid? runnerOnThird = state.Runners.RunnerOnThird;
+            if (runnerOnThird.HasValue)
+                return;
+        }
+
+        if (Random.Shared.NextDouble() > 0.10)
+            return;
+
+        AttemptStolenBase(state, singleRunner.Value, gameStats);
+    }
+
+    private void AttemptStolenBase(GameSimulationState state, Guid runnerId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
+    {
+        bool onFirst = state.Runners.RunnerOnFirst == runnerId;
+        bool onSecond = state.Runners.RunnerOnSecond == runnerId;
+
+        bool success = Random.Shared.NextDouble() < 0.70;
+
+        if (success)
+        {
+            if (onFirst)
+            {
+                state.Runners.RunnerOnFirst = null;
+                state.Runners.RunnerOnSecond = runnerId;
+            }
+            else if (onSecond)
+            {
+                state.Runners.RunnerOnSecond = null;
+                state.Runners.RunnerOnThird = runnerId;
+            }
+
+            gameStats[runnerId].StolenBases++;
+            state.LastPlayMessage = $"{gameStats[runnerId].PlayerName} steals a base!";
+        }
+        else
+        {
+            if (onFirst) state.Runners.RunnerOnFirst = null;
+            if (onSecond) state.Runners.RunnerOnSecond = null;
+
+            gameStats[runnerId].CaughtStealing++;
+            state.Outs++;
+
+            state.LastPlayMessage = $"{gameStats[runnerId].PlayerName} is caught stealing!";
+
+            if (state.Outs >= 3)
+                AdvanceHalfInning(state);
+        }
+    }
+
+    private void AttemptDoubleSteal(
+        GameSimulationState state,
+        Guid runnerOnFirst,
+        Guid runnerOnSecond,
+        IDictionary<Guid, BaseballGameStatsModel> gameStats)
+    {
+        bool bothSafe = Random.Shared.NextDouble() < 0.65;
+
+        if (bothSafe)
+        {
+            state.Runners.RunnerOnFirst = null;
+            state.Runners.RunnerOnSecond = null;
+            state.Runners.RunnerOnThird = runnerOnSecond;
+            state.Runners.RunnerOnSecond = runnerOnFirst;
+
+            gameStats[runnerOnFirst].StolenBases++;
+            gameStats[runnerOnSecond].StolenBases++;
+
+            state.LastPlayMessage =
+                $"{gameStats[runnerOnFirst].PlayerName} and {gameStats[runnerOnSecond].PlayerName} pull off a double steal!";
+
+            return;
+        }
+
+        bool secondRunnerOut = Random.Shared.NextDouble() < 0.5;
+
+        if (secondRunnerOut)
+        {
+            state.Runners.RunnerOnSecond = null;
+            state.Outs++;
+
+            state.Runners.RunnerOnFirst = null;
+            state.Runners.RunnerOnSecond = runnerOnFirst;
+
+            gameStats[runnerOnFirst].StolenBases++;
+            gameStats[runnerOnSecond].CaughtStealing++;
+
+            state.LastPlayMessage =
+                $"{gameStats[runnerOnSecond].PlayerName} is caught stealing third! {gameStats[runnerOnFirst].PlayerName} steals second.";
+        }
+        else
+        {
+            state.Runners.RunnerOnFirst = null;
+            state.Outs++;
+
+            state.Runners.RunnerOnSecond = null;
+            state.Runners.RunnerOnThird = runnerOnSecond;
+
+            gameStats[runnerOnSecond].StolenBases++;
+            gameStats[runnerOnFirst].CaughtStealing++;
+
+            state.LastPlayMessage =
+                $"{gameStats[runnerOnFirst].PlayerName} is caught stealing second! {gameStats[runnerOnSecond].PlayerName} steals third.";
+
+        }
+
+        if (state.Outs >= 3)
+            AdvanceHalfInning(state);
     }
 }

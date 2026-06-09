@@ -10,6 +10,7 @@ public record BaseballHittingStatsDto(
     int HomeRuns, 
     int RunsBattedIn, 
     int StolenBases, 
+    int CaughtStealing,
     int Strikeouts, 
     int Walks, 
     int HitByPitch,

@@ -47,6 +47,7 @@ public class BaseballStatsConfiguration : IEntityTypeConfiguration<BaseballStats
                hittingStatsBuilder.Property(s => s.HomeRuns);
                hittingStatsBuilder.Property(s => s.RunsBattedIn);
                hittingStatsBuilder.Property(s => s.StolenBases);
+               hittingStatsBuilder.Property(s => s.CaughtStealing);
                hittingStatsBuilder.Property(s => s.Strikeouts);
                hittingStatsBuilder.Property(s => s.Walks);
                hittingStatsBuilder.Property(s => s.HitByPitch);

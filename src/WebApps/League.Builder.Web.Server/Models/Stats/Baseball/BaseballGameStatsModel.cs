@@ -20,7 +20,7 @@ public class BaseballGameStatsModel
 
     public BaseballGameStatsModel(Guid leagueId, Guid teamId, Guid playerId, Guid seasonId, Guid gameId, string firstName, string lastName, string position,
                                    int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn,
-                                    int stolenBases, int strikeouts, int walks, int hitByPitch, int sacrificeFly, int wins, int losses, int pitchingRuns, bool start, int saves, decimal innings,
+                                    int stolenBases, int caughtStealing, int strikeouts, int walks, int hitByPitch, int sacrificeFly, int wins, int losses, int pitchingRuns, bool start, int saves, decimal innings,
                                     int hitsAllowed, int walksAllowed, int pitchingStrikeouts)
     {
         LeagueId = leagueId;
@@ -39,6 +39,7 @@ public class BaseballGameStatsModel
         HomeRuns = homeRuns;
         RunsBattedIn = runsBattedIn;
         StolenBases = stolenBases;
+        CaughtStealing = caughtStealing;
         Strikeouts = strikeouts;
         Walks = walks;
         HitByPitch = hitByPitch;
@@ -71,6 +72,7 @@ public class BaseballGameStatsModel
     public int HomeRuns { get; set; } = 0;
     public int RunsBattedIn { get; set; } = 0;
     public int StolenBases { get; set; } = 0;
+    public int CaughtStealing { get; set; } = 0;
     public int Strikeouts { get; set; } = 0;
     public int Walks { get; set; } = 0;
     public int HitByPitch { get; set; } = 0;

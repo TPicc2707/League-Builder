@@ -372,7 +372,7 @@ public class StatsSubmissionService
                                             form.TotalBases, form.Runs,
                                             form.Doubles, form.Triples,
                                             form.HomeRuns, form.RunsBattedIn,
-                                            form.StolenBases, form.Strikeouts, form.Walks, form.HitByPitch,
+                                            form.StolenBases, form.CaughtStealing, form.Strikeouts, form.Walks, form.HitByPitch,
                                             form.SacrificeFly);
     }
 
@@ -382,7 +382,7 @@ public class StatsSubmissionService
                                                 form.TotalBases, form.Runs,
                                                 form.Doubles, form.Triples,
                                                 form.HomeRuns, form.RunsBattedIn,
-                                                form.StolenBases, form.Strikeouts, form.Walks, form.HitByPitch, form.SacrificeFly);
+                                                form.StolenBases, form.CaughtStealing, form.Strikeouts, form.Walks, form.HitByPitch, form.SacrificeFly);
     }
 
     private UpdateBaseballPitchingStatsModel BuildPitchingUpdate(BaseballGameStatsModel form)

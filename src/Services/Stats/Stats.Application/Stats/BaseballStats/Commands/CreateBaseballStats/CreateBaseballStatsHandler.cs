@@ -17,7 +17,7 @@ public class CreateBaseballStatsHandler(IApplicationDbContext dbContext)
     {
         var hittingStats = BaseballHittingStats.Of(baseballStatsDto.HittingStats.AtBats, baseballStatsDto.HittingStats.Hits, baseballStatsDto.HittingStats.TotalBases, baseballStatsDto.HittingStats.Runs,
                                                    baseballStatsDto.HittingStats.Doubles, baseballStatsDto.HittingStats.Triples, baseballStatsDto.HittingStats.HomeRuns, baseballStatsDto.HittingStats.RunsBattedIn,
-                                                   baseballStatsDto.HittingStats.StolenBases, baseballStatsDto.HittingStats.Strikeouts, baseballStatsDto.HittingStats.Walks, 
+                                                   baseballStatsDto.HittingStats.StolenBases, baseballStatsDto.HittingStats.CaughtStealing, baseballStatsDto.HittingStats.Strikeouts, baseballStatsDto.HittingStats.Walks, 
                                                    baseballStatsDto.HittingStats.HitByPitch, baseballStatsDto.HittingStats.SacrificeFly);
         var pitchingStats = BaseballPitchingStats.Of(baseballStatsDto.PitchingStats.Wins, baseballStatsDto.PitchingStats.Losses, baseballStatsDto.PitchingStats.Runs, baseballStatsDto.PitchingStats.Start, baseballStatsDto.PitchingStats.Saves,
                                                      baseballStatsDto.PitchingStats.Innings, baseballStatsDto.PitchingStats.HitsAllowed, baseballStatsDto.PitchingStats.WalksAllowed, baseballStatsDto.PitchingStats.PitchingStrikeouts);

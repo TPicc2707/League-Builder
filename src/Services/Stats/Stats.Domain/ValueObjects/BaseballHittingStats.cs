@@ -11,6 +11,7 @@ public record BaseballHittingStats
     public int HomeRuns { get; } = default!;
     public int RunsBattedIn { get; } = default!;
     public int StolenBases { get; } = default!;
+    public int CaughtStealing {  get; } = default!;
     public int Strikeouts { get; } = default!;
     public int Walks { get; } = default!;
     public int HitByPitch { get; } = default!;
@@ -21,7 +22,7 @@ public record BaseballHittingStats
 
     }
 
-    private BaseballHittingStats(int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn, int stolenBases, int strikeouts, int walks, int hitByPitch, int sacrificeFly)
+    private BaseballHittingStats(int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn, int stolenBases, int caughtStealing, int strikeouts, int walks, int hitByPitch, int sacrificeFly)
     {
         AtBats = atBats;
         Hits = hits;
@@ -32,15 +33,16 @@ public record BaseballHittingStats
         HomeRuns = homeRuns;
         RunsBattedIn = runsBattedIn;
         StolenBases = stolenBases;
+        CaughtStealing = caughtStealing;
         Strikeouts = strikeouts;
         Walks = walks;
         HitByPitch = hitByPitch;
         SacrificeFly = sacrificeFly;
     }
 
-    public static BaseballHittingStats Of(int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn, int stolenBases, int strikeouts, int walks, int hitByPitch, int sacrificeFly)
+    public static BaseballHittingStats Of(int atBats, int hits, int totalBases, int runs, int doubles, int triples, int homeRuns, int runsBattedIn, int stolenBases, int caughtStealing, int strikeouts, int walks, int hitByPitch, int sacrificeFly)
     {
-        return new BaseballHittingStats(atBats, hits, totalBases, runs, doubles, triples, homeRuns, runsBattedIn, stolenBases, strikeouts, walks, hitByPitch, sacrificeFly);
+        return new BaseballHittingStats(atBats, hits, totalBases, runs, doubles, triples, homeRuns, runsBattedIn, stolenBases, caughtStealing, strikeouts, walks, hitByPitch, sacrificeFly);
     }
 
 }

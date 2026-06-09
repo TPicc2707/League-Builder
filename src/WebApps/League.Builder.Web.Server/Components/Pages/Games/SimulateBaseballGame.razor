@@ -507,6 +507,12 @@ else
                 if (s.HitByPitch > 0)
                     parts.Add($"{s.HitByPitch} HBP(s)");
 
+                if(s.StolenBases > 0)
+                    parts.Add($"{s.StolenBases} SB(s)");
+
+                if(s.CaughtStealing > 0)
+                    parts.Add($"{s.CaughtStealing} CS");
+
                 if (parts.Count > 0)
                     notes.Add($"{s.PlayerName}: {string.Join(", ", parts)}");
             }
@@ -533,8 +539,15 @@ else
                 if (s.HitByPitch > 0)
                     parts.Add($"{s.HitByPitch} HBP(s)");
 
+                if(s.StolenBases > 0)
+                    parts.Add($"{s.StolenBases} SB(s)");
+
+                if(s.CaughtStealing > 0)
+                    parts.Add($"{s.CaughtStealing} CS");
+
                 if (parts.Count > 0)
                     notes.Add($"{s.PlayerName}: {string.Join(", ", parts)}");
+                    
             }
 
             return notes;
@@ -746,6 +759,8 @@ else
         if (SimState.GameOver)
             return;
 
+        SimState.LastPlayMessage = string.Empty;
+
         SimState = GameSimService.SimulateNextAtBat(SimState, GameStats);
 
 
@@ -918,7 +933,7 @@ else
                                                 stats.TotalBases, stats.Runs,
                                                 stats.Doubles, stats.Triples,
                                                 stats.HomeRuns, stats.RunsBattedIn,
-                                                stats.StolenBases, stats.Strikeouts, stats.Walks, stats.HitByPitch, stats.SacrificeFly);
+                                                stats.StolenBases, stats.CaughtStealing, stats.Strikeouts, stats.Walks, stats.HitByPitch, stats.SacrificeFly);
     }
 
     private CreateBaseballPitchingStatsModel BuildPitchingCreate(BaseballGameStatsModel form)

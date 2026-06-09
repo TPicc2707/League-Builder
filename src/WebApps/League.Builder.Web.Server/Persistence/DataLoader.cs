@@ -85,6 +85,7 @@ public static class DataLoader
         HomeRuns: 0,
         RunsBattedIn: 0,
         StolenBases: 0,
+        CaughtStealing: 0,
         Strikeouts: 0,
         Walks: 0,
         HitByPitch: 0,
