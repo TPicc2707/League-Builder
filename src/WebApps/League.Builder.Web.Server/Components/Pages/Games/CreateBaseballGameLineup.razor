@@ -227,10 +227,19 @@
 
             await GameService.CreateBaseballGameLineup(request);
 
+            await GameLocalCache.SetAnyBaseballGameLineupByGameIdCache(
+                GameByIdResponse.Game.Id.ToString(),
+                teamId.ToString(),
+                new AnyBaseballGameLineupByGameIdResponse(true)
+            );
+
+
             foreach(var p in players)
                 p.IsLocked = true;
 
+
             ctx.IsLocked = true;
+            await SetGameToInProgress(teamId);
             Snackbar.Add($"{ctx.Team.TeamName} Lineup has been created.", MudBlazor.Severity.Success);
             StateHasChanged();
 
@@ -239,6 +248,65 @@
         {
             await HandleError(ex);
         }
+    }
+
+    private async Task SetGameToInProgress(Guid teamId)
+    {
+        bool home = GameByIdResponse.Game.HomeTeam.Id == teamId;
+        AnyBaseballGameLineupByGameIdResponse anyHomeLineup;
+        AnyBaseballGameLineupByGameIdResponse anyAwayLineup;
+        if (home)
+        {
+            anyHomeLineup = await DataLoader.GetOrLoad(
+                () => GameLocalCache.AnyBaseballGameLineupByGameIdCache(GameByIdResponse.Game.Id.ToString(), teamId.ToString()),
+                () => GameService.AnyBaseballGameLineupByGameId(GameByIdResponse.Game.Id, teamId),
+                (g) => GameLocalCache.SetAnyBaseballGameLineupByGameIdCache(GameByIdResponse.Game.Id.ToString(), teamId.ToString(), g)
+            );
+
+            anyAwayLineup = await DataLoader.GetOrLoad(
+                () => GameLocalCache.AnyBaseballGameLineupByGameIdCache(GameByIdResponse.Game.Id.ToString(), GameByIdResponse.Game.AwayTeam.Id.ToString()),
+                () => GameService.AnyBaseballGameLineupByGameId(GameByIdResponse.Game.Id, GameByIdResponse.Game.AwayTeam.Id),
+                (g) => GameLocalCache.SetAnyBaseballGameLineupByGameIdCache(GameByIdResponse.Game.Id.ToString(), GameByIdResponse.Game.AwayTeam.Id.ToString(), g)
+            );
+        }
+        else
+        {
+            anyHomeLineup = await DataLoader.GetOrLoad(
+                () => GameLocalCache.AnyBaseballGameLineupByGameIdCache(GameByIdResponse.Game.Id.ToString(), GameByIdResponse.Game.HomeTeam.Id.ToString()),
+                () => GameService.AnyBaseballGameLineupByGameId(GameByIdResponse.Game.Id, GameByIdResponse.Game.HomeTeam.Id),
+                (g) => GameLocalCache.SetAnyBaseballGameLineupByGameIdCache(GameByIdResponse.Game.Id.ToString(), GameByIdResponse.Game.HomeTeam.Id.ToString(), g)
+            );
+
+            anyAwayLineup = await DataLoader.GetOrLoad(
+                () => GameLocalCache.AnyBaseballGameLineupByGameIdCache(GameByIdResponse.Game.Id.ToString(), teamId.ToString()),
+                () => GameService.AnyBaseballGameLineupByGameId(GameByIdResponse.Game.Id, teamId),
+                (g) => GameLocalCache.SetAnyBaseballGameLineupByGameIdCache(GameByIdResponse.Game.Id.ToString(), teamId.ToString(), g)
+            );
+
+        }
+
+        if(anyHomeLineup.IsLineupCreated && anyAwayLineup.IsLineupCreated)
+        {
+            var update = new UpdateGameRecord(
+                GameByIdResponse.Game.Id,
+                GameByIdResponse.Game.LeagueId,
+                GameByIdResponse.Game.WinningTeamId,
+                GameByIdResponse.Game.SeasonId,
+                new GameDetailModel(GameByIdResponse.Game.GameDetail.AwayTeamScore, GameByIdResponse.Game.GameDetail.HomeTeamScore, GameByIdResponse.Game.GameDetail.StartTime, GameByIdResponse.Game.GameDetail.EndTime,
+                    GameByIdResponse.Game.GameDetail.AwayInningRuns, GameByIdResponse.Game.GameDetail.HomeInningRuns, GameByIdResponse.Game.GameDetail.AwayTotalHits, GameByIdResponse.Game.GameDetail.HomeTotalHits),
+                new AwayTeamDetailModel(GameByIdResponse.Game.AwayTeam.Id, GameByIdResponse.Game.AwayTeam.TeamName),
+                new HomeTeamDetailModel(GameByIdResponse.Game.HomeTeam.Id, GameByIdResponse.Game.HomeTeam.TeamName),
+                (int)GameStatus.InProgress
+            );
+
+            await GameService.UpdateGame(new(update));
+
+            await GameLocalCache.DeleteGameByIdCache(Id);
+            await GameLocalCache.DeleteGamesByLeagueCache(GameByIdResponse.Game.LeagueId.ToString());
+            await GameLocalCache.DeleteGamesByTeamCache(GameByIdResponse.Game.AwayTeam.Id.ToString());
+            await GameLocalCache.DeleteGamesByTeamCache(GameByIdResponse.Game.HomeTeam.Id.ToString());
+        }
+
     }
 
     private int SetupLineup(BaseballGameLineup lineup, DropItem item)
