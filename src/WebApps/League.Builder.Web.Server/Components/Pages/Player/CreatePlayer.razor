@@ -3,6 +3,7 @@
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
 @inject ISeasonService SeasonService
+@inject IAiService AiService
 @inject ISnackbar Snackbar
 @inject IWebHostEnvironment env
 @inject NavigationManager NavManager
@@ -293,6 +294,7 @@
         await ImageService.UploadNewPlayerImageAsync(LeagueById.League, TeamById.Team, model);
     }
 
+
     private async Task CreatePlayerAsync()
     {
         Models.Player.AddressModel address = new Models.Player.AddressModel(
@@ -314,7 +316,8 @@
          );
 
         CreatePlayerRequest request = new CreatePlayerRequest(new CreatePlayerRecord(teamId, model.FirstName, model.LastName, address, playerDetail, model.Description, model.ImageFile));
-        await PlayerService.CreatePlayer(request);
+        var response = await PlayerService.CreatePlayer(request);
+        await AddPlayerAICollection(response.Id);
     }
 
     private async Task ClearPlayerCachesAsync()
@@ -343,6 +346,12 @@
                 await StatsLocalCache.DeleteFootballStatsByTeamCache(Id);
                 break;
         }
+    }
+
+    private async Task AddPlayerAICollection(Guid playerId)
+    {
+        AiAddPlayerRequest request = new AiAddPlayerRequest(playerId);
+        await AiService.AddPlayerAsync(request);
     }
 
     private static List<int> GetAvailableNumbers(IEnumerable<PlayerModel> players)

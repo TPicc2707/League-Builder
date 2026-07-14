@@ -61,6 +61,7 @@
                             <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel SortBy="new Func<StandingsModel, object>(x => x.WinPercentage)">PCT</MudTableSortLabel></MudTh>
                             <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<StandingsModel, object>(x => x.GamesBack)">GB</MudTableSortLabel></MudTh>
                             <MudTh Class="mud-theme-primary font-bold">STRK</MudTh>
+                            <MudTh Class="mud-theme-primary font-bold"><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<StandingsModel, object>(x => x.GamesBack)">L10</MudTableSortLabel></MudTh>
                         </HeaderContent>
                         <RowTemplate>
                             <MudTd>
@@ -82,6 +83,9 @@
                                 </MudTd>
                             <MudTd DataLabel="Streak">
                                 @context.StreakMessage
+                            </MudTd>
+                            <MudTd DataLabel="Last 10">
+                                @context.Last10Display
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
@@ -122,6 +126,7 @@
     private GetLeagueByIdResponse LeagueModel { get; set; }
     private GetTeamByIdResponse TeamByIdResponse { get; set; }
     private GetGamesByTeamResponse GamesByTeamResponse { get; set; }
+    private GetGamesByLeagueResponse GamesByLeagueResponse { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -141,13 +146,13 @@
                 () => StandingsService.GetStandingsByLeague(leagueId),
                 (s) => StandingsLocalCache.SetStandingsByLeagueCache(Id, s)
             );
-            Standings = Model.Standings.Where(x => x.SeasonId == Season.Id);
+            Standings = Model.Standings.Where(x => x.SeasonId == Season.Id).ToList();
 
-            foreach(var s in Standings)
-            {
-                var d = s.StandingsDetail;
-                s.WinPercentage = CalculateWinPercentage(d.Wins, d.GamesPlayed);
-            }
+            GamesByLeagueResponse = await DataLoader.GetOrLoad(
+                () => GameLocalCache.GetGamesByLeagueCache(Id),
+                () => GameService.GetGamesByLeague(leagueId),
+                (g) => GameLocalCache.SetGamesByLeagueCache(Id, g)
+            );
 
             LeagueModel = await DataLoader.GetOrLoad(
                 () => LeagueLocalCache.GetLeagueByIdCache(Id),
@@ -155,10 +160,18 @@
                 (l) => LeagueLocalCache.SetLeagueByIdCache(Id, l)
             );
 
+            await GetTeamsAsync();
+
+            foreach(var s in Standings)
+            {
+                var d = s.StandingsDetail;
+                s.WinPercentage = CalculateWinPercentage(d.Wins, d.GamesPlayed);
+            }
+
+            StandingsTiebreakers(GamesByLeagueResponse);
+
             CalculateGamesBack();
             CalculatePlayoffTeams();
-
-            await GetTeamsAsync();
 
             PageLoad = true;
 
@@ -181,7 +194,9 @@
                 (s) => SeasonLocalCache.SetSeasonByYearCache(seasonValue, s)
             );
             Season = SeasonModel.Season;
-            Standings = Model.Standings.Where(x => x.SeasonId == Season.Id);
+            Standings = Model.Standings.Where(x => x.SeasonId == Season.Id).ToList();
+
+            await GetTeamsAsync();
 
             foreach (var s in Standings)
             {
@@ -189,10 +204,10 @@
                 s.WinPercentage = CalculateWinPercentage(d.Wins, d.GamesPlayed);
             }
 
+            StandingsTiebreakers(GamesByLeagueResponse);
+
             CalculateGamesBack();
             CalculatePlayoffTeams();
-
-            await GetTeamsAsync();
 
             StateHasChanged();
             PageLoad = true;
@@ -202,6 +217,19 @@
         {
             await HandleError(ex);
         }
+    }
+
+    private void StandingsTiebreakers(GetGamesByLeagueResponse leagueGames)
+    {
+        var completedGames = leagueGames.Games.Where(x => x.SeasonId == Season.Id && x.GameStatus == GameStatus.Completed);
+        var list = Standings.ToList();
+
+        list.Sort(new StandingsComparer(completedGames));
+
+        for (int i = 0; i < list.Count; i++)
+            list[i].TiebreakerRank = i;
+
+        Standings = list;
     }
 
     private async Task NavigateToPlayoffs()
@@ -228,8 +256,23 @@
 
             Games = GamesByTeamResponse.Games.Where(x => x.SeasonId == Season.Id && x.GameStatus == GameStatus.Completed).OrderByDescending(x => x.GameDetail.StartTime);
 
+            var last10 = Games.Take(10).ToList();
+
+            standing.Last10Wins = last10.Count(g => DidTeamWin(g, standing.Team.Id));
+            standing.Last10Losses = last10.Count - standing.Last10Wins;
+
             standing.Streak = GetStreak(Games, standing.Team.Id);
             standing.StreakMessage = standing.Streak > 0 ? $"W{standing.Streak}" : standing.Streak < 0 ? $"L{-standing.Streak}" : "-";
+
+            standing.RunsScored = 0;
+            standing.RunsAllowed = 0;
+
+            foreach(var game in Games)
+            {
+                bool isHome = game.HomeTeam.Id == standing.Team.Id;
+                standing.RunsScored += isHome ? game.GameDetail.HomeTeamScore : game.GameDetail.AwayTeamScore;
+                standing.RunsAllowed += isHome ? game.GameDetail.AwayTeamScore : game.GameDetail.HomeTeamScore;
+            }
         }
     }
 
@@ -275,7 +318,7 @@
 
     private void CalculateGamesBack()
     {
-        var first = Standings.OrderByDescending(x => x.WinPercentage).FirstOrDefault();
+        var first = Standings.FirstOrDefault();
 
         if(first is null)
             return;
@@ -291,7 +334,11 @@
 
     private void CalculatePlayoffTeams()
     {
-        var playoffTeams = Standings.OrderByDescending(x => x.WinPercentage).Take(LeagueModel.League.TotalPlayoffTeams);
+        var playoffTeams = Standings
+                        .OrderByDescending(x => x.WinPercentage)
+                        .ThenBy(x => x.TiebreakerRank)
+                        .Take(LeagueModel.League.TotalPlayoffTeams);
+
 
         foreach(var playoffTeam in playoffTeams)
             playoffTeam.ProjectedPlayoffTeam = true;
@@ -310,4 +357,54 @@
 
     private static decimal CalculateWinPercentage(int wins, int gamesPlayed)
         => gamesPlayed == 0 ? 0 : (decimal)wins / gamesPlayed;
+
+
+    internal class StandingsComparer : IComparer<StandingsModel>
+    {
+        private readonly IEnumerable<GameModel> _allGames;
+
+        public StandingsComparer(IEnumerable<GameModel> allGames)
+        {
+            _allGames = allGames;
+        }
+
+        public int Compare(StandingsModel a, StandingsModel b)
+        {
+            // 1. Win%
+            int winPct = b.WinPercentage.CompareTo(a.WinPercentage);
+            if(winPct != 0) return winPct;
+
+            // 2. Head-to-Head
+            int aH2H = GetHeadToHeadWins(a.Team.Id, b.Team.Id, _allGames);
+            int bH2H = GetHeadToHeadWins(b.Team.Id, a.Team.Id, _allGames);
+
+            int totalH2H = aH2H + bH2H;
+
+            if(totalH2H > 0 && aH2H != bH2H)
+                return bH2H.CompareTo(aH2H); // higher wins = better rank
+
+            // 3. Run differential (example tiebreaker)
+            int rd = b.RunsDifferential.CompareTo(a.RunsDifferential);
+            if(rd != 0) return rd;
+
+            // 4. Runs Scored
+            int rs = b.RunsScored.CompareTo(a.RunsScored);
+            if(rs != 0) return rs;
+
+            // 5. Last 10 games
+            int last10 = b.Last10WinPct.CompareTo(a.Last10WinPct);
+            if (last10 != 0) return last10;
+
+            // 6. Team name fallback
+            return a.Team.TeamName.CompareTo(b.Team.TeamName);
+        }
+
+        private int GetHeadToHeadWins(Guid teamA, Guid teamB, IEnumerable<GameModel> games)
+        {
+            return games.Count(g =>
+                (g.HomeTeam.Id == teamA && g.AwayTeam.Id == teamB && g.GameDetail.HomeTeamScore > g.GameDetail.AwayTeamScore) ||
+                (g.AwayTeam.Id == teamA && g.HomeTeam.Id == teamB && g.GameDetail.AwayTeamScore > g.GameDetail.HomeTeamScore)
+            );
+        }
+    }
 }

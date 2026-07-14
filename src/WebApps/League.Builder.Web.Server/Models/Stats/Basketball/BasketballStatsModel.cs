@@ -86,6 +86,8 @@ public record UpdateBasketballPlayerStatsModel(
 //Request Records
 public record CreateBasketballStatsRequest(CreateBasketballStatsModel BasketballStats);
 public record UpdateBasketballStatsRequest(UpdateBasketballStatsModel BasketballStats);
+public record AiAddBasketballStatsRequest(Guid BasketballStatsId);
+public record AiDeleteBasketballStatsRequest(Guid BasketballStatsId);
 
 //Response Records
 public record GetBasketballStatsResponse(PaginatedResult<BasketballStatsModel> BasketballStats);

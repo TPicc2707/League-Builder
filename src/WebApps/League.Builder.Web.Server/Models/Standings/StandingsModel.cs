@@ -15,6 +15,16 @@ public class StandingsModel
     public int Year { get; set; } = default!;
     public int Streak { get; set; } = default!;
     public string StreakMessage { get; set; } = default!;
+    public int TiebreakerRank { get; set; } = default!;
+    public int RunsScored { get; set; } = default!;
+    public int RunsAllowed { get; set; } = default!;
+    public int RunsDifferential => RunsScored - RunsAllowed;
+    public int Last10Wins { get; set; } = 0;
+    public int Last10Losses { get; set; } = 0;
+    public decimal Last10WinPct => Last10Wins + Last10Losses == 0
+        ? 0 
+        : (decimal)Last10Wins / (Last10Wins + Last10Losses);
+    public string Last10Display => $"{Last10Wins}-{Last10Losses}";
 }
 
 public record CreateStandingsModel(
@@ -49,6 +59,9 @@ public enum StandingsStatus
 // Request Record
 public record CreateStandingsRequest(CreateStandingsModel Standings);
 public record UpdateStandingsRequest(UpdateStandingsModel Standings);
+public record AiAddStandingsRequest(Guid StandingsId);
+public record AiDeleteStandingsRequest(Guid StandingsId);
+
 
 // Response Record
 public record GetStandingsResponse(PaginatedResult<StandingsModel> Standings);

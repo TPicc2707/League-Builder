@@ -63,6 +63,14 @@ var ollama = builder
 
 var llama = ollama.AddModel("llama3.2");
 
+var qdrant = builder.AddQdrant("qdrant")
+             .WithDataVolume()
+             .WithLifetime(ContainerLifetime.Persistent)
+             .PublishAsDockerComposeService((resource, service) =>
+             {
+                 service.Name = "qdrant";
+             });
+
 // Suppress ASPIRECERTIFICATES001 for evaluation API usage
 #pragma warning disable ASPIRECERTIFICATES001
     var cache = builder.AddRedis("cache")
@@ -236,6 +244,36 @@ var game = builder
                 service.Name = "game-api";
             });
 
+var aiApi = builder
+    .AddProject<Projects.AI_API>("ai-api",
+        configure: static project =>
+        {
+            project.ExcludeLaunchProfile = true;
+            project.ExcludeKestrelEndpoints = false;
+        })
+    .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
+    .WithHttpEndpoint(port: 6009)
+    .WithHttpsEndpoint(port: 6069)
+    .WithReference(league)
+    .WithReference(team)
+    .WithReference(player)
+    .WithReference(stats)
+    .WithReference(game)
+    .WithReference(standings)
+    .WithReference(season)
+    .WithReference(qdrant)
+    .WaitFor(league)
+    .WaitFor(team)
+    .WaitFor(player)
+    .WaitFor(stats)
+    .WaitFor(game)
+    .WaitFor(standings)
+    .WaitFor(season)
+    .WaitFor(qdrant)
+    .PublishAsDockerComposeService((resource, service) =>
+    {
+        service.Name = "ai-api";
+    });
 
 var apiGateway = builder
                 .AddProject<Projects.League_Builder_ApiGateway>("league-builder-apigateway",
@@ -254,6 +292,7 @@ var apiGateway = builder
                 .WithReference(game)
                 .WithReference(standings)
                 .WithReference(season)
+                .WithReference(aiApi)
                 .WithReference(keycloak)
                 .WaitFor(league)
                 .WaitFor(team)
@@ -261,6 +300,7 @@ var apiGateway = builder
                 .WaitFor(game)
                 .WaitFor(standings)
                 .WaitFor(season)
+                .WaitFor(aiApi)
                 .WithReference(keycloak)
                 .PublishAsDockerComposeService((resource, service) =>
                 {
@@ -290,6 +330,7 @@ builder.AddProject<Projects.League_Builder_Web_Server>("league-builder-web-serve
                 {
                     service.Name = "league-builder-web-server";
                 });
+
 
 
 builder.Build().Run();

@@ -2,6 +2,7 @@
 @using League.Builder.Web.Server.Services.Cache
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
+@inject IAiService AiService
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
@@ -329,6 +330,7 @@
         Models.Team.ManagerModel manager = new Models.Team.ManagerModel(model.ManagerFirstName, model.ManagerLastName, model.ManagerEmailAddress);
         UpdateTeamRequest request = new UpdateTeamRequest(new UpdateTeamRecord(model.Id, model.LeagueId, model.TeamName, address, model.Description, model.ImageFile, model.TeamColor, (int)model.TeamStatus, manager));
         await TeamService.UpdateTeam(request);
+        await AiService.AddTeamAsync(new AiAddTeamRequest(model.Id));
     }
 
     private async Task ClearTeamCache()

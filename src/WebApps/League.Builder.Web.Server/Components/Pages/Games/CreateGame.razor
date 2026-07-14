@@ -5,6 +5,7 @@
 @inject ITeamService TeamService
 @inject ISeasonService SeasonService
 @inject IGameService GameService
+@inject IAiService AiService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
@@ -294,10 +295,17 @@
         Models.Game.HomeTeamDetailModel homeTeamDetail = new HomeTeamDetailModel(model.HomeTeamId, string.Empty);
         CreateGameRecord createGameModel = new CreateGameRecord(leagueId, null, SeasonResponse.Season.Id, gameDetail, awayTeamDetail, homeTeamDetail);
         CreateGameRequest request = new CreateGameRequest(createGameModel);
-        await GameService.CreateGame(request);
+        var response = await GameService.CreateGame(request);
+        await AddGamesAICollection(response.Id);
         await GameLocalCache.DeleteGamesByLeagueCache(Id);
         await GameLocalCache.DeleteGamesByTeamCache(model.AwayTeamId.ToString());
         await GameLocalCache.DeleteGamesByTeamCache(model.HomeTeamId.ToString());
+    }
+
+    private async Task AddGamesAICollection(Guid gameId)
+    {
+        AiAddGameRequest request = new AiAddGameRequest(gameId);
+        await AiService.AddGameAsync(request);
     }
 
     private async Task HandleError(Exception ex)

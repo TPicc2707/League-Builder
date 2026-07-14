@@ -48,13 +48,21 @@ public class GameSimulatorService : IGameSimulatorService
         if (_engine is null)
             throw new InvalidOperationException("StartGame must be called before SimulateNextAtBat.");
 
-        TryStolenBase(state, gameStats);
+        bool inningEnded = TryStolenBase(state, gameStats);
 
-        if (state.Outs >= 3 || state.GameOver)
+        if (inningEnded || state.GameOver)
             return state;
 
+        var situationalResult = TrySituationalSacrifice(state, gameStats);
+
+        AtBatResult result;
+
+        if (situationalResult is not null)
+            result = situationalResult.Value;
+        else
+            result = _engine.GetOutcome(state.CurrentBatterId);
+
         var batterName = gameStats.FirstOrDefault(x => x.Value.PlayerId == state.CurrentBatterId).Value.PlayerName;
-        var result = _engine.GetOutcome(state.CurrentBatterId);
 
         if (!gameStats.TryGetValue(state.CurrentBatterId, out var stats))
             throw new InvalidOperationException($"No BaseballGameStatsModel found for player {state.CurrentBatterId}");
@@ -84,6 +92,12 @@ public class GameSimulatorService : IGameSimulatorService
                 break;
             case AtBatResult.HitByPitch:
                 ApplyHitByPitch(state, state.CurrentBatterId, gameStats);
+                break;
+            case AtBatResult.SacrificeFly:
+                ApplySacrificeFly(state, state.CurrentBatterId, gameStats);
+                break;
+            case AtBatResult.SacrificeBunt:
+                ApplySacrificeBunt(state, state.CurrentBatterId, gameStats);
                 break;
         }
 
@@ -383,6 +397,101 @@ public class GameSimulatorService : IGameSimulatorService
 
     }
 
+    private AtBatResult? TrySituationalSacrifice(GameSimulationState state, IDictionary<Guid, BaseballGameStatsModel> gameStats)
+    {
+        var r1 = state.Runners.RunnerOnFirst;
+        var r2 = state.Runners.RunnerOnSecond;
+        var r3 = state.Runners.RunnerOnThird;
+
+        // --- SAC FLY ---
+        // Runner on 3rd, < 2 outs → 10% chance
+        if (r3.HasValue && state.Outs < 2)
+        {
+            if (Random.Shared.NextDouble() < 0.10)
+                return AtBatResult.SacrificeFly;
+        }
+
+        // --- SAC BUNT ---
+        // Runner on 1st or 2nd, 0 or 1 out → 8% chance
+        bool buntAllowed =
+            (r1.HasValue && !r2.HasValue && !r3.HasValue) || // Runner on 1st
+            (r1.HasValue && r2.HasValue && !r3.HasValue) || // Runners on 1st and 2nd
+            (!r1.HasValue && r2.HasValue && !r3.HasValue) || // Runner on 2nd
+            (r1.HasValue && !r2.HasValue && r3.HasValue); // Runners on 1st and 3rd
+
+        if (buntAllowed && state.Outs <= 1)
+        {
+            double buntChance = 0.08;
+            if(Random.Shared.NextDouble() < buntChance)
+                return AtBatResult.SacrificeBunt;
+
+        }
+
+        return null;
+    }
+
+    private void ApplySacrificeFly(GameSimulationState state, Guid batterId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
+    {
+        // Runner on 3rd scores
+        if (state.Runners.RunnerOnThird is Guid r3)
+        {
+            ScoreRun(state, r3, batterId, gameStats);
+            state.Runners.RunnerOnThird = null;
+
+            // Optional: runner on 2nd tags to 3rd (MLB ~50% of time)
+            if (state.Runners.RunnerOnSecond is Guid r2)
+            {
+                if (Random.Shared.NextDouble() < 0.50)
+                {
+                    state.Runners.RunnerOnThird = r2;
+                    state.Runners.RunnerOnSecond = null;
+                }
+            }
+
+            // Batter is out, but Not an at-bat
+            state.Outs++;
+            gameStats[batterId].SacrificeFly++;
+
+            var pitcher = gameStats[state.CurrentPitcherId];
+            pitcher.OutsRecorded++;
+            pitcher.Innings = pitcher.InningsPitched;
+
+            if (state.Outs >= 3)
+                AdvanceHalfInning(state);
+        }
+    }
+
+    private void ApplySacrificeBunt(GameSimulationState state, Guid batterId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
+    {
+        var runners = state.Runners;
+
+        if (runners.RunnerOnThird is Guid r3)
+            state.Runners.RunnerOnThird = r3;
+
+        if (runners.RunnerOnSecond is Guid r2)
+        {
+            state.Runners.RunnerOnThird = r2;
+            state.Runners.RunnerOnSecond = null;
+        }
+
+        if (runners.RunnerOnFirst is Guid r1)
+        {
+            state.Runners.RunnerOnSecond = r1;
+            state.Runners.RunnerOnFirst = null;
+        }
+
+        state.Outs++;
+        gameStats[batterId].SacrificeFly++;
+
+        var pitcher = gameStats[state.CurrentPitcherId];
+        pitcher.OutsRecorded++;
+        pitcher.Innings = pitcher.InningsPitched;
+
+        if (state.Outs >= 3)
+            AdvanceHalfInning(state);
+    }
+
+
     private void ScoreRun(GameSimulationState state, Guid runnerId, Guid batterId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
     {
         // 1. Check who was leading BEFORE the play
@@ -491,6 +600,8 @@ public class GameSimulatorService : IGameSimulatorService
             AtBatResult.Double => "hits a double",
             AtBatResult.Triple => "hits a triple",
             AtBatResult.HomeRun => "hits a home run!",
+            AtBatResult.SacrificeBunt => "lays down a sacrifice bunt",
+            AtBatResult.SacrificeFly => "hits a sacrifice fly",
             _ => "does something"
         };
 
@@ -550,7 +661,7 @@ public class GameSimulatorService : IGameSimulatorService
                                         : state.AwayBatterId;
     }
 
-    private void TryStolenBase(GameSimulationState state, IDictionary<Guid, BaseballGameStatsModel> gameStats)
+    private bool TryStolenBase(GameSimulationState state, IDictionary<Guid, BaseballGameStatsModel> gameStats)
     {
         var r1 = state.Runners.RunnerOnFirst;
         var r2 = state.Runners.RunnerOnSecond;
@@ -558,34 +669,33 @@ public class GameSimulatorService : IGameSimulatorService
         if(r1.HasValue && r2.HasValue)
         {
             if (state.Outs == 2)
-                return;
+                return false;
 
             if(Random.Shared.NextDouble() < 0.05)
             {
-                AttemptDoubleSteal(state, r1.Value, r2.Value, gameStats);
-                return;
+                return AttemptDoubleSteal(state, r1.Value, r2.Value, gameStats);
             }
         }
 
         Guid? singleRunner = r1 ?? r2;
 
         if (singleRunner is null)
-            return;
+            return false;
 
         if (r2.HasValue)
         {
             Guid? runnerOnThird = state.Runners.RunnerOnThird;
             if (runnerOnThird.HasValue)
-                return;
+                return false;
         }
 
         if (Random.Shared.NextDouble() > 0.10)
-            return;
+            return false;
 
-        AttemptStolenBase(state, singleRunner.Value, gameStats);
+        return AttemptStolenBase(state, singleRunner.Value, gameStats);
     }
 
-    private void AttemptStolenBase(GameSimulationState state, Guid runnerId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
+    private bool AttemptStolenBase(GameSimulationState state, Guid runnerId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
     {
         bool onFirst = state.Runners.RunnerOnFirst == runnerId;
         bool onSecond = state.Runners.RunnerOnSecond == runnerId;
@@ -615,15 +725,23 @@ public class GameSimulatorService : IGameSimulatorService
 
             gameStats[runnerId].CaughtStealing++;
             state.Outs++;
+            var pitcher = gameStats[state.CurrentPitcherId];
+            pitcher.OutsRecorded++;
+            pitcher.Innings = pitcher.InningsPitched;
 
             state.LastPlayMessage = $"{gameStats[runnerId].PlayerName} is caught stealing!";
 
             if (state.Outs >= 3)
+            {
                 AdvanceHalfInning(state);
+                return true;
+            }
         }
+
+        return false;
     }
 
-    private void AttemptDoubleSteal(
+    private bool AttemptDoubleSteal(
         GameSimulationState state,
         Guid runnerOnFirst,
         Guid runnerOnSecond,
@@ -644,7 +762,7 @@ public class GameSimulatorService : IGameSimulatorService
             state.LastPlayMessage =
                 $"{gameStats[runnerOnFirst].PlayerName} and {gameStats[runnerOnSecond].PlayerName} pull off a double steal!";
 
-            return;
+            return false;
         }
 
         bool secondRunnerOut = Random.Shared.NextDouble() < 0.5;
@@ -659,6 +777,9 @@ public class GameSimulatorService : IGameSimulatorService
 
             gameStats[runnerOnFirst].StolenBases++;
             gameStats[runnerOnSecond].CaughtStealing++;
+            var pitcher = gameStats[state.CurrentPitcherId];
+            pitcher.OutsRecorded++;
+            pitcher.Innings = pitcher.InningsPitched;
 
             state.LastPlayMessage =
                 $"{gameStats[runnerOnSecond].PlayerName} is caught stealing third! {gameStats[runnerOnFirst].PlayerName} steals second.";
@@ -673,6 +794,9 @@ public class GameSimulatorService : IGameSimulatorService
 
             gameStats[runnerOnSecond].StolenBases++;
             gameStats[runnerOnFirst].CaughtStealing++;
+            var pitcher = gameStats[state.CurrentPitcherId];
+            pitcher.OutsRecorded++;
+            pitcher.Innings = pitcher.InningsPitched;
 
             state.LastPlayMessage =
                 $"{gameStats[runnerOnFirst].PlayerName} is caught stealing second! {gameStats[runnerOnSecond].PlayerName} steals third.";
@@ -680,6 +804,11 @@ public class GameSimulatorService : IGameSimulatorService
         }
 
         if (state.Outs >= 3)
+        {
             AdvanceHalfInning(state);
+            return true;
+        }
+
+        return false;
     }
 }

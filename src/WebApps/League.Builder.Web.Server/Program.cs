@@ -235,6 +235,11 @@ builder.Services.AddRefitClient<IGameService>().ConfigureHttpClient(x =>
     x.BaseAddress = new Uri(gatewayBaseAddress);
 }).AddHttpMessageHandler<AuthorizationHandler>();
 
+builder.Services.AddRefitClient<IAiService>().ConfigureHttpClient(x =>
+{
+    x.BaseAddress = new Uri(gatewayBaseAddress);
+}).AddHttpMessageHandler<AuthorizationHandler>();
+
 // Register Ollama-based chat & embedding
 builder.AddOllamaApiClient("ollama-llama3-2").AddChatClient();
 

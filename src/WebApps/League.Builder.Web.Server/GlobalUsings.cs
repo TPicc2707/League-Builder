@@ -10,6 +10,7 @@ global using League.Builder.Web.Server.Models.Stats.Baseball;
 global using League.Builder.Web.Server.Models.Stats.Basketball;
 global using League.Builder.Web.Server.Models.Stats.Football;
 global using League.Builder.Web.Server.Models.Team;
+global using League.Builder.Web.Server.Models.Ai;
 global using League.Builder.Web.Server.Services;
 global using Microsoft.AspNetCore.Authentication;
 global using Microsoft.AspNetCore.Authentication.Cookies;

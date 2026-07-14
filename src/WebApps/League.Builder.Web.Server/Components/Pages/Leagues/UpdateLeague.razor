@@ -2,6 +2,7 @@
 @using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
 @inject ITeamService TeamService
+@inject IAiService AiService
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
@@ -240,6 +241,8 @@
             await LeagueLocalCache.DeleteLeagueByNameCache();
             await LeagueLocalCache.DeleteLeagueByIdCache(Id);
 
+            await AddLeagueAICollection(model.Id);
+
             Snackbar.Add("League has been updated.", MudBlazor.Severity.Success);
             NavManager.NavigateTo("/leagues");
             StateHasChanged();
@@ -248,6 +251,12 @@
         {
             await HandleError(ex);
         }
+    }
+
+    private async Task AddLeagueAICollection(Guid leagueId)
+    {
+        AiAddLeagueRequest request = new AiAddLeagueRequest(leagueId);
+        await AiService.AddLeagueAsync(request);
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)

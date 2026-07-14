@@ -7,6 +7,7 @@
 @inject ISeasonService SeasonService
 @inject IGameService GameService
 @inject IStandingsService StandingsService
+@inject IAiService AiService
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
 @inject ImageService ImageService
@@ -459,7 +460,7 @@
         );
 
         await GameService.UpdateGame(new(update));
-
+        await AddGamesAICollection(Guid.Parse(Id));
         await GameLocalCache.DeleteGameByIdCache(Id);
         await GameLocalCache.DeleteGamesByLeagueCache(model.LeagueId.ToString());
         await GameLocalCache.DeleteGamesByTeamCache(model.AwayTeamId.ToString());
@@ -501,6 +502,7 @@
             new TeamDetailModel(teamId, "")
         );
         await StandingsService.UpdateStandings(new(update));
+        await AddStandingsAICollection(currentStandings.Id);
         await StandingsLocalCache.DeleteStandingsByLeagueCache(model.LeagueId.ToString());
         await StandingsLocalCache.DeleteStandingsByTeamCache(teamId.ToString());
     }
@@ -509,6 +511,18 @@
     {
         GameModel.Game.AwayTeamImage = await ImageService.GetTeamImageAsync(LeagueResponse.League, AwayTeam);
         GameModel.Game.HomeTeamImage = await ImageService.GetTeamImageAsync(LeagueResponse.League, HomeTeam);
+    }
+
+    private async Task AddGamesAICollection(Guid gameId)
+    {
+        AiAddGameRequest request = new AiAddGameRequest(gameId);
+        await AiService.AddGameAsync(request);
+    }
+
+    private async Task AddStandingsAICollection(Guid standingsId)
+    {
+        AiAddStandingsRequest request = new AiAddStandingsRequest(standingsId);
+        await AiService.AddStandingsAsync(request);
     }
 
     private async Task HandleError(Exception ex)

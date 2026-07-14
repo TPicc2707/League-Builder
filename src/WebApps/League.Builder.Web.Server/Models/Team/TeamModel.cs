@@ -50,7 +50,8 @@ public enum TeamStatus
 //Request Record
 public record UpdateTeamRequest(UpdateTeamRecord Team);
 public record CreateTeamRequest(CreateTeamRecord Team);
-
+public record AiAddTeamRequest(Guid TeamId);
+public record AiDeleteTeamRequest(Guid TeamId);
 // Response Records
 public record GetTeamsResponse(PaginatedResult<TeamModel> Teams);
 public record GetTeamByIdResponse(TeamModel Team);

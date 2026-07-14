@@ -1,5 +1,7 @@
+using BuildingBlocks.Messaging.Events;
 using BuildingBlocks.Messaging.MessageBus;
 using Rebus.Bus;
+using Rebus.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,12 @@ builder.Services.AddCustomAuthentication(builder.Configuration);
 builder.Services.AddKeycloakPolicies(ServiceName.StatService);
 
 var app = builder.Build();
+
+var provider = app.Services;
+
+var handlers = provider.GetServices<IHandleMessages<TeamCreationEvent>>();
+
+Console.WriteLine($"Handlers found: {handlers.Count()}");
 
 var bus = app.Services.GetRequiredService<IBus>();
 

@@ -55,6 +55,8 @@ public record CreatePlayerRequest(CreatePlayerRecord Player);
 // Response Records
 public record GetPlayersResponse(PaginatedResult<PlayerModel> Players);
 public record GetPlayerByIdResponse(PlayerModel Player);
+public record AiAddPlayerRequest(Guid PlayerId);
+public record AiDeletePlayerRequest(Guid PlayerId);
 public record GetPlayersByTeamResponse(IEnumerable<PlayerModel> Players);
 public record GetPlayersByFirstNameResponse(IEnumerable<PlayerModel> Players);
 public record GetPlayersByLastNameResponse(IEnumerable<PlayerModel> Players);

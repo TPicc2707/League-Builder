@@ -5,6 +5,7 @@
 @inject IPlayerService PlayerService
 @inject IPlayerLocalCacheService PlayerLocalCache
 @inject IStatsService StatService
+@inject IAiService AiService
 @inject IStatsLocalCacheService StatsLocalCache
 @inject ISeasonService SeasonService
 @inject ISeasonLocalCacheService SeasonLocalCache
@@ -547,7 +548,7 @@ else
 
                 if (parts.Count > 0)
                     notes.Add($"{s.PlayerName}: {string.Join(", ", parts)}");
-                    
+
             }
 
             return notes;
@@ -854,7 +855,8 @@ else
                 createPitchingStat
             );
 
-            await StatService.CreateBaseballStats(new CreateBaseballStatsRequest(createStat));
+            var response = await StatService.CreateBaseballStats(new CreateBaseballStatsRequest(createStat));
+            await AddBaseballStatsAICollection(response.Id);
         }
     }
 
@@ -871,6 +873,7 @@ else
                                    (int)GameStatus.Completed);
 
         await GameService.UpdateGame(new UpdateGameRequest(record));
+        await AddGamesAICollection(GameByIdResponse.Game.Id);
         await ClearGameCache();
 
         await UpdateTeamStandings(GameByIdResponse.Game.AwayTeam.Id, record);
@@ -911,6 +914,7 @@ else
             new TeamDetailModel(teamId, "")
         );
         await StandingsService.UpdateStandings(new(update));
+        await AddStandingsAICollection(currentStandings.Id);
         await ClearStandingsCache(teamId, game);
     }
 
@@ -918,6 +922,24 @@ else
     {
         await StandingsLocalCache.DeleteStandingsByLeagueCache(game.LeagueId.ToString());
         await StandingsLocalCache.DeleteStandingsByTeamCache(teamId.ToString());
+    }
+
+    private async Task AddGamesAICollection(Guid gameId)
+    {
+        AiAddGameRequest request = new AiAddGameRequest(gameId);
+        await AiService.AddGameAsync(request);
+    }
+
+    private async Task AddStandingsAICollection(Guid standingsId)
+    {
+        AiAddStandingsRequest request = new AiAddStandingsRequest(standingsId);
+        await AiService.AddStandingsAsync(request);
+    }
+
+    private async Task AddBaseballStatsAICollection(Guid baseballStatId)
+    {
+        AiAddBaseballStatsRequest request = new AiAddBaseballStatsRequest(baseballStatId);
+        await AiService.AddBaseballStatAsync(request);
     }
 
     private IEnumerable<BaseballGameStatsModel> GetPitchingStats(Dictionary<Guid, int> pitchersUsed)

@@ -1,16 +1,15 @@
-﻿using MudBlazor;
-using OllamaSharp.Models;
-
-namespace League.Builder.Web.Server.Services.Submissions;
+﻿namespace League.Builder.Web.Server.Services.Submissions;
 
 public class StatsSubmissionService
 {
     private readonly IStatsService _statsService;
+    private readonly IAiService _aiService;
     private readonly IStatsLocalCacheService _statsLocalCacheService;
 
-    public StatsSubmissionService(IStatsService statsService, IStatsLocalCacheService statsLocalCacheService)
+    public StatsSubmissionService(IStatsService statsService, IAiService aiService, IStatsLocalCacheService statsLocalCacheService)
     {
         _statsService = statsService;
+        _aiService = aiService;
         _statsLocalCacheService = statsLocalCacheService;
     }
 
@@ -40,7 +39,7 @@ public class StatsSubmissionService
                                                         selected.GameId, BuildHittingUpdate(selected), BuildPitchingUpdate(form));
 
             await _statsService.UpdateBaseballStats(new(update));
-
+            await AddBaseballStatsAICollection(existing.Id);
             applyTotalDeltas(selected, existing);
         }
         else
@@ -49,7 +48,8 @@ public class StatsSubmissionService
                                                         selected.PlayerId, selected.SeasonId,
                                                         selected.GameId, BuildHittingCreate(selected), BuildPitchingCreate(form));
 
-            await _statsService.CreateBaseballStats(new(create));
+            var response = await _statsService.CreateBaseballStats(new(create));
+            await AddBaseballStatsAICollection(response.Id);
             applyTotalDeltas(selected, DataLoader.CreateZeroBaseballStats());
 
         }
@@ -84,6 +84,7 @@ public class StatsSubmissionService
                                                         selected.GameId, BuildHittingUpdate(form), BuildPitchingUpdate(selected));
 
             await _statsService.UpdateBaseballStats(new(update));
+            await AddBaseballStatsAICollection(existing.Id);
             applyTotalDeltas(selected, existing);
         }
         else
@@ -92,7 +93,8 @@ public class StatsSubmissionService
                                                         selected.PlayerId, selected.SeasonId,
                                                         selected.GameId, BuildHittingCreate(form), BuildPitchingCreate(selected));
 
-            await _statsService.CreateBaseballStats(new(create));
+            var response = await _statsService.CreateBaseballStats(new(create));
+            await AddBaseballStatsAICollection(response.Id);
             applyTotalDeltas(selected, DataLoader.CreateZeroBaseballStats());
         }
 
@@ -126,6 +128,7 @@ public class StatsSubmissionService
                                                         selected.GameId, BuildBasketballStatsUpdate(selected));
 
             await _statsService.UpdateBasketballStats(new(update));
+            await AddBasketballStatsAICollection(existing.Id);
 
             applyTotalDeltas(selected, existing);
 
@@ -136,8 +139,8 @@ public class StatsSubmissionService
                                                         selected.PlayerId, selected.SeasonId,
                                                         selected.GameId, BuildBasketballStatsCreate(selected));
 
-            await _statsService.CreateBasketballStats(new(create));
-
+            var response = await _statsService.CreateBasketballStats(new(create));
+            await AddBasketballStatsAICollection(response.Id);
             applyTotalDeltas(selected, DataLoader.CreateZeroBasketballStats());
 
 
@@ -173,6 +176,7 @@ public class StatsSubmissionService
                                                                                         selected.GameId, BuildFootballPassingStatsUpdate(selected, form), BuildFootballDefensiveStatsUpdate(form), BuildFootballKickingStatsUpdate(form));
 
             await _statsService.UpdateFootballStats(new(update));
+            await AddFootballStatsAICollection(existing.Id);
             applyTotalDeltas(selected, existing);
 
         }
@@ -182,7 +186,8 @@ public class StatsSubmissionService
                                                                                         selected.PlayerId, selected.SeasonId,
                                                                                         selected.GameId, BuildFootballPassingStatsCreate(selected, form), BuildFootballDefensiveStatsCreate(form), BuildFootballKickingStatsCreate(form));
 
-            await _statsService.CreateFootballStats(new(create));
+            var response = await _statsService.CreateFootballStats(new(create));
+            await AddFootballStatsAICollection(response.Id);
             applyTotalDeltas(selected, DataLoader.CreateZeroFootballStats());
 
         }
@@ -217,6 +222,7 @@ public class StatsSubmissionService
                                                                                         selected.GameId, BuildFootballRushingStatsUpdate(selected, form), BuildFootballDefensiveStatsUpdate(form), BuildFootballKickingStatsUpdate(form));
 
             await _statsService.UpdateFootballStats(new(update));
+            await AddFootballStatsAICollection(existing.Id);
             applyTotalDeltas(selected, existing);
 
         }
@@ -226,7 +232,8 @@ public class StatsSubmissionService
                                                                                         selected.PlayerId, selected.SeasonId,
                                                                                         selected.GameId, BuildFootballRushingStatsCreate(selected, form), BuildFootballDefensiveStatsCreate(form), BuildFootballKickingStatsCreate(form));
 
-            await _statsService.CreateFootballStats(new(create));
+            var response = await _statsService.CreateFootballStats(new(create));
+            await AddFootballStatsAICollection(response.Id);
             applyTotalDeltas(selected, DataLoader.CreateZeroFootballStats());
 
         }
@@ -261,6 +268,7 @@ public class StatsSubmissionService
                                                                                         selected.GameId, BuildFootballReceivingStatsUpdate(selected, form), BuildFootballDefensiveStatsUpdate(form), BuildFootballKickingStatsUpdate(form));
 
             await _statsService.UpdateFootballStats(new(update));
+            await AddFootballStatsAICollection(existing.Id);
             applyTotalDeltas(selected, existing);
 
         }
@@ -270,7 +278,8 @@ public class StatsSubmissionService
                                                                                         selected.PlayerId, selected.SeasonId,
                                                                                         selected.GameId, BuildFootballReceivingStatsCreate(selected, form), BuildFootballDefensiveStatsCreate(form), BuildFootballKickingStatsCreate(form));
 
-            await _statsService.CreateFootballStats(new(create));
+            var response = await _statsService.CreateFootballStats(new(create));
+            await AddFootballStatsAICollection(response.Id);
             applyTotalDeltas(selected, DataLoader.CreateZeroFootballStats());
 
         }
@@ -305,6 +314,7 @@ public class StatsSubmissionService
                                                                                         selected.GameId, BuildEmptyFootballOffensiveStatsUpdate(form), BuildFootballDefensiveStatsUpdate(selected), BuildFootballKickingStatsUpdate(form));
 
             await _statsService.UpdateFootballStats(new(update));
+            await AddFootballStatsAICollection(existing.Id);
             applyTotalDeltas(selected, existing);
 
         }
@@ -314,7 +324,8 @@ public class StatsSubmissionService
                                                                                         selected.PlayerId, selected.SeasonId,
                                                                                         selected.GameId, BuildEmptyFootballOffensiveStatsCreate(form), BuildFootballDefensiveStatsCreate(selected), BuildFootballKickingStatsCreate(form));
 
-            await _statsService.CreateFootballStats(new(create));
+            var response = await _statsService.CreateFootballStats(new(create));
+            await AddFootballStatsAICollection(response.Id);
             applyTotalDeltas(selected, DataLoader.CreateZeroFootballStats());
 
         }
@@ -349,6 +360,7 @@ public class StatsSubmissionService
                                                                                         selected.GameId, BuildEmptyFootballOffensiveStatsUpdate(form), BuildFootballDefensiveStatsUpdate(form), BuildFootballKickingStatsUpdate(selected));
 
             await _statsService.UpdateFootballStats(new(update));
+            await AddFootballStatsAICollection(existing.Id);
             applyTotalDeltas(selected, existing);
 
         }
@@ -358,7 +370,8 @@ public class StatsSubmissionService
                                                                                         selected.PlayerId, selected.SeasonId,
                                                                                         selected.GameId, BuildEmptyFootballOffensiveStatsCreate(form), BuildFootballDefensiveStatsCreate(form), BuildFootballKickingStatsCreate(selected));
 
-            await _statsService.CreateFootballStats(new(create));
+            var response = await _statsService.CreateFootballStats(new(create));
+            await AddFootballStatsAICollection(response.Id);
             applyTotalDeltas(selected, DataLoader.CreateZeroFootballStats());
 
         }
@@ -574,5 +587,21 @@ public class StatsSubmissionService
         await _statsLocalCacheService.DeletePlayerFootballStatsBySeasonCache(form.PlayerId.ToString(), form.SeasonId.ToString());
     }
 
+    private async Task AddBaseballStatsAICollection(Guid baseballStatId)
+    {
+        AiAddBaseballStatsRequest request = new AiAddBaseballStatsRequest(baseballStatId);
+        await _aiService.AddBaseballStatAsync(request);
+    }
 
+    private async Task AddBasketballStatsAICollection(Guid basketballStatId)
+    {
+        AiAddBasketballStatsRequest request = new AiAddBasketballStatsRequest(basketballStatId);
+        await _aiService.AddBasketballStatAsync(request);
+    }
+
+    private async Task AddFootballStatsAICollection(Guid footballStatId)
+    {
+        AiAddFootballStatsRequest request = new AiAddFootballStatsRequest(footballStatId);
+        await _aiService.AddFootballStatAsync(request);
+    }
 }

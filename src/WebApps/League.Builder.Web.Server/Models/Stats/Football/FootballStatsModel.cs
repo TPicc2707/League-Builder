@@ -178,6 +178,8 @@ public record UpdateFootballKickingStatsModel(
 //Request Records
 public record CreateFootballStatsRequest(CreateFootballStatsModel FootballStats);
 public record UpdateFootballStatsRequest(UpdateFootballStatsModel FootballStats);
+public record AiAddFootballStatsRequest(Guid FootballStatsId);
+public record AiDeleteFootballStatsRequest(Guid FootballStatsId);
 
 //Response Records
 public record GetFootballStatsResponse(PaginatedResult<FootballStatsModel> FootballStats);

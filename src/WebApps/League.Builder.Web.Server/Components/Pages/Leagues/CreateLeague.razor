@@ -2,6 +2,7 @@
 @using League.Builder.Web.Server.Components.Pages.Shared
 @using League.Builder.Web.Server.Services.Cache
 @inject ILeagueService LeagueService
+@inject IAiService AiService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
@@ -201,7 +202,8 @@
             model.EmailAddress
         );
 
-        await LeagueService.CreateLeague(request);
+        var response = await LeagueService.CreateLeague(request);
+        await AddLeagueAICollection(response.Id);
         success = true;
     }
 
@@ -210,6 +212,12 @@
         await LeagueLocalCache.DeleteLeaguesCache();
         await LeagueLocalCache.DeleteLeagueBySportCache(model.Sport);
         await LeagueLocalCache.DeleteLeagueByNameCache();
+    }
+
+    private async Task AddLeagueAICollection(Guid leagueId)
+    {
+        AiAddLeagueRequest request = new AiAddLeagueRequest(leagueId);
+        await AiService.AddLeagueAsync(request);
     }
 
     private async Task HandleError(Exception ex)

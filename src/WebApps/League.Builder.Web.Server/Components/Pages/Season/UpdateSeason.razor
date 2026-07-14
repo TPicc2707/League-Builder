@@ -3,6 +3,7 @@
 @inject ISeasonService SeasonService
 @inject ITeamService TeamsService
 @inject IStandingsService StandingsService
+@inject IAiService AiService
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
@@ -135,6 +136,7 @@
         try
         {
             await SeasonService.UpdateSeason(new UpdateSeasonRequest(model.Id, model.Year, model.Description));
+            await AddSeasonAICollection(model.Id);
             await ClearCachesAsync();
             NavManager.NavigateTo("/seasons");
             Snackbar.Add("Season has been updated.", MudBlazor.Severity.Success);
@@ -150,6 +152,12 @@
         await SeasonLocalCache.DeleteSeasonsCache();
         await SeasonLocalCache.DeleteSeasonByIdCache(model.Id.ToString());
         await SeasonLocalCache.DeleteSeasonByYearCache(model.Year);
+    }
+
+    private async Task AddSeasonAICollection(Guid seasonId)
+    {
+        AiAddSeasonRequest request = new AiAddSeasonRequest(seasonId);
+        await AiService.AddSeasonAsync(request);
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)

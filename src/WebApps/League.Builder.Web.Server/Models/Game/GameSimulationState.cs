@@ -114,7 +114,9 @@ public enum AtBatResult
     Single,
     Double,
     Triple,
-    HomeRun
+    HomeRun,
+    SacrificeFly,
+    SacrificeBunt
 }
 
 public class GameResult

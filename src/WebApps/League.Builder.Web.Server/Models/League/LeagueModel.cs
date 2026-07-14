@@ -24,6 +24,8 @@ public record UpdateLeagueSettingsRequest(Guid Id, int TotalGamesPerSeason, int 
 
 // Response Records
 public record GetLeaguesResponse(IEnumerable<LeagueModel> Leagues);
+public record AiAddLeagueRequest(Guid LeagueId);
+public record AiDeleteLeagueRequest(Guid LeagueId);
 public record GetLeagueByIdResponse(LeagueModel League);
 public record GetLeaguesBySportResponse(IEnumerable<LeagueModel> Leagues);
 public record GetLeaguesByNameResponse(IEnumerable<LeagueModel> Leagues);

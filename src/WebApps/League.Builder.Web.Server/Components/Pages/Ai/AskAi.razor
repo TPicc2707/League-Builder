@@ -1,0 +1,49 @@
+﻿@page "/askai"
+@inject IAiService AiService
+
+@if (PageLoad)
+{
+    <MudItem Class="pt-12">
+        <MudPaper Class="pa-4" Elevation="4">
+            <MudText Typo="Typo.h5">Ask the League Builder AI</MudText>
+            <MudTextField @bind-Value="Question"
+                          Label="Your Question"
+                          Variant="Variant.Outlined"
+                          FullWidth="true" />
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="SendQuery"
+                       Class="mt-2"> Ask </MudButton>
+            @if (!string.IsNullOrWhiteSpace(AiResponseText))
+            {
+                <MudPaper Class="pa-4 mt-4" Elevation="2">
+                    <MudText Typo="Typo.body1">@((MarkupString)AiResponseText)</MudText>
+                </MudPaper>
+            }
+        </MudPaper>
+    </MudItem>
+}
+else
+{
+    <Loading/>
+}
+
+@code {
+    private bool PageLoad = true;
+    private string Question = string.Empty;
+    private string AiResponseText = string.Empty;
+
+    private async Task SendQuery()
+    {
+        PageLoad = false;
+        var result = await AiService.QueryAsync(new AiQueryRequest(Question));
+        var cleaned = result.Response.Replace("\n", "<br />");
+
+        int sourceIndex = cleaned.IndexOf("(Source:");
+        if (sourceIndex >= 0)
+            cleaned = cleaned.Substring(0, sourceIndex).Trim();
+
+        AiResponseText = cleaned;
+        PageLoad = true;
+    }
+}

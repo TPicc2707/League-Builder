@@ -105,34 +105,36 @@ public static class StatsToProbabilities
         double singles = t.Hits - t.Doubles - t.Triples - t.HomeRuns;
 
         double pWalk = (double)t.Walks / pa;
-        double pHbp = (double)t.HBPs / pa;
+        double pHbp = LeagueAverageProbabilities.PHitByPitch;
         double pSingle = singles / pa;
         double pDouble = (double)t.Doubles / pa;
         double pTriple = (double)t.Triples / pa;
         double pHr = (double)t.HomeRuns / pa;
         double pStrikeout = (double)t.Strikeouts / pa;
 
-        pSingle *= 1.05;
-        pDouble *= 1.05;
-        pTriple *= 1.05;
-        pHr *= 1.05;
-        
-        double pOnBaseBoosted = pWalk + pHbp + pSingle + pDouble + pTriple + pHr;
+        pSingle *= 1.25;
+        pDouble *= 1.25;
+        pTriple *= 1.25;
+        pHr *= 1.25;
 
-        if(pOnBaseBoosted > 1.0)
+        double pHits = pSingle + pDouble + pTriple + pHr;
+        double pNonHits = pWalk + pHbp + pStrikeout;
+        double pOut = 1.0 - (pHits + pNonHits);
+
+        if(pOut < 0)
         {
-            double scale = 1.0 / pOnBaseBoosted;
+            double scale = (1.0 - pNonHits) / pHits;
+
             pSingle *= scale;
             pDouble *= scale;
             pTriple *= scale;
             pHr *= scale;
-            pWalk *= scale;
-            pHbp *= scale;
 
-            pOnBaseBoosted = 1.0;
+            // Recompute hits AFTER scaling
+            pHits = pSingle + pDouble + pTriple + pHr;
+
+            pOut = 1.0 - (pHits + pNonHits);
         }
-
-        double pOut = 1.0 - pOnBaseBoosted;
 
         return new PlayerProbabilities
         {

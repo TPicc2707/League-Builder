@@ -4,6 +4,7 @@
 @inject ITeamService TeamService
 @inject ILeagueService LeagueService
 @inject ISeasonService SeasonService
+@inject IAiService AiService
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
@@ -327,7 +328,6 @@
         try
         {
             await HandleImageUpdateAsync();
-
             await UpdatePlayerRecordAsync();
             await ClearCachesAsync();
             Snackbar.Add("Player was updated.", MudBlazor.Severity.Success);
@@ -369,6 +369,7 @@
         Models.Player.PlayerDetailModel playerDetail = new Models.Player.PlayerDetailModel(model.EmailAddress, model.PhoneNumber, model.BirthDate.Value, model.Height, (int)model.Weight, model.Position, model.Number);
         UpdatePlayerRequest request = new UpdatePlayerRequest(new UpdatePlayerRecord(model.Id, model.TeamId, model.FirstName, model.LastName, address, playerDetail, model.Description, model.ImageFile, (int)model.PlayerStatus));
         await PlayerService.UpdatePlayer(request);
+        await AddPlayerAICollection(model.Id);
     }
 
     private async Task ClearCachesAsync()
@@ -383,6 +384,12 @@
         await PlayerLocalCache.DeletePlayersAfterBirthDateCache();
         await PlayerLocalCache.DeletePlayersByTeamCache(model.TeamId.ToString());
         await ClearStatsCachesAsync();
+    }
+
+    private async Task AddPlayerAICollection(Guid playerId)
+    {
+        AiAddPlayerRequest request = new AiAddPlayerRequest(playerId);
+        await AiService.AddPlayerAsync(request);
     }
 
     private async Task ClearStatsCachesAsync()

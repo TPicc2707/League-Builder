@@ -10,9 +10,7 @@ public class GameModel
     public GameStatus GameStatus { get; set; } = default!;
     public AwayTeamDetailModel AwayTeam { get; set; } = default!;
     public HomeTeamDetailModel HomeTeam { get; set; } = default!;
-
     public string AwayTeamImage { get; set; } = default!;
-
     public string HomeTeamImage { get; set; } = default!;
     public int TeamSeasonWins { get; set; }
     public int TeamSeasonLosses { get; set; }
@@ -55,6 +53,8 @@ public enum GameStatus
 //Request Records
 public record CreateGameRequest(CreateGameRecord Game);
 public record UpdateGameRequest(UpdateGameRecord Game);
+public record AiAddGameRequest(Guid GameId);
+public record AiDeleteGameRequest(Guid GameId);
 
 //Response Records
 public record GetGamesResponse(PaginatedResult<GameModel> Games);

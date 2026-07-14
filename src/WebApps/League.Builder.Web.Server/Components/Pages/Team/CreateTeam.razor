@@ -4,6 +4,7 @@
 @inject ILeagueService LeagueService
 @inject IStandingsService StandingsService
 @inject ISeasonService SeasonService
+@inject IAiService AiService
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
 @inject IHttpContextAccessor HttpContextAccessor
@@ -293,7 +294,9 @@
         Models.Team.AddressModel address = new Models.Team.AddressModel(model.FirstName, model.LastName, model.EmailAddress, model.AddressLine, model.City, model.Country, model.State, model.ZipCode);
         Models.Team.ManagerModel manager = new Models.Team.ManagerModel(model.ManagerFirstName, model.ManagerLastName, model.ManagerEmailAddress);
         CreateTeamRequest request = new CreateTeamRequest(new CreateTeamRecord(leagueId, model.TeamName, address, model.Description, model.ImageFile, model.TeamColor, manager));
-        return await TeamService.CreateTeam(request);
+        var response = await TeamService.CreateTeam(request);
+        await AddTeamAICollection(response.Id);
+        return response;
     }
 
     private async Task CreateTeamStandingsAsync(CreateTeamResponse response)
@@ -311,6 +314,12 @@
         await TeamLocalCache.DeleteTeamsCache();
         await TeamLocalCache.DeleteTeamsByNameCache();
         await TeamLocalCache.DeleteTeamsByLeagueCache(Id);
+    }
+
+    private async Task AddTeamAICollection(Guid teamId)
+    {
+        AiAddTeamRequest request = new AiAddTeamRequest(teamId);
+        await AiService.AddTeamAsync(request);
     }
 
     private async Task OnStepInteraction(StepperInteractionEventArgs args)

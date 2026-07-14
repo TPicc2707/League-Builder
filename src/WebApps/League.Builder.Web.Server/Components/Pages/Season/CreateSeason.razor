@@ -3,6 +3,7 @@
 @inject ISeasonService SeasonService
 @inject ITeamService TeamsService
 @inject IStandingsService StandingsService
+@inject IAiService AiService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavManager
 @inject ErrorState ErrorState
@@ -94,6 +95,7 @@
         try
         {
             var response = await SeasonService.CreateSeason(new CreateSeasonRequest(model.Year, model.Description));
+            await AddSeasonAICollection(response.Id);
             await SeasonLocalCache.DeleteSeasonsCache();
 
             await LoadAllAsync(response.Id);
@@ -121,9 +123,22 @@
         StandingsDetailModel standingsDetailModel = new StandingsDetailModel(0, 0, 0, 0, false, false);
         foreach (var team in teams)
         {
-            await StandingsService.CreateStandings(BuildStandingsRequest(team));
+            var response = await StandingsService.CreateStandings(BuildStandingsRequest(team));
+            await AddStandingsAICollection(response.Id);
             await StandingsLocalCache.DeleteStandingsByLeagueCache(team.LeagueId.ToString());
         }
+    }
+
+    private async Task AddSeasonAICollection(Guid seasonId)
+    {
+        AiAddSeasonRequest request = new AiAddSeasonRequest(seasonId);
+        await AiService.AddSeasonAsync(request);
+    }
+
+    private async Task AddStandingsAICollection(Guid standingsId)
+    {
+        AiAddStandingsRequest request = new AiAddStandingsRequest(standingsId);
+        await AiService.AddStandingsAsync(request);
     }
 
     private CreateStandingsRequest BuildStandingsRequest(TeamModel team) =>

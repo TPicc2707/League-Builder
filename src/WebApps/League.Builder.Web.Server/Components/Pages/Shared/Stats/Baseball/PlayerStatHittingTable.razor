@@ -36,9 +36,74 @@
         <MudTd DataLabel="HR" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStats.HomeRuns</MudTd>
         <MudTd DataLabel="SF" Style="margin-left: 5px; font-size: .875rem;">@context.BaseballStatsModel.HittingStats.SacrificeFly</MudTd>
     </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
 </MudTable>
+<MudItem Style="padding-top: 25px;">
+    <MudSimpleTable Class="border border-solid" Style="border-color: #000000">
+        <thead>
+            <tr class="mud-theme-primary">
+                <th style="@($"background-color: {TeamColor}")"></th>
+                <th style="@($"background-color: {TeamColor}")">AB</th>
+                <th style="@($"background-color: {TeamColor}")">R</th>
+                <th style="@($"background-color: {TeamColor}")">H</th>
+                <th style="@($"background-color: {TeamColor}")">RBI</th>
+                <th style="@($"background-color: {TeamColor}")">BB</th>
+                <th style="@($"background-color: {TeamColor}")">HBP</th>
+                <th style="@($"background-color: {TeamColor}")">K</th>
+                <th style="@($"background-color: {TeamColor}")">SB</th>
+                <th style="@($"background-color: {TeamColor}")">TB</th>
+                <th style="@($"background-color: {TeamColor}")">2B</th>
+                <th style="@($"background-color: {TeamColor}")">3B</th>
+                <th style="@($"background-color: {TeamColor}")">HR</th>
+                <th style="@($"background-color: {TeamColor}")">SF</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Totals:</td>
+                <td><span style="margin-left: 5px;">@HittingTotals.AtBats</span></td>
+                <td>@HittingTotals.Runs</td>
+                <td>@HittingTotals.Hits</td>
+                <td><span style="margin-left: 7px;">@HittingTotals.RBIs</span></td>
+                <td><span style="margin-left: 5px;">@HittingTotals.Walks</span></td>
+                <td><span style="margin-left: 7px;">@HittingTotals.HBPs</span></td>
+                <td>@HittingTotals.Strikeouts</td>
+                <td><span style="margin-left: 5px;">@HittingTotals.SBs</span></td>
+                <td><span style="margin-left: 5px;">@HittingTotals.TBs</span></td>
+                <td><span style="margin-left: 5px;">@HittingTotals.Doubles</span></td>
+                <td><span style="margin-left: 5px;">@HittingTotals.Triples</span></td>
+                <td><span style="margin-left: 5px;">@HittingTotals.HomeRuns</span></td>
+                <td><span style="margin-left: 5px;">@HittingTotals.SFs</span></td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+
+</MudItem>
 
 @code {
     [Parameter] public IEnumerable<PlayerStatRecord> Rows { get; set; }
     [Parameter] public string TeamColor { get; set; }
+    public BaseballHittingTotalsModel HittingTotals = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        foreach(var stat in Rows)
+        {
+            HittingTotals.AtBats += stat.BaseballStatsModel.HittingStats.AtBats;
+            HittingTotals.Runs += stat.BaseballStatsModel.HittingStats.Runs;
+            HittingTotals.Hits += stat.BaseballStatsModel.HittingStats.Hits;
+            HittingTotals.RBIs += stat.BaseballStatsModel.HittingStats.RunsBattedIn;
+            HittingTotals.Walks += stat.BaseballStatsModel.HittingStats.Walks;
+            HittingTotals.HBPs += stat.BaseballStatsModel.HittingStats.HitByPitch;
+            HittingTotals.Strikeouts += stat.BaseballStatsModel.HittingStats.Strikeouts;
+            HittingTotals.SBs += stat.BaseballStatsModel.HittingStats.StolenBases;
+            HittingTotals.TBs += stat.BaseballStatsModel.HittingStats.TotalBases;
+            HittingTotals.Doubles += stat.BaseballStatsModel.HittingStats.Doubles;
+            HittingTotals.Triples += stat.BaseballStatsModel.HittingStats.Triples;
+            HittingTotals.HomeRuns += stat.BaseballStatsModel.HittingStats.HomeRuns;
+            HittingTotals.SFs += stat.BaseballStatsModel.HittingStats.SacrificeFly;
+        }
+    }
 }

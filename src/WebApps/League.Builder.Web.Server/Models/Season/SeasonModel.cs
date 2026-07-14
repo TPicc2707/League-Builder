@@ -10,6 +10,8 @@ public class SeasonModel
 //Request Records
 public record CreateSeasonRequest(int Year, string Description);
 public record UpdateSeasonRequest(Guid Id, int Year, string Description);
+public record AiAddSeasonRequest(Guid SeasonId);
+public record AiDeleteSeasonRequest(Guid SeasonId);
 
 //Response Records
 public record GetSeasonsResponse(IEnumerable<SeasonModel> Seasons);

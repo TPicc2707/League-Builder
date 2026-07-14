@@ -117,7 +117,8 @@ public record UpdateBaseballPitchingStatsModel(int Wins,
 //Request Records
 public record CreateBaseballStatsRequest(CreateBaseballStatsModel BaseballStats);
 public record UpdateBaseballStatsRequest(UpdateBaseballStatsModel BaseballStats);
-
+public record AiAddBaseballStatsRequest(Guid BaseballStatsId);
+public record AiDeleteBaseballStatsRequest(Guid BaseballStatsId);
 
 // Response Records
 public record GetBaseballStatsResponse(PaginatedResult<BaseballStatsModel> BaseballStats);
