@@ -1,7 +1,4 @@
-﻿using OllamaSharp.Models;
-using System.Reflection;
-
-namespace League.Builder.Web.Server.Services;
+﻿namespace League.Builder.Web.Server.Services;
 
 public class ImageService
 {

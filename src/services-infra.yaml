@@ -18,10 +18,10 @@ Parameters:
     Type: String
     Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/custom-keycloak:latest
 
-  OllamaImage:
+  QdrantImage:
     Type: String
-    Default: docker.io/ollama/ollama:0.13.0
-  
+    Default: docker.io/qdrant/qdrant:v1.18.0
+
   RedisImage:
     Type: String
     Default: redis:7
@@ -136,6 +136,15 @@ Resources:
         - DomainName: stats.myleaguebuilder.com
           HostedZoneId: Z017284424G0ZTG1FUTE6
   
+  AiApiCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: ai.myleaguebuilder.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: ai.myleaguebuilder.com
+          HostedZoneId: Z017284424G0ZTG1FUTE6
+  
   ApiGatewayCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
@@ -217,6 +226,13 @@ Resources:
       ListenerArn: !Ref HttpsListener
       Certificates:
         - CertificateArn: !Ref StatsApiCertificate
+  
+  AiApiListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Properties:
+      ListenerArn: !Ref HttpsListener
+      Certificates:
+        - CertificateArn: !Ref AiApiCertificate
 
   ApiGatewayListenerCertificate:
     Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
@@ -330,6 +346,16 @@ Resources:
         DNSName: !GetAtt ApplicationLoadBalancer.DNSName
         HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
 
+  AiApiDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: Z017284424G0ZTG1FUTE6
+      Name: ai.myleaguebuilder.com.
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+
   ApiGatewayDNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
@@ -405,6 +431,21 @@ Resources:
           FromPort: 1433
           ToPort: 1433
           SourceSecurityGroupId: !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+  
+  QdrantTaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow Ai Api to reach Qdrant
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6333
+          ToPort: 6333
+          SourceSecurityGroupId: !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+        - IpProtocol: tcp
+          FromPort: 6334
+          ToPort: 6334
+          SourceSecurityGroupId: !ImportValue leaguebuilder-dev-ApiSecurityGroupId
 
   ApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -433,7 +474,7 @@ Resources:
   SqlVolumeAttachment:
     Type: AWS::EC2::VolumeAttachment
     Properties:
-      InstanceId: !ImportValue leaguebuilder-dev-SqlOllamaECSInstance
+      InstanceId: !ImportValue leaguebuilder-dev-SqlQdrantECSInstance
       VolumeId: !ImportValue leaguebuilder-dev-SqlVolumeId
       Device: /dev/xvdg
 
@@ -450,21 +491,20 @@ Resources:
       InstanceId: !ImportValue leaguebuilder-dev-KeycloakPostgresRabbitMqECSInstance
       VolumeId: !ImportValue leaguebuilder-dev-KeycloakVolumeId
       Device: /dev/xvdi
-
-  OllamaVolumeAttachment:
-    Type: AWS::EC2::VolumeAttachment
-    Properties:
-      InstanceId: !ImportValue leaguebuilder-dev-SqlOllamaECSInstance
-      VolumeId: !ImportValue leaguebuilder-dev-OllamaVolumeId
-      Device: /dev/xvdj
   
   RedisVolumeAttachment:
     Type: AWS::EC2::VolumeAttachment
     Properties:
-      InstanceId: !ImportValue leaguebuilder-dev-SqlOllamaECSInstance
+      InstanceId: !ImportValue leaguebuilder-dev-SqlQdrantECSInstance
       VolumeId: !ImportValue leaguebuilder-dev-RedisVolumeId
       Device: /dev/xvdt
 
+  QdrantVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !ImportValue leaguebuilder-dev-SqlQdrantECSInstance
+      VolumeId: !ImportValue leaguebuilder-dev-QdrantVolumeId
+      Device: /dev/xvdj
   
   PostgresLogs:
     Type: AWS::Logs::LogGroup
@@ -619,7 +659,7 @@ Resources:
       TaskDefinition: !Ref SqlServerTask
       PlacementConstraints:
         - Type: memberOf
-          Expression: "attribute:Role == sqlollama"
+          Expression: "attribute:Role == sql-qdrant"
       ServiceRegistries:
         - RegistryArn: !GetAtt SqlServerDiscoveryService.Arn
       NetworkConfiguration:
@@ -778,8 +818,6 @@ Resources:
               Value: "local"
             - Name: KC_CACHE_STACK
               Value: "local"
-            - Name: KC_CACHE_CONFIG_FILE
-              Value: "cache-local.xml"
           HealthCheck:
             Command:
               - CMD-SHELL
@@ -876,63 +914,6 @@ Resources:
       Actions:
         - Type: forward
           TargetGroupArn: !Ref KeycloakTargetGroup
-
-  OllamaLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/ollama
-      RetentionInDays: 7
-
-  OllamaTask:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: ollama
-      RequiresCompatibilities: [EC2]
-      NetworkMode: awsvpc
-      Cpu: "2048"
-      Memory: "4096"
-      ExecutionRoleArn: !Ref TaskExecutionRole
-      ContainerDefinitions:
-        - Name: ollama
-          Image: !Ref OllamaImage
-          PortMappings:
-            - ContainerPort: 11434
-              HostPort: 11434
-              Protocol: tcp
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: /ecs/ollama
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: ecs
-          MountPoints:
-            - SourceVolume: ollama-data
-              ContainerPath: /root/.ollama
-      Volumes:
-        - Name: ollama-data
-          Host:
-            SourcePath: /mnt/ollama
-
-  OllamaService:
-    Type: AWS::ECS::Service
-    Properties:
-      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
-      LaunchType: EC2
-      DesiredCount: 1
-      TaskDefinition: !Ref OllamaTask
-      PlacementConstraints:
-        - Type: memberOf
-          Expression: "attribute:Role == sqlollama"
-      ServiceRegistries:
-        - RegistryArn: !GetAtt OllamaDiscoveryService.Arn
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
-          Subnets:
-            - !ImportValue leaguebuilder-dev-PublicSubnet1
-            - !ImportValue leaguebuilder-dev-PublicSubnet2
-          SecurityGroups:
-            - !ImportValue leaguebuilder-dev-InstanceSG
   
   RedisLogs:
     Type: AWS::Logs::LogGroup
@@ -988,7 +969,7 @@ Resources:
       TaskDefinition: !Ref RedisTask
       PlacementConstraints:
         - Type: memberOf
-          Expression: "attribute:Role == sqlollama"
+          Expression: "attribute:Role == sql-qdrant"
       ServiceRegistries:
         - RegistryArn: !GetAtt RedisDiscoveryService.Arn
       NetworkConfiguration:
@@ -1000,7 +981,67 @@ Resources:
           SecurityGroups:
             - !ImportValue leaguebuilder-dev-InstanceSG
 
+  QdrantLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/qdrant
+      RetentionInDays: 7
   
+  QdrantTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: qdrant
+      RequiresCompatibilities: [EC2]
+      NetworkMode: awsvpc
+      Cpu: "512"
+      Memory: "1024"
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: qdrant
+          Image: !Ref QdrantImage
+          PortMappings:
+            - ContainerPort: 6333
+              HostPort: 6333
+              Protocol: tcp
+            - ContainerPort: 6334
+              HostPort: 6334
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/qdrant
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+          MountPoints:
+            - SourceVolume: qdrant-data
+              ContainerPath: /qdrant/storage
+      Volumes:
+        - Name: qdrant-data
+          Host:
+            SourcePath: /mnt/qdrant
+  
+  QdrantService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: EC2
+      DesiredCount: 1
+      TaskDefinition: !Ref QdrantTask
+      PlacementConstraints:
+        - Type: memberOf
+          Expression: "attribute:Role == sql-qdrant"
+      ServiceRegistries:
+        - RegistryArn: !GetAtt QdrantDiscoveryService.Arn
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !Ref QdrantTaskSecurityGroup
+
+   
   ServiceDiscoveryNamespace:
     Type: AWS::ServiceDiscovery::PrivateDnsNamespace
     Properties:
@@ -1044,18 +1085,6 @@ Resources:
       HealthCheckCustomConfig:
         FailureThreshold: 1
   
-  OllamaDiscoveryService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties:
-      Name: ollama
-      NamespaceId: !Ref ServiceDiscoveryNamespace
-      DnsConfig:
-        DnsRecords:
-          - Type: A
-            TTL: 10
-      HealthCheckCustomConfig:
-        FailureThreshold: 1
-  
   RedisDiscoveryService:
     Type: AWS::ServiceDiscovery::Service
     Properties:
@@ -1067,6 +1096,16 @@ Resources:
             TTL: 10
       HealthCheckCustomConfig:
         FailureThreshold: 1
+  
+  QdrantDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: qdrant
+      NamespaceId: !Ref ServiceDiscoveryNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
 
 Outputs:
   ServiceDiscoveryNamespaceId:

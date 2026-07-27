@@ -240,9 +240,6 @@ builder.Services.AddRefitClient<IAiService>().ConfigureHttpClient(x =>
     x.BaseAddress = new Uri(gatewayBaseAddress);
 }).AddHttpMessageHandler<AuthorizationHandler>();
 
-// Register Ollama-based chat & embedding
-builder.AddOllamaApiClient("ollama-llama3-2").AddChatClient();
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

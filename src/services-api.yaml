@@ -51,6 +51,13 @@ Parameters:
   StatsApiPort:
     Type: Number
     Default: 6007
+  AiApiImage:
+    Type: String
+    Default: 362277242640.dkr.ecr.us-east-2.amazonaws.com/ai-api:latest
+    Description: ECR image URI for ai-api
+  AiApiPort:
+    Type: Number
+    Default: 6009
   # Dev-only passwords (matches your docker-compose intent)
   PostgresPassword:
     Type: String
@@ -83,6 +90,17 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: ReadSSMParameters
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/leaguebuilder/ai-api/*
   
   LeagueApiLogs:
     Type: AWS::Logs::LogGroup
@@ -941,6 +959,122 @@ Resources:
       Actions:
         - Type: forward
           TargetGroupArn: !Ref GameApiTargetGroup
+  
+  ########################################
+    # ai-api
+  ########################################
+
+  AiApiLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/ai-api
+      RetentionInDays: 7
+  
+  AiApiTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: ai-api
+      RequiresCompatibilities:
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: "512"
+      Memory: "1024"
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskExecutionRole
+      ContainerDefinitions:
+        - Name: ai-api
+          Image: !Ref AiApiImage
+          PortMappings:
+            - ContainerPort: !Ref AiApiPort
+              Protocol: tcp
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Test
+            - Name: ASPNETCORE_URLS
+              Value: !Sub "http://0.0.0.0:${AiApiPort}"
+            - Name: HTTP_PORTS
+              Value: !Sub "${AiApiPort}"
+            - Name: HTTPS_PORTS
+              Value: !Sub "${AiApiPort}"
+            - Name: QDRANT_HOST
+              Value: qdrant.internal
+            - Name: QDRANT_HTTP_PORT
+              Value: "6333"
+            - Name: QDRANT_GRPC_PORT
+              Value: "6334"
+            - Name: Aspire__Qdrant__Client__Endpoint
+              Value: "http://qdrant.internal:6334"
+            - Name: Aspire__Qdrant__Client__UseGrpc
+              Value: "true"
+          Secrets:
+            - Name: AzureOpenAI:ApiKey
+              ValueFrom: "/leaguebuilder/ai-api/AzureOpenAIApiKey"
+            - Name: AzureOpenAI:Endpoint
+              ValueFrom: "/leaguebuilder/ai-api/AzureOpenAIEndpoint"
+            - Name: AzureOpenAI:DeploymentName
+              ValueFrom: "/leaguebuilder/ai-api/AzureOpenAIDeploymentName"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/ai-api
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+  
+  AiApiService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - AiApiListenerRule
+      - LeagueApiService
+      - TeamApiService
+      - PlayerApiService
+      - GameApiService
+      - SeasonApiService
+      - StandingsApiService
+      - StatsApiService
+    Properties:
+      Cluster: !ImportValue leaguebuilder-dev-ECSClusterName
+      LaunchType: FARGATE
+      DesiredCount: 1
+      TaskDefinition: !Ref AiApiTask
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !ImportValue leaguebuilder-dev-PublicSubnet1
+            - !ImportValue leaguebuilder-dev-PublicSubnet2
+          SecurityGroups:
+            - !ImportValue leaguebuilder-dev-ApiSecurityGroupId
+      LoadBalancers:
+        - TargetGroupArn: !Ref AiApiTargetGroup
+          ContainerName: ai-api
+          ContainerPort: !Ref AiApiPort
+
+    
+  AiApiTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !ImportValue leaguebuilder-dev-VpcId
+      Protocol: HTTP
+      Port: !Ref AiApiPort
+      TargetType: ip
+      HealthCheckPath: /healthz
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200-399"
+  
+  AiApiListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue leaguebuilder-dev-HttpsListenerArn
+      Priority: 28
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - ai.myleaguebuilder.com
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref AiApiTargetGroup
 
   LeagueApiDiscoveryService:
     Type: AWS::ServiceDiscovery::Service
@@ -1018,6 +1152,18 @@ Resources:
     Type: AWS::ServiceDiscovery::Service
     Properties:
       Name: season-api
+      NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+  
+  AiApiDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: ai-api
       NamespaceId: !ImportValue leaguebuilder-dev-NamespaceId
       DnsConfig:
         DnsRecords:

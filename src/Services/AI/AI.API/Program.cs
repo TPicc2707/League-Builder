@@ -3,13 +3,22 @@ using AI.API.Models;
 using AI.API.Services;
 using Azure;
 using Azure.AI.OpenAI;
+using HealthChecks.UI.Client;
 using Microsoft.Agents.AI;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Qdrant.Client;
 using QdrantVectorStoreType = Microsoft.SemanticKernel.Connectors.Qdrant.QdrantVectorStore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+var isLocal = env == "Development" || env == "Local";
+
+if (!isLocal)
+    AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
 builder.AddServiceDefaults();
 builder.AddQdrantClient("qdrant");
@@ -34,24 +43,56 @@ builder.Services.AddSingleton(chatClient);
 builder.Services.AddTransient<KeycloakAuthHandler>();
 builder.Services.AddSingleton<KeycloakTokenService>();
 
+var authority = isLocal
+            ? "http://localhost:8080"
+            : "https://auth.myleaguebuilder.com";
+
+var leagueapi = isLocal
+            ? "http://league-api/"
+            : "https://league.myleaguebuilder.com";
+
+var teamapi = isLocal
+            ? "http://team-api/"
+            : "https://team.myleaguebuilder.com";
+
+var playerapi = isLocal
+            ? "http://player-api/"
+            : "https://player.myleaguebuilder.com";
+
+var seasonapi = isLocal
+            ? "http://season-api/"
+            : "https://season.myleaguebuilder.com";
+
+var gameapi = isLocal
+            ? "http://game-api/"
+            : "https://game.myleaguebuilder.com";
+
+var standingsapi = isLocal
+            ? "http://standings-api/"
+            : "https://standings.myleaguebuilder.com";
+
+var statsapi = isLocal
+            ? "http://stats-api/"
+            : "https://stats.myleaguebuilder.com";
+
 // Register Microservices HttpClients
 builder.Services.AddHttpClient("Keycloak", c =>
 {
-    c.BaseAddress = new Uri("http://localhost:8080"); // Aspire service name
+    c.BaseAddress = new Uri(authority); // Aspire service name
 });
-builder.Services.AddHttpClient("LeagueApi", c => c.BaseAddress = new Uri("http://league-api/"))
+builder.Services.AddHttpClient("LeagueApi", c => c.BaseAddress = new Uri(leagueapi))
     .AddHttpMessageHandler<KeycloakAuthHandler>();
-builder.Services.AddHttpClient("TeamApi", c => c.BaseAddress = new Uri("http://team-api/"))
+builder.Services.AddHttpClient("TeamApi", c => c.BaseAddress = new Uri(teamapi))
         .AddHttpMessageHandler<KeycloakAuthHandler>();
-builder.Services.AddHttpClient("PlayerApi", c => c.BaseAddress = new Uri("http://player-api/"))
+builder.Services.AddHttpClient("PlayerApi", c => c.BaseAddress = new Uri(playerapi))
     .AddHttpMessageHandler<KeycloakAuthHandler>();
-builder.Services.AddHttpClient("SeasonApi", c => c.BaseAddress = new Uri("http://season-api/"))
+builder.Services.AddHttpClient("SeasonApi", c => c.BaseAddress = new Uri(seasonapi))
     .AddHttpMessageHandler<KeycloakAuthHandler>();
-builder.Services.AddHttpClient("GameApi", c => c.BaseAddress = new Uri("http://game-api/"))
+builder.Services.AddHttpClient("GameApi", c => c.BaseAddress = new Uri(gameapi))
     .AddHttpMessageHandler<KeycloakAuthHandler>();
-builder.Services.AddHttpClient("StandingsApi", c => c.BaseAddress = new Uri("http://standings-api/"))
+builder.Services.AddHttpClient("StandingsApi", c => c.BaseAddress = new Uri(standingsapi))
     .AddHttpMessageHandler<KeycloakAuthHandler>();
-builder.Services.AddHttpClient("StatsApi", c => c.BaseAddress = new Uri("http://stats-api/"))
+builder.Services.AddHttpClient("StatsApi", c => c.BaseAddress = new Uri(statsapi))
     .AddHttpMessageHandler<KeycloakAuthHandler>();
 
 //Register Tools
@@ -284,6 +325,13 @@ app.MapDefaultEndpoints();
 app.MapControllers();
 app.MapOpenAIResponses();
 app.MapOpenAIConversations();
+
+app.UseExceptionHandler(options => { });
+app.MapHealthChecks("/healthz",
+    new HealthCheckOptions
+    {
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    }).AllowAnonymous();
 
 app.Run();
 

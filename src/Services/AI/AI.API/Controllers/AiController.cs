@@ -85,6 +85,8 @@ public class AiController : ControllerBase
 
         await _leagueSearch.IngestLeagueAsync(vector);
 
+        Console.WriteLine($"League Record has been ingest by Qdrant. Records {vector.Id}");
+
         return Ok();
     }
 
@@ -92,6 +94,8 @@ public class AiController : ControllerBase
     public async Task<IActionResult> DeleteLeague([FromBody] AiDeleteLeagueRequest request)
     {
         await _leagueSearch.DeleteLeagueAsync(request.LeagueId);
+
+        Console.WriteLine($"League Record has been deleted in Qdrant. Record {request.LeagueId}");
 
         return Ok();
     }
@@ -123,6 +127,8 @@ public class AiController : ControllerBase
 
         await _teamSearch.IngestTeamAsync(vector);
 
+        Console.WriteLine($"Team Record has been ingest by Qdrant. Records {vector.Id}");
+
         return Ok();
     }
 
@@ -130,6 +136,8 @@ public class AiController : ControllerBase
     public async Task<IActionResult> DeleteTeam([FromBody] AiDeleteTeamRequest request)
     {
         await _teamSearch.DeleteTeamAsync(request.TeamId);
+
+        Console.WriteLine($"Team Record has been deleted in Qdrant. Record {request.TeamId}");
 
         return Ok();
     }
@@ -161,6 +169,8 @@ public class AiController : ControllerBase
 
         await _playerSearch.IngestPlayerAsync(vector);
 
+        Console.WriteLine($"Player Record has been ingest by Qdrant. Records {vector.Id}");
+
         return Ok();
     }
 
@@ -168,6 +178,8 @@ public class AiController : ControllerBase
     public async Task<IActionResult> DeletePlayer([FromBody] AiDeletePlayerRequest request)
     {
         await _playerSearch.DeletePlayerAsync(request.PlayerId);
+
+        Console.WriteLine($"Player Record has been deleted in Qdrant. Record {request.PlayerId}");
 
         return Ok();
     }
@@ -198,6 +210,8 @@ public class AiController : ControllerBase
 
         await _seasonSearch.IngestSeasonAsync(vector);
 
+        Console.WriteLine($"Season Record has been ingest by Qdrant. Records {vector.Id}");
+
         return Ok();
     }
 
@@ -205,6 +219,8 @@ public class AiController : ControllerBase
     public async Task<IActionResult> DeleteSeason([FromBody] AiDeleteSeasonRequest request)
     {
         await _seasonSearch.DeleteSeasonAsync(request.SeasonId);
+
+        Console.WriteLine($"Season Record has been deleted in Qdrant. Record {request.SeasonId}");
 
         return Ok();
     }
@@ -235,6 +251,8 @@ public class AiController : ControllerBase
 
         await _standingsSearch.IngestStandingsAsync(vector);
 
+        Console.WriteLine($"Standings Record has been ingest by Qdrant. Records {vector.Id}");
+
         return Ok();
     }
 
@@ -242,6 +260,8 @@ public class AiController : ControllerBase
     public async Task<IActionResult> DeleteStandings([FromBody] AiDeleteStandingsRequest request)
     {
         await _standingsSearch.DeleteStandingAsync(request.StandingsId);
+
+        Console.WriteLine($"Standings Record has been deleted in Qdrant. Record {request.StandingsId}");
 
         return Ok();
     }
@@ -272,6 +292,8 @@ public class AiController : ControllerBase
 
         await _gameSearch.IngestGameAsync(vector);
 
+        Console.WriteLine($"Game Record has been ingest by Qdrant. Records {vector.Id}");
+
         return Ok();
     }
 
@@ -279,6 +301,8 @@ public class AiController : ControllerBase
     public async Task<IActionResult> DeleteGame([FromBody] AiDeleteGameRequest request)
     {
         await _gameSearch.DeleteGameAsync(request.GameId);
+
+        Console.WriteLine($"Game Record has been deleted in Qdrant. Record {request.GameId}");
 
         return Ok();
     }
@@ -309,6 +333,8 @@ public class AiController : ControllerBase
 
         await _baseballStatsSearch.IngestBaseballStatAsync(vector);
 
+        Console.WriteLine($"Baseball Stats Record has been ingest by Qdrant. Records {vector.Id}");
+
         return Ok();
     }
 
@@ -316,6 +342,8 @@ public class AiController : ControllerBase
     public async Task<IActionResult> DeleteBaseballStat([FromBody] AiDeleteBaseballStatsRequest request)
     {
         await _baseballStatsSearch.DeleteBaseballStatAsync(request.BaseballStatsId);
+
+        Console.WriteLine($"Baseball Stats Record has been deleted in Qdrant. Record {request.BaseballStatsId}");
 
         return Ok();
     }
@@ -346,6 +374,8 @@ public class AiController : ControllerBase
 
         await _basketballStatsSearch.IngestBasketballStatAsync(vector);
 
+        Console.WriteLine($"Basketball Stats Record has been ingest by Qdrant. Records {vector.Id}");
+
         return Ok();
     }
 
@@ -353,6 +383,8 @@ public class AiController : ControllerBase
     public async Task<IActionResult> DeleteBasketballStat([FromBody] AiDeleteBasketballStatsRequest request)
     {
         await _basketballStatsSearch.DeleteBasketballStatAsync(request.BasketballStatsId);
+
+        Console.WriteLine($"Basketball Stats Record has been deleted in Qdrant. Record {request.BasketballStatsId}");
 
         return Ok();
     }
@@ -383,6 +415,8 @@ public class AiController : ControllerBase
 
         await _footballStatsSearch.IngestFootballStatAsync(vector);
 
+        Console.WriteLine($"Football Stats Record has been ingest by Qdrant. Records {vector.Id}");
+
         return Ok();
     }
 
@@ -390,6 +424,8 @@ public class AiController : ControllerBase
     public async Task<IActionResult> DeleteFootballStat([FromBody] AiDeleteFootballStatsRequest request)
     {
         await _footballStatsSearch.DeleteFootballStatAsync(request.FootballStatsId);
+
+        Console.WriteLine($"Football Stats Record has been deleted in Qdrant. Record {request.FootballStatsId}");
 
         return Ok();
     }

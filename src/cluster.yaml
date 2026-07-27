@@ -10,7 +10,7 @@ Parameters:
     Description: Image ID for EC2 instance
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id
-  SqlOllamaInstanceType:
+  SqlQdrantInstanceType:
     Description: Instance type to launch EC2 instance
     Type: String
     Default: m5.2xlarge
@@ -56,7 +56,7 @@ Resources:
     Type: AWS::EC2::Volume
     Properties:
       AvailabilityZone: !GetAtt KeycloakPostgresRabbitMqECSInstance.AvailabilityZone
-      Size: 20
+      SnapshotId: snap-0e318de662366e9c8
       VolumeType: gp3
       Tags:
         - Key: Name
@@ -65,8 +65,8 @@ Resources:
   SqlVolume:
     Type: AWS::EC2::Volume
     Properties:
-      AvailabilityZone: !GetAtt SqlOllamaECSInstance.AvailabilityZone
-      Size: 40
+      AvailabilityZone: !GetAtt SqlQdrantECSInstance.AvailabilityZone
+      SnapshotId: snap-0be7bed18b31893f4
       VolumeType: gp3
       Tags:
         - Key: Name
@@ -76,46 +76,46 @@ Resources:
     Type: AWS::EC2::Volume
     Properties:
       AvailabilityZone: !GetAtt KeycloakPostgresRabbitMqECSInstance.AvailabilityZone
-      Size: 20
+      SnapshotId: snap-00ee4e7c6a8b7bdc5
       VolumeType: gp3
       Tags:
         - Key: Name
           Value: league.builder.rabbitmq-data
+  
+  QdrantVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !GetAtt SqlQdrantECSInstance.AvailabilityZone
+      Size: 40
+      VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: league.builder.qdrant-data
 
   KeycloakVolume:
     Type: AWS::EC2::Volume
     Properties:
       AvailabilityZone: !GetAtt KeycloakPostgresRabbitMqECSInstance.AvailabilityZone
-      Size: 20
+      SnapshotId: snap-0188ffe4f5c7cd41a
       VolumeType: gp3
       Tags:
         - Key: Name
           Value: league.builder.keycloak-data
-
-  OllamaVolume:
-    Type: AWS::EC2::Volume
-    Properties:
-      AvailabilityZone: !GetAtt SqlOllamaECSInstance.AvailabilityZone
-      Size: 40
-      VolumeType: gp3
-      Tags:
-        - Key: Name
-          Value: league.builder.ollama-data
   
   RedisVolume:
     Type: AWS::EC2::Volume
     Properties:
-      AvailabilityZone: !GetAtt SqlOllamaECSInstance.AvailabilityZone
-      Size: 40
+      AvailabilityZone: !GetAtt SqlQdrantECSInstance.AvailabilityZone
+      SnapshotId: snap-0c2542ec14e3ded92
       VolumeType: gp3
       Tags:
         - Key: Name
           Value: league.builder.redis-data
 
-  SqlOllamaECSInstance:
+  SqlQdrantECSInstance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: !Ref SqlOllamaInstanceType
+      InstanceType: !Ref SqlQdrantInstanceType
       ImageId: !Ref ImageId
       IamInstanceProfile: !Ref EC2InstanceProfile
       KeyName: !Ref LeagueBuilderKeyPair
@@ -146,11 +146,11 @@ Resources:
             GO
             EOF
 
-            cat << 'EOF' > /usr/local/bin/sql-ollama-bootstrap.sh
+            cat << 'EOF' > /usr/local/bin/sql-qdrant-bootstrap.sh
             #!/bin/bash
             set -xe
             SQL_DEV=/dev/nvme2n1
-            OLLAMA_DEV=/dev/nvme1n1
+            QDRANT_DEV=/dev/nvme1n1
             REDIS_DEV=/dev/nvme3n1
 
             wait_for_device() {
@@ -168,39 +168,41 @@ Resources:
             }
 
             wait_for_device "$SQL_DEV"
-            wait_for_device "$OLLAMA_DEV"
+            wait_for_device "$QDRANT_DEV"
             wait_for_device "$REDIS_DEV"
 
             blkid "$SQL_DEV" || mkfs -t xfs "$SQL_DEV"
-            blkid "$OLLAMA_DEV" || mkfs -t xfs "$OLLAMA_DEV"
+            blkid "$QDRANT_DEV" || mkfs -t xfs "$QDRANT_DEV"
             blkid "$REDIS_DEV" || mkfs -t xfs "$REDIS_DEV"
 
             mkdir -p /mnt/sqlserver
-            mkdir -p /mnt/ollama
+            mkdir -p /mnt/qdrant
             mkdir -p /mnt/redis
 
             grep -q "$SQL_DEV" /etc/fstab || echo "$SQL_DEV /mnt/sqlserver xfs defaults,nofail 0 0" >> /etc/fstab
-            grep -q "$OLLAMA_DEV" /etc/fstab || echo "$OLLAMA_DEV /mnt/ollama xfs defaults,nofail 0 0" >> /etc/fstab
+            grep -q "$QDRANT_DEV" /etc/fstab || echo "$QDRANT_DEV /mnt/qdrant xfs defaults,nofail 0 0" >> /etc/fstab
             grep -q "$REDIS_DEV" /etc/fstab || echo "$REDIS_DEV /mnt/redis xfs defaults,nofail 0 0" >> /etc/fstab
+
+            chown -R 1000:1000 /mnt/qdrant || true
 
             mount -a || true
 
             echo "ECS_CLUSTER=leaguebuilder-dev-cluster" > /etc/ecs/ecs.config
-            echo "ECS_INSTANCE_ATTRIBUTES={\"Role\":\"sqlollama\"}" >> /etc/ecs/ecs.config
+            echo "ECS_INSTANCE_ATTRIBUTES={\"Role\":\"sql-qdrant\"}" >> /etc/ecs/ecs.config
 
             systemctl restart ecs
             EOF
 
-            cat << 'EOF' > /etc/systemd/system/sql-ollama-bootstrap.service
+            cat << 'EOF' > /etc/systemd/system/sql-qdrant-bootstrap.service
             [Unit]
-            Description=SQL OLLAMA Bootstrap Service
+            Description=SQL QDRANT Bootstrap Service
             Requires=dev-nvme1n1.device dev-nvme2n1.device dev-nvme3n1.device
             After=network-online.target dev-nvme1n1.device dev-nvme2n1.device dev-nvme3n1.device
             Wants=network-online.target
 
             [Service]
             Type=oneshot
-            ExecStart=/usr/local/bin/sql-ollama-bootstrap.sh
+            ExecStart=/usr/local/bin/sql-qdrant-bootstrap.sh
             RemainAfterExit=yes
 
             [Install]
@@ -208,12 +210,12 @@ Resources:
             EOF
 
             systemctl daemon-reload
-            systemctl enable sql-ollama-bootstrap.service
+            systemctl enable sql-qdrant-bootstrap.service
       Tags:
         - Key: Name
-          Value: leaguebuilder-dev-sqlollama
+          Value: leaguebuilder-dev-qdrant
         - Key: Role
-          Value: sqlollama
+          Value: sqlqdrant
   
   KeycloakPostgresRabbitMqECSInstance:
     Type: AWS::EC2::Instance
@@ -330,20 +332,20 @@ Outputs:
     Export:
       Name: leaguebuilder-dev-ECSClusterName
 
-  LeagueBuilderSqlOllamaInstance:
-    Value: !Ref SqlOllamaECSInstance
+  LeagueBuilderSqlQdrantInstance:
+    Value: !Ref SqlQdrantECSInstance
     Export:
-      Name: leaguebuilder-dev-SqlOllamaECSInstance
+      Name: leaguebuilder-dev-SqlQdrantECSInstance
 
   LeagueBuilderKeycloakPostgresRabbitMqInstance:
     Value: !Ref KeycloakPostgresRabbitMqECSInstance
     Export:
       Name: leaguebuilder-dev-KeycloakPostgresRabbitMqECSInstance
   
-  SqlOllamaInstanceAZ:
-    Value: !GetAtt SqlOllamaECSInstance.AvailabilityZone
+  SqlQdrantInstanceAZ:
+    Value: !GetAtt SqlQdrantECSInstance.AvailabilityZone
     Export:
-      Name: leaguebuilder-dev-SqlOllamaInstanceAZ
+      Name: leaguebuilder-dev-SqlQdrantInstanceAZ
 
   KeycloakPostgresRabbitMqInstanceAZ:
     Value: !GetAtt KeycloakPostgresRabbitMqECSInstance.AvailabilityZone
@@ -359,17 +361,17 @@ Outputs:
     Value: !Ref RabbitMqVolume
     Export:
       Name: leaguebuilder-dev-RabbitMqVolumeId
+  
+  QdrantVolumeId:
+    Value: !Ref QdrantVolume
+    Export:
+      Name: leaguebuilder-dev-QdrantVolumeId
 
   KeycloakVolumeId:
     Value: !Ref KeycloakVolume
     Export:
       Name: leaguebuilder-dev-KeycloakVolumeId
-  
-  OllamaVolumeId:
-    Value: !Ref OllamaVolume
-    Export:
-      Name: leaguebuilder-dev-OllamaVolumeId
-  
+   
   RedisVolumeId:
     Value: !Ref RedisVolume
     Export:

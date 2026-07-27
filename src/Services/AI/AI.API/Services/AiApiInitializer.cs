@@ -75,6 +75,8 @@ public class AiApiInitializer : IHostedService
             await IngestBasketballStatsAsync();
         if (!await CollectionHasDataAsync(_footballStatsCollection, _embedding))
             await IngestFootballStatsAsync();
+
+        Console.WriteLine("All League Builder Data has been ingested by Qdrant.");
     }
 
     // ------------------------------------------------------------
@@ -138,6 +140,8 @@ public class AiApiInitializer : IHostedService
             vector.Vector = embedding.Vector;
             await _leagueCollection.UpsertAsync(vector);
         }
+
+        Console.WriteLine($"League data has been ingest by Qdrant. Records {_cache.LeagueData.Leagues.Count()}");
     }
 
     // ------------------------------------------------------------
@@ -174,6 +178,7 @@ public class AiApiInitializer : IHostedService
             vector.Vector = embedding.Vector;
             await _teamCollection.UpsertAsync(vector);
         }
+        Console.WriteLine($"Team data has been ingest by Qdrant. Records {_cache.LeagueData.Teams.Count()}");
     }
 
     // ------------------------------------------------------------
@@ -226,6 +231,7 @@ public class AiApiInitializer : IHostedService
             vector.Vector = embedding.Vector;
             await _playerCollection.UpsertAsync(vector);
         }
+        Console.WriteLine($"Player data has been ingest by Qdrant. Records {_cache.LeagueData.Players.Count()}");
     }
 
     // ------------------------------------------------------------
@@ -251,6 +257,7 @@ public class AiApiInitializer : IHostedService
             vector.Vector = embedding.Vector;
             await _seasonCollection.UpsertAsync(vector);
         }
+        Console.WriteLine($"Season data has been ingest by Qdrant. Records {_cache.LeagueData.Seasons.Count()}");
     }
 
     // ------------------------------------------------------------
@@ -314,6 +321,7 @@ public class AiApiInitializer : IHostedService
             await _standingsCollection.UpsertAsync(vector);
         }
 
+        Console.WriteLine($"Standings data has been ingest by Qdrant. Records {_cache.LeagueData.Standings.Count()}");
     }
 
     // ------------------------------------------------------------
@@ -388,7 +396,7 @@ public class AiApiInitializer : IHostedService
 
             await _gamesCollection.UpsertAsync(vector);
         }
-
+        Console.WriteLine($"Game data has been ingest by Qdrant. Records {_cache.LeagueData.Games.Count()}");
     }
 
     // ------------------------------------------------------------
@@ -492,6 +500,8 @@ public class AiApiInitializer : IHostedService
             await _baseballStatsCollection.UpsertAsync(vector);
 
         }
+
+        Console.WriteLine($"Baseball Stats data has been ingest by Qdrant. Records {_cache.LeagueData.BaseballStats.Count()}");
     }
 
     // ------------------------------------------------------------
@@ -575,6 +585,8 @@ public class AiApiInitializer : IHostedService
             await _basketballStatsCollection.UpsertAsync(vector);
 
         }
+
+        Console.WriteLine($"Basketball Stats data has been ingest by Qdrant. Records {_cache.LeagueData.BasketballStats.Count()}");
     }
 
     // ------------------------------------------------------------
@@ -717,6 +729,8 @@ public class AiApiInitializer : IHostedService
             await _footballStatsCollection.UpsertAsync(vector);
 
         }
+
+        Console.WriteLine($"Football Stats data has been ingest by Qdrant. Records {_cache.LeagueData.FootballStats.Count()}");
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

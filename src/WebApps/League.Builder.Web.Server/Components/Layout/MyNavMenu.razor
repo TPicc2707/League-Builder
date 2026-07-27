@@ -23,7 +23,9 @@
                 <AuthorizeView Roles="@String.Concat(Roles.SupportLeagues, ", ", Roles.CreateLeagues)">
                     <MudNavLink Target="_blank" Href="https://us-east-2.console.aws.amazon.com/s3/buckets/league-builder-images?region=us-east-2" Icon="@Icons.Material.Filled.Camera">Manage Images</MudNavLink>
                 </AuthorizeView>
-                <MudNavLink Href="/support" Icon="@Icons.Material.Filled.Chat">Support</MudNavLink>
+                <AuthorizeView Roles="@String.Concat(Roles.ReadLeagues, ", ", Roles.ReadTeams, ", ", Roles.ReadPlayers, ", ", Roles.ReadSeasons, ", ", Roles.ReadStandings, ", ", Roles.ReadGames, ", ", Roles.ReadStats)">
+                    <MudNavLink Href="/askai" Icon="@Icons.Material.Filled.SmartToy">League AI</MudNavLink>
+                </AuthorizeView>
             </MudNavMenu>
         </MudPaper>
     </Authorized>

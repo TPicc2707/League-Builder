@@ -50,19 +50,6 @@ var keycloak = builder
         service.Name = "keycloak";
     });
 
-
-var ollama = builder
-      .AddOllama("ollama", 11434)
-      .WithDataVolume()
-      .WithLifetime(ContainerLifetime.Persistent)
-      .WithOpenWebUI()
-      .PublishAsDockerComposeService((resource, service) =>
-      {
-          service.Name = "ollama";
-      });
-
-var llama = ollama.AddModel("llama3.2");
-
 var qdrant = builder.AddQdrant("qdrant")
              .WithDataVolume()
              .WithLifetime(ContainerLifetime.Persistent)
@@ -320,11 +307,9 @@ builder.AddProject<Projects.League_Builder_Web_Server>("league-builder-web-serve
                 .WithExternalHttpEndpoints()
                 .WithReference(apiGateway)
                 .WithReference(keycloak)
-                .WithReference(llama)
                 .WithReference(cache)
                 .WaitFor(apiGateway)
                 .WaitFor(keycloak)
-                .WaitFor(llama)
                 .WaitFor(cache)
                 .PublishAsDockerComposeService((resource, service) =>
                 {

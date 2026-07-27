@@ -40,19 +40,16 @@ services:
     restart: always
     ports:
       - "6379:6379"
-      
-  ollama:
-    container_name: ollama
-    expose:
-      - "11434"
+  
+  qdrant:
+    container_name: qdrant
+    restart: always
+    ports:
+     - "6333:6333"
+     - "6334:6334"
     volumes:
-      - type: "volume"
-        target: "/root/.ollama"
-        source: "ollama_data"
-        read_only: false
-    networks:
-      - "aspire"
-
+      - qdrant_storage:/qdrant/storage
+      
   rabbitmq:
     container_name: rabbitmq
     environment:
@@ -228,6 +225,26 @@ services:
     restart: always
     ports:
       - "6006:8080"
+
+  ai_api:
+    container_name: ai_api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Qdrant__Host=qdrant
+      - Qdrant__GrpcPort=6334
+      - Qdrant__HttpPort=6333 
+    depends_on:
+      - league_api
+      - team_api
+      - player_api
+      - season_api
+      - game_api
+      - stats_api
+      - standings_api
+      - qdrant 
+    restart: always
+    ports:
+      - "6009:8080"
   
   stats_api:
     container_name: stats_api
@@ -249,7 +266,6 @@ services:
     depends_on:
       - league_builder_apigateway
       - keycloak
-      - ollama 
     ports:
       - "6008:8080"
     restart: always
