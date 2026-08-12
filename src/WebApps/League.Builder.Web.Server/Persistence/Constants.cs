@@ -37,7 +37,9 @@
                     "Second Baseman",
                     "Shortstop",
                     "Third Baseman",
-                    "Outfield",
+                    "Left Field",
+                    "Center Field",
+                    "Right Field",
                     "Pitcher"
                 };
             }
@@ -84,6 +86,9 @@
                     { "Second Baseman", "2B" },
                     { "Shortstop", "SS" },
                     { "Third Baseman", "3B" },
+                    { "Left Field", "LF"},
+                    { "Center Field", "CF"},
+                    { "Right Field", "RF"},
                     { "Outfield", "OF" },
                     { "Pitcher", "P" },
               };
