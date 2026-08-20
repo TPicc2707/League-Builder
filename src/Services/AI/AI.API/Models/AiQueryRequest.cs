@@ -5,6 +5,11 @@ public class AiQueryRequest
     public string Question { get; set; }
 }
 
+public class AiGameRecapRequest
+{
+    public string Question { get; set; }
+}
+
 public class AiAddLeagueRequest
 {
     public Guid LeagueId { get; set; }

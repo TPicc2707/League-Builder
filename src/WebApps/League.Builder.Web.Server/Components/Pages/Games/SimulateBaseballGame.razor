@@ -764,7 +764,6 @@ else
 
         SimState = GameSimService.SimulateNextAtBat(SimState, GameStats);
 
-
         StateHasChanged();
 
         activeTeamTab = SimState?.TopOfInning == true
@@ -845,6 +844,16 @@ else
             stats.Saves = playerId == SimState?.SavingPitcher ? 1 : 0;
             var createHittingStat = BuildHittingCreate(stats);
             var createPitchingStat = BuildPitchingCreate(stats);
+            var perf = BuildPlayerPerformanceKeyEvent(stats);
+            if (perf is not null)
+            {
+                SimState.TopPerformers.Add(new PlayerPerformance
+                {
+                    PlayerName = stats.PlayerName,
+                    TeamName = HomeTeamByIdResponse.Team.Id == stats.TeamId ? HomeTeamByIdResponse.Team.TeamName : AwayTeamByIdResponse.Team.TeamName,
+                    Summary = perf
+                });
+            }
             var createStat = new CreateBaseballStatsModel(
                 GameByIdResponse.Game.LeagueId,
                 stats.TeamId,
@@ -862,22 +871,37 @@ else
 
     private async Task CompleteGame()
     {
+        var winningTeamId = SimState?.AwayScore > SimState?.HomeScore ? GameByIdResponse.Game.AwayTeam.Id : GameByIdResponse.Game.HomeTeam.Id;
+        await UpdateTeamStandings(GameByIdResponse.Game.AwayTeam.Id, winningTeamId, GameByIdResponse.Game.LeagueId);
+        await UpdateTeamStandings(GameByIdResponse.Game.HomeTeam.Id, winningTeamId, GameByIdResponse.Game.LeagueId);
+
+
         var record = new UpdateGameRecord(GameByIdResponse.Game.Id,
                                    GameByIdResponse.Game.LeagueId,
-                                   SimState?.AwayScore > SimState?.HomeScore ? GameByIdResponse.Game.AwayTeam.Id : GameByIdResponse.Game.HomeTeam.Id,
+                                   winningTeamId,
                                    GameByIdResponse.Game.SeasonId,
                                    new GameDetailModel(SimState.AwayScore, SimState.HomeScore, GameByIdResponse.Game.GameDetail.StartTime, GameByIdResponse.Game.GameDetail.StartTime.AddHours(2), 
-                                                       SimState.AwayInningsRuns, SimState.HomeInningsRuns, SimState.TotalAwayHits, SimState.TotalHomeHits),
+                                                       SimState.AwayInningsRuns, SimState.HomeInningsRuns, SimState.TotalAwayHits, SimState.TotalHomeHits, SimState.KeyEvents, string.Empty),
                                    GameByIdResponse.Game.AwayTeam,
                                    GameByIdResponse.Game.HomeTeam,
                                    (int)GameStatus.Completed);
 
         await GameService.UpdateGame(new UpdateGameRequest(record));
         await AddGamesAICollection(GameByIdResponse.Game.Id);
+        var buildRecap = BuildGameRecap(SimState);
+        var recap = await GenerateAiGameRecap(buildRecap);
+        record = new UpdateGameRecord(GameByIdResponse.Game.Id,
+                                   GameByIdResponse.Game.LeagueId,
+                                   winningTeamId,
+                                   GameByIdResponse.Game.SeasonId,
+                                   new GameDetailModel(SimState.AwayScore, SimState.HomeScore, GameByIdResponse.Game.GameDetail.StartTime, GameByIdResponse.Game.GameDetail.StartTime.AddHours(2), 
+                                                       SimState.AwayInningsRuns, SimState.HomeInningsRuns, SimState.TotalAwayHits, SimState.TotalHomeHits, SimState.KeyEvents, recap),
+                                   GameByIdResponse.Game.AwayTeam,
+                                   GameByIdResponse.Game.HomeTeam,
+                                   (int)GameStatus.Completed);
+        await GameService.UpdateGame(new UpdateGameRequest(record));
+        await AddGamesAICollection(GameByIdResponse.Game.Id);
         await ClearGameCache();
-
-        await UpdateTeamStandings(GameByIdResponse.Game.AwayTeam.Id, record);
-        await UpdateTeamStandings(GameByIdResponse.Game.HomeTeam.Id, record);
 
     }
 
@@ -889,25 +913,30 @@ else
         await GameLocalCache.DeleteGamesByTeamCache(GameByIdResponse.Game.HomeTeam.Id.ToString());
     }
 
-    private async Task UpdateTeamStandings(Guid teamId, UpdateGameRecord game)
+    private async Task UpdateTeamStandings(Guid teamId, Guid winningTeamId, Guid leagueId)
     {
         StandingsResponse = await LoadTeamStandingsAsync(teamId);
 
         var currentStandings = StandingsResponse.Standings.FirstOrDefault(s => s.SeasonId == SeasonByIdResponse.Season.Id);
+        bool teamWon = winningTeamId == teamId;
 
         var detail = new StandingsDetailModel(
             currentStandings.StandingsDetail.GamesPlayed + 1,
-            game.WinningTeamId == teamId ? currentStandings.StandingsDetail.Wins + 1 : currentStandings.StandingsDetail.Wins,
-            game.WinningTeamId == teamId ? currentStandings.StandingsDetail.Losses : currentStandings.StandingsDetail.Losses + 1,
+            teamWon ? currentStandings.StandingsDetail.Wins + 1 : currentStandings.StandingsDetail.Wins,
+            teamWon ? currentStandings.StandingsDetail.Losses : currentStandings.StandingsDetail.Losses + 1,
             currentStandings.StandingsDetail.Ties,
             currentStandings.StandingsDetail.PlayoffTeam,
             currentStandings.StandingsDetail.Champion
         );
 
+        if(teamWon)
+            SimState.KeyEvents.Add($"{currentStandings.Team.TeamName} win! They improve to {detail.Wins}-{detail.Losses}.");
+        else
+            SimState.KeyEvents.Add($"{currentStandings.Team.TeamName} lose. They fall to {detail.Wins}-{detail.Losses}.");
 
         var update = new UpdateStandingsModel(
             currentStandings.Id,
-            game.LeagueId,
+            leagueId,
             SeasonByIdResponse.Season.Id,
             detail,
             (int)currentStandings.StandingsStatus,
@@ -915,12 +944,12 @@ else
         );
         await StandingsService.UpdateStandings(new(update));
         await AddStandingsAICollection(currentStandings.Id);
-        await ClearStandingsCache(teamId, game);
+        await ClearStandingsCache(teamId, leagueId);
     }
 
-    private async Task ClearStandingsCache(Guid teamId, UpdateGameRecord game)
+    private async Task ClearStandingsCache(Guid teamId, Guid leagueId)
     {
-        await StandingsLocalCache.DeleteStandingsByLeagueCache(game.LeagueId.ToString());
+        await StandingsLocalCache.DeleteStandingsByLeagueCache(leagueId.ToString());
         await StandingsLocalCache.DeleteStandingsByTeamCache(teamId.ToString());
     }
 
@@ -930,10 +959,50 @@ else
         await AiService.AddGameAsync(request);
     }
 
+    private async Task<string> GenerateAiGameRecap(string recap)
+    {
+        AiGameRecapRequest request = new AiGameRecapRequest(recap);
+        var response = await AiService.GenerateRecap(request);
+
+        return response.Response;
+    }
+
     private async Task AddStandingsAICollection(Guid standingsId)
     {
         AiAddStandingsRequest request = new AiAddStandingsRequest(standingsId);
         await AiService.AddStandingsAsync(request);
+    }
+
+    private string BuildGameRecap(GameSimulationState simState)
+    {
+        // Build Game Recap HERE
+        return $@"
+        Generate a professional sports-style game recap.
+
+        GAME SUMMARY:
+        Home Team: {GameByIdResponse.Game.HomeTeam.TeamName}
+        Away Team: {GameByIdResponse.Game.AwayTeam.TeamName}
+        Final Score: {GameByIdResponse.Game.HomeTeam.TeamName} {simState.HomeScore} - {GameByIdResponse.Game.AwayTeam.TeamName} {simState.AwayScore}
+
+        KEY MOMENTS:
+        {string.Join("\n", simState.KeyEvents)}
+
+        TOP PERFORMERS:
+        {string.Join("\n", simState.TopPerformers.Select(tp => $"{tp.PlayerName} ({tp.TeamName}) - {tp.Summary}"))}
+
+        INNING BY INNING:
+        Home: {string.Join(", ", simState.HomeInningsRuns)}
+        Away: {string.Join(", ", simState.AwayInningsRuns)}
+
+        Write a recap that is:
+        - exciting
+        - narrative-driven
+        - accurate to the events
+        - similar to ESPN or MLB.com style
+        - 2-4 paragraphs
+        - Ignore any section labeled 'Sources:' and do not include all IDs, URLs, and reference tokens such as game://..., stats://..., team://..., league://..., standings://.... 
+        - Do not include them in the recap. Only use the human‑readable names and stats.
+        ";
     }
 
     private async Task AddBaseballStatsAICollection(Guid baseballStatId)
@@ -1029,5 +1098,56 @@ else
         public string PlayerName { get; set; }
         public string Position { get; set; }
         public int BattingOrderPosition { get; set; }
+    }
+
+    private string? BuildPlayerPerformanceKeyEvent(BaseballGameStatsModel stats)
+    {
+        var name = stats.PlayerName;
+        var messages = new List<string>();
+
+        // --- HITTING PERFORMACE ---
+        if (stats.Hits >= 2)
+            messages.Add($"{name} had {stats.Hits} hits in {stats.AtBats} at-bats. What a performance!");
+
+        if(stats.HomeRuns >= 1)
+            messages.Add($"{name} crushes {stats.HomeRuns} home run(s)!");
+
+        if(stats.RunsBattedIn >= 3)
+            messages.Add($"{name} drove in {stats.RunsBattedIn} runs!");
+
+        if(stats.Doubles >= 2)
+            messages.Add($"{name} had {stats.Doubles} double(s)!");
+
+        if(stats.Triples >= 1)
+            messages.Add($"{name} hit a {stats.Triples} triple(s)!");
+
+        // --- PITCHING PERFORMANCE ---
+        if(stats.PitchingStrikeouts >= 8)
+            messages.Add($"{name} dominates on the mound with {stats.PitchingStrikeouts} strikeouts!");
+
+        // Low runs allowed
+        if (stats.PitchingRuns == 0 && stats.InningsPitched >= 5)
+            messages.Add($"{name} throws a shutout through {stats.InningsPitched} innings!");
+
+        // Quality start (6+ IP, <= 3 ER)
+        if (stats.InningsPitched >= 6 && stats.PitchingRuns <= 3)
+            messages.Add($"{name} delivers a quality start: {stats.InningsPitched} IP, {stats.PitchingRuns} ER.");
+
+        if(stats.InningsPitched >= 7)
+            messages.Add($"{name} goes deep into the game with {stats.InningsPitched} innings pitched!");
+
+        if(stats.Saves > 0)
+            messages.Add($"{name} earns the save!");
+
+        if(stats.Wins > 0)
+            messages.Add($"{name} earns the win!");
+
+        if(stats.Losses > 0 && stats.PitchingRuns <= 2 && stats.InningsPitched >= 6)
+            messages.Add($"{name} pitches well despite taking the loss.");
+        else if (stats.Losses > 0)
+            messages.Add($"{name} takes the loss.");
+
+
+        return messages.Count > 0 ? string.Join(" ", messages) : null;
     }
 }

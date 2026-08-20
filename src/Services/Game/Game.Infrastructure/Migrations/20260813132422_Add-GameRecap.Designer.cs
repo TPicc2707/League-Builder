@@ -5,6 +5,7 @@ using Game.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -12,9 +13,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Game.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260813132422_Add-GameRecap")]
+    partial class AddGameRecap
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,9 +92,6 @@ namespace Game.Infrastructure.Migrations
 
                             b1.Property<int?>("HomeTotalHits")
                                 .HasColumnType("int");
-
-                            b1.Property<string>("KeyEvents")
-                                .HasColumnType("nvarchar(max)");
 
                             b1.Property<DateTime>("StartTime")
                                 .HasColumnType("datetime2");

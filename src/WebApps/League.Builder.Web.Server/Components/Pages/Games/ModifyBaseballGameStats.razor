@@ -29,6 +29,15 @@
         @if (PageLoad)
         {
             <TeamHeader Game="GameModel.Game" />
+            @if (!string.IsNullOrWhiteSpace(GameModel.Game.GameDetail.GameRecap))
+            {
+                <MudItem Style="padding-top: 25px;">
+                    <MudPaper Elevation="2" Class="pa-4 mb-4 border border-solid" Style="border-color: #000000">
+                        <MudText Typo="Typo.h5" class="mb-2">Game Recap</MudText>
+                        <MudText Typo="Typo.body1">@GameModel.Game.GameDetail.GameRecap</MudText>
+                    </MudPaper>
+                </MudItem>
+            }
             <MudItem Style="padding-top: 25px;">
                 <MudTable Items="@(new List<string> { "Away", "Home"})" Dense="true" Hover="true" Bordered="true" Class="mb-4 border border-solid" Style="border-color: #000000;">
                     <HeaderContent>

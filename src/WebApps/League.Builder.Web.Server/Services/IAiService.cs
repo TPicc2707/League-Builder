@@ -4,6 +4,8 @@ public interface IAiService
 {
     [Post("/ai-service/ai/query")]
     Task<AiQueryResponse> QueryAsync(AiQueryRequest request);
+    [Post("/ai-service/ai/recap")]
+    Task<AiGameRecapResponse> GenerateRecap(AiGameRecapRequest request);
     [Post("/ai-service/ai/leagues")]
     Task AddLeagueAsync(AiAddLeagueRequest league);
     [Post("/ai-service/ai/deleteleagues")]

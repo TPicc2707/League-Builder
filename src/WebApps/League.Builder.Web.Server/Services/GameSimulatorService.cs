@@ -182,10 +182,12 @@ public class GameSimulatorService : IGameSimulatorService
     private void ApplySingle(GameSimulationState state, Guid batterId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
     {
         // Runner on third scores
+        int runsScored = 0;
         if (state.Runners.RunnerOnThird is Guid r3)
         {
             ScoreRun(state, r3, batterId, gameStats);
             state.Runners.RunnerOnThird = null;
+            runsScored++;
         }
 
         // Runner on second moves to third
@@ -216,15 +218,20 @@ public class GameSimulatorService : IGameSimulatorService
 
         var pitcher = gameStats[state.CurrentPitcherId];
         pitcher.HitsAllowed++; 
+
+        if(runsScored > 0)
+            state.KeyEvents.Add($"{gameStats[batterId].PlayerName} drives in a run!");
     }
 
     private void ApplyDouble(GameSimulationState state, Guid batterId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
     {
         // Runner on third scores
+        int runsScored = 0;
         if (state.Runners.RunnerOnThird is Guid r3)
         {
             ScoreRun(state, r3, batterId, gameStats);
             state.Runners.RunnerOnThird = null;
+            runsScored++;
         }
 
         // Runner on second scores
@@ -232,6 +239,7 @@ public class GameSimulatorService : IGameSimulatorService
         {
             ScoreRun(state, r2, batterId, gameStats);
             state.Runners.RunnerOnSecond = null;
+            runsScored++;
         }
 
         // Runner on first → third
@@ -256,19 +264,32 @@ public class GameSimulatorService : IGameSimulatorService
 
         var pitcher = gameStats[state.CurrentPitcherId];
         pitcher.HitsAllowed++;
+
+        if (runsScored > 0)
+            state.KeyEvents.Add($"{gameStats[batterId].PlayerName} drives in {runsScored} with a double!");
     }
 
     private void ApplyTriple(GameSimulationState state, Guid batterId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
     {
         // All runners score
+        int runsScored = 0;
         if (state.Runners.RunnerOnThird is Guid r3)
+        {
             ScoreRun(state, r3, batterId, gameStats);
+            runsScored++;
+        }
 
         if (state.Runners.RunnerOnSecond is Guid r2)
+        {
             ScoreRun(state, r2, batterId, gameStats);
+            runsScored++;
+        }
 
         if (state.Runners.RunnerOnFirst is Guid r1)
+        {
             ScoreRun(state, r1, batterId, gameStats);
+            runsScored++;
+        }
 
         state.Runners.ClearBases();
 
@@ -287,6 +308,9 @@ public class GameSimulatorService : IGameSimulatorService
 
         var pitcher = gameStats[state.CurrentPitcherId];
         pitcher.HitsAllowed++;
+
+        if(runsScored > 0)
+            state.KeyEvents.Add($"{gameStats[batterId].PlayerName} drives in {runsScored} with a triple!");
     }
 
     private void ApplyHomeRun(GameSimulationState state, Guid batterId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
@@ -318,6 +342,7 @@ public class GameSimulatorService : IGameSimulatorService
 
         var pitcher = gameStats[state.CurrentPitcherId];
         pitcher.HitsAllowed++;
+        state.KeyEvents.Add($"{gameStats[batterId].PlayerName} blasts a home run!");
     }
 
     private void ApplyWalk(GameSimulationState state, Guid batterId, IDictionary<Guid, BaseballGameStatsModel> gameStats)
@@ -524,6 +549,7 @@ public class GameSimulatorService : IGameSimulatorService
         {
             if (state.HomeScore > state.AwayScore)
                 state.GameOver = true;
+            state.KeyEvents.Add($"{gameStats[batterId].PlayerName} hits a walk-off to win the game!");
         }
 
         // 3. Check who is leading AFTER the play

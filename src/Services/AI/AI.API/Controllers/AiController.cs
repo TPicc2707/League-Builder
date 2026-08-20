@@ -1,6 +1,7 @@
 ﻿using AI.API.Adapters;
 using AI.API.Models;
 using AI.API.Services;
+using Azure;
 using Microsoft.Agents.AI;
 using Microsoft.AspNetCore.Mvc;
 
@@ -55,6 +56,13 @@ public class AiController : ControllerBase
 
     [HttpPost("query")]
     public async Task<IActionResult> QueryLeagues([FromBody] AiQueryRequest request)
+    {
+        var response = await _agent.RunAsync(request.Question);
+        return Ok(new { response = response.Text });
+    }
+
+    [HttpPost("recap")]
+    public async Task<IActionResult> GenerateRecap([FromBody] AiGameRecapRequest request)
     {
         var response = await _agent.RunAsync(request.Question);
         return Ok(new { response = response.Text });

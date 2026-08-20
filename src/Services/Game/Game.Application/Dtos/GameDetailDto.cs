@@ -8,5 +8,7 @@ public record GameDetailDto(
     List<int>? AwayInningRuns,
     List<int>? HomeInningRuns,
     int? AwayTotalHits,
-    int? HomeTotalHits
+    int? HomeTotalHits,
+    List<string> KeyEvents,
+    string GameRecap
 );

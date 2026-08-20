@@ -16,7 +16,9 @@ public static class GameExtensions
                 game.GameDetail.AwayInningRuns?.Count != 0 ? game.GameDetail.AwayInningRuns : null,
                 game.GameDetail.HomeInningRuns?.Count != 0 ? game.GameDetail.HomeInningRuns : null,
                 game.GameDetail.AwayTotalHits is not null ? game.GameDetail.AwayTotalHits : null,
-                game.GameDetail.HomeTotalHits is not null ? game.GameDetail.HomeTotalHits : null),
+                game.GameDetail.HomeTotalHits is not null ? game.GameDetail.HomeTotalHits : null,
+                game.GameDetail.KeyEvents?.Count != 0 ? game.GameDetail.KeyEvents : null,
+                string.IsNullOrEmpty(game.GameDetail.GameRecap) ? string.Empty : game.GameDetail.GameRecap),
             GameStatus: game.GameStatus,
             AwayTeam: new TeamDto(
                 game.AwayTeamId.Value,
@@ -41,7 +43,9 @@ public static class GameExtensions
                 game.GameDetail.AwayInningRuns?.Count != 0 ? game.GameDetail.AwayInningRuns : null,
                 game.GameDetail.HomeInningRuns?.Count != 0 ? game.GameDetail.HomeInningRuns : null,
                 game.GameDetail.AwayTotalHits is not null ? game.GameDetail.AwayTotalHits : null,
-                game.GameDetail.HomeTotalHits is not null ? game.GameDetail.HomeTotalHits : null),
+                game.GameDetail.HomeTotalHits is not null ? game.GameDetail.HomeTotalHits : null,
+                game.GameDetail.KeyEvents?.Count != 0 ? game.GameDetail.KeyEvents : null,
+                string.IsNullOrEmpty(game.GameDetail.GameRecap) ? string.Empty : game.GameDetail.GameRecap),
             GameStatus: game.GameStatus,
             AwayTeam: new TeamDto(
                 game.AwayTeamId.Value,

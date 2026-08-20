@@ -59,6 +59,12 @@ public class GameConfiguration : IEntityTypeConfiguration<Domain.Models.Game>
                     ).HasColumnType("nvarchar(max)");
                 gameDetailBuilder.Property(x => x.AwayTotalHits);
                 gameDetailBuilder.Property(x => x.AwayTotalHits);
+                gameDetailBuilder.Property(x => x.KeyEvents)
+                .HasConversion(
+                    v => v == null ? null : JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                    v => v == null ? null : JsonSerializer.Deserialize<List<string>>(v)
+                ).HasColumnType("nvarchar(max)");
+                gameDetailBuilder.Property(x => x.GameRecap);
             });
 
         builder.Property(t => t.GameStatus)

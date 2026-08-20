@@ -25,6 +25,8 @@ public class UpdateGameModel
     public List<int>? HomeInningRuns { get; set; }
     public int? AwayTotalHits { get; set; }
     public int? HomeTotalHits { get; set; }
+    public List<string>? KeyEvents { get; set; }
+    public string GameRecap { get; set; }
 }
 
 public class UpdateGameModelValidator : AbstractValidator<UpdateGameModel>

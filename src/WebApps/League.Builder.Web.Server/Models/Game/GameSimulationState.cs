@@ -11,6 +11,9 @@ public class GameSimulationState
     public List<int> AwayInningsRuns { get; set; } = new();
     public List<int> HomeInningsRuns { get; set; } = new();
 
+    public List<string> KeyEvents { get; set; } = new();
+    public List<PlayerPerformance> TopPerformers { get; set; } = new();
+
     public int TotalAwayHits { get; set; } = 0;
     public int TotalHomeHits { get; set; } = 0;
 
@@ -119,9 +122,9 @@ public enum AtBatResult
     SacrificeBunt
 }
 
-public class GameResult
+public class PlayerPerformance
 {
-    public int HomeScore { get; set; }
-    public int AwayScore { get; set; }
-    public List<string> PlayByPlay { get; set;  }
+    public string PlayerName { get; set; } = string.Empty;
+    public string TeamName { get; set; } = string.Empty;
+    public string Summary { get; set; } = string.Empty;
 }

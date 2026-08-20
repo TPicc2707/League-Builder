@@ -453,7 +453,7 @@
             model.LeagueId,
             model.WinningTeamId,
             SeasonResponse.Season.Id,
-            new GameDetailModel(model.AwayTeamScore, model.HomeTeamScore, start, end, model.AwayInningRuns, model.HomeInningRuns, model.AwayTotalHits, model.HomeTotalHits),
+            new GameDetailModel(model.AwayTeamScore, model.HomeTeamScore, start, end, model.AwayInningRuns, model.HomeInningRuns, model.AwayTotalHits, model.HomeTotalHits, model.KeyEvents,model.GameRecap),
             new AwayTeamDetailModel(model.AwayTeamId, ""),
             new HomeTeamDetailModel(model.HomeTeamId, ""),
             (int)model.GameStatus

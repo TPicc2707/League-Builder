@@ -1,6 +1,4 @@
-﻿using FluentValidation;
-
-namespace League.Builder.Web.Server.Models.Game;
+﻿namespace League.Builder.Web.Server.Models.Game;
 
 public class CreateGameModel
 {
