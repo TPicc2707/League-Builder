@@ -5,7 +5,7 @@ public class LeagueInitialData : IInitialData
     {
         using var session = store.LightweightSession();
 
-        if (await session.Query<Models.League>().AnyAsync())
+        if (!await session.Query<Models.League>().AnyAsync())
             return;
 
         session.Store<Models.League>(GetPreconfiguedLeagues());

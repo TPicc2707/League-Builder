@@ -6,7 +6,7 @@ public class SeasonInitialData : IInitialData
     {
         using var session = store.LightweightSession();
 
-        if (await session.Query<Models.Season>().AnyAsync())
+        if (!await session.Query<Models.Season>().AnyAsync())
             return;
 
         session.Store<Models.Season>(GetPreconfiguedSeasons());
