@@ -1,8 +1,8 @@
 ﻿using AI.API.Models;
+using CommunityToolkit.VectorData.Qdrant;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.Qdrant;
 
 namespace AI.API.Adapters;
 

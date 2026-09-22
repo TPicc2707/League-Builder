@@ -4,10 +4,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>3.0.0</Version>
-    <AssemblyVersion>3.0.0</AssemblyVersion>
-    <FileVersion>3.0.0</FileVersion>
-    <InformationalVersion>3.0.0</InformationalVersion>
+    <Version>3.1.0</Version>
+    <AssemblyVersion>3.1.0</AssemblyVersion>
+    <FileVersion>3.1.0</FileVersion>
+    <InformationalVersion>3.1.0</InformationalVersion>
     <UserSecretsId>a5118bf2-37bb-455b-b2dd-4377de3b5c61</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
@@ -15,16 +15,17 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Keycloak.Authentication" Version="13.0.2-preview.1.25603.5" />
-    <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.4.6" />
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.4.10" />
-    <PackageReference Include="AWSSDK.S3" Version="4.0.25.2" />
+    <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.5.4" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.101.4" />
+    <PackageReference Include="AWSSDK.S3" Version="4.0.103.3" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.9" />
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="10.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="10.0.12" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
-    <PackageReference Include="MudBlazor" Version="9.5.0" />
+    <PackageReference Include="MudBlazor" Version="9.10.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Refit.HttpClientFactory" Version="11.2.0" />
+    <PackageReference Include="Refit.HttpClientFactory" Version="16.1.0" />
+    <PackageReference Include="Refit.Reflection" Version="16.1.0" />
   </ItemGroup>
 
   <ItemGroup>

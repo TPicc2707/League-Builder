@@ -1,5 +1,5 @@
 ﻿using AI.API.Models;
-using Microsoft.SemanticKernel.Connectors.Qdrant;
+using CommunityToolkit.VectorData.Qdrant;
 
 namespace AI.API.Services;
 

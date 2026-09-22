@@ -40,6 +40,7 @@ public class UpdateGameHandler(IApplicationDbContext dbContext, IBus _bus)
             gameDto.GameDetail.KeyEvents?.Count != 0 ? gameDto.GameDetail.KeyEvents : null,
             string.IsNullOrEmpty(gameDto.GameDetail.GameRecap) ? string.Empty : gameDto.GameDetail.GameRecap);
 
+
         game.Update(
             leagueId: LeagueId.Of(gameDto.LeagueId),
             awayTeamId: TeamId.Of(gameDto.AwayTeam.Id),

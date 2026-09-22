@@ -7,9 +7,8 @@ using HealthChecks.UI.Client;
 using Microsoft.Agents.AI;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Qdrant.Client;
-using QdrantVectorStoreType = Microsoft.SemanticKernel.Connectors.Qdrant.QdrantVectorStore;
+using QdrantVectorStoreType = CommunityToolkit.VectorData.Qdrant.QdrantVectorStore;
 
 var builder = WebApplication.CreateBuilder(args);
 

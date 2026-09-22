@@ -1,7 +1,6 @@
 ﻿using AI.API.Models;
+using CommunityToolkit.VectorData.Qdrant;
 using Microsoft.Extensions.AI;
-using Microsoft.SemanticKernel.Connectors.Qdrant;
-using Qdrant.Client.Grpc;
 
 namespace AI.API.Services;
 
